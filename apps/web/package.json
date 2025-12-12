@@ -11,20 +11,27 @@
     "check-types": "next typegen && tsc --noEmit"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.1.0",
     "@repo/ui": "*",
     "@supabase/auth-ui-react": "^0.4.7",
     "@supabase/auth-ui-shared": "^0.1.8",
+    "@supabase/ssr": "^0.8.0",
+    "@supabase/supabase-js": "^2.87.1",
     "@tailwindcss/postcss": "^4.1.17",
+    "lucide-react": "^0.560.0",
     "next": "^16.0.7",
+    "pg": "^8.16.3",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
     "@types/node": "^22.15.3",
-    "@types/react": "19.2.2",
-    "@types/react-dom": "19.2.2",
+    "@types/pg": "^8.16.0",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
     "autoprefixer": "^10.4.22",
     "eslint": "^9.39.1",
     "postcss": "^8.5.6",

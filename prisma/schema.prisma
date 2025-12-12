@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+
+  plans     Plan[]
+  tasks     Task[]
+}
+
+model Plan {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  title       String
+  description String?
+  startDate   DateTime?
+  endDate     DateTime?
+  progress    Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  tasks       Task[]
+}
+
+model Task {
+  id               String    @id @default(uuid())
+  planId           String?
+  plan             Plan?     @relation(fields: [planId], references: [id])
+  userId           String
+  user             User      @relation(fields: [userId], references: [id])
+  title            String
+  description      String?
+  date             DateTime?
+  dueDate          DateTime?
+  completed        Boolean   @default(false)
+  status           String    @default("Pending")
+  priority         String?
+  estimatedMinutes Int?
+  timeSpentMinutes Int?      @default(0)
+  metadata         Json?     @default("{}")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  subtasks         Subtask[]
+  tags             TaskTag[]
+}
+
+model Subtask {
+  id        String   @id @default(uuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id])
+  title     String
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Tag {
+  id    String   @id @default(uuid())
+  name  String   @unique
+  tasks TaskTag[]
+}
+
+model TaskTag {
+  id     String @id @default(uuid())
+  taskId String
+  tagId  String
+  task   Task   @relation(fields: [taskId], references: [id])
+  tag    Tag    @relation(fields: [tagId], references: [id])
+
+  @@unique([taskId, tagId])
+}

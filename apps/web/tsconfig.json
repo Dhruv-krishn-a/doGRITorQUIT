@@ -4,7 +4,7 @@
     "plugins": [{ "name": "next" }],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["app/*"],
+        "@/*": ["./*"],
       "@/components/*": ["app/components/*"],
       "@/utils/*": ["app/utils/*"],
       "@/hooks/*": ["app/hooks/*"]

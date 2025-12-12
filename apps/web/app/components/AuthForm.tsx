@@ -16,16 +16,16 @@ export default function AuthForm() {
       if (data?.session) router.push("/dashboard");
     })();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         router.push("/dashboard");
       }
     });
 
     return () => {
-      try {
-        (listener as any)?.subscription?.unsubscribe?.();
-      } catch {}
+      subscription?.unsubscribe();
     };
   }, [router]);
 

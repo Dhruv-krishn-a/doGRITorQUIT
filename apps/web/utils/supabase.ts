@@ -1,6 +1,7 @@
-import { createSupabaseClient } from "@planner/api";
+// apps/web/utils/supabase.ts
+import { createBrowserClient } from "@supabase/ssr";
 
-export const supabase = createSupabaseClient(
+export const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );

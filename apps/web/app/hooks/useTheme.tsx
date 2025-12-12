@@ -13,8 +13,8 @@ export default function Sidebar() {
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   const [collapsed, setCollapsed] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
     try {
+      if (typeof window === "undefined") return false;
       const raw = localStorage.getItem("ui.sidebarCollapsed");
       return raw === "true";
     } catch {
@@ -26,7 +26,7 @@ export default function Sidebar() {
     try {
       localStorage.setItem("ui.sidebarCollapsed", String(collapsed));
     } catch {
-      // Ignore write errors
+      // Ignore write errors (e.g. storage full or disabled)
     }
   }, [collapsed]);
 
