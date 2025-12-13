@@ -1,67 +1,96 @@
+// apps/web/app/api/plans/[id]/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerUserId } from "@/lib/authHelper";
 
-export async function GET() {
+// GET /api/plans/[id] - Get a single plan with tasks
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     const userId = await getServerUserId();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const plans = await prisma.plan.findMany({
-      where: { userId },
+    const { id } = await params;
+
+    const plan = await prisma.plan.findFirst({
+      where: { 
+        id,
+        userId 
+      },
       include: {
         tasks: {
-          include: { subtasks: true, tags: { include: { tag: true } } },
+          include: { 
+            subtasks: true, 
+            tags: { include: { tag: true } } 
+          },
           orderBy: { date: "asc" },
         },
       },
-      orderBy: { createdAt: "desc" },
     });
 
-    // Transform data for frontend
-    const out = plans.map((p) => ({
-      ...p,
-      tasks: p.tasks.map((t) => ({
-        ...t,
-        tags: t.tags?.map((tt) => tt.tag.name) ?? [],
-      })),
-    }));
+    if (!plan) {
+      return NextResponse.json({ error: "Plan not found" }, { status: 404 });
+    }
 
-    return NextResponse.json(out);
+    // Transform data for frontend
+    const formattedPlan = {
+      ...plan,
+      tasks: plan.tasks.map((task) => ({
+        ...task,
+        tags: task.tags?.map((taskTag) => taskTag.tag.name) ?? [],
+      })),
+    };
+
+    return NextResponse.json(formattedPlan);
   } catch (error) {
-    console.error("GET /api/plans error:", error);
+    console.error("GET /api/plans/[id] error:", error);
     return NextResponse.json(
-      { error: "Internal Server Error", details: String(error) },
+      { error: "Internal Server Error" },
       { status: 500 }
     );
   }
 }
 
-export async function POST(req: Request) {
+// DELETE /api/plans/[id] - Delete a plan and its tasks
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     const userId = await getServerUserId();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    const body = await req.json();
-    const { title, description, startDate, endDate } = body;
+    const { id } = await params;
 
-    if (!title) return NextResponse.json({ error: "Missing title" }, { status: 400 });
-
-    const plan = await prisma.plan.create({
-      data: {
-        userId,
-        title,
-        description: description ?? null,
-        startDate: startDate ? new Date(startDate) : null,
-        endDate: endDate ? new Date(endDate) : null,
+    // Verify plan belongs to user
+    const plan = await prisma.plan.findFirst({
+      where: { 
+        id,
+        userId 
       },
     });
 
-    return NextResponse.json(plan, { status: 201 });
+    if (!plan) {
+      return NextResponse.json({ error: "Plan not found" }, { status: 404 });
+    }
+
+    // Delete plan (Prisma cascade will delete tasks, subtasks, tags)
+    await prisma.plan.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("POST /api/plans error:", error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    console.error("DELETE /api/plans/[id] error:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }

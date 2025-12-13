@@ -1,25 +1,57 @@
-// apps/web/types/plan.ts
 export interface Plan {
   id: string;
   title: string;
-  description?: string | null;
-  startDate?: string | null;
-  endDate?: string | null;
-  progress?: number | null;
-  createdAt?: string;
-  tasks?: Array<{
-    id: string;
-    title: string;
-    description?: string | null;
-    date?: string | null;
-    dueDate?: string | null;
-    completed?: boolean;
-    priority?: string | null;
-    estimatedMinutes?: number | null;
-    timeSpentMinutes?: number | null;
-    status?: string;
-    // Arrays for nested relations
-    subtasks?: Array<{ id: string; title: string; completed?: boolean }>;
-    tags?: string[];
-  }>;
+  description: string | null;
+  startDate: Date | string | null;
+  endDate: Date | string | null;
+  userId: string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  progress?: number;
+  tasks?: Task[];
+}
+
+export interface Task {
+  id: string;
+  title: string;
+  description: string | null;
+  date: Date | string | null;
+  priority: string | null;
+  estimatedMinutes: number | null;
+  status: string;
+  planId: string;
+  userId: string;
+  subtasks?: Subtask[];
+  tags?: string[];
+}
+
+export interface Subtask {
+  id: string;
+  title: string;
+  taskId: string;
+}
+
+export interface Tag {
+  id: string;
+  name: string;
+}
+
+export interface TaskTag {
+  taskId: string;
+  tagId: string;
+  tag: Tag;
+}
+
+export interface CreatePlanInput {
+  title: string;
+  description?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface UpdatePlanInput {
+  title?: string;
+  description?: string;
+  startDate?: string;
+  endDate?: string;
 }

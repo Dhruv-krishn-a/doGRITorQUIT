@@ -1,20 +1,33 @@
-// apps/web/app/components/Plan/AIPlanGenerator.tsx
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import { MessageSquare, X } from "lucide-react";
 import { useToast } from "@/components/ToastProvider";
 
-type PlanRow = Record<string, unknown>;
-type Msg = { text: string; isAI?: boolean; planData?: PlanRow[] };
+interface AIPlanRow {
+  Day?: number | string;
+  "Task Title"?: string;
+  Subtasks?: string;
+  Priority?: string;
+  Notes?: string;
+  "Expected Hours"?: number | string;
+  [key: string]: unknown;
+}
+
+interface ChatMessage {
+  id: string;
+  text: string;
+  isAI: boolean;
+  planData?: AIPlanRow[];
+}
 
 export default function AIPlanGenerator() {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<Msg[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [apiKey, setApiKey] = useState("");
   const toast = useToast();
-  const endRef = useRef<HTMLDivElement | null>(null);
+  const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -26,6 +39,7 @@ export default function AIPlanGenerator() {
     if (open && messages.length === 0) {
       setMessages([
         {
+          id: Date.now().toString(),
           text: apiKey
             ? "Hello! Describe your goal and timeframe and I'll generate a plan for you."
             : "Please add your Google Gemini API key (Settings) to use the AI Plan Generator.",
@@ -33,50 +47,25 @@ export default function AIPlanGenerator() {
         },
       ]);
     }
-    // include messages.length to satisfy react-hooks/exhaustive-deps rule
-  }, [open, apiKey, messages.length]);
+  }, [open, apiKey]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const callGemini = async (userMessage: string): Promise<string> => {
-    if (!apiKey) throw new Error("No API key provided");
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
-
-    const systemPrompt = `You are a planning assistant. When ready, output ONLY a JSON array (no extra explanation) like:
-[
-  { "Day": 1, "Task Title": "Setup", "Subtasks": "Install; Configure", "Priority": "High", "Notes": "", "Expected Hours": 2 }
-]
-Make sure "Subtasks" are semicolon separated and Expected Hours is numeric.`;
-
-    const prompt = `${systemPrompt}\nUser: ${userMessage}\nAssistant:`;
-
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.6, maxOutputTokens: 4000 },
-      }),
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => null);
-      throw new Error(err?.error?.message ?? `AI request failed (${res.status})`);
-    }
-
-    const data = await res.json().catch(() => null);
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-    return text;
-  };
-
-  const extractJSON = (text: string): PlanRow[] | null => {
+  const extractJSON = (text: string): AIPlanRow[] | null => {
     try {
-      const match = text.match(/\[\s*{[\s\S]*}\s*\]/);
-      if (match) return JSON.parse(match[0]) as PlanRow[];
+      // Try to find JSON array in the response
+      const match = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
+      if (match) {
+        return JSON.parse(match[0]) as AIPlanRow[];
+      }
+      
+      // Try parsing the entire text
       const parsed = JSON.parse(text);
-      if (Array.isArray(parsed)) return parsed as PlanRow[];
+      if (Array.isArray(parsed)) {
+        return parsed as AIPlanRow[];
+      }
     } catch {
       return null;
     }
@@ -84,60 +73,110 @@ Make sure "Subtasks" are semicolon separated and Expected Hours is numeric.`;
   };
 
   const handleSend = async () => {
-    if (!input.trim()) return;
-    setMessages((m) => [...m, { text: input }]);
+    const trimmedInput = input.trim();
+    if (!trimmedInput || !apiKey) return;
+
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      text: trimmedInput,
+      isAI: false,
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setLoading(true);
 
     try {
-      const aiText = await callGemini(input);
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: `You are a planning assistant. Convert the user request into a structured plan.
+                
+Output format (JSON array only, no other text):
+[
+  {
+    "Day": 1,
+    "Task Title": "Task name",
+    "Subtasks": "Subtask1; Subtask2",
+    "Priority": "High/Medium/Low",
+    "Notes": "Additional notes",
+    "Expected Hours": 2
+  }
+]
+
+Rules:
+- "Subtasks" should be semicolon-separated
+- "Expected Hours" should be a number (hours)
+- Include all tasks needed to complete the goal
+
+User request: ${trimmedInput}
+
+AI Response:`
+              }]
+            }],
+            generationConfig: {
+              temperature: 0.7,
+              maxOutputTokens: 4000,
+            },
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.error?.message || `API request failed (${response.status})`);
+      }
+
+      const data = await response.json();
+      const aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "No response from AI";
       const planData = extractJSON(aiText);
 
-      if (Array.isArray(planData) && planData.length > 0) {
-        setMessages((m) => [
-          ...m,
-          { text: "Plan created — preview below", isAI: true },
-          { text: JSON.stringify(planData, null, 2), isAI: true, planData },
+      const aiMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        text: planData 
+          ? "I've generated a plan for you! You can review and create it below."
+          : aiText,
+        isAI: true,
+        planData: planData || undefined,
+      };
+
+      setMessages((prev) => [...prev, aiMessage]);
+
+      if (planData) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: (Date.now() + 2).toString(),
+            text: `\`\`\`json\n${JSON.stringify(planData, null, 2)}\n\`\`\``,
+            isAI: true,
+            planData,
+          },
         ]);
-      } else {
-        setMessages((m) => [...m, { text: aiText || "No output from AI", isAI: true }]);
       }
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      setMessages((m) => [...m, { text: `❌ ${message}`, isAI: true }]);
+    } catch (error) {
+      const errorMessage: ChatMessage = {
+        id: (Date.now() + 3).toString(),
+        text: `❌ Error: ${error instanceof Error ? error.message : String(error)}`,
+        isAI: true,
+      };
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setLoading(false);
     }
   };
 
-  // CSV/Excel download helper
-  const downloadExcelFile = (planData: PlanRow[]) => {
-    const headers = ["Day", "Task Title", "Subtasks", "Priority", "Notes", "Expected Hours"];
-    const rows = planData.map((r) =>
-      headers
-        .map((h) => {
-          // Fixed: Removed `as any`. `r` is Record<string, unknown>, so string indexing is valid.
-          const val = r[h] ?? r[h.replace(/ /g, "")] ?? "";
-          const s = String(val ?? "");
-          return `"${s.replace(/"/g, '""')}"`;
-        })
-        .join(",")
-    );
-    const csv = [headers.join(","), ...rows].join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "ai_plan.csv";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleGenerate = async (planData?: PlanRow[]) => {
+  const handleGenerate = async (planData?: AIPlanRow[]) => {
     if (!planData || planData.length === 0) {
-      toast.showToast({ title: "No plan", message: "Generate a plan first", type: "info" });
+      toast.showToast({ 
+        title: "No plan data", 
+        message: "Generate a plan first", 
+        type: "info" 
+      });
       return;
     }
 
@@ -145,49 +184,81 @@ Make sure "Subtasks" are semicolon separated and Expected Hours is numeric.`;
       const res = await fetch("/api/plans/import-json", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planName: "AI Plan", tasks: planData }),
+        body: JSON.stringify({ 
+          planName: `AI Plan - ${new Date().toLocaleDateString()}`,
+          tasks: planData 
+        }),
       });
 
       if (!res.ok) {
-        const err = await res.json().catch(() => null);
-        throw new Error(err?.message ?? `Server error ${res.status}`);
+        const errorData = await res.json();
+        throw new Error(errorData?.error || `Server error ${res.status}`);
       }
 
-      const created = await res.json().catch(() => null);
-      toast.showToast({ title: "Plan created", message: (created?.title as string) ?? "AI Plan", type: "success" });
-      downloadExcelFile(planData);
+      toast.showToast({ 
+        title: "Plan created!", 
+        message: "Your AI-generated plan has been saved.", 
+        type: "success" 
+      });
+      
       setOpen(false);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      toast.showToast({ title: "Error", message, type: "error" });
+      setMessages([]);
+    } catch (error) {
+      toast.showToast({ 
+        title: "Error", 
+        message: error instanceof Error ? error.message : "Failed to create plan", 
+        type: "error" 
+      });
     }
   };
 
   const saveApiKey = () => {
     if (typeof window === "undefined") return;
-    localStorage.setItem("gemini_api_key", apiKey);
-    toast.showToast({ title: "Saved", message: "API key saved to localStorage", type: "success" });
-    setMessages([{ text: "✅ API key saved. Describe your goal to generate a plan.", isAI: true }]);
+    
+    const trimmedKey = apiKey.trim();
+    if (!trimmedKey) {
+      toast.showToast({ 
+        title: "Error", 
+        message: "API key cannot be empty", 
+        type: "error" 
+      });
+      return;
+    }
+
+    localStorage.setItem("gemini_api_key", trimmedKey);
+    setApiKey(trimmedKey);
+    
+    toast.showToast({ 
+      title: "Saved", 
+      message: "API key saved to localStorage", 
+      type: "success" 
+    });
+    
+    setMessages([{
+      id: Date.now().toString(),
+      text: "✅ API key saved. Describe your goal to generate a plan.",
+      isAI: true,
+    }]);
   };
 
   return (
     <>
       <button
         onClick={() => setOpen(true)}
-        className="px-3 py-2 bg-linear-to-r from-purple-600 to-blue-600 text-white rounded inline-flex items-center gap-2"
+        className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg inline-flex items-center gap-2 hover:from-purple-700 hover:to-blue-700 transition-colors"
         aria-label="Open AI Plan Generator"
       >
         <MessageSquare className="w-4 h-4" />
-        <span>AI</span>
+        <span className="font-medium">AI Assistant</span>
       </button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-(--bg-card) w-full max-w-2xl rounded-2xl overflow-hidden border border-(--border-color)">
-            <div className="p-4 border-b flex items-center justify-between">
+          <div className="bg-white w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-purple-50 to-blue-50">
               <div>
-                <h3 className="text-lg font-bold">AI Plan Generator</h3>
-                <p className="text-sm text-(--text-secondary)">Powered by Google Gemini</p>
+                <h3 className="text-lg font-bold text-gray-900">AI Plan Generator</h3>
+                <p className="text-sm text-gray-600">Powered by Google Gemini</p>
               </div>
               <div className="flex items-center gap-2">
                 <input
@@ -195,43 +266,62 @@ Make sure "Subtasks" are semicolon separated and Expected Hours is numeric.`;
                   placeholder="Gemini API key"
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
-                  className="px-2 py-1 border rounded text-sm"
+                  className="px-3 py-1.5 border border-gray-300 rounded text-sm w-48"
                   aria-label="Gemini API key"
                 />
-                <button onClick={saveApiKey} className="px-2 py-1 border rounded text-sm">
+                <button 
+                  onClick={saveApiKey}
+                  className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded text-sm font-medium transition-colors"
+                >
                   Save Key
                 </button>
-                <button onClick={() => setOpen(false)} className="p-2" aria-label="Close">
-                  <X />
+                <button 
+                  onClick={() => setOpen(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  aria-label="Close"
+                >
+                  <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
 
-            <div className="p-4 h-96 overflow-y-auto space-y-3">
-              {messages.map((m, idx) => (
-                <div key={idx} className={m.isAI ? "text-left" : "text-right"}>
-                  <pre
-                    className={`inline-block p-3 rounded ${
-                      m.isAI
-                        ? "bg-(--bg-secondary) text-(--text-primary)"
-                        : "bg-linear-to-r from-purple-600 to-blue-600 text-white"
-                    }`}
-                    style={{ whiteSpace: "pre-wrap" }}
+            <div className="flex-1 overflow-hidden">
+              <div className="p-4 h-[400px] overflow-y-auto space-y-4">
+                {messages.map((msg) => (
+                  <div 
+                    key={msg.id} 
+                    className={`flex ${msg.isAI ? "justify-start" : "justify-end"}`}
                   >
-                    {m.text}
-                  </pre>
-                </div>
-              ))}
-              <div ref={endRef} />
+                    <div
+                      className={`max-w-[80%] p-3 rounded-2xl ${
+                        msg.isAI
+                          ? "bg-gray-100 text-gray-800 rounded-tl-none"
+                          : "bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-tr-none"
+                      }`}
+                    >
+                      <pre className="whitespace-pre-wrap font-sans text-sm">
+                        {msg.text}
+                      </pre>
+                    </div>
+                  </div>
+                ))}
+                <div ref={endRef} />
+              </div>
             </div>
 
-            <div className="p-4 border-t">
+            <div className="p-4 border-t border-gray-200 bg-white">
               <div className="flex gap-3">
                 <textarea
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  className="flex-1 p-2 border rounded"
-                  rows={2}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSend();
+                    }
+                  }}
+                  className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  rows={3}
                   placeholder={apiKey ? "Describe your goal, timeframe, experience level..." : "Add API key first to use AI"}
                   disabled={!apiKey || loading}
                   aria-label="AI prompt"
@@ -239,18 +329,19 @@ Make sure "Subtasks" are semicolon separated and Expected Hours is numeric.`;
                 <div className="flex flex-col gap-2">
                   <button
                     onClick={handleSend}
-                    disabled={loading || !apiKey}
-                    className="px-3 py-2 bg-purple-600 text-white rounded disabled:opacity-60"
+                    disabled={loading || !apiKey || !input.trim()}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[80px]"
                   >
                     {loading ? "..." : "Send"}
                   </button>
 
                   <button
                     onClick={() => {
-                      const last = messages.slice(-1)[0];
-                      handleGenerate(last?.planData);
+                      const lastMessage = messages[messages.length - 1];
+                      handleGenerate(lastMessage?.planData);
                     }}
-                    className="px-3 py-2 bg-green-600 text-white rounded"
+                    disabled={!messages.some(m => m.planData)}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[80px]"
                   >
                     Create
                   </button>
