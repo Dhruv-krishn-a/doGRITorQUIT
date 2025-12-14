@@ -1,23 +1,79 @@
 // apps/web/app/api/plans/import-json/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getServerUserId } from "@/lib/authHelper";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
 export async function POST(req: Request) {
   try {
-    const userId = await getServerUserId();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // FIX: await cookies()
+    const cookieStore = await cookies();
+    
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll()
+          },
+          setAll(cookiesToSet) {
+             try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              )
+            } catch {}
+          },
+        },
+      }
+    );
+
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const supabaseUserId = session.user.id;
+    const userEmail = session.user.email;
+
+    if (!supabaseUserId || !userEmail) {
+      return NextResponse.json({ error: "Invalid user session" }, { status: 401 });
+    }
+
+    // Check if user exists in our database, create if not
+    let user = await prisma.user.findUnique({
+      where: { id: supabaseUserId }
+    });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          id: supabaseUserId,
+          email: userEmail,
+          name: session.user.user_metadata?.name || userEmail.split('@')[0],
+        }
+      });
+    }
 
     const body = await req.json();
     const { planName, tasks } = body;
 
-    if (!planName) return NextResponse.json({ error: "Missing planName" }, { status: 400 });
-    if (!Array.isArray(tasks)) return NextResponse.json({ error: "Bad tasks payload" }, { status: 400 });
+    if (!planName) {
+      return NextResponse.json({ error: "Missing planName" }, { status: 400 });
+    }
+    
+    if (!Array.isArray(tasks)) {
+      return NextResponse.json({ error: "Bad tasks payload" }, { status: 400 });
+    }
 
     // Use a transaction to ensure all tasks are created or none
     const created = await prisma.$transaction(async (tx) => {
       const plan = await tx.plan.create({
-        data: { userId, title: planName },
+        data: { 
+          userId: user.id, // Use the Prisma user ID
+          title: planName 
+        },
       });
 
       for (const row of tasks) {
@@ -43,7 +99,7 @@ export async function POST(req: Request) {
         const task = await tx.task.create({
           data: {
             planId: plan.id,
-            userId,
+            userId: user.id, // Use the Prisma user ID
             title,
             description: notes,
             date: date,
@@ -94,8 +150,20 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(created, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Import JSON error:", error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    
+    // More specific error handling
+    if (error.code === 'P2003') {
+      return NextResponse.json(
+        { error: "Database constraint violation. Please ensure your account is properly set up." },
+        { status: 400 }
+      );
+    }
+    
+    return NextResponse.json(
+      { error: "Internal Server Error", details: error.message || String(error) },
+      { status: 500 }
+    );
   }
 }

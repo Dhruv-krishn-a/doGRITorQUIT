@@ -6,36 +6,57 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-
-  plans     Plan[]
-  tasks     Task[]
+// Tier enum for user subscription level (FREE / PRO / TEAM)
+enum Tier {
+  FREE
+  PRO
+  TEAM
 }
 
+// User model - this should match Supabase auth users
+model User {
+  id           String        @id
+  email        String        @unique
+  name         String?
+  avatarUrl    String?
+  tier         Tier          @default(FREE)      // NEW: feature-gating tier
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  // Relations
+  plans        Plan[]
+  tasks        Task[]
+  subscription Subscription?  // optional one-to-one
+
+  @@map("users")
+}
+
+// Plan model
 model Plan {
   id          String   @id @default(uuid())
   userId      String
-  user        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   title       String
   description String?
   startDate   DateTime?
   endDate     DateTime?
   progress    Int      @default(0)
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
+  // Relations
   tasks       Task[]
+
+  @@map("plans")
 }
 
+// Task model
 model Task {
   id               String    @id @default(uuid())
   planId           String?
-  plan             Plan?     @relation(fields: [planId], references: [id])
+  plan             Plan?     @relation(fields: [planId], references: [id], onDelete: Cascade)
   userId           String
-  user             User      @relation(fields: [userId], references: [id])
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   title            String
   description      String?
   date             DateTime?
@@ -49,31 +70,65 @@ model Task {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
+  // Relations
   subtasks         Subtask[]
   tags             TaskTag[]
+
+  @@map("tasks")
 }
 
+// Subtask model
 model Subtask {
   id        String   @id @default(uuid())
   taskId    String
-  task      Task     @relation(fields: [taskId], references: [id])
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
   title     String
   completed Boolean  @default(false)
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("subtasks")
 }
 
+// Tag model
 model Tag {
-  id    String   @id @default(uuid())
-  name  String   @unique
-  tasks TaskTag[]
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  
+  // Relations
+  tasks     TaskTag[]
+
+  @@map("tags")
 }
 
+// Junction table for Task <-> Tag many-to-many
 model TaskTag {
-  id     String @id @default(uuid())
-  taskId String
-  tagId  String
-  task   Task   @relation(fields: [taskId], references: [id])
-  tag    Tag    @relation(fields: [tagId], references: [id])
+  id        String @id @default(uuid())
+  taskId    String
+  tagId     String
+  task      Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  tag       Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 
   @@unique([taskId, tagId])
+  @@map("task_tags")
+}
+
+// Subscription record for billing (Stripe-friendly)
+model Subscription {
+  id               String    @id @default(cuid())
+  user             User      @relation(fields: [userId], references: [id])
+  userId           String    @unique
+  stripeCustomer   String?   @db.VarChar(191)   // customer id (lookup)
+  stripeSubId      String?   @unique @db.VarChar(191) // subscription id
+  priceId          String?   // store price/product id for mapping tiers
+  status           String?   // active / past_due / canceled etc.
+  currentPeriodEnd DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@map("subscriptions")
+  @@index([stripeCustomer])
+  @@index([stripeSubId])
 }

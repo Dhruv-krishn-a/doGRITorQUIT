@@ -7,7 +7,10 @@
         "@/*": ["./*"],
       "@/components/*": ["app/components/*"],
       "@/utils/*": ["app/utils/*"],
-      "@/hooks/*": ["app/hooks/*"]
+      "@/hooks/*": ["app/hooks/*"],
+      "@domain/*": ["../../packages/domain/*"],
+      "@domain": ["../../packages/domain/index.ts"]
+
     }
   },
   "include": [
@@ -19,3 +22,4 @@
   ],
   "exclude": ["node_modules"]
 }
+
