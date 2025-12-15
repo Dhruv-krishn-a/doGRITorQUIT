@@ -24,13 +24,13 @@ export default function AuthForm() {
       }
     });
 
-    return () => {
+return () => {
       subscription?.unsubscribe();
     };
   }, [router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <div    div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-md p-6 bg-white rounded-md shadow">
         <h2 className="text-2xl font-semibold mb-4">Welcome to Planner</h2>
         <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} />

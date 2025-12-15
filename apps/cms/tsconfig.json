@@ -1,0 +1,11 @@
+{
+  "extends": "../../packages/typescript-config/nextjs.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"],
+      "@domain/*": ["../../packages/domain/*"],
+      "@domain": ["../../packages/domain/index.ts"]
+    }
+  }
+}

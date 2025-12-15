@@ -1,3 +1,4 @@
+// packages/domain/billing/entitlements.ts
 import { prisma } from "@/lib/prisma";
 import { Tier } from "@prisma/client";
 
