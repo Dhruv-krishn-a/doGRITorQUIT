@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { plans as planDomain } from "@domain";
 import { getServerUserId } from "@/lib/authHelper";
+import { assertPlanCreationAllowed } from "@domain/billing/entitlements";
 
 export async function GET() {
   try {
@@ -12,8 +13,7 @@ export async function GET() {
     return NextResponse.json(plans);
   } catch (err: any) {
     console.error("[GET /api/plans] domain error:", err);
-    const status = err.code === "ENTITLEMENT_LIMIT" ? 403 : 500;
-    return NextResponse.json({ error: err.message || "Internal" }, { status });
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
 
@@ -21,6 +21,16 @@ export async function POST(req: Request) {
   try {
     const userId = await getServerUserId();
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    // server-side entitlement enforcement
+    try {
+      await assertPlanCreationAllowed(userId);
+    } catch (err: any) {
+      if (err?.code === "ENTITLEMENT_LIMIT") {
+        return NextResponse.json({ error: err.message }, { status: 403 });
+      }
+      throw err;
+    }
 
     const body = await req.json();
     if (!body?.title) return NextResponse.json({ error: "Missing title" }, { status: 400 });
@@ -35,7 +45,6 @@ export async function POST(req: Request) {
     return NextResponse.json(plan, { status: 201 });
   } catch (err: any) {
     console.error("[POST /api/plans] domain error:", err);
-    const status = err.code === "ENTITLEMENT_LIMIT" ? 403 : 500;
-    return NextResponse.json({ error: err.message || "Internal" }, { status });
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

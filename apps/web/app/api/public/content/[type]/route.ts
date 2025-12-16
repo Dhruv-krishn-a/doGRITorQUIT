@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { entryService } from "@domain/cms";
 import { createServerClient } from "@supabase/ssr";
-import { getUserTier } from "@domain/billing/entitlements";
+import { getUserEntitlements } from "@domain/billing/entitlements";
 
 export async function GET(_req: Request, { params }: { params: { type: string } }) {
   try {
@@ -17,14 +17,29 @@ export async function GET(_req: Request, { params }: { params: { type: string } 
       if (!entry) return NextResponse.json(null, { status: 404 });
 
       if (entry.requiresTier) {
+        // read cookies to optionally get logged in user
         const cookieStore = await cookies();
         const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
           cookies: { getAll() { return cookieStore.getAll(); }, setAll() { /* no-op */ } }
         });
         const { data: { session } } = await supabase.auth.getSession();
         const userId = session?.user?.id;
-        const tier = userId ? await getUserTier(userId) : "FREE";
-        const accessible = tier === entry.requiresTier || tier === "PRO" || tier === "TEAM";
+
+        if (!userId) {
+          return NextResponse.json({ entry, accessible: false });
+        }
+
+        const ent = await getUserEntitlements(userId);
+        const tierReq = entry.requiresTier; // e.g., "PRO"
+        // Check if user's product or tier satisfies required tier
+        let accessible = false;
+        if (ent.product?.key) {
+          // allow if product key matches or product is PRO/TEAM mapping (depends on your product keys)
+          accessible = ent.product.key === tierReq || ent.product.key === "PRO" || ent.product.key === "TEAM";
+        }
+        if (!accessible && ent.tierFallback) {
+          accessible = ent.tierFallback === tierReq || ent.tierFallback === "PRO" || ent.tierFallback === "TEAM";
+        }
 
         return NextResponse.json({ entry, accessible });
       }
