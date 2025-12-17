@@ -9,12 +9,13 @@ export async function POST(req: Request) {
     const userId = await getServerUserId();
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    // Verify entitlement first (server-side)
     const allowed = await canUseAIGenerationForUser(userId);
     if (!allowed) {
-      return NextResponse.json({ error: "Upgrade required to use AI generation" }, { status: 403 });
+      return NextResponse.json({ 
+        error: "Free limit reached. You have used your 1 free AI generation. Please upgrade to Pro." 
+      }, { status: 403 });
     }
-
+    
     const body = await req.json();
     const prompt = (body?.prompt || body?.text || "").trim();
     if (!prompt) return NextResponse.json({ error: "Missing prompt" }, { status: 400 });

@@ -1,16 +1,36 @@
+// apps/web/app/api/billing/subscription/route.ts
 import { NextResponse } from "next/server";
-import { getServerUserId } from "@/lib/authHelper";
 import { prisma } from "@/lib/prisma";
+import { getServerUserId } from "@/lib/authHelper";
 
 export async function GET() {
-  const userId = await getServerUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const userId = await getServerUserId();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        tier: true,
+        subscriptions: {
+          orderBy: { createdAt: "desc" },
+          include: { product: true },
+        },
+      },
+    });
+
+    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+
+    const activeSubscription = user.subscriptions.find((s) => s.status === "active") ?? null;
+
+    return NextResponse.json({
+      userTier: user.tier,
+      activeSubscription,
+      subscriptions: user.subscriptions,
+    });
+  } catch (err) {
+    console.error("[billing/subscription] ", err);
+    return NextResponse.json({ error: "Internal" }, { status: 500 });
   }
-
-  const subscription = await prisma.subscription.findUnique({
-    where: { userId },
-  });
-
-  return NextResponse.json(subscription);
 }

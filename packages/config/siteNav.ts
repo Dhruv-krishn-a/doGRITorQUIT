@@ -19,6 +19,8 @@ export const siteNav: NavItem[] = [
   { id: "tasks", label: "Tasks", path: "/dashboard/tasks", group: "dashboard", order: 3, visible: true },
   { id: "checklist", label: "Daily Checklist", path: "/dashboard/daily-checklist", group: "dashboard", order: 4, visible: true },
   { id: "analytics", label: "Analytics", path: "/dashboard/analytics", group: "dashboard", order: 5, visible: true },
+  { id: "subscription", label: "Subscription", path: "/dashboard/subscriptions", group: "dashboard", order: 6, visible: true },
+
 
   // footer links
   { id: "about", label: "About", path: "/about", group: "footer", order: 100, visible: true },

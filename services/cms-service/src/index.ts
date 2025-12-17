@@ -1,3 +1,4 @@
+// services/cms-service/src/index.ts
 import Fastify from "fastify";
 import { PrismaClient } from "@prisma/client";
 

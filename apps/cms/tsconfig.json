@@ -2,10 +2,34 @@
   "extends": "../../packages/typescript-config/nextjs.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "paths": {
-      "@/*": ["./*"],
-      "@domain/*": ["../../packages/domain/*"],
-      "@domain": ["../../packages/domain/index.ts"]
-    }
-  }
+      "@/*": [
+        "./*"
+      ],
+      "@domain/*": [
+        "../../packages/domain/*"
+      ],
+      "@domain": [
+        "../../packages/domain/index.ts"
+      ]
+    },
+    "strict": true,
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "esModuleInterop": true
+  },
+  "include": [
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
