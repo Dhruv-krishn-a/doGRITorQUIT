@@ -3,7 +3,6 @@ import { createProduct, deleteProduct } from "../actions";
 import Link from "next/link";
 
 export default async function ProductsPage() {
-  // FIX: Added orderBy to sort plans: Free (0) -> Pro (199) -> Team (499)
   const products = await prisma.product.findMany({
     orderBy: { price: 'asc' } 
   });
@@ -27,14 +26,14 @@ export default async function ProductsPage() {
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-gray-500">Price (in Paise)</label>
-            {/* Added helper text to prevent the 1.99 error again */}
-            <input name="price" type="number" placeholder="19900 for ₹199" className="border p-2 rounded w-32" required />
+            <label className="text-xs font-semibold text-gray-500">Price (₹)</label>
+            {/* UPDATED: Expects Rupees now */}
+            <input name="price" type="number" placeholder="199" className="border p-2 rounded w-32" required />
           </div>
 
           <button className="bg-blue-600 text-white px-4 py-2 rounded h-10 mb-[1px] hover:bg-blue-700">Create</button>
         </form>
-        <p className="text-xs text-gray-400 mt-2">* Note: 100 paise = ₹1. Enter 19900 for a ₹199 plan.</p>
+        <p className="text-xs text-gray-400 mt-2">* Enter amount in Rupees. We handle the conversion to paise automatically.</p>
       </div>
 
       {/* List */}
@@ -49,6 +48,7 @@ export default async function ProductsPage() {
             </div>
             
             <div className="text-3xl font-bold text-slate-900 mb-1">
+              {/* Database still stores paise, so we divide by 100 for display */}
               ₹{p.price / 100}
               <span className="text-sm font-normal text-gray-500 ml-1">/mo</span>
             </div>

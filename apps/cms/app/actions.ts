@@ -16,18 +16,61 @@ export async function resetUserAI(userId: string) {
   revalidatePath("/users");
 }
 
-// Add this new function to your existing actions
-export async function updateUserTier(userId: string, formData: FormData) {
+export async function assignUserPlan(userId: string, formData: FormData) {
   await getAdminUser(); // Security check
-  
-  // Cast to specific Tier type if needed, or string
-  const tier = formData.get("tier") as "FREE" | "PRO" | "TEAM";
-  
-  await prisma.user.update({
-    where: { id: userId },
-    data: { tier }
-  });
-  
+
+  const productId = formData.get("productId") as string;
+
+  if (!productId || productId === "manual_free") {
+    // Case: Remove Subscription (downgrade to free tier explicitly)
+    await prisma.userSubscription.updateMany({
+      where: { userId, status: "active" },
+      data: { status: "canceled", currentPeriodEnd: new Date() }
+    });
+    
+    await prisma.user.update({
+      where: { id: userId },
+      data: { tier: "FREE" }
+    });
+  } else {
+    // Case: Assign a specific Product
+    const product = await prisma.product.findUnique({ where: { id: productId } });
+    if (!product) throw new Error("Product not found");
+
+    // 1. Cancel existing active subscriptions
+    await prisma.userSubscription.updateMany({
+      where: { userId, status: "active" },
+      data: { status: "canceled" }
+    });
+
+    // 2. Create new active subscription
+    const now = new Date();
+    const thirtyDays = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // Default 30 days grant
+
+    await prisma.userSubscription.create({
+      data: {
+        userId,
+        productId: product.id,
+        status: "active",
+        startedAt: now,
+        currentPeriodEnd: thirtyDays,
+        provider: "manual_cms_grant", // Mark as admin granted
+        providerSubId: `grant_${Date.now()}`,
+      }
+    });
+
+    // 3. Update User Badge (Legacy Support)
+    let newTier: "FREE" | "PRO" | "TEAM" = "FREE";
+    const key = product.key.toUpperCase();
+    if (key.includes("PRO")) newTier = "PRO";
+    else if (key.includes("TEAM")) newTier = "TEAM";
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { tier: newTier }
+    });
+  }
+
   revalidatePath("/users");
 }
 
@@ -48,11 +91,21 @@ export async function createProduct(formData: FormData) {
   
   const name = formData.get("name") as string;
   const key = formData.get("key") as string;
-  const price = Number(formData.get("price")); // in paise
+  const rawPrice = Number(formData.get("price")); // User enters Rupees (e.g. 199)
   const description = formData.get("description") as string;
 
+  // CONVERSION: Rupees -> Paise
+  const priceInPaise = Math.round(rawPrice * 100); 
+
   await prisma.product.create({
-    data: { name, key, price, description, currency: "INR", active: true }
+    data: { 
+      name, 
+      key, 
+      price: priceInPaise, // Store as 19900
+      description, 
+      currency: "INR", 
+      active: true 
+    }
   });
   
   revalidatePath("/products");
