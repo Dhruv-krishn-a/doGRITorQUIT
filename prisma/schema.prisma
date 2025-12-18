@@ -36,6 +36,9 @@ model User {
   entries      Entry[]  @relation("UserEntries")
 
   orders       Order[]
+  habits      Habit[]       
+  dailyNotes  DailyNote[]   
+
 
   @@map("users")
 }
@@ -285,3 +288,41 @@ model Order {
   product Product? @relation(fields: [productId], references: [id])
 }
 
+
+
+model Habit {
+  id        String     @id @default(uuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  icon      String?    // e.g., "dumbbell", "book", "droplet"
+  color     String?    // e.g., "bg-blue-500"
+  order     Int        @default(0)
+  active    Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  logs      HabitLog[]
+
+  @@map("habits")
+}
+
+model HabitLog {
+  id        String   @id @default(uuid())
+  habitId   String
+  habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  date      DateTime // Stored as YYYY-MM-DD T00:00:00Z
+  completed Boolean  @default(false)
+  
+  @@unique([habitId, date]) // Ensure one log per habit per day
+  @@map("habit_logs")
+}
+
+model DailyNote {
+   id        String   @id @default(uuid())
+   userId    String
+   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+   date      DateTime // Stored as YYYY-MM-DD
+   content   String?
+   
+   @@unique([userId, date])
+   @@map("daily_notes")
+}
