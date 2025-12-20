@@ -1,4 +1,12 @@
+// apps/cms/app/(admin)/orders/page.tsx
 import { prisma } from "@/lib/prisma";
+import type { Metadata } from "next";
+
+// Moved metadata here from the deleted layout file
+export const metadata: Metadata = {
+  title: "Orders | CMS Admin",
+  description: "View payment and order history",
+};
 
 export default async function OrdersPage() {
   const orders = await prisma.order.findMany({
@@ -30,7 +38,7 @@ export default async function OrdersPage() {
                 <td className="p-3 font-medium">{order.product?.name || "Unknown"}</td>
                 <td className="p-3">₹{order.amount / 100}</td>
                 <td className="p-3">
-                  <span className={`px-2 py-1 rounded text-xs capitalize ${order.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                  <span className={`px-2 py-1 rounded text-xs capitalize ${order.status === 'paid' || order.status === 'captured' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
                     {order.status}
                   </span>
                 </td>

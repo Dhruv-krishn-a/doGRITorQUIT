@@ -1,6 +1,14 @@
+// apps/cms/app/(admin)/products/page.tsx
 import { prisma } from "@/lib/prisma";
-import { createProduct, deleteProduct } from "../actions";
+import { createProduct, deleteProduct } from "../../actions";
 import Link from "next/link";
+import type { Metadata } from "next";
+
+// Moved metadata here from the deleted layout file
+export const metadata: Metadata = {
+  title: "Products | CMS Admin",
+  description: "Manage subscription plans",
+};
 
 export default async function ProductsPage() {
   const products = await prisma.product.findMany({
@@ -27,7 +35,6 @@ export default async function ProductsPage() {
 
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold text-gray-500">Price (₹)</label>
-            {/* UPDATED: Expects Rupees now */}
             <input name="price" type="number" placeholder="199" className="border p-2 rounded w-32" required />
           </div>
 
@@ -48,7 +55,6 @@ export default async function ProductsPage() {
             </div>
             
             <div className="text-3xl font-bold text-slate-900 mb-1">
-              {/* Database still stores paise, so we divide by 100 for display */}
               ₹{p.price / 100}
               <span className="text-sm font-normal text-gray-500 ml-1">/mo</span>
             </div>

@@ -1,5 +1,6 @@
+// apps/cms/app/(admin)/users/page.tsx
 import { prisma } from "@/lib/prisma";
-import { resetUserAI, updateUserRole, assignUserPlan } from "../actions"; // Import assignUserPlan
+import { resetUserAI, updateUserRole, assignUserPlan } from "../../actions"; // Import assignUserPlan
 import RoleSelect from "./RoleSelect";
 import PlanSelect from "./PlanSelect"; // Import new component
 

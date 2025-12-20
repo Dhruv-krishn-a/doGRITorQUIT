@@ -1,3 +1,4 @@
+// apps/web/app/api/billing/verify/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerUserId } from "@/lib/authHelper";

@@ -1,5 +1,6 @@
+// apps/cms/app/(admin)/products/[id]/page.tsx
 import { prisma } from "@/lib/prisma";
-import { toggleProductFeature, createFeature } from "../../actions";
+import { toggleProductFeature, createFeature } from "../../../actions";
 
 export default async function ProductDetail({ params }: { params: { id: string } }) {
   const { id } = await params; // Nextjs 15 requires awaiting params, safe for 14 too
