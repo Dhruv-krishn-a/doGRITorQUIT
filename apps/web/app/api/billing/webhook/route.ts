@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
  * Header sent by Razorpay: 'x-razorpay-signature'
  */
 
+
 const SECRET = process.env.RAZORPAY_WEBHOOK_SECRET || "";
 
 function verifySignature(payload: string, signature: string, secret: string) {
@@ -18,7 +19,10 @@ function verifySignature(payload: string, signature: string, secret: string) {
 export async function POST(req: Request) {
   const raw = await req.text();
   const signature = req.headers.get("x-razorpay-signature") || "";
-
+  if (!process.env.RAZORPAY_WEBHOOK_SECRET) {
+  console.error("CRITICAL: RAZORPAY_WEBHOOK_SECRET is not set");
+  return NextResponse.json({ error: "Server config error" }, { status: 500 });
+  }
   if (!verifySignature(raw, signature, SECRET)) {
     console.warn("Invalid Razorpay webhook signature");
     return NextResponse.json({ ok: false }, { status: 400 });

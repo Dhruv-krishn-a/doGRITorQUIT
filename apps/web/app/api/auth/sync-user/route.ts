@@ -6,7 +6,6 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST() {
   try {
-    // FIX: await cookies()
     const cookieStore = await cookies();
     
     const supabase = createServerClient(
@@ -14,9 +13,7 @@ export async function POST() {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
-          getAll() {
-            return cookieStore.getAll()
-          },
+          getAll() { return cookieStore.getAll() },
           setAll(cookiesToSet) {
             try {
               cookiesToSet.forEach(({ name, value, options }) =>

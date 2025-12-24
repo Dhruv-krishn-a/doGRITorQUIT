@@ -11,7 +11,7 @@ export const LEGACY_ENTITLEMENTS: Record<Tier, {
 }> = {
   FREE: {
     maxPlans: 3,
-    aiGeneration: false, // overridden by dynamic check below
+    aiGeneration: false, 
   },
   PRO: {
     maxPlans: Infinity,
@@ -42,7 +42,6 @@ export interface UserEntitlements {
  * Get active user subscription using the new UserSubscription model.
  */
 export async function getActiveUserSubscription(userId: string) {
-  // We check the new UserSubscription table populated by the webhook
   return prisma.userSubscription.findFirst({
     where: {
       userId,
@@ -73,7 +72,6 @@ export async function getUserEntitlements(userId: string): Promise<UserEntitleme
   const sub = await getActiveUserSubscription(userId);
 
   if (!sub || !sub.product) {
-    // fallback to legacy tier if no active subscription found
     const tier = user.tier as Tier;
     const legacy = LEGACY_ENTITLEMENTS[tier] ?? LEGACY_ENTITLEMENTS.FREE;
     const features: FeatureMap = {
@@ -88,10 +86,10 @@ export async function getUserEntitlements(userId: string): Promise<UserEntitleme
     };
   }
 
-  // Build feature map from product features
   const product = sub.product;
   const features: FeatureMap = {};
   for (const pf of product.productFeatures ?? []) {
+    // If value is a simple boolean or structured object, we store it
     features[pf.feature.key] = pf.value ?? { enabled: true };
   }
 
@@ -108,10 +106,6 @@ export async function getUserEntitlements(userId: string): Promise<UserEntitleme
   };
 }
 
-/**
- * Assert plan creation allowed (throws "ENTITLEMENT_LIMIT" if not).
- * This was the missing export causing your build error.
- */
 export async function assertPlanCreationAllowed(userId: string) {
   const ent = await getUserEntitlements(userId);
 
@@ -128,7 +122,6 @@ export async function assertPlanCreationAllowed(userId: string) {
     allowedLimit = legacy?.maxPlans ?? 0;
   }
 
-  // Default fallback if everything fails
   if (allowedLimit == null) {
     allowedLimit = 3; 
   }
@@ -145,8 +138,25 @@ export async function assertPlanCreationAllowed(userId: string) {
 }
 
 /**
- * Check if user can use AI generation.
- * Logic: Paid Plan OR Free Plan (Usage < 1)
+ * Get the max days allowed for a single plan.
+ */
+export async function getMaxPlanDaysForUser(userId: string): Promise<number> {
+  const ent = await getUserEntitlements(userId);
+  
+  // 1. Check Product Feature Configuration
+  // Looks for feature key "MAX_PLAN_DAYS" with a value like { value: 30 }
+  const featureVal = ent.features?.['MAX_PLAN_DAYS'] as any;
+  if (featureVal && typeof featureVal.value === 'number') {
+    return featureVal.value;
+  }
+
+  // 2. Fallback Defaults
+  if (ent.tierFallback === 'FREE') return 7; // Free users capped at 7 days
+  return 30; // Default pro cap
+}
+
+/**
+ * Check if user can use AI generation with dynamic limits.
  */
 export async function canUseAIGenerationForUser(userId: string): Promise<boolean> {
   const user = await prisma.user.findUnique({ 
@@ -156,30 +166,34 @@ export async function canUseAIGenerationForUser(userId: string): Promise<boolean
 
   if (!user) return false;
 
-  // 1. Check Active Subscription features
-  const sub = await getActiveUserSubscription(userId);
-  if (sub && sub.product) {
-    const aiFeature = sub.product.productFeatures.find(pf => pf.feature.key === 'AI_PLAN');
-    if (aiFeature && (aiFeature.value as any)?.enabled === true) {
-      return true;
+  const ent = await getUserEntitlements(userId);
+
+  // 1. Determine Limit
+  let limit = 1; // Default Free limit
+
+  // Check if product defines a specific limit via "AI_GEN_LIMIT" feature
+  const limitFeature = ent.features?.['AI_GEN_LIMIT'] as any;
+  
+  if (limitFeature && typeof limitFeature.value === 'number') {
+    limit = limitFeature.value;
+  } else {
+    // Legacy Fallback Checks
+    // A. Check for simple enable flag
+    const simpleAiFeature = ent.features?.['AI_PLAN'] as any;
+    if (simpleAiFeature && simpleAiFeature.enabled === true) {
+        // If simple enabled flag is present without specific limit, assume "Pro" behavior
+        limit = 100; 
+    }
+    // B. Check Tier/Key Name
+    else if (user.tier === 'PRO' || user.tier === 'TEAM' || ent.product?.key.toUpperCase().includes('PRO')) {
+        limit = 100; // Legacy Pro limit
     }
   }
 
-  // 2. Fallback to Tier Logic
-  // FREE users get exactly 1 generation
-  if (user.tier === 'FREE') {
-    return user.aiUsageCount < 1;
-  }
-
-  // PRO/TEAM always allowed
-  if (user.tier === 'PRO' || user.tier === 'TEAM') return true;
-
-  return false;
+  // 2. Check Usage against Limit
+  return user.aiUsageCount < limit;
 }
 
-/**
- * Increment the AI usage counter for a user.
- */
 export async function incrementAIUsage(userId: string) {
   await prisma.user.update({
     where: { id: userId },
@@ -187,9 +201,6 @@ export async function incrementAIUsage(userId: string) {
   });
 }
 
-/**
- * Generic get feature value
- */
 export async function getFeatureForUser(userId: string, featureKey: string): Promise<unknown> {
   const ent = await getUserEntitlements(userId);
   return ent.features?.[featureKey];

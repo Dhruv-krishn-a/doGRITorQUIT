@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { getServerUserId } from "@/lib/authHelper";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { canUseAIGenerationForUser } from "@domain/billing/entitlements";
-
+import { incrementAIUsage } from "@domain/billing/entitlements";
 export async function POST(req: Request) {
   try {
     const userId = await getServerUserId();
@@ -35,6 +35,8 @@ export async function POST(req: Request) {
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const aiText = response.text();
+
+    await incrementAIUsage(userId);
 
     return NextResponse.json({ text: aiText, raw: response });
   } catch (err: any) {

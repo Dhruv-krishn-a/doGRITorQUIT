@@ -133,6 +133,24 @@ export async function createFeature(formData: FormData) {
   revalidatePath("/products/[id]");
 }
 
+export async function updateFeatureValue(productId: string, featureId: string, formData: FormData) {
+  await getAdminUser();
+  const rawValue = formData.get("value");
+  const numValue = parseInt(rawValue as string);
+
+  if (isNaN(numValue)) return;
+
+  // Store as structured JSON: { value: 10, enabled: true }
+  await prisma.productFeature.update({
+    where: { productId_featureId: { productId, featureId } },
+    data: { 
+      value: { value: numValue, enabled: true } 
+    }
+  });
+  
+  revalidatePath(`/products/${productId}`);
+}
+
 export async function toggleProductFeature(productId: string, featureId: string, isEnabled: boolean) {
   await getAdminUser();
   

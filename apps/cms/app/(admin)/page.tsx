@@ -2,12 +2,42 @@
 import { prisma } from "@/lib/prisma";
 import { getAdminUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { createServerClient } from "@supabase/ssr"; // Needed for session check
+import { cookies } from "next/headers";
 
 export default async function Dashboard() {
   const admin = await getAdminUser();
   
-  // FIX: Redirect to internal /login, NOT localhost:3000
-  if (!admin) redirect("/login");
+  if (!admin) {
+    // FIX: Avoid redirect loops.
+    // Check if the user is actually logged in (but just not an admin)
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: { getAll() { return cookieStore.getAll() }, setAll() {} },
+      }
+    );
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (session) {
+      // User is logged in but getAdminUser returned null -> Not an Admin
+      return (
+        <div className="flex h-screen items-center justify-center bg-gray-100 flex-col">
+          <h1 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h1>
+          <p className="text-gray-600 mb-4">You are logged in, but you do not have administrator permissions.</p>
+          <form action="/auth/signout" method="post"> 
+             {/* You might need a client component for signout, or just link to home */}
+             <a href="/" className="underline text-blue-600">Go to Website</a>
+          </form>
+        </div>
+      );
+    }
+
+    // Not logged in at all -> safe to redirect
+    redirect("/login");
+  }
 
   const [usersCount, ordersCount, productsCount] = await Promise.all([
     prisma.user.count(),
@@ -25,7 +55,6 @@ export default async function Dashboard() {
     <div>
       <h1 className="text-3xl font-bold mb-8 text-slate-800">Admin Dashboard</h1>
       
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-10 bg-blue-500 rounded-bl-3xl w-16 h-16"></div>
@@ -44,7 +73,6 @@ export default async function Dashboard() {
         </div>
       </div>
 
-      {/* Recent Activity */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
         <div className="p-6 border-b border-slate-100">
             <h2 className="text-lg font-bold text-slate-800">Recent Sales</h2>
