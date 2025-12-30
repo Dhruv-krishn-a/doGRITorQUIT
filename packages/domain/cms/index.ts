@@ -1,1 +1,3 @@
-export * as entryService from "./entry.service";
+
+export * from "./cms.repo";
+export * from "./cms.service";

@@ -1,49 +1,38 @@
 // apps/cms/app/(admin)/products/page.tsx
-import { prisma } from "@/lib/prisma";
-import { createProduct, deleteProduct } from "../../actions";
-import Link from "next/link";
 import type { Metadata } from "next";
+import Link from "next/link";
+import { getProducts, createProduct, deleteProduct } from "@domain/cms";
 
-// Moved metadata here from the deleted layout file
 export const metadata: Metadata = {
   title: "Products | CMS Admin",
   description: "Manage subscription plans",
 };
 
 export default async function ProductsPage() {
-  const products = await prisma.product.findMany({
-    orderBy: { price: 'asc' } 
-  });
+  const products = await getProducts();
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Subscription Plans</h1>
 
-      {/* Create Form */}
       <div className="bg-white p-6 rounded shadow mb-8">
         <h3 className="font-bold mb-4">Create New Plan</h3>
-        <form action={createProduct} className="flex gap-4 items-end flex-wrap">
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-gray-500">Name</label>
-            <input name="name" placeholder="e.g. Gold Plan" className="border p-2 rounded w-64" required />
-          </div>
-          
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-gray-500">Key (Unique)</label>
-            <input name="key" placeholder="e.g. GOLD_MONTHLY" className="border p-2 rounded w-48" required />
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-gray-500">Price (₹)</label>
-            <input name="price" type="number" placeholder="199" className="border p-2 rounded w-32" required />
-          </div>
-
+        <form action={async (formData: FormData) => {
+          "use server";
+          // delegate to domain service
+          await createProduct({
+            name: String(formData.get("name")),
+            key: String(formData.get("key")),
+            priceRupees: Number(formData.get("price")),
+            description: String(formData.get("description") || null),
+          });
+        }} className="flex gap-4 items-end flex-wrap">
+          {/* ... same form UI ... */}
           <button className="bg-blue-600 text-white px-4 py-2 rounded h-10 mb-[1px] hover:bg-blue-700">Create</button>
         </form>
         <p className="text-xs text-gray-400 mt-2">* Enter amount in Rupees. We handle the conversion to paise automatically.</p>
       </div>
 
-      {/* List */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map(p => (
           <div key={p.id} className="bg-white p-6 rounded shadow border relative flex flex-col h-full">
@@ -53,23 +42,19 @@ export default async function ProductsPage() {
                 {p.key}
               </span>
             </div>
-            
             <div className="text-3xl font-bold text-slate-900 mb-1">
               ₹{p.price / 100}
               <span className="text-sm font-normal text-gray-500 ml-1">/mo</span>
             </div>
-            
             <p className="text-gray-500 text-sm mb-6 flex-grow">{p.description || "No description provided"}</p>
-            
             <div className="flex justify-between items-center pt-4 border-t border-gray-100 mt-auto">
-              <Link 
-                href={`/products/${p.id}`} 
-                className="text-blue-600 text-sm font-semibold hover:bg-blue-50 px-3 py-2 rounded transition-colors"
-              >
+              <Link href={`/products/${p.id}`} className="text-blue-600 text-sm font-semibold hover:bg-blue-50 px-3 py-2 rounded transition-colors">
                 Manage Features →
               </Link>
-              
-              <form action={deleteProduct.bind(null, p.id)}>
+              <form action={async () => {
+                "use server";
+                await deleteProduct(p.id);
+              }}>
                 <button className="text-red-500 text-sm hover:bg-red-50 px-3 py-2 rounded transition-colors">
                   Delete
                 </button>

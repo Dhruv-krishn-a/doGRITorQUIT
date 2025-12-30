@@ -1,12 +1,11 @@
 // apps/cms/lib/prisma.ts
-import { PrismaClient } from '@prisma/client'
 
-const globalForPrisma = global as unknown as { prisma: PrismaClient }
+/**
+ * ⚠️ TEMPORARY COMPATIBILITY FILE
+ * 
+ * DO NOT create PrismaClient in apps/*
+ * This file only re-exports the shared client
+ * so existing imports don't break during migration.
+ */
 
-export const prisma =
-  globalForPrisma.prisma ||
-  new PrismaClient({
-    log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
-  })
-
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma
+export { prisma } from "../../../lib/prisma";

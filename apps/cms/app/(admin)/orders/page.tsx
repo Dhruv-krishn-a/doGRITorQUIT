@@ -1,19 +1,14 @@
 // apps/cms/app/(admin)/orders/page.tsx
-import { prisma } from "@/lib/prisma";
 import type { Metadata } from "next";
+import { getOrders, getDashboardCounts, getRecentSales } from "@domain/cms"; // <- domain service
 
-// Moved metadata here from the deleted layout file
 export const metadata: Metadata = {
   title: "Orders | CMS Admin",
   description: "View payment and order history",
 };
 
 export default async function OrdersPage() {
-  const orders = await prisma.order.findMany({
-    orderBy: { createdAt: "desc" },
-    include: { user: true, product: true },
-    take: 100
-  });
+  const orders = await getOrders(100);
 
   return (
     <div>
