@@ -1,10 +1,10 @@
 // apps/web/app/layout.tsx
 import "./globals.css";
 import type { ReactNode } from "react";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
+import Header from "../shared/components/Header";
+import Footer from "../shared/components/Footer";
 import { siteNav } from "../../../packages/config/siteNav";
-import { ToastProvider } from "./components/ToastProvider";
+import { ToastProvider } from "../shared/components/ToastProvider";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (

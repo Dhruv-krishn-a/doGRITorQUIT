@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { supabase } from '../../utils/supabase';
+import { supabase } from '../../../utils/supabase';
 
 export default function UserSync() {
   const router = useRouter();

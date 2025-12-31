@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useToast } from "@/components/ToastProvider"; // Assuming you have this
+import { useToast } from "@/shared/components/ToastProvider"; // Assuming you have this
 
 export default function SubscriptionPage() {
   const [products, setProducts] = useState<any[]>([]);

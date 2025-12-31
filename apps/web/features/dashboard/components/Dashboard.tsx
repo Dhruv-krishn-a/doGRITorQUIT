@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js"; // Import the specific type
-import { supabase } from "../../utils/supabase";
+import { supabase } from "../../../utils/supabase";
 
 export default function DashboardPage() {
   // Use User | null instead of any

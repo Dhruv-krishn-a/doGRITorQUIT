@@ -4,13 +4,18 @@
     "plugins": [{ "name": "next" }],
     "baseUrl": ".",
     "paths": {
-        "@/*": ["./*"],
-      "@/components/*": ["app/components/*"],
-      "@/utils/*": ["app/utils/*"],
-      "@/hooks/*": ["app/hooks/*"],
+      "@/*": ["./*"],
+      
+      "@/utils/*": ["utils/*"],
+      "@/hooks/*": ["hooks/*"],
+      
+      // Feature aliases
       "@domain/*": ["../../packages/domain/*"],
-      "@domain": ["../../packages/domain/index.ts"]
-
+      "@domain": ["../../packages/domain/index.ts"],
+      "@features/*": ["features/*"],
+      "@features": ["features/index.ts"],
+      "@shared/*": ["shared/*"],
+      "@shared": ["shared/index.ts"]
     }
   },
   "include": [
@@ -22,4 +27,3 @@
   ],
   "exclude": ["node_modules"]
 }
-

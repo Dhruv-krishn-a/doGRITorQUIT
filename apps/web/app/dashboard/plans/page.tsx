@@ -1,13 +1,18 @@
 // apps/web/app/dashboard/plans/page.tsx
 "use client";
+
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plan } from "@/types/plan";
-import CreatePlanModal from "@/components/Plan/CreatePlanModal";
-import ImportExcelModal from "@/components/Plan/ImportExcelModal";
-import AIPlanGenerator from "@/components/Plan/AIPlanGenerator";
-import PlanCard from "@/components/Plan/PlanCard";
 import { Loader2 } from "lucide-react";
+import { Plan } from "@/types/plan";
+
+// ✅ UPDATED: Clean imports from the feature barrel file
+import { 
+  PlanCard, 
+  CreatePlanModal, 
+  ImportExcelModal, 
+  AIPlanGenerator 
+} from "@features/plans";
 
 export default function PlanningPage() {
   const router = useRouter();
@@ -103,6 +108,7 @@ export default function PlanningPage() {
             >
               + New Plan
             </button>
+            {/* Feature Component */}
             <AIPlanGenerator />
           </div>
         </div>

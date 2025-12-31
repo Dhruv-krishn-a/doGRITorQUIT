@@ -3,9 +3,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "../../utils/supabase";
-import Sidebar from "../components/Sidebar";
-import UserSync from "../components/UserSync";
+import { supabase } from "@/utils/supabase"; // Assuming you have @/ alias set up for root
+
+// ✅ UPDATED: Clean imports from shared and feature barrels
+import Sidebar from "@shared/components/Sidebar"
+import { UserSync } from "@features/auth";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -66,7 +68,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
-      <main className="flex-1 p-6">
+      <main className="flex-1 p-6 overflow-auto">
         {/* UserSync ensures user exists in Prisma database before any dashboard actions */}
         <UserSync />
         {children}

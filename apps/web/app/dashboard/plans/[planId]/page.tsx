@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Plan } from "@/types/plan";
-import Button from "@/components/ui/Button";
+import Button from "@/shared/components/ui/Button";
 
 // Define a strict Task type based on the Plan interface to avoid 'any'
 type Task = NonNullable<Plan["tasks"]>[number];

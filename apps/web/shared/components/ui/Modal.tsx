@@ -1,4 +1,4 @@
-//components/ui/Modal.tsx
+// apps/web/shared/components/ui/Modal.tsx
 "use client";
 
 import React from "react";

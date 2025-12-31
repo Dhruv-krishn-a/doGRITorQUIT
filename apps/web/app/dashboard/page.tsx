@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 // 1. Import the specific type from supabase-js
 import { User } from "@supabase/supabase-js"; 
-import { supabase } from "../../utils/supabase";
+import { supabase } from "@/utils/supabase";
 
 export default function DashboardPage() {
   // 2. Use the 'User' type (or null if not logged in) instead of 'any'

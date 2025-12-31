@@ -1,8 +1,8 @@
 // apps/web/app/components/Plan/ImportExcelModal.tsx
 "use client";
 import React, { useRef, useState } from "react";
-import Modal from "../../components/ui/Modal";
-import Button from "../../components/ui/Button";
+import Modal from "../../../shared/components/ui/Modal";
+import Button from "../../../shared/components/ui/Button";
 import * as XLSX from "xlsx";
 
 type Props = {

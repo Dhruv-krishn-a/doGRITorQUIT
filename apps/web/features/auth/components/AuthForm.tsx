@@ -4,7 +4,7 @@
 import { useEffect } from "react";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { supabase } from "../../utils/supabase";
+import { supabase } from "../../../utils/supabase";
 import { useRouter } from "next/navigation";
 
 export default function AuthForm() {

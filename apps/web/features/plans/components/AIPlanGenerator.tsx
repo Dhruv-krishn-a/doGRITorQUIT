@@ -2,7 +2,7 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import { MessageSquare, X } from "lucide-react";
-import { useToast } from "@/components/ToastProvider";
+import { useToast } from "@/shared/components/ToastProvider";
 
 interface AIPlanRow {
   Day?: number | string;

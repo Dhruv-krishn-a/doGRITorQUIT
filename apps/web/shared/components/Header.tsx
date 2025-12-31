@@ -7,7 +7,7 @@ import { NavItem } from "../../../../packages/config/siteNav";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../utils/supabase";
 import Avatar from "./Avatar";
-import Modal from "./Modal";
+import Modal from "@/shared/components/ui/Modal";
 import { useToast } from "./ToastProvider";
 
 type Props = {
