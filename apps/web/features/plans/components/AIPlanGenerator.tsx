@@ -1,13 +1,12 @@
-// apps/web/app/components/Plan/AIPlanGenerator.tsx
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import { MessageSquare, X } from "lucide-react";
-import { useToast } from "@/shared/components/ToastProvider";
+import { useToast } from "@shared/components/ToastProvider";
 
 interface AIPlanRow {
   Day?: number | string;
   "Task Title"?: string;
-  Subtasks?: string;
+  Subtasks?: string[]; // Expecting Array now
   Priority?: string;
   Notes?: string;
   "Expected Hours"?: number | string;
@@ -26,18 +25,20 @@ export default function AIPlanGenerator() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  
+  // ✅ STATE: Start Date
+  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
+  
   const toast = useToast();
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (open && messages.length === 0) {
-      setMessages([
-        {
-          id: Date.now().toString(),
-          text: "Hello! Describe your goal and timeframe and I'll generate a plan for you.",
-          isAI: true,
-        },
-      ]);
+      setMessages([{
+        id: Date.now().toString(),
+        text: "Hello! Describe your goal and timeframe and I'll generate a plan for you.",
+        isAI: true,
+      }]);
     }
   }, [open]);
 
@@ -51,9 +52,7 @@ export default function AIPlanGenerator() {
       if (match) return JSON.parse(match[0]) as AIPlanRow[];
       const parsed = JSON.parse(text);
       if (Array.isArray(parsed)) return parsed as AIPlanRow[];
-    } catch {
-      return null;
-    }
+    } catch { return null; }
     return null;
   };
 
@@ -61,21 +60,39 @@ export default function AIPlanGenerator() {
     const trimmedInput = input.trim();
     if (!trimmedInput) return;
 
-    const userMessage: ChatMessage = {
-      id: Date.now().toString(),
-      text: trimmedInput,
-      isAI: false,
-    };
-
+    const userMessage: ChatMessage = { id: Date.now().toString(), text: trimmedInput, isAI: false };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setLoading(true);
+
+    // ✅ PROMPT: Explicitly ask for Subtasks Array
+    const SYSTEM_PROMPT = `
+      You are an expert planning assistant.
+      Create a detailed plan based on the user's request.
+      
+      CRITICAL: Output ONLY a raw JSON array.
+      
+      Structure per item:
+      {
+        "Day": 1, 
+        "Task Title": "Main Goal of the Day",
+        "Description": "Brief summary",
+        "Estimated Time (min)": 60,
+        "Priority": "High",
+        "Subtasks": ["Specific Action 1", "Specific Action 2", "Specific Action 3"], 
+        "Tags": "Tag1, Tag2"
+      }
+      
+      Ensure "Subtasks" is an ARRAY of strings, not a single string.
+    `;
 
     try {
       const res = await fetch("/api/ai/plan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: `You are a planning assistant. Convert the user request into a structured plan.\n\nOutput format (JSON array only, no other text):\n... (same instruction as before) ...\n\nUser request: ${trimmedInput}\n\nAI Response:` }),
+        body: JSON.stringify({ 
+            prompt: `${SYSTEM_PROMPT}\n\nUser Request: ${trimmedInput}\n\nJSON Output:` 
+        }),
       });
 
       if (!res.ok) {
@@ -84,96 +101,60 @@ export default function AIPlanGenerator() {
       }
 
       const data = await res.json();
-      const aiText = data?.text ?? JSON.stringify(data?.raw ?? "No response from AI");
+      const aiText = data?.text ?? JSON.stringify(data?.raw ?? "No response");
       const planData = extractJSON(aiText);
 
       const aiMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        text: planData ? "I've generated a plan for you! You can review and create it below." : aiText,
+        text: planData ? "I've generated a plan! Review the data, pick a Start Date below, and click Create." : aiText,
         isAI: true,
         planData: planData || undefined,
       };
 
       setMessages((prev) => [...prev, aiMessage]);
-
-      if (planData) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: (Date.now() + 2).toString(),
-            text: `\`\`\`json\n${JSON.stringify(planData, null, 2)}\n\`\`\``,
-            isAI: true,
-            planData,
-          },
-        ]);
-      }
     } catch (error) {
-      const errorMessage: ChatMessage = {
+      setMessages((prev) => [...prev, {
         id: (Date.now() + 3).toString(),
         text: `❌ Error: ${error instanceof Error ? error.message : String(error)}`,
         isAI: true,
-      };
-      setMessages((prev) => [...prev, errorMessage]);
+      }]);
     } finally {
       setLoading(false);
     }
   };
 
   const handleGenerate = async (planData?: AIPlanRow[]) => {
-    if (!planData || planData.length === 0) {
-      toast.showToast({
-        title: "No plan data",
-        message: "Generate a plan first",
-        type: "info",
-      });
-      return;
-    }
+    if (!planData || planData.length === 0) return;
 
     try {
       const res = await fetch("/api/plans/import-json", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          planName: `AI Plan - ${new Date().toLocaleDateString()}`,
+          planName: `AI Plan - ${new Date(startDate).toLocaleDateString()}`,
           tasks: planData,
+          startDate: startDate, // ✅ Send start date
           isAI: true,
         }),
       });
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => null);
-        if (res.status === 403) {
-          const serverMessage = errorData?.error || "Upgrade required to use AI features.";
-          toast.showToast({ title: "Upgrade required", message: serverMessage, type: "error" });
-          return;
-        }
-        throw new Error(errorData?.error || `Server error ${res.status}`);
+        throw new Error(errorData?.error || "Import failed");
       }
 
-      toast.showToast({
-        title: "Plan created!",
-        message: "Your AI-generated plan has been saved.",
-        type: "success",
-      });
-
+      toast.showToast({ title: "Success", message: "Plan created!", type: "success" });
       setOpen(false);
       setMessages([]);
+      window.location.reload(); 
     } catch (error) {
-      toast.showToast({
-        title: "Error",
-        message: error instanceof Error ? error.message : "Failed to create plan",
-        type: "error",
-      });
+      toast.showToast({ title: "Error", message: String(error), type: "error" });
     }
   };
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg inline-flex items-center gap-2 hover:from-purple-700 hover:to-blue-700 transition-colors"
-        aria-label="Open AI Plan Generator"
-      >
+      <button onClick={() => setOpen(true)} className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg inline-flex items-center gap-2 hover:from-purple-700 hover:to-blue-700 transition-colors">
         <MessageSquare className="w-4 h-4" />
         <span className="font-medium">AI Assistant</span>
       </button>
@@ -182,31 +163,35 @@ export default function AIPlanGenerator() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-purple-50 to-blue-50">
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">AI Plan Generator</h3>
-                <p className="text-sm text-gray-600">Powered by Google Gemini (server-side)</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setOpen(false)}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                  aria-label="Close"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+              <h3 className="text-lg font-bold text-gray-900">AI Planner</h3>
+              <button onClick={() => setOpen(false)}><X className="w-5 h-5" /></button>
             </div>
 
             <div className="flex-1 overflow-hidden">
               <div className="p-4 h-[400px] overflow-y-auto space-y-4">
                 {messages.map((msg) => (
                   <div key={msg.id} className={`flex ${msg.isAI ? "justify-start" : "justify-end"}`}>
-                    <div
-                      className={`max-w-[80%] p-3 rounded-2xl ${
-                        msg.isAI ? "bg-gray-100 text-gray-800 rounded-tl-none" : "bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-tr-none"
-                      }`}
-                    >
+                    <div className={`max-w-[85%] p-3 rounded-2xl ${msg.isAI ? "bg-gray-100 text-gray-800" : "bg-blue-600 text-white"}`}>
                       <pre className="whitespace-pre-wrap font-sans text-sm">{msg.text}</pre>
+                      
+                      {/* ✅ START DATE PICKER UI */}
+                      {msg.planData && (
+                        <div className="mt-4 bg-white p-3 rounded-lg border border-gray-200 text-gray-900 shadow-sm">
+                          <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Start Date</label>
+                          <input 
+                            type="date" 
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            className="w-full border rounded p-2 text-sm mb-3"
+                          />
+                          <button 
+                            onClick={() => handleGenerate(msg.planData)}
+                            className="w-full bg-green-600 text-white py-2 rounded font-medium hover:bg-green-700 transition-colors"
+                          >
+                            Confirm & Create Plan
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -214,44 +199,18 @@ export default function AIPlanGenerator() {
               </div>
             </div>
 
-            <div className="p-4 border-t border-gray-200 bg-white">
-              <div className="flex gap-3">
-                <textarea
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSend();
-                    }
-                  }}
-                  className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                  rows={3}
-                  placeholder="Describe your goal, timeframe, experience level..."
-                  disabled={loading}
-                  aria-label="AI prompt"
-                />
-                <div className="flex flex-col gap-2">
-                  <button
-                    onClick={handleSend}
-                    disabled={loading || !input.trim()}
-                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[80px]"
-                  >
-                    {loading ? "..." : "Send"}
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      const lastMessage = messages[messages.length - 1];
-                      handleGenerate(lastMessage?.planData);
-                    }}
-                    disabled={!messages.some((m) => m.planData)}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[80px]"
-                  >
-                    Create
-                  </button>
-                </div>
-              </div>
+            <div className="p-4 border-t border-gray-200 bg-white flex gap-3">
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                className="flex-1 p-2 border rounded-lg"
+                placeholder="Type your goal..."
+                disabled={loading}
+              />
+              <button onClick={handleSend} disabled={loading} className="px-4 bg-blue-600 text-white rounded-lg">
+                {loading ? "..." : "Send"}
+              </button>
             </div>
           </div>
         </div>

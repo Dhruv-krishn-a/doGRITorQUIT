@@ -30,6 +30,7 @@ export interface Subtask {
   id: string;
   title: string;
   taskId: string;
+  completed?: boolean;
 }
 
 export interface Tag {

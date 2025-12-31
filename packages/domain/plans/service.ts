@@ -74,29 +74,95 @@ export async function deletePlanForUser(userId: string, planId: string) {
   return true;
 }
 
+
+/**
+ * Helper to normalize object keys to lowercase for fuzzy matching
+ */
+function normalizeRow(row: any) {
+  const newRow: any = {};
+  Object.keys(row).forEach((key) => {
+    newRow[key.toLowerCase().trim()] = row[key];
+  });
+  return newRow;
+}
+
 /**
  * Import JSON tasks into a new plan (transactional)
  */
-export async function importPlanJson(userId: string, planName: string, tasksRows: any[]) {
+// ✅ UPDATED SIGNATURE: Added startDate parameter
+export async function importPlanJson(
+  userId: string, 
+  planName: string, 
+  tasksRows: any[], 
+  startDate?: string | Date
+) {
   return await prisma.$transaction(async (tx) => {
+    // 1. Determine Start Date
+    let startObj = new Date();
+    if (startDate) {
+      startObj = new Date(startDate);
+    }
+    // Normalize to start of day to avoid timezone drift
+    startObj.setHours(0, 0, 0, 0);
+
     const plan = await tx.plan.create({
-      data: { userId, title: planName },
+      data: { 
+        userId, 
+        title: planName,
+        startDate: startObj 
+      },
     });
 
-    for (const row of tasksRows) {
-      const title = row["Task Title"] || row.title || "Untitled";
-      const description = row["Notes"] || row["Description"] || null;
-      const dateStr = row["Date"] || row.date || null;
-      const date = dateStr ? new Date(dateStr) : null;
-      const priority = row["Priority"] || null;
+    for (const rawRow of tasksRows) {
+      const row = normalizeRow(rawRow);
 
-      const expectedHours = row["Expected Hours"] || row["Estimated Time (min)"];
+      // 2. Fuzzy Match Title
+      const title = 
+        row["task title"] || 
+        row["title"] || 
+        row["task"] ||     
+        row["topic"] ||    
+        row["activity"] || 
+        "Untitled Task";
+
+      // 3. Fuzzy Match Description
+      const description = 
+        row["notes"] || 
+        row["description"] || 
+        row["details"] || 
+        row["summary"] ||
+        null;
+      
+      // 4. Fuzzy Match Date/Day
+      let date: Date | null = null;
+      
+      const dateStr = row["date"];
+      if (dateStr) {
+        date = new Date(dateStr);
+      } else {
+        const dayVal = row["day"] || row["day #"] || row["day_number"];
+        if (dayVal) {
+          let dayOffset = parseInt(String(dayVal).replace(/\D/g, ''));
+          if (!isNaN(dayOffset) && dayOffset > 0) {
+            // ✅ USE startObj for relative date calculation
+            const targetDate = new Date(startObj);
+            targetDate.setDate(targetDate.getDate() + (dayOffset - 1));
+            date = targetDate;
+          }
+        }
+      }
+
+      // 5. Fuzzy Match Attributes
+      const priority = row["priority"] || null;
+      
+      const expectedHours = row["expected hours"] || row["estimated time (min)"] || row["duration"];
       let estimatedMinutes = 0;
       if (expectedHours) {
         const val = Number(expectedHours);
         estimatedMinutes = val < 10 ? Math.round(val * 60) : Math.round(val);
       }
 
+      // Create the Main Task
       const task = await tx.task.create({
         data: {
           planId: plan.id,
@@ -110,19 +176,36 @@ export async function importPlanJson(userId: string, planName: string, tasksRows
         },
       });
 
-      // subtasks
-      const subtasksRaw = row["Subtasks"] || row.subtasks || "";
+      // 6. Fuzzy Match Subtasks
+      const subtasksRaw = 
+        row["subtasks"] || 
+        row["steps"] || 
+        row["checklist"] || 
+        row["tasks"]; 
+
       if (subtasksRaw) {
-        const subtasks = String(subtasksRaw).split(/[;,]/).map((s) => s.trim()).filter(Boolean);
+        let subtasks: string[] = [];
+        if (Array.isArray(subtasksRaw)) {
+          subtasks = subtasksRaw.map(String);
+        } else {
+          subtasks = String(subtasksRaw).split(/[;,]/).map((s) => s.trim()).filter(Boolean);
+        }
+
         for (const st of subtasks) {
           await tx.subtask.create({ data: { taskId: task.id, title: st } });
         }
       }
 
-      // tags
-      const tagsRaw = row["Tags"] || row.tags || "";
+      // 7. Fuzzy Match Tags
+      const tagsRaw = row["tags"] || row["categories"] || row["labels"];
       if (tagsRaw) {
-        const tags = String(tagsRaw).split(/[;,]/).map((s) => s.trim()).filter(Boolean);
+         let tags: string[] = [];
+         if (Array.isArray(tagsRaw)) {
+            tags = tagsRaw.map(String);
+         } else {
+            tags = String(tagsRaw).split(/[;,]/).map((s) => s.trim()).filter(Boolean);
+         }
+
         for (const tname of tags) {
           const t = await tx.tag.upsert({ where: { name: tname }, update: {}, create: { name: tname } });
           await tx.taskTag.create({ data: { taskId: task.id, tagId: t.id } });
@@ -131,5 +214,51 @@ export async function importPlanJson(userId: string, planName: string, tasksRows
     }
 
     return plan;
+  }, {
+    maxWait: 5000,
+    timeout: 60000 
+  });
+}
+
+export async function updateTask(userId: string, taskId: string, data: { title?: string; description?: string; status?: string }) {
+  const task = await prisma.task.findFirst({ where: { id: taskId, userId } });
+  if (!task) throw new Error("Task not found");
+
+  return prisma.task.update({
+    where: { id: taskId },
+    data
+  });
+}
+
+/**
+ * Log Time Spent on a Task
+ */
+export async function addTimeSpent(userId: string, taskId: string, minutesToAdd: number) {
+  const task = await prisma.task.findFirst({ where: { id: taskId, userId } });
+  if (!task) throw new Error("Task not found");
+
+  return prisma.task.update({
+    where: { id: taskId },
+    data: { 
+      timeSpentMinutes: (task.timeSpentMinutes || 0) + minutesToAdd 
+    }
+  });
+}
+
+/**
+ * Get ALL Tasks (Categorized logic will handle sorting in UI)
+ */
+export async function getAllTasksForUser(userId: string) {
+  return prisma.task.findMany({
+    where: { userId },
+    include: {
+      plan: { select: { title: true } },
+      subtasks: { orderBy: { createdAt: 'asc' } },
+      tags: { include: { tag: true } }
+    },
+    orderBy: [
+      { date: 'asc' }, // Oldest first (for overdue)
+      { priority: 'desc' } // High priority first
+    ]
   });
 }

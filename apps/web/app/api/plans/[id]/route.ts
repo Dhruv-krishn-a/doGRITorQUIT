@@ -1,96 +1,52 @@
 // apps/web/app/api/plans/[id]/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { getServerUserId } from "@/lib/authHelper";
+import { plans } from "@domain"; // ✅ Call domain logic
 
-// GET /api/plans/[id] - Get a single plan with tasks
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> } // Next.js 15 params are async
 ) {
   try {
     const userId = await getServerUserId();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { id } = await params;
 
-    const plan = await prisma.plan.findFirst({
-      where: { 
-        id,
-        userId 
-      },
-      include: {
-        tasks: {
-          include: { 
-            subtasks: true, 
-            tags: { include: { tag: true } } 
-          },
-          orderBy: { date: "asc" },
-        },
-      },
-    });
+    // Use Domain Service
+    const plan = await plans.getPlanForUser(userId, id);
 
     if (!plan) {
       return NextResponse.json({ error: "Plan not found" }, { status: 404 });
     }
 
-    // Transform data for frontend
-    const formattedPlan = {
-      ...plan,
-      tasks: plan.tasks.map((task) => ({
-        ...task,
-        tags: task.tags?.map((taskTag) => taskTag.tag.name) ?? [],
-      })),
-    };
-
-    return NextResponse.json(formattedPlan);
-  } catch (error) {
+    return NextResponse.json(plan);
+  } catch (error: any) {
     console.error("GET /api/plans/[id] error:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
 
-// DELETE /api/plans/[id] - Delete a plan and its tasks
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const userId = await getServerUserId();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { id } = await params;
 
-    // Verify plan belongs to user
-    const plan = await prisma.plan.findFirst({
-      where: { 
-        id,
-        userId 
-      },
-    });
+    // Use Domain Service
+    const success = await plans.deletePlanForUser(userId, id);
 
-    if (!plan) {
-      return NextResponse.json({ error: "Plan not found" }, { status: 404 });
+    if (!success) {
+      return NextResponse.json({ error: "Plan not found or access denied" }, { status: 404 });
     }
 
-    // Delete plan (Prisma cascade will delete tasks, subtasks, tags)
-    await prisma.plan.delete({
-      where: { id },
-    });
-
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error("DELETE /api/plans/[id] error:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
