@@ -12,13 +12,6 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { 
-  getChecklistData, 
-  toggleHabit, 
-  saveDailyNote, 
-  createHabit, 
-  deleteHabit 
-} from "@/app/actions/checklist";
 
 // --- Utility ---
 function cn(...inputs: ClassValue[]) {
@@ -26,8 +19,6 @@ function cn(...inputs: ClassValue[]) {
 }
 
 // --- Configuration ---
-
-// Expanded Icon Set
 const ICON_OPTIONS = [
   { category: "Health", items: [
     { value: "dumbbell", label: "Workout", component: Dumbbell },
@@ -62,9 +53,8 @@ const ICON_OPTIONS = [
   ]}
 ];
 
-// Flat list for mapping
 const ALL_ICONS = ICON_OPTIONS.flatMap(g => g.items);
-const ICON_MAP = ALL_ICONS.reduce((acc, curr) => ({ ...acc, [curr.value]: curr.component }), {});
+const ICON_MAP: Record<string, any> = ALL_ICONS.reduce((acc, curr) => ({ ...acc, [curr.value]: curr.component }), {});
 
 const COLOR_OPTIONS = [
   { name: "Indigo", class: "text-indigo-600", bg: "bg-indigo-600", light: "bg-indigo-100", border: "border-indigo-200" },
@@ -93,7 +83,13 @@ type NoteType = { id: string; date: string; content: string; };
 export default function DailyChecklistPage() {
   const [view, setView] = useState<"week" | "month">("week");
   const [baseDate, setBaseDate] = useState<Date>(new Date());
-  const [data, setData] = useState<{ habits: HabitType[]; logs: LogType[]; notes: NoteType[] } | null>(null);
+  
+  // Data State
+  const [habits, setHabits] = useState<HabitType[]>([]);
+  const [logs, setLogs] = useState<LogType[]>([]);
+  const [notes, setNotes] = useState<NoteType[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const [quote, setQuote] = useState<string>("");
   const [isPending, startTransition] = useTransition();
 
@@ -141,50 +137,82 @@ export default function DailyChecklistPage() {
   // --- Actions ---
   const refreshData = async () => {
     try {
-      const res = await getChecklistData(start, end);
-      setData(res ?? { habits: [], logs: [], notes: [] });
+      const query = new URLSearchParams({
+        start: start.toISOString(),
+        end: end.toISOString(),
+      });
+      const res = await fetch(`/api/habits?${query}`);
+      const json = await res.json();
+      
+      if (res.ok) {
+        setHabits(json.habits || []);
+        // Flatten logs from the nested structure returned by domain
+        const allLogs = json.habits.flatMap((h: any) => h.logs || []);
+        setLogs(allLogs);
+        setNotes(json.notes || []);
+      }
     } catch (err) {
       console.error("Failed to load checklist data", err);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => { refreshData(); }, [baseDate, view]);
   useEffect(() => { setQuote(QUOTES[Math.floor(Math.random() * QUOTES.length)]); }, []);
 
-  const handleToggle = (habitId: string, date: Date, currentStatus: boolean) => {
-    startTransition(async () => {
-      await toggleHabit(habitId, date, !currentStatus);
-      await refreshData();
+  const handleToggle = async (habitId: string, date: Date, currentStatus: boolean) => {
+    // Optimistic Update
+    const dateStr = date.toISOString();
+    setLogs(prev => {
+        if (currentStatus) {
+            return prev.filter(l => !(l.habitId === habitId && new Date(l.date).toDateString() === date.toDateString()));
+        } else {
+            return [...prev, { id: "temp", habitId, date: dateStr, completed: true }];
+        }
     });
+
+    await fetch(`/api/habits/${habitId}/log`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ date: dateStr, completed: !currentStatus })
+    });
+
+    refreshData(); // Sync
   };
 
   const handleNoteBlur = async (date: Date, content: string) => {
-    await saveDailyNote(date, content);
-    await refreshData();
+    await fetch("/api/daily-notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ date: date.toISOString(), content })
+    });
+    refreshData();
   };
 
   const handleCreateHabit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newHabitTitle) return;
     
-    startTransition(async () => {
-      await createHabit({ 
-        title: newHabitTitle, 
-        icon: newHabitIcon, 
-        color: newHabitColor.class 
-      });
-      setIsModalOpen(false);
-      setNewHabitTitle(""); 
-      await refreshData();
+    await fetch("/api/habits", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+            title: newHabitTitle, 
+            icon: newHabitIcon, 
+            color: newHabitColor.class 
+        })
     });
+    
+    setIsModalOpen(false);
+    setNewHabitTitle(""); 
+    refreshData();
   };
 
   const handleDeleteHabit = async (id: string, title: string) => {
     if(!confirm(`Delete "${title}"? This cannot be undone.`)) return;
-    startTransition(async () => {
-      await deleteHabit(id);
-      await refreshData();
-    });
+    await fetch(`/api/habits/${id}`, { method: "DELETE" });
+    refreshData();
   };
 
   const shiftDate = (amount: number) => {
@@ -194,9 +222,9 @@ export default function DailyChecklistPage() {
     setBaseDate(newDate);
   };
 
-  if (!data) return <div className="min-h-screen flex items-center justify-center text-slate-400 font-medium">Loading Checklist...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-slate-400 font-medium">Loading Checklist...</div>;
 
-  const habitCount = data.habits.length;
+  const habitCount = habits.length;
 
   return (
     <div className="max-w-[1600px] mx-auto p-4 sm:p-8 space-y-8 font-sans text-slate-800 relative min-h-screen bg-slate-50/50">
@@ -358,7 +386,6 @@ export default function DailyChecklistPage() {
         </div>
       </div>
 
-
       {/* --- MAIN GRID CONTAINER --- */}
       <div className="bg-white border border-slate-200 rounded-[2rem] shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col">
         <div className="overflow-x-auto custom-scrollbar">
@@ -373,9 +400,8 @@ export default function DailyChecklistPage() {
 
               {/* Habit Columns */}
               <AnimatePresence mode='popLayout'>
-                {data.habits.map((habit) => {
-                  // @ts-ignore
-                  const Icon = ICON_MAP[habit.icon] || Zap;
+                {habits.map((habit) => {
+                  const Icon = ICON_MAP[habit.icon || "zap"] || Zap;
                   const theme = COLOR_OPTIONS.find(c => habit.color?.includes(c.name)) || COLOR_OPTIONS[0];
 
                   return (
@@ -427,11 +453,11 @@ export default function DailyChecklistPage() {
               {days.map((day) => {
                 const dateKey = day.toDateString();
                 const isToday = new Date().toDateString() === dateKey;
-                const logsForDay = data.logs.filter(l => new Date(l.date).toDateString() === dateKey && l.completed);
+                const logsForDay = logs.filter(l => new Date(l.date).toDateString() === dateKey && l.completed);
                 
                 // Analytics
-                const totalPossible = data.habits.length;
-                const completedCount = logsForDay.filter(l => data.habits.some(h => h.id === l.habitId)).length;
+                const totalPossible = habits.length;
+                const completedCount = logsForDay.filter(l => habits.some(h => h.id === l.habitId)).length;
                 const progress = totalPossible > 0 ? Math.round((completedCount / totalPossible) * 100) : 0;
                 const isPerfect = progress === 100 && totalPossible > 0;
 
@@ -461,7 +487,7 @@ export default function DailyChecklistPage() {
                     </div>
 
                     {/* Checkboxes */}
-                    {data.habits.map((habit) => {
+                    {habits.map((habit) => {
                       const isChecked = logsForDay.some(l => l.habitId === habit.id);
                       const theme = COLOR_OPTIONS.find(c => habit.color?.includes(c.name)) || COLOR_OPTIONS[0];
 
@@ -500,7 +526,7 @@ export default function DailyChecklistPage() {
                     <div className="relative group/note">
                         <input
                             type="text"
-                            defaultValue={data.notes.find(n => new Date(n.date).toDateString() === dateKey)?.content || ""}
+                            defaultValue={notes.find(n => new Date(n.date).toDateString() === dateKey)?.content || ""}
                             onBlur={(e) => handleNoteBlur(day, e.target.value)}
                             placeholder="Add a daily note..."
                             className="w-full bg-slate-50 border border-transparent hover:border-slate-200 focus:border-indigo-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100 rounded-lg px-4 py-2 text-sm text-slate-700 placeholder-slate-400 transition-all"
