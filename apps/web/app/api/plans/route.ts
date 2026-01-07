@@ -1,3 +1,4 @@
+// apps/web/app/api/plans/route.ts
 import { NextResponse } from "next/server";
 import { getServerUserId } from "@/lib/authHelper";
 import { plans } from "@domain"; // This calls your new package logic

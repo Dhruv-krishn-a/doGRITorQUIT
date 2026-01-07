@@ -1,3 +1,2 @@
-
-export * from "./cms.repo";
-export * from "./cms.service";
+// packages/domain/cms/index.ts
+export * from "./service";

@@ -1,3 +1,4 @@
+// apps/web/app/api/habits/[id]/route.ts
 import { NextResponse } from "next/server";
 import { getServerUserId } from "@/lib/authHelper";
 import { habits } from "@domain";

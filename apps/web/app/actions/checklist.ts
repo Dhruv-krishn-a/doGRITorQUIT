@@ -1,62 +1,96 @@
 // apps/web/app/actions/checklist.ts
 "use server";
 
-// --- MOCK DATABASE ---
-let HABITS = [
-  { id: "1", title: "Workout", icon: "dumbbell", color: "text-rose-500" },
-  { id: "2", title: "Read", icon: "bookopen", color: "text-blue-500" },
-  { id: "3", title: "Code", icon: "zap", color: "text-amber-500" },
-];
+import { prisma } from "@/lib/prisma"; // Assuming global prisma instance
+import { z } from "zod";
+import { getServerUser } from "@/lib/auth"; // Your auth helper
 
-let LOGS: any[] = [];
-let NOTES: any[] = [];
+// Validation Schemas
+const habitSchema = z.object({
+  title: z.string().min(1),
+  icon: z.string(),
+  color: z.string(),
+});
 
 export async function getChecklistData(start: Date, end: Date) {
-  // Simulate network delay
-  await new Promise((resolve) => setTimeout(resolve, 100));
-  return { habits: HABITS, logs: LOGS, notes: NOTES };
+  const user = await getServerUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const [habits, logs, notes] = await Promise.all([
+    prisma.habit.findMany({ where: { userId: user.id } }),
+    prisma.habitLog.findMany({
+      where: {
+        userId: user.id,
+        date: { gte: start, lte: end },
+      },
+    }),
+    prisma.dailyNote.findMany({
+      where: {
+        userId: user.id,
+        date: { gte: start, lte: end },
+      },
+    }),
+  ]);
+
+  return { habits, logs, notes };
 }
 
 export async function toggleHabit(habitId: string, date: Date, completed: boolean) {
+  const user = await getServerUser();
+  if (!user) throw new Error("Unauthorized");
+
   const dateStr = date.toISOString();
-  LOGS = LOGS.filter((l) => !(l.habitId === habitId && new Date(l.date).toDateString() === date.toDateString()));
-  
+
   if (completed) {
-    LOGS.push({ id: Math.random().toString(), habitId, date: dateStr, completed: true });
+    await prisma.habitLog.create({
+      data: {
+        userId: user.id,
+        habitId,
+        date: date,
+        completed: true,
+      },
+    });
+  } else {
+    // Delete the log for that specific date
+    await prisma.habitLog.deleteMany({
+      where: {
+        userId: user.id,
+        habitId,
+        date: date,
+      },
+    });
   }
   return true;
 }
 
 export async function saveDailyNote(date: Date, content: string) {
-  const dateStr = date.toISOString();
-  NOTES = NOTES.filter((n) => new Date(n.date).toDateString() !== date.toDateString());
-  if (content.trim()) {
-    NOTES.push({ id: Math.random().toString(), date: dateStr, content });
-  }
-  return true;
-}
+  const user = await getServerUser();
+  if (!user) throw new Error("Unauthorized");
 
-export async function createHabit(habit: { title: string; icon: string; color: string }) {
-  const newHabit = {
-    id: Math.random().toString(), 
-    ...habit
-  };
-  HABITS.push(newHabit);
-  return newHabit;
-}
-
-export async function deleteHabit(habitId: string) {
-  HABITS = HABITS.filter((h) => h.id !== habitId);
-  LOGS = LOGS.filter((l) => l.habitId !== habitId);
-  return true;
-}
-
-// New function to handle the "Reset" button
-export async function resetProgress(start: Date, end: Date) {
-  // Removes all logs within the date range
-  LOGS = LOGS.filter(l => {
-    const d = new Date(l.date);
-    return d < start || d > end;
+  await prisma.dailyNote.upsert({
+    where: {
+      userId_date: { userId: user.id, date }, // Requires composite unique index in Prisma
+    },
+    update: { content },
+    create: {
+      userId: user.id,
+      date,
+      content,
+    },
   });
   return true;
+}
+
+export async function createHabit(data: { title: string; icon: string; color: string }) {
+  const user = await getServerUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const validated = habitSchema.parse(data);
+
+  return await prisma.habit.create({
+    data: {
+      ...validated,
+      userId: user.id,
+    },
+  });
 }

@@ -1,3 +1,4 @@
+// apps/web/features/plans/components/AIPlanGenerator.tsx
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import { MessageSquare, X } from "lucide-react";

@@ -1,15 +1,26 @@
-// apps/web/app/api/tasks/route.ts
+// apps/web/app/api/auth/me/route.ts
 import { NextResponse } from "next/server";
 import { getServerUserId } from "@/lib/authHelper";
-import { plans } from "@domain";
+import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
     const userId = await getServerUserId();
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const tasks = await plans.getAllTasksForUser(userId);
-    return NextResponse.json(tasks);
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        tier: true,
+        avatarUrl: true,
+        createdAt: true
+      }
+    });
+
+    return NextResponse.json(user);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

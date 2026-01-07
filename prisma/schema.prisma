@@ -7,69 +7,75 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// Tier enum for user subscription level (FREE / PRO / TEAM)
+// --------------------------------------------------------
+// USER & AUTHENTICATION
+// --------------------------------------------------------
+
 enum Tier {
   FREE
   PRO
   TEAM
 }
 
-// User model - this should match Supabase auth users
 model User {
-  id           String   @id
+  id           String   @id // Maps to Supabase Auth ID
   email        String   @unique
   name         String?
   avatarUrl    String?
   tier         Tier     @default(FREE)
-  role           String   @default("user") // "admin" or "user"
-  aiUsageCount   Int      @default(0)
+  role         String   @default("user") // "admin" | "user"
+  aiUsageCount Int      @default(0)
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  plans        Plan[]
-  tasks        Task[]
-  subscription Subscription?
+  // --- Relations ---
+
+  // Productivity
+  plans      Plan[]
+  tasks      Task[]
+  
+  // Habits & Notes (New System)
+  habits     Habit[]
+  habitLogs  HabitLog[] // Direct relation for faster querying
+  dailyNotes DailyNote[]
+
+  // CMS & Billing
+  entries       Entry[]            @relation("UserEntries")
+  orders        Order[]
   subscriptions UserSubscription[]
-
-  // CMS
-  entries      Entry[]  @relation("UserEntries")
-
-  orders       Order[]
-  habits      Habit[]       
-  dailyNotes  DailyNote[]   
-
+  
+  // Legacy
+  subscription  Subscription?
 
   @@map("users")
 }
 
+// --------------------------------------------------------
+// PRODUCTIVITY SYSTEM (Plans, Tasks)
+// --------------------------------------------------------
 
-// Plan model (user productivity plan)
 model Plan {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   title       String
   description String?
   startDate   DateTime?
   endDate     DateTime?
-  progress    Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  progress    Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  // Relations
-  tasks       Task[]
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks Task[]
 
   @@map("plans")
 }
 
-// Task model
 model Task {
   id               String    @id @default(uuid())
   planId           String?
-  plan             Plan?     @relation(fields: [planId], references: [id], onDelete: Cascade)
   userId           String
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   title            String
   description      String?
   date             DateTime?
@@ -83,103 +89,133 @@ model Task {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  // Relations
-  subtasks         Subtask[]
-  tags             TaskTag[]
+  plan     Plan?     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subtasks Subtask[]
+  tags     TaskTag[]
 
   @@map("tasks")
 }
 
-// Subtask model
 model Subtask {
   id        String   @id @default(uuid())
   taskId    String
-  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
   title     String
   completed Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
   @@map("subtasks")
 }
 
-// Tag model
 model Tag {
   id        String   @id @default(uuid())
   name      String   @unique
   createdAt DateTime @default(now())
-  
-  // Relations
-  tasks     TaskTag[]
+
+  tasks TaskTag[]
 
   @@map("tags")
 }
 
-// Junction table for Task <-> Tag many-to-many
 model TaskTag {
-  id        String @id @default(uuid())
+  id        String   @id @default(uuid())
   taskId    String
   tagId     String
-  task      Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  tag       Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@unique([taskId, tagId])
   @@map("task_tags")
 }
 
-// Legacy subscription record for billing (kept for backwards compatibility)
-model Subscription {
-  id               String    @id @default(cuid())
-  user             User      @relation(fields: [userId], references: [id])
-  userId           String    @unique
-  stripeCustomer   String?   @db.VarChar(191)   // legacy field (if you used Stripe)
-  stripeSubId      String?   @unique @db.VarChar(191) // legacy
-  priceId          String?   // legacy price mapping
-  status           String?   // active / past_due / canceled etc. (legacy)
-  currentPeriodEnd DateTime?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+// --------------------------------------------------------
+// HABIT & NOTE SYSTEM (New)
+// --------------------------------------------------------
 
-  @@map("subscriptions")
-  @@index([stripeCustomer])
-  @@index([stripeSubId])
+model Habit {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  icon      String?  @default("circle") // e.g., "dumbbell", "book"
+  color     String?  @default("text-blue-500") // e.g., "text-blue-500"
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  user User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs HabitLog[]
+
+  @@map("habits")
 }
 
-/**
- * New CMS / Billing models
- */
+model HabitLog {
+  id        String   @id @default(uuid())
+  habitId   String
+  userId    String
+  date      DateTime // Stored as YYYY-MM-DD T00:00:00Z (Start of Day)
+  completed Boolean  @default(false)
 
-// Content type & entry models (CMS)
+  habit Habit @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Optimization: Allow fetching all logs for a user in a date range without joining Habit
+  @@index([userId, date])
+  // Constraint: One log per habit per day
+  @@unique([habitId, date])
+  @@map("habit_logs")
+}
+
+model DailyNote {
+  id      String   @id @default(uuid())
+  userId  String
+  date    DateTime // Stored as YYYY-MM-DD
+  content String?  @db.Text
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("daily_notes")
+}
+
+// --------------------------------------------------------
+// CMS SYSTEM
+// --------------------------------------------------------
+
 model ContentType {
-  id         String   @id @default(cuid())
-  key        String   @unique
-  name       String
-  schema     Json?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  entries    Entry[]
+  id        String   @id @default(cuid())
+  key       String   @unique
+  name      String
+  schema    Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  entries Entry[]
+
   @@map("content_types")
 }
 
 model Entry {
-  id            String      @id @default(cuid())
+  id            String    @id @default(cuid())
   contentTypeId String
-  contentType   ContentType @relation(fields: [contentTypeId], references: [id])
-  slug          String?     @unique
+  slug          String?   @unique
   title         String?
-  status        String      @default("draft")
+  status        String    @default("draft")
   data          Json
   locale        String?
   requiresTier  String?
   publishedAt   DateTime?
-
   createdById   String
-  createdBy     User        @relation("UserEntries", fields: [createdById], references: [id])
+  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime  @default(now())
 
-  updatedAt     DateTime    @updatedAt
-  createdAt     DateTime    @default(now())
-  revisions     Revision[]
+  contentType ContentType @relation(fields: [contentTypeId], references: [id])
+  createdBy   User        @relation("UserEntries", fields: [createdById], references: [id])
+  revisions   Revision[]
 
   @@index([slug])
   @@map("entries")
@@ -188,17 +224,19 @@ model Entry {
 model Revision {
   id        String   @id @default(cuid())
   entryId   String
-  entry     Entry    @relation(fields: [entryId], references: [id], onDelete: Cascade)
   data      Json
   createdBy String
   createdAt DateTime @default(now())
+
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
   @@map("revisions")
 }
 
 model Media {
   id         String   @id @default(cuid())
-  key        String   @unique // storage key/path
-  url        String   // CDN URL
+  key        String   @unique
+  url        String
   filename   String
   mimeType   String
   size       Int
@@ -206,20 +244,20 @@ model Media {
   height     Int?
   uploadedBy String?
   createdAt  DateTime @default(now())
+
   @@map("media")
 }
 
-/**
- * Product / Feature / Billing domain
- */
+// --------------------------------------------------------
+// BILLING & PRODUCTS
+// --------------------------------------------------------
 
-// Product (a purchasable product in CMS, e.g., "pro-monthly")
 model Product {
   id          String   @id @default(cuid())
   key         String   @unique // e.g., "PRO_MONTHLY"
   name        String
   description String?
-  price       Int      // in paise (Razorpay expects paise)
+  price       Int // in paise
   currency    String   @default("INR")
   active      Boolean  @default(true)
   createdAt   DateTime @default(now())
@@ -230,7 +268,6 @@ model Product {
   orders          Order[]
 }
 
-// Feature (logical feature flags)
 model Feature {
   id          String   @id @default(cuid())
   key         String   @unique // "AI_PLAN", "MAX_PLANS"
@@ -240,37 +277,34 @@ model Feature {
   productFeatures ProductFeature[]
 }
 
-// ProductFeature (mapping a product -> feature with a JSON value)
 model ProductFeature {
   id        String @id @default(cuid())
   productId String
   featureId String
-  value     Json   // { enabled: true } or { limit: 10 } or any shape
+  value     Json // { enabled: true } or { limit: 10 }
 
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  feature   Feature @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  feature Feature @relation(fields: [featureId], references: [id], onDelete: Cascade)
 
   @@unique([productId, featureId])
 }
 
-// UserSubscription (the active subscription for a user to a product)
 model UserSubscription {
-  id               String   @id @default(cuid())
+  id               String    @id @default(cuid())
   userId           String
   productId        String
-  status           String   // active / canceled / past_due / trialing
-  startedAt        DateTime @default(now())
+  status           String // active / canceled / past_due / trialing
+  startedAt        DateTime  @default(now())
   currentPeriodEnd DateTime?
-  provider         String?  // e.g., "razorpay"
-  providerSubId    String?  // e.g., razorpay subscription id or payment id
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  provider         String? // e.g., "razorpay"
+  providerSubId    String? // e.g., sub_123456
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   user    User    @relation(fields: [userId], references: [id])
   product Product @relation(fields: [productId], references: [id])
 }
 
-// Order (individual purchase attempts / razorpay orders)
 model Order {
   id                String   @id @default(cuid())
   userId            String?
@@ -288,41 +322,24 @@ model Order {
   product Product? @relation(fields: [productId], references: [id])
 }
 
+// --------------------------------------------------------
+// LEGACY (Keep for backwards compatibility if needed)
+// --------------------------------------------------------
 
+model Subscription {
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  stripeCustomer   String?   @db.VarChar(191)
+  stripeSubId      String?   @unique @db.VarChar(191)
+  priceId          String?
+  status           String?
+  currentPeriodEnd DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
-model Habit {
-  id        String     @id @default(uuid())
-  userId    String
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title     String
-  icon      String?    // e.g., "dumbbell", "book", "droplet"
-  color     String?    // e.g., "bg-blue-500"
-  order     Int        @default(0)
-  active    Boolean    @default(true)
-  createdAt DateTime   @default(now())
-  logs      HabitLog[]
+  user User @relation(fields: [userId], references: [id])
 
-  @@map("habits")
-}
-
-model HabitLog {
-  id        String   @id @default(uuid())
-  habitId   String
-  habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
-  date      DateTime // Stored as YYYY-MM-DD T00:00:00Z
-  completed Boolean  @default(false)
-  
-  @@unique([habitId, date]) // Ensure one log per habit per day
-  @@map("habit_logs")
-}
-
-model DailyNote {
-   id        String   @id @default(uuid())
-   userId    String
-   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-   date      DateTime // Stored as YYYY-MM-DD
-   content   String?
-   
-   @@unique([userId, date])
-   @@map("daily_notes")
+  @@index([stripeCustomer])
+  @@index([stripeSubId])
+  @@map("subscriptions")
 }

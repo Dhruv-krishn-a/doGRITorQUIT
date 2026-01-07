@@ -1,3 +1,4 @@
+// apps/web/app/api/ai/plan/route.ts
 import { NextResponse } from "next/server";
 import { getServerUserId } from "@/lib/authHelper";
 import { billing, ai } from "@domain"; // ✅ Import new domains

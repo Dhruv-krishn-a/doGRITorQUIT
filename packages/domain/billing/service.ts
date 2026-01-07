@@ -3,16 +3,18 @@ import { prisma } from "@/lib/prisma";
 import Razorpay from "razorpay";
 import crypto from "crypto";
 
-// Ensure keys are read safely (fallback to empty string to prevent crash on init, but throw later)
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || "";
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || "";
+const RAZORPAY_WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET || "";
 
 const razor = new Razorpay({
   key_id: RAZORPAY_KEY_ID,
   key_secret: RAZORPAY_KEY_SECRET,
 });
 
-// ✅ MUST have 'export' here
+/**
+ * Create a new Razorpay Order
+ */
 export async function createCheckoutOrder(userId: string, productKey: string) {
   const product = await prisma.product.findUnique({ where: { key: productKey } });
   if (!product) throw new Error("Invalid productKey");
@@ -20,6 +22,7 @@ export async function createCheckoutOrder(userId: string, productKey: string) {
   const amount = product.price; 
   const currency = product.currency ?? "INR";
   
+  // Create a unique receipt ID
   const rec = `u_${userId.slice(0, 8)}_${String(Date.now()).slice(-5)}`;
   const receipt = rec.slice(0, 40);
 
@@ -50,7 +53,9 @@ export async function createCheckoutOrder(userId: string, productKey: string) {
   };
 }
 
-// ✅ Add the verification functions here too (needed for verify route)
+/**
+ * Client-side verification helper (called by /api/billing/verify)
+ */
 export async function verifyAndActivateSubscription(
   userId: string,
   razorpayOrderId: string,
@@ -68,15 +73,77 @@ export async function verifyAndActivateSubscription(
     throw new Error("Invalid payment signature");
   }
 
+  return _activateSubscription(razorpayOrderId, razorpayPaymentId);
+}
+
+/**
+ * Webhook Handler (Server-to-Server)
+ */
+export async function handleWebhook(rawBody: string, signature: string) {
+  if (!RAZORPAY_WEBHOOK_SECRET) throw new Error("RAZORPAY_WEBHOOK_SECRET is not set");
+
+  // 1. Verify Signature
+  const expected = crypto.createHmac("sha256", RAZORPAY_WEBHOOK_SECRET).update(rawBody).digest("hex");
+  if (expected !== signature) {
+    throw new Error("Invalid Razorpay webhook signature");
+  }
+
+  const payload = JSON.parse(rawBody);
+  const event = payload.event;
+
+  // 2. Handle Events
+  if (event === "payment.captured" || event === "payment.authorized") {
+    const payment = payload.payload.payment?.entity;
+    if (!payment) return;
+
+    const providerOrderId = payment.order_id;
+    const providerPaymentId = payment.id;
+
+    // Update Order Status
+    const dbOrder = await prisma.order.findUnique({ where: { providerOrderId } });
+    if (dbOrder) {
+      await prisma.order.update({
+        where: { id: dbOrder.id },
+        data: {
+          providerPaymentId,
+          status: payment.status ?? "captured",
+          metadata: { ...((dbOrder.metadata as object) || {}), webhook_payment: payment },
+        },
+      });
+    }
+
+    // Provision Subscription if captured
+    if (payment.status === "captured") {
+      await _activateSubscription(providerOrderId, providerPaymentId);
+    }
+  } else if (event === "order.paid") {
+    const ord = payload.payload.order?.entity;
+    if (ord) {
+      const dbOrder = await prisma.order.findUnique({ where: { providerOrderId: ord.id } });
+      if (dbOrder) {
+        await prisma.order.update({
+          where: { id: dbOrder.id },
+          data: { status: ord.status ?? "paid" },
+        });
+      }
+    }
+  }
+}
+
+/**
+ * Internal helper to activate subscription logic (shared by verify & webhook)
+ */
+async function _activateSubscription(providerOrderId: string, providerPaymentId: string) {
   const order = await prisma.order.findUnique({
-    where: { providerOrderId: razorpayOrderId },
+    where: { providerOrderId },
     include: { product: true }
   });
 
-  if (!order || !order.product) throw new Error("Order not found");
+  if (!order || !order.product || !order.userId) return;
 
+  // Idempotency: Check if already processed
   const existingSub = await prisma.userSubscription.findFirst({
-    where: { providerSubId: razorpayPaymentId } 
+    where: { providerSubId: providerPaymentId } 
   });
 
   if (!existingSub) {
@@ -85,34 +152,31 @@ export async function verifyAndActivateSubscription(
 
     await prisma.userSubscription.create({
       data: {
-        userId,
+        userId: order.userId,
         productId: order.product.id,
         status: "active",
         startedAt: now,
         currentPeriodEnd: thirtyDays,
         provider: "razorpay",
-        providerSubId: razorpayPaymentId,
+        providerSubId: providerPaymentId,
       },
     });
 
     let newTier = "FREE";
-    if (order.product.key.includes("PRO")) newTier = "PRO";
-    if (order.product.key.includes("TEAM")) newTier = "TEAM";
+    const key = order.product.key.toUpperCase();
+    if (key.includes("PRO")) newTier = "PRO";
+    if (key.includes("TEAM")) newTier = "TEAM";
 
     if (newTier !== "FREE") {
-      await prisma.user.update({ where: { id: userId }, data: { tier: newTier as any } });
+      await prisma.user.update({ where: { id: order.userId }, data: { tier: newTier as any } });
     }
 
     await prisma.order.update({
       where: { id: order.id },
-      data: {
-        status: "paid",
-        providerPaymentId: razorpayPaymentId,
-        metadata: { ...((order.metadata as object) || {}), verified: true }
-      }
+      data: { status: "paid", providerPaymentId }
     });
   }
-
+  
   return { success: true };
 }
 

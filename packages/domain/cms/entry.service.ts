@@ -3,7 +3,7 @@
  * packages/domain/cms/entry.service.ts
  * Domain-level logic for CMS entries (CRUD + publish)
  */
-import { prisma } from "@/lib/prisma";
+import { prisma } from "../../../lib/prisma";
 
 /**
  * List published entries by content type key

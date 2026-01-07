@@ -1,3 +1,4 @@
+// apps/web/app/api/dashboard/route.ts
 import { NextResponse } from "next/server";
 import { getServerUserId } from "@/lib/authHelper";
 import { dashboard } from "@domain";
