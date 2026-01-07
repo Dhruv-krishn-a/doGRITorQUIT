@@ -1,16 +1,23 @@
 import { NextResponse } from "next/server";
-import { getServerUserId } from "@/lib/authHelper";
+import { getServerUser } from "@/lib/auth";
 import { analytics } from "@domain";
 
 export async function GET() {
   try {
-    const userId = await getServerUserId();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const user = await getServerUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    const data = await analytics.getAnalyticsData(userId);
+    // ✅ FIX 1: Pass 'user.id' (string), not the full user object
+    const data = await analytics.getAnalyticsData(user.id);
+    
     return NextResponse.json(data);
-  } catch (err: any) {
+  } catch (err) {
+    // ✅ FIX 2: Remove 'any' and check type safely
     console.error("Analytics Error:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    
+    const message = err instanceof Error ? err.message : "Internal Server Error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

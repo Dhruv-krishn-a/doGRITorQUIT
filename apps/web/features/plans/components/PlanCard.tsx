@@ -82,7 +82,7 @@ export default function PlanCard({ plan, onView, onDelete }: PlanCardProps) {
         <Button 
           onClick={() => onView(plan)} 
           variant="primary"
-          className="min-w-[100px]"
+          className="min-w-25"
         >
           View Plan
         </Button>

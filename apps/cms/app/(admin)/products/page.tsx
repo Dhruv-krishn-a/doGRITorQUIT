@@ -28,7 +28,7 @@ export default async function ProductsPage() {
           });
         }} className="flex gap-4 items-end flex-wrap">
           {/* ... same form UI ... */}
-          <button className="bg-blue-600 text-white px-4 py-2 rounded h-10 mb-[1px] hover:bg-blue-700">Create</button>
+          <button className="bg-blue-600 text-white px-4 py-2 rounded h-10 mb-1px hover:bg-blue-700">Create</button>
         </form>
         <p className="text-xs text-gray-400 mt-2">* Enter amount in Rupees. We handle the conversion to paise automatically.</p>
       </div>
@@ -46,7 +46,7 @@ export default async function ProductsPage() {
               ₹{p.price / 100}
               <span className="text-sm font-normal text-gray-500 ml-1">/mo</span>
             </div>
-            <p className="text-gray-500 text-sm mb-6 flex-grow">{p.description || "No description provided"}</p>
+            <p className="text-gray-500 text-sm mb-6 grow">{p.description || "No description provided"}</p>
             <div className="flex justify-between items-center pt-4 border-t border-gray-100 mt-auto">
               <Link href={`/products/${p.id}`} className="text-blue-600 text-sm font-semibold hover:bg-blue-50 px-3 py-2 rounded transition-colors">
                 Manage Features →

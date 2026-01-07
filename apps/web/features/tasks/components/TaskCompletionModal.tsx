@@ -1,9 +1,8 @@
-// apps/web/features/tasks/components/TaskCompletionModal.tsx
 "use client";
 import React, { useState, useEffect } from "react";
 import Button from "@shared/components/ui/Button";
 import Modal from "@shared/components/ui/Modal";
-import { Clock, CheckCircle2 } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 
 interface Props {
   isOpen: boolean;
@@ -32,7 +31,7 @@ export default function TaskCompletionModal({ isOpen, onClose, onConfirm, taskTi
           </div>
           <div>
             <h3 className="font-bold text-green-900 line-clamp-1">{taskTitle}</h3>
-            <p className="text-sm text-green-700">Great job! Let's log your time.</p>
+            <p className="text-sm text-green-700">Great job! Let&apos;s log your time.</p>
           </div>
         </div>
 

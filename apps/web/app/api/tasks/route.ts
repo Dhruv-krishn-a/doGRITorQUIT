@@ -1,16 +1,22 @@
-// apps/web/app/api/tasks/route.ts
 import { NextResponse } from "next/server";
-import { getServerUserId } from "@/lib/authHelper";
+import { getServerUser } from "@/lib/auth";
 import { plans } from "@domain";
 
 export async function GET() {
   try {
-    const userId = await getServerUserId();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const user = await getServerUser();
+    
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    const tasks = await plans.getAllTasksForUser(userId);
+    const tasks = await plans.getAllTasksForUser(user.id);
+    
     return NextResponse.json(tasks);
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err) {
+    console.error("GET Tasks Error:", err);
+    
+    const message = err instanceof Error ? err.message : "Internal Server Error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

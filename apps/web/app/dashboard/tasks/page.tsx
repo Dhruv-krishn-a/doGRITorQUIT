@@ -1,13 +1,17 @@
-// apps/web/app/dashboard/tasks/page.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
 import TaskItem from "@/features/tasks/components/TaskItem";
-import { Task } from "@/types/plan";
+import { Task as BaseTask } from "@/types/plan";
 import { Loader2 } from "lucide-react";
 
+// ✅ FIX 1: Extend Task type locally to handle API extensions
+interface ExtendedTask extends BaseTask {
+  timeSpentMinutes?: number;
+}
+
 export default function TasksPage() {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<ExtendedTask[]>([]);
   const [filter, setFilter] = useState<"today" | "upcoming" | "completed" | "discarded">("today");
   const [loading, setLoading] = useState(true);
 
@@ -24,13 +28,15 @@ export default function TasksPage() {
 
   useEffect(() => { loadTasks(); }, []);
 
-  const handleUpdate = async (taskId: string, updates: any) => {
+  // ✅ FIX 3: Replaced 'any' with Partial<ExtendedTask>
+  const handleUpdate = async (taskId: string, updates: Partial<ExtendedTask>) => {
     // Optimistic
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...updates } : t));
     await fetch(`/api/tasks/${taskId}`, { method: "PATCH", body: JSON.stringify(updates) });
   };
 
   const handleLogTime = async (taskId: string, minutes: number) => {
+    // ✅ FIX 1: timeSpentMinutes is now valid on ExtendedTask
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, timeSpentMinutes: (t.timeSpentMinutes || 0) + minutes } : t));
     await fetch(`/api/tasks/${taskId}`, { method: "PATCH", body: JSON.stringify({ addMinutes: minutes }) });
   };
@@ -79,7 +85,7 @@ export default function TasksPage() {
     if (!groups[dateKey]) groups[dateKey] = [];
     groups[dateKey].push(task);
     return groups;
-  }, {} as Record<string, Task[]>);
+  }, {} as Record<string, ExtendedTask[]>);
 
   // Sort dates (Today first, then future)
   const sortedDateKeys = Object.keys(groupedTasks).sort((a, b) => {
@@ -135,7 +141,8 @@ export default function TasksPage() {
                 </h3>
                 
                 <div className="grid gap-3">
-                  {groupedTasks[dateKey].map(task => (
+                  {/* ✅ FIX 2: Added optional chaining just in case */}
+                  {groupedTasks[dateKey]?.map(task => (
                     <TaskItem 
                       key={task.id} 
                       task={task} 

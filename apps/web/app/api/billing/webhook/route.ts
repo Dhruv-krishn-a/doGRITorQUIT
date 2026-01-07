@@ -1,10 +1,8 @@
-// apps/web/app/api/billing/webhook/route.ts
 import { NextResponse } from "next/server";
-import { payment } from "@domain"; // ✅ Using Domain
+import { payment } from "@domain"; 
 
 export async function POST(req: Request) {
   try {
-    // 1. Get raw body (required for signature verification)
     const rawBody = await req.text();
     const signature = req.headers.get("x-razorpay-signature");
 
@@ -12,15 +10,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing signature" }, { status: 400 });
     }
 
-    // 2. Delegate to Domain
-    // The domain service will verify the signature and handle the DB updates
     await payment.handleWebhook(rawBody, signature);
 
     return NextResponse.json({ status: "ok" });
-  } catch (err: any) {
-    console.error("[Webhook Error]", err.message);
-    // Return 500 if it's a server/logic error, 400 if it's a signature error
-    const status = err.message.includes("signature") ? 400 : 500;
-    return NextResponse.json({ error: err.message }, { status });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Internal Webhook Error";
+    console.error("[Webhook Error]", message);
+
+    const status = message.includes("signature") ? 400 : 500;
+    
+    return NextResponse.json({ error: message }, { status });
   }
 }

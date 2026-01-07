@@ -1,6 +1,6 @@
-// apps/web/app/api/subtasks/[subtaskId]/route.ts
 import { NextResponse } from "next/server";
-import { getServerUserId } from "@/lib/authHelper";
+// ✅ FIX 1: Use standard auth helper
+import { getServerUser } from "@/lib/auth";
 import { plans } from "@domain";
 
 export async function PATCH(
@@ -8,15 +8,24 @@ export async function PATCH(
   { params }: { params: Promise<{ subtaskId: string }> }
 ) {
   try {
-    const userId = await getServerUserId();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const user = await getServerUser();
+    
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const { subtaskId } = await params;
     const { completed } = await req.json();
 
-    const updated = await plans.toggleSubtask(userId, subtaskId, completed);
+    // ✅ FIX 2: Use user.id
+    const updated = await plans.toggleSubtask(user.id, subtaskId, completed);
+    
     return NextResponse.json(updated);
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err) {
+    // ✅ FIX 3: Remove 'any' and handle type safety
+    console.error("Subtask Toggle Error:", err);
+    
+    const message = err instanceof Error ? err.message : "Internal Server Error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

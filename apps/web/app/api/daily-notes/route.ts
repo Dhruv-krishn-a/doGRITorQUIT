@@ -1,18 +1,24 @@
-// apps/web/app/api/daily-notes/route.ts
 import { NextResponse } from "next/server";
-import { getServerUserId } from "@/lib/authHelper";
+import { getServerUser } from "@/lib/auth";
 import { habits } from "@domain";
 
 export async function POST(req: Request) {
   try {
-    const userId = await getServerUserId();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const user = await getServerUser();
+    
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const { date, content } = await req.json();
-    await habits.upsertDailyNote(userId, new Date(date), content);
+
+    await habits.upsertDailyNote(user.id, new Date(date), content);
     
     return NextResponse.json({ success: true });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err) {
+    console.error("Daily Note Error:", err);
+    
+    const message = err instanceof Error ? err.message : "Internal Server Error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

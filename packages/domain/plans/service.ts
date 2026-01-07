@@ -1,4 +1,3 @@
-// packages/domain/plans/service.ts
 import { prisma } from "@/lib/prisma"; // keep this alias working via tsconfig
 import { formatPlanForClient } from "./format";
 import { assertPlanCreationAllowed } from "../billing/entitlements";
@@ -89,7 +88,6 @@ function normalizeRow(row: any) {
 /**
  * Import JSON tasks into a new plan (transactional)
  */
-// ✅ UPDATED SIGNATURE: Added startDate parameter
 export async function importPlanJson(
   userId: string, 
   planName: string, 
@@ -260,5 +258,24 @@ export async function getAllTasksForUser(userId: string) {
       { date: 'asc' }, // Oldest first (for overdue)
       { priority: 'desc' } // High priority first
     ]
+  });
+}
+
+// ✅ ADDED: Fix for the missing function error
+export async function toggleSubtask(userId: string, subtaskId: string, completed: boolean) {
+  // We check that the user owns the plan linked to the task that owns this subtask
+  // "subtask" (lowercase s) matches your import usage above.
+  return prisma.subtask.update({
+    where: {
+      id: subtaskId,
+      task: {
+        plan: {
+          userId: userId
+        }
+      }
+    },
+    data: {
+      completed
+    }
   });
 }

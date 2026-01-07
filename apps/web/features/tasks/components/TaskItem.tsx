@@ -1,16 +1,19 @@
-// apps/web/features/tasks/components/TaskItem.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { Task } from "@/types/plan";
 import { 
-  CheckCircle2, Clock, Trash2, Edit2, Play, Pause, Save, X, Circle 
+  CheckCircle2, Clock, Trash2, Edit2, Play, Pause, Save 
 } from "lucide-react";
 import TaskCompletionModal from "./TaskCompletionModal";
 
+// ✅ FIX 1: Extend the base Task type to include the missing property locally
+type ExtendedTask = Task & { timeSpentMinutes?: number };
+
 interface TaskItemProps {
-  task: Task;
-  onUpdate: (taskId: string, updates: any) => void;
+  task: ExtendedTask;
+  // ✅ FIX 2: Replaced 'any' with Partial<ExtendedTask> for type safety
+  onUpdate: (taskId: string, updates: Partial<ExtendedTask>) => void;
   onDelete: (taskId: string) => void;
   onLogTime: (taskId: string, minutes: number) => void;
   onToggleSubtask: (subtaskId: string, completed: boolean) => void;
@@ -26,7 +29,8 @@ export default function TaskItem({ task, onUpdate, onDelete, onLogTime, onToggle
   const [sessionSeconds, setSessionSeconds] = useState(0);
 
   useEffect(() => {
-    let interval: any;
+    // ✅ FIX 3: Proper type for setInterval return value
+    let interval: NodeJS.Timeout;
     if (isTimerRunning) {
       interval = setInterval(() => setSessionSeconds(s => s + 1), 1000);
     }
@@ -62,12 +66,7 @@ export default function TaskItem({ task, onUpdate, onDelete, onLogTime, onToggle
       setSessionSeconds(0);
     }
     
-    // 2. Add any manual time user entered (subtracting what was already logged if needed, 
-    //    but our modal logic just sends 'total', so we calculate diff or just update)
-    //    Here we just log the *extra* time if any, or rely on the modal's logic.
-    //    Actually, let's keep it simple: We log the session time + manual time.
-    
-    // Calculate difference between new total and existing recorded time
+    // 2. Add manual time logic
     const currentTotal = task.timeSpentMinutes || 0;
     const minutesToAdd = finalMinutes - currentTotal;
     
@@ -97,7 +96,8 @@ export default function TaskItem({ task, onUpdate, onDelete, onLogTime, onToggle
           {/* Checkbox */}
           <button 
             onClick={handleCheckboxClick}
-            className={`mt-1 min-w-[24px] h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+            // ✅ FIX 4: Updated to canonical tailwind class min-w-6
+            className={`mt-1 min-w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
               isCompleted 
                 ? "bg-green-500 border-green-500 scale-100" 
                 : "border-slate-300 hover:border-green-500 hover:scale-110"

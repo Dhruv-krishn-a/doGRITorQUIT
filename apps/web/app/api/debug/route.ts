@@ -1,21 +1,23 @@
-// apps/web/app/api/debug/route.ts
 import { NextResponse } from "next/server";
-import { getServerUserId } from "@/lib/authHelper";
+import { getServerUser } from "@/lib/auth";
 
 export async function GET() {
   try {
-    const userId = await getServerUserId();
+    const user = await getServerUser();
+    
+    const isAuthenticated = !!user;
+
+    return NextResponse.json({
+      authenticated: isAuthenticated,
+      userId: user?.id || null, 
+      timestamp: new Date().toISOString(),
+      message: isAuthenticated ? "User is authenticated" : "User is not authenticated"
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
     
     return NextResponse.json({
-      authenticated: !!userId,
-      userId: userId,
-      timestamp: new Date().toISOString(),
-      message: userId ? "User is authenticated" : "User is not authenticated"
-    });
-  } catch (error: any) {
-    return NextResponse.json({
-      error: error.message,
-      stack: error.stack
+      error: message,
     }, { status: 500 });
   }
 }

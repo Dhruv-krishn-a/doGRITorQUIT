@@ -1,13 +1,14 @@
-// apps/web/app/dashboard/daily-checklist/page.tsx
 "use client";
 
-import React, { useEffect, useState, useTransition } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { 
   ChevronLeft, ChevronRight, Quote, Plus, X, Trash2, 
   Dumbbell, BookOpen, Zap, Brain, Droplet, Check, Sparkles, 
   Code, Heart, Sun, Moon, Coffee, Music, Briefcase, 
   Gamepad2, Utensils, BedDouble, DollarSign, Plane, 
-  Monitor, Smile, Leaf, Camera, Anchor, Bike
+  Monitor, Smile, Leaf, Camera, Anchor, Bike,
+  type LucideIcon,
+  RotateCcw
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
@@ -54,7 +55,7 @@ const ICON_OPTIONS = [
 ];
 
 const ALL_ICONS = ICON_OPTIONS.flatMap(g => g.items);
-const ICON_MAP: Record<string, any> = ALL_ICONS.reduce((acc, curr) => ({ ...acc, [curr.value]: curr.component }), {});
+const ICON_MAP: Record<string, LucideIcon> = ALL_ICONS.reduce((acc, curr) => ({ ...acc, [curr.value]: curr.component }), {});
 
 const COLOR_OPTIONS = [
   { name: "Indigo", class: "text-indigo-600", bg: "bg-indigo-600", light: "bg-indigo-100", border: "border-indigo-200" },
@@ -67,6 +68,9 @@ const COLOR_OPTIONS = [
   { name: "Slate", class: "text-slate-600", bg: "bg-slate-600", light: "bg-slate-100", border: "border-slate-200" },
 ];
 
+// ✅ FIX: Define a guaranteed default color to satisfy TypeScript strictness
+const DEFAULT_COLOR = COLOR_OPTIONS[0]!;
+
 const QUOTES = [
   "Success is the sum of small efforts, repeated day in and day out.",
   "The only bad workout is the one that didn't happen.",
@@ -76,9 +80,17 @@ const QUOTES = [
 ];
 
 // --- Types ---
-type HabitType = { id: string; title: string; icon?: string | null; color?: string | null; };
 type LogType = { id: string; habitId: string; date: string; completed: boolean; };
+type HabitType = { 
+    id: string; 
+    title: string; 
+    icon?: string | null; 
+    color?: string | null; 
+    logs?: LogType[];
+};
 type NoteType = { id: string; date: string; content: string; };
+
+type ColorOption = typeof COLOR_OPTIONS[number];
 
 export default function DailyChecklistPage() {
   const [view, setView] = useState<"week" | "month">("week");
@@ -91,16 +103,17 @@ export default function DailyChecklistPage() {
   const [loading, setLoading] = useState(true);
 
   const [quote, setQuote] = useState<string>("");
-  const [isPending, startTransition] = useTransition();
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newHabitTitle, setNewHabitTitle] = useState("");
   const [newHabitIcon, setNewHabitIcon] = useState("zap");
-  const [newHabitColor, setNewHabitColor] = useState(COLOR_OPTIONS[0]);
+  
+  // ✅ FIX: Initialize with DEFAULT_COLOR to avoid 'undefined'
+  const [newHabitColor, setNewHabitColor] = useState<ColorOption>(DEFAULT_COLOR);
 
   // --- Helpers ---
-  const getRange = () => {
+  const getRange = useCallback(() => {
     const start = new Date(baseDate);
     if (view === "week") {
       const day = start.getDay();
@@ -121,7 +134,7 @@ export default function DailyChecklistPage() {
       end.setHours(23, 59, 59, 999);
       return { start, end };
     }
-  };
+  }, [baseDate, view]);
 
   const { start, end } = getRange();
 
@@ -135,7 +148,7 @@ export default function DailyChecklistPage() {
   }
 
   // --- Actions ---
-  const refreshData = async () => {
+  const refreshData = useCallback(async () => {
     try {
       const query = new URLSearchParams({
         start: start.toISOString(),
@@ -146,8 +159,7 @@ export default function DailyChecklistPage() {
       
       if (res.ok) {
         setHabits(json.habits || []);
-        // Flatten logs from the nested structure returned by domain
-        const allLogs = json.habits.flatMap((h: any) => h.logs || []);
+        const allLogs = json.habits.flatMap((h: HabitType) => h.logs || []);
         setLogs(allLogs);
         setNotes(json.notes || []);
       }
@@ -156,10 +168,14 @@ export default function DailyChecklistPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [start, end]);
 
-  useEffect(() => { refreshData(); }, [baseDate, view]);
-  useEffect(() => { setQuote(QUOTES[Math.floor(Math.random() * QUOTES.length)]); }, []);
+  useEffect(() => { refreshData(); }, [refreshData]);
+  
+  useEffect(() => { 
+      const randomQuote = QUOTES[Math.floor(Math.random() * QUOTES.length)] ?? "Keep pushing.";
+      setQuote(randomQuote); 
+  }, []);
 
   const handleToggle = async (habitId: string, date: Date, currentStatus: boolean) => {
     // Optimistic Update
@@ -194,13 +210,16 @@ export default function DailyChecklistPage() {
     e.preventDefault();
     if (!newHabitTitle) return;
     
+    // ✅ FIX: Use guaranteed DEFAULT_COLOR if state somehow fails
+    const colorClass = newHabitColor?.class || DEFAULT_COLOR.class;
+
     await fetch("/api/habits", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
             title: newHabitTitle, 
             icon: newHabitIcon, 
-            color: newHabitColor.class 
+            color: colorClass
         })
     });
     
@@ -222,17 +241,22 @@ export default function DailyChecklistPage() {
     setBaseDate(newDate);
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-slate-400 font-medium">Loading Checklist...</div>;
+  if (loading) return (
+    <div className="max-w-400 mx-auto p-8 space-y-8 min-h-screen bg-slate-50/50">
+        <div className="h-48 w-full bg-slate-200 rounded-3xl animate-pulse" />
+        <div className="h-96 w-full bg-slate-200 rounded-4xl animate-pulse" />
+    </div>
+  );
 
   const habitCount = habits.length;
 
   return (
-    <div className="max-w-[1600px] mx-auto p-4 sm:p-8 space-y-8 font-sans text-slate-800 relative min-h-screen bg-slate-50/50">
+    <div className="max-w-400 mx-auto p-4 sm:p-8 space-y-8 font-sans text-slate-800 relative min-h-screen bg-slate-50/50">
       
       {/* --- ADD HABIT MODAL --- */}
       <AnimatePresence>
         {isModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/30 backdrop-blur-sm p-4">
+          <div className="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/30 backdrop-blur-sm p-4">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -307,11 +331,11 @@ export default function DailyChecklistPage() {
                         className={cn(
                           "w-10 h-10 rounded-full transition-all flex items-center justify-center",
                           c.bg,
-                          newHabitColor.name === c.name ? "ring-4 ring-offset-2 ring-slate-200 scale-110 shadow-lg" : "opacity-70 hover:opacity-100 hover:scale-110"
+                          (newHabitColor.name === c.name) ? "ring-4 ring-offset-2 ring-slate-200 scale-110 shadow-lg" : "opacity-70 hover:opacity-100 hover:scale-110"
                         )}
                         title={c.name}
                       >
-                         {newHabitColor.name === c.name && <Check className="text-white w-5 h-5" />}
+                         {(newHabitColor.name === c.name) && <Check className="text-white w-5 h-5" />}
                       </button>
                     ))}
                   </div>
@@ -335,16 +359,16 @@ export default function DailyChecklistPage() {
       {/* --- HERO HEADER --- */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Quote Card */}
-        <div className="lg:col-span-2 relative overflow-hidden bg-gradient-to-br from-indigo-600 to-violet-700 rounded-3xl p-8 text-white shadow-2xl shadow-indigo-200">
+        <div className="lg:col-span-2 relative overflow-hidden bg-linear-to-br from-indigo-600 to-violet-700 rounded-3xl p-8 text-white shadow-2xl shadow-indigo-200">
           <div className="absolute top-0 right-0 p-8 opacity-10"><Sparkles size={180} strokeWidth={1} /></div>
           <div className="absolute bottom-0 left-0 p-6 opacity-10"><Zap size={120} strokeWidth={1} /></div>
           <div className="relative z-10 h-full flex flex-col justify-between gap-6">
             <div className="flex items-center gap-2 text-indigo-100 font-medium text-xs uppercase tracking-widest bg-white/10 w-fit px-3 py-1 rounded-full backdrop-blur-md border border-white/10">
               <Quote size={12} /><span>Daily Inspiration</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold leading-tight font-serif italic tracking-wide">"{quote}"</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold leading-tight font-serif italic tracking-wide">&quot;{quote}&quot;</h2>
             <div className="flex items-center gap-2 opacity-80 text-sm">
-              <div className="w-8 h-[1px] bg-white/50"></div>
+              <div className="w-8 h-px bg-white/50"></div>
               <span>Keep pushing forward</span>
             </div>
           </div>
@@ -380,16 +404,16 @@ export default function DailyChecklistPage() {
               </button>
             ))}
              <button onClick={() => setBaseDate(new Date())} className="px-4 py-3 bg-indigo-50 text-indigo-600 font-bold rounded-xl border border-indigo-100 hover:bg-indigo-100 transition-colors" title="Today">
-               <RotateCcwIcon size={18} />
+               <RotateCcw size={18} />
              </button>
           </div>
         </div>
       </div>
 
       {/* --- MAIN GRID CONTAINER --- */}
-      <div className="bg-white border border-slate-200 rounded-[2rem] shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col">
+      <div className="bg-white border border-slate-200 rounded-4xl shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col">
         <div className="overflow-x-auto custom-scrollbar">
-          <div className="min-w-[1200px]">
+          <div className="min-w-300">
             
             {/* Grid Header */}
             <div 
@@ -402,7 +426,8 @@ export default function DailyChecklistPage() {
               <AnimatePresence mode='popLayout'>
                 {habits.map((habit) => {
                   const Icon = ICON_MAP[habit.icon || "zap"] || Zap;
-                  const theme = COLOR_OPTIONS.find(c => habit.color?.includes(c.name)) || COLOR_OPTIONS[0];
+                  // ✅ FIX: Use guaranteed fallback for theme
+                  const theme = COLOR_OPTIONS.find(c => habit.color?.includes(c.name)) || DEFAULT_COLOR;
 
                   return (
                     <motion.div 
@@ -426,7 +451,7 @@ export default function DailyChecklistPage() {
                           <Trash2 size={12} />
                         </button>
                       </div>
-                      <span className="text-xs font-bold text-slate-600 truncate max-w-[90px] text-center">{habit.title}</span>
+                      <span className="text-xs font-bold text-slate-600 truncate max-w-22.5 text-center">{habit.title}</span>
                     </motion.div>
                   );
                 })}
@@ -489,7 +514,8 @@ export default function DailyChecklistPage() {
                     {/* Checkboxes */}
                     {habits.map((habit) => {
                       const isChecked = logsForDay.some(l => l.habitId === habit.id);
-                      const theme = COLOR_OPTIONS.find(c => habit.color?.includes(c.name)) || COLOR_OPTIONS[0];
+                      // ✅ FIX: Use guaranteed fallback for theme
+                      const theme = COLOR_OPTIONS.find(c => habit.color?.includes(c.name)) || DEFAULT_COLOR;
 
                       return (
                         <div key={habit.id} className="flex items-center justify-center relative">
@@ -537,7 +563,7 @@ export default function DailyChecklistPage() {
                     <div className="flex flex-col items-center justify-center gap-1">
                        <div className="relative w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                           <motion.div 
-                            className={cn("h-full absolute left-0 top-0 rounded-full", isPerfect ? "bg-gradient-to-r from-emerald-400 to-emerald-500" : "bg-gradient-to-r from-indigo-400 to-violet-500")}
+                            className={cn("h-full absolute left-0 top-0 rounded-full", isPerfect ? "bg-linear-to-r from-emerald-400 to-emerald-500" : "bg-linear-to-r from-indigo-400 to-violet-500")}
                             initial={{ width: 0 }}
                             animate={{ width: `${progress}%` }}
                             transition={{ duration: 0.5, ease: "easeOut" }}
@@ -554,15 +580,5 @@ export default function DailyChecklistPage() {
         </div>
       </div>
     </div>
-  );
-}
-
-// Icon helper for the refresh button
-function RotateCcwIcon({ size }: { size: number }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74-2.74L3 12" />
-      <path d="M3 3v9h9" />
-    </svg>
   );
 }

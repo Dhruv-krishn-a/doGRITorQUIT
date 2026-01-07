@@ -2,14 +2,25 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Plan, Task } from "@/types/plan";
+import { Plan as BasePlan, Task as BaseTask } from "@/types/plan";
 import Button from "@shared/components/ui/Button";
-import { Clock, CheckCircle2, Circle } from "lucide-react";
+import { Clock, CheckCircle2 } from "lucide-react";
+
+// ✅ FIX 1: Extend Task type locally to include timeSpentMinutes
+interface ExtendedTask extends BaseTask {
+  timeSpentMinutes?: number;
+}
+
+interface ExtendedPlan extends Omit<BasePlan, 'tasks'> {
+  tasks?: ExtendedTask[];
+}
 
 export default function PlanDetailPage() {
   const { planId } = useParams();
   const router = useRouter();
-  const [plan, setPlan] = useState<Plan | null>(null);
+  
+  // ✅ FIX 2: Use ExtendedPlan type
+  const [plan, setPlan] = useState<ExtendedPlan | null>(null);
   const [loading, setLoading] = useState(true);
 
   // --- 1. Load Data ---
@@ -66,7 +77,7 @@ export default function PlanDetailPage() {
   const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
   // --- 4. Group Tasks by Date ---
-  const timeline: Record<string, Task[]> = {};
+  const timeline: Record<string, ExtendedTask[]> = {};
   
   (plan.tasks ?? []).forEach((task) => {
     const dateKey = task.date 
@@ -134,7 +145,8 @@ export default function PlanDetailPage() {
 
           return (
             <div key={dateKey} className="relative pl-8">
-              <div className="absolute -left-[9px] top-0 w-4 h-4 bg-blue-600 rounded-full border-4 border-white shadow-sm" />
+              {/* ✅ FIX 3: Canonical tailwind class */}
+              <div className="absolute -left-2.25 top-0 w-4 h-4 bg-blue-600 rounded-full border-4 border-white shadow-sm" />
               
               <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
                 {displayDate}

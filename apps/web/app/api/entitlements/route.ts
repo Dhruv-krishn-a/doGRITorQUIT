@@ -1,20 +1,32 @@
-// apps/web/app/api/entitlements/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { getServerUserId } from "@/lib/authHelper";
+import { getServerUser } from "@/lib/auth";
+import { billing } from "@domain";
 
 export async function GET() {
-  const userId = await getServerUserId();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const user = await getServerUser();
+    
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { tier: true },
-  });
+    const entitlements = await billing.getUserEntitlements(user.id);
 
-  return NextResponse.json({
-    tier: user?.tier ?? "FREE",
-    aiGeneration: user?.tier !== "FREE",
-    maxPlans: user?.tier === "FREE" ? 3 : Infinity,
-  });
+    const maxPlansFeature = entitlements.features["MAX_PLANS"] as { limit?: number } | undefined;
+    const aiLimitFeature = entitlements.features["AI_GEN_LIMIT"] as { limit?: number } | undefined;
+
+    return NextResponse.json({
+      tier: entitlements.tierFallback, 
+      productName: entitlements.product?.name ?? "Free Tier",
+      features: {
+        maxPlans: maxPlansFeature?.limit ?? 3,
+        aiGeneration: !!aiLimitFeature, 
+        raw: entitlements.features 
+      }
+    });
+
+  } catch (err) {
+    console.error("Entitlements Error:", err);
+    return NextResponse.json({ error: "Internal Error" }, { status: 500 });
+  }
 }

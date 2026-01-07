@@ -1,15 +1,20 @@
-// apps/web/app/api/auth/me/route.ts
 import { NextResponse } from "next/server";
-import { getServerUserId } from "@/lib/authHelper";
+// ✅ FIX 1: Import from the consolidated auth file
+import { getServerUser } from "@/lib/auth"; 
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    const userId = await getServerUserId();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // ✅ FIX 2: Use getServerUser which returns the full user object
+    const authUser = await getServerUser();
+    
+    if (!authUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
+    // Refetching to ensure we strictly select only public fields
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: authUser.id },
       select: {
         id: true,
         email: true,
@@ -21,7 +26,9 @@ export async function GET() {
     });
 
     return NextResponse.json(user);
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err) {
+    // ✅ FIX 3: Remove 'any' and handle type safety
+    const message = err instanceof Error ? err.message : "Internal Server Error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

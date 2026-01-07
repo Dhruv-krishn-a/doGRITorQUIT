@@ -1,32 +1,37 @@
-// apps/web/app/api/plans/import-json/route.ts
 import { NextResponse } from "next/server";
-import { getServerUserId } from "@/lib/authHelper";
+import { getServerUser } from "@/lib/auth";
 import { plans, billing } from "@domain"; 
 
 export async function POST(req: Request) {
   try {
-    const userId = await getServerUserId();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const user = await getServerUser();
+    
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     try {
-      await billing.assertPlanCreationAllowed(userId);
-    } catch (err: any) {
-      if (err?.code === "ENTITLEMENT_LIMIT") {
-        return NextResponse.json({ error: err.message }, { status: 403 });
+      await billing.assertPlanCreationAllowed(user.id);
+    } catch (err) {
+      // ✅ FIX: Use a safe type assertion instead of 'any'
+      const errorObj = err as { code?: string; message?: string };
+
+      if (errorObj?.code === "ENTITLEMENT_LIMIT") {
+        return NextResponse.json({ error: errorObj.message }, { status: 403 });
       }
       throw err;
     }
 
     const body = await req.json();
-    // ✅ Extract startDate
     const { planName, tasks, startDate } = body ?? {};
 
-    // ✅ Pass startDate to service
-    const createdPlan = await plans.importPlanJson(userId, planName, tasks, startDate);
+    const createdPlan = await plans.importPlanJson(user.id, planName, tasks, startDate);
 
     return NextResponse.json(createdPlan, { status: 201 });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Import JSON error:", error);
-    return NextResponse.json({ error: error.message || "Import failed" }, { status: 500 });
+    
+    const message = error instanceof Error ? error.message : "Import failed";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -1,18 +1,23 @@
-// apps/web/app/dashboard/layout.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/utils/supabase"; // Assuming you have @/ alias set up for root
+import { supabase } from "@/utils/supabase"; 
 
-// ✅ UPDATED: Clean imports from shared and feature barrels
-import Sidebar from "@shared/components/Sidebar"
+import Sidebar from "@shared/components/Sidebar";
 import { UserSync } from "@features/auth";
+
+// ✅ FIX: Define specific type for session info
+interface SessionInfo {
+  userId: string;
+  email?: string;
+}
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
-  const [sessionInfo, setSessionInfo] = useState<any>(null);
+  // ✅ FIX: Use the interface instead of 'any'
+  const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -40,6 +45,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           email: data.session.user.email,
           expiresAt: data.session.expires_at
         });
+        
         setSessionInfo({
           userId: data.session.user.id,
           email: data.session.user.email

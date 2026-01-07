@@ -1,14 +1,20 @@
-// apps/web/app/api/ai/plan/route.ts
 import { NextResponse } from "next/server";
-import { getServerUserId } from "@/lib/authHelper";
-import { billing, ai } from "@domain"; // ✅ Import new domains
+// ✅ FIX 1: Import from the consolidated auth file
+import { getServerUser } from "@/lib/auth";
+import { billing, ai } from "@domain"; 
 
 export async function POST(req: Request) {
   try {
-    const userId = await getServerUserId();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // ✅ FIX 1b: Get the full user object, then extract ID
+    const user = await getServerUser();
+    
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    
+    const userId = user.id;
 
-    // 1. Check Entitlements (Domain)
+    // 1. Check Entitlements
     const allowed = await billing.canUseAIGenerationForUser(userId);
     if (!allowed) {
       return NextResponse.json({ 
@@ -19,17 +25,22 @@ export async function POST(req: Request) {
     // 2. Get Input
     const body = await req.json();
     const prompt = (body?.prompt || body?.text || "").trim();
-    if (!prompt) return NextResponse.json({ error: "Missing prompt" }, { status: 400 });
+    if (!prompt) {
+      return NextResponse.json({ error: "Missing prompt" }, { status: 400 });
+    }
 
-    // 3. Call AI Service (Domain)
+    // 3. Call AI Service
     const result = await ai.generatePlanFromPrompt(prompt);
 
-    // 4. Record Usage (Domain)
+    // 4. Record Usage
     await billing.incrementAIUsage(userId);
 
     return NextResponse.json(result);
-  } catch (err: any) {
+  } catch (err) {
+    // ✅ FIX 2: Remove 'any' and handle unknown error type safely
     console.error("[/api/ai/plan] error:", err);
-    return NextResponse.json({ error: err.message || "Internal Server Error" }, { status: 500 });
+    
+    const errorMessage = err instanceof Error ? err.message : "Internal Server Error";
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

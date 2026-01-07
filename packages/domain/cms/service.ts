@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma"; // Using your alias consistent with other services
+import { prisma } from "@/lib/prisma"; 
 import { revalidatePath } from "next/cache";
 import { cache } from "react";
 
@@ -33,6 +33,10 @@ export const getOrders = cache(async (limit = 100) => {
   });
 });
 
+export const getRecentSales = cache(async () => {
+  return getOrders(5);
+});
+
 export const getProducts = cache(async () => {
   return prisma.product.findMany({
     orderBy: { price: "asc" },
@@ -64,7 +68,7 @@ export const getUsersWithSubscriptions = cache(async (limit = 50) => {
         where: { status: "active" },
         take: 1,
       },
-      habits: { select: { id: true } }, // Counting habits for UI
+      habits: { select: { id: true } }, 
     },
   });
 });
@@ -92,11 +96,12 @@ export async function deleteProduct(id: string) {
   revalidatePath("/products");
 }
 
-export async function updateFeatureValue(productId: string, featureId: string, rawValue: any) {
+// ✅ FIX: Replaced 'any' with string | number
+export async function updateFeatureValue(productId: string, featureId: string, rawValue: string | number) {
   const numValue = parseInt(String(rawValue));
-  if (isNaN(numValue)) return; // Fail silently or throw
+  
+  if (isNaN(numValue)) return; 
 
-  // Upsert handles both create (if new) and update
   await prisma.productFeature.upsert({
     where: {
       productId_featureId: { productId, featureId },
@@ -121,7 +126,6 @@ export async function toggleProductFeature(productId: string, featureId: string,
       update: { value: { enabled: true } },
     });
   } else {
-    // deleteMany is safer than delete because it doesn't throw if record missing
     await prisma.productFeature.deleteMany({
       where: { productId, featureId },
     });
@@ -138,13 +142,12 @@ export async function createFeature(key: string, description: string) {
 
 // User Management
 export async function assignUserPlan(userId: string, productId: string) {
-  // 1. Cancel existing active plans
+  // Cancel existing active subscriptions
   await prisma.userSubscription.updateMany({
     where: { userId, status: "active" },
     data: { status: "canceled", currentPeriodEnd: new Date() },
   });
 
-  // 2. Logic for "No Active Plan"
   if (!productId || productId === "manual_free") {
     await prisma.user.update({
       where: { id: userId },
@@ -154,14 +157,15 @@ export async function assignUserPlan(userId: string, productId: string) {
     return;
   }
 
-  // 3. Logic for assigning a Paid Plan manually
   const product = await prisma.product.findUnique({ where: { id: productId } });
-  if (!product) throw new Error("Product not found");
+  
+  if (!product) {
+    throw new Error("Product not found");
+  }
 
   const now = new Date();
   const thirtyDays = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
-  // Create new subscription
   await prisma.userSubscription.create({
     data: {
       userId,
@@ -173,13 +177,13 @@ export async function assignUserPlan(userId: string, productId: string) {
     },
   });
 
-  // Determine Tier based on product key string (Enterprise logic)
+  // Determine Tier based on Product Key
   let newTier: "FREE" | "PRO" | "TEAM" = "FREE";
   const keyUpper = product.key.toUpperCase();
+  
   if (keyUpper.includes("PRO")) newTier = "PRO";
   if (keyUpper.includes("TEAM")) newTier = "TEAM";
 
-  // Update User Tier
   await prisma.user.update({
     where: { id: userId },
     data: { tier: newTier },

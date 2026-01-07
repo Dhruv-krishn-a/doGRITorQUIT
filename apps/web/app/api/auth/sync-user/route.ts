@@ -1,4 +1,3 @@
-// apps/web/app/api/auth/sync-user/route.ts
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
@@ -19,7 +18,10 @@ export async function POST() {
               cookiesToSet.forEach(({ name, value, options }) =>
                 cookieStore.set(name, value, options)
               )
-            } catch {}
+            } catch {
+              // The `setAll` method was called from a Server Component.
+              // This can be ignored.
+            }
           },
         },
       }
@@ -60,12 +62,16 @@ export async function POST() {
         name: user.name
       }
     });
-  } catch (error: any) {
+  } catch (error) {
+    // ✅ FIX: Remove 'any' and handle unknown error types safely
     console.error("User sync error:", error);
+    
+    const message = error instanceof Error ? error.message : String(error);
+
     return NextResponse.json(
       { 
         error: "Failed to sync user", 
-        details: error.message || String(error)
+        details: message
       },
       { status: 500 }
     );

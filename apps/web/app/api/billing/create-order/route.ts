@@ -1,21 +1,26 @@
-// apps/web/app/api/billing/create-order/route.ts
 import { NextResponse } from "next/server";
-import { getServerUserId } from "@/lib/authHelper";
-import { payment } from "@domain"; // ✅ Make sure you exported 'payment' in packages/domain/index.ts
+import { getServerUser } from "@/lib/auth";
+import { payment } from "@domain"; 
 
 export async function POST(req: Request) {
   try {
-    const userId = await getServerUserId();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const user = await getServerUser();
+    
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const body = await req.json();
     
-    // Delegate to Domain
-    const result = await payment.createCheckoutOrder(userId, body.productKey);
+    // ✅ FIX 1: Pass 'user.id' (string), not the full user object
+    const result = await payment.createCheckoutOrder(user.id, body.productKey);
 
     return NextResponse.json(result);
-  } catch (err: any) {
+  } catch (err) {
+    // ✅ FIX 2: Remove 'any' and handle safe error extraction
     console.error("[create-order]", err);
-    return NextResponse.json({ error: err.message || "Internal Error" }, { status: 500 });
+    
+    const message = err instanceof Error ? err.message : "Internal Error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

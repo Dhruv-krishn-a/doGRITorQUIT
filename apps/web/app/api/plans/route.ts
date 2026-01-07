@@ -1,20 +1,22 @@
-// apps/web/app/api/plans/route.ts
 import { NextResponse } from "next/server";
-import { getServerUserId } from "@/lib/authHelper";
-import { plans } from "@domain"; // This calls your new package logic
+// ✅ FIX 1: Use standard auth helper
+import { getServerUser } from "@/lib/auth";
+import { plans } from "@domain"; 
 
 export async function GET() {
   try {
-    const userId = await getServerUserId();
-    if (!userId) {
+    const user = await getServerUser();
+    
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Delegate logic to the domain package
-    const userPlans = await plans.listPlansForUser(userId);
+    // ✅ FIX 2: Use user.id
+    const userPlans = await plans.listPlansForUser(user.id);
 
     return NextResponse.json(userPlans);
-  } catch (err: any) {
+  } catch (err) {
+    // ✅ FIX 3: Remove 'any' and handle safe logging
     console.error("[GET /api/plans] ERROR:", err);
     return NextResponse.json(
       { error: "Failed to fetch plans" }, 
@@ -25,16 +27,17 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const userId = await getServerUserId();
-    if (!userId) {
+    const user = await getServerUser();
+    
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await req.json();
     const { title, description, startDate, endDate } = body;
 
-    // Delegate logic to the domain package
-    const newPlan = await plans.createPlanForUser(userId, {
+    // ✅ FIX 4: Use user.id
+    const newPlan = await plans.createPlanForUser(user.id, {
       title,
       description,
       startDate,
@@ -42,12 +45,16 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(newPlan);
-  } catch (err: any) {
+  } catch (err) {
     console.error("[POST /api/plans] ERROR:", err);
-    // Handle specific domain errors (like limit reached)
-    if (err.code === "ENTITLEMENT_LIMIT") {
-        return NextResponse.json({ error: err.message }, { status: 403 });
+    
+    // ✅ FIX 5: Safe type checking for domain errors
+    const errorObj = err as { code?: string; message?: string };
+    
+    if (errorObj.code === "ENTITLEMENT_LIMIT") {
+        return NextResponse.json({ error: errorObj.message }, { status: 403 });
     }
+    
     return NextResponse.json(
       { error: "Failed to create plan" }, 
       { status: 500 }

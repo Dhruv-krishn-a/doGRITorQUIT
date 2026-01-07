@@ -1,12 +1,14 @@
-// apps/web/app/api/billing/verify/route.ts
 import { NextResponse } from "next/server";
-import { getServerUserId } from "@/lib/authHelper";
-import { payment } from "@domain"; // ✅ Using Domain
+import { getServerUser } from "@/lib/auth";
+import { payment } from "@domain"; 
 
 export async function POST(req: Request) {
   try {
-    const userId = await getServerUserId();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const user = await getServerUser();
+    
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const body = await req.json();
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body;
@@ -17,15 +19,17 @@ export async function POST(req: Request) {
 
     // Delegate to Domain
     await payment.verifyAndActivateSubscription(
-      userId,
+      user.id,
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature
     );
 
     return NextResponse.json({ success: true });
-  } catch (err: any) {
+  } catch (err) {
     console.error("[Verify Error]", err);
-    return NextResponse.json({ error: err.message || "Verification failed" }, { status: 500 });
+    
+    const message = err instanceof Error ? err.message : "Verification failed";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

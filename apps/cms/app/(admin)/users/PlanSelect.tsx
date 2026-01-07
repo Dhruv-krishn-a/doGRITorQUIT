@@ -17,7 +17,7 @@ export default function PlanSelect({ currentProductId, products }: Props) {
     <select
       name="productId"
       defaultValue={currentProductId || "manual_free"}
-      className="border rounded text-sm p-1 cursor-pointer max-w-[140px] truncate"
+      className="border rounded text-sm p-1 cursor-pointer max-w-35 truncate"
       onChange={(e) => e.target.form?.requestSubmit()}
     >
       <option value="manual_free">No Active Plan</option>

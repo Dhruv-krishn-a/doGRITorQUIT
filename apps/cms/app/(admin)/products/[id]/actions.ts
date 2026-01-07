@@ -1,4 +1,3 @@
-// apps/cms/app/(admin)/products/[id]/actions.ts
 "use server";
 
 import { updateFeatureValue as updateSvc, toggleProductFeature as toggleSvc, createFeature as createSvc } from "@domain/cms";
@@ -18,7 +17,12 @@ export async function saveFeatureValue(formData: FormData) {
     value: formData.get("value"),
   });
 
-  if (!parsed.success) return { error: "Invalid Input" };
+  if (!parsed.success) {
+    // FIX: Do not return an object here. 
+    // In a Server Component form, we can either throw (triggering error boundary) or fail silently.
+    console.error("Invalid Feature Input", parsed.error);
+    return; 
+  }
 
   await updateSvc(parsed.data.productId, parsed.data.featureId, parsed.data.value);
   revalidatePath(`/products/${parsed.data.productId}`);
