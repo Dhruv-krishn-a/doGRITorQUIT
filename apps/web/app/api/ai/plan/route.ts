@@ -1,11 +1,10 @@
+// apps/web/app/api/ai/plan/route.ts
 import { NextResponse } from "next/server";
-// ✅ FIX 1: Import from the consolidated auth file
 import { getServerUser } from "@/lib/auth";
 import { billing, ai } from "@domain"; 
 
 export async function POST(req: Request) {
   try {
-    // ✅ FIX 1b: Get the full user object, then extract ID
     const user = await getServerUser();
     
     if (!user) {
@@ -14,7 +13,7 @@ export async function POST(req: Request) {
     
     const userId = user.id;
 
-    // 1. Check Entitlements
+    // Strict Check: This runs in Localhost AND Production
     const allowed = await billing.canUseAIGenerationForUser(userId);
     if (!allowed) {
       return NextResponse.json({ 
@@ -22,22 +21,19 @@ export async function POST(req: Request) {
       }, { status: 403 });
     }
     
-    // 2. Get Input
     const body = await req.json();
     const prompt = (body?.prompt || body?.text || "").trim();
     if (!prompt) {
       return NextResponse.json({ error: "Missing prompt" }, { status: 400 });
     }
 
-    // 3. Call AI Service
     const result = await ai.generatePlanFromPrompt(prompt);
 
-    // 4. Record Usage
+    // Increment usage
     await billing.incrementAIUsage(userId);
 
     return NextResponse.json(result);
   } catch (err) {
-    // ✅ FIX 2: Remove 'any' and handle unknown error type safely
     console.error("[/api/ai/plan] error:", err);
     
     const errorMessage = err instanceof Error ? err.message : "Internal Server Error";
