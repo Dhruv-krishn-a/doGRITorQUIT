@@ -1,7 +1,15 @@
 // packages/domain/billing/service.ts
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 import Razorpay from "razorpay";
 import crypto from "crypto";
+
+/**
+ * NOTE:
+ * - We import Prisma type to cast JSON payloads to Prisma.InputJsonValue
+ * - This file serializes SDK objects (Razorpay) to plain JSON and casts them
+ *   so TypeScript/Prisma accept them for JSON columns.
+ */
 
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || "";
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || "";
@@ -12,6 +20,12 @@ const razor = new Razorpay({
   key_secret: RAZORPAY_KEY_SECRET,
 });
 
+// Helper: serialize any SDK object to plain JSON that Prisma accepts
+function toPrismaJson(value: unknown): Prisma.InputJsonValue {
+  // JSON.stringify -> JSON.parse removes prototypes/methods and yields plain POJOs/arrays/primitives
+  return JSON.parse(JSON.stringify(value)) as unknown as Prisma.InputJsonValue;
+}
+
 /**
  * Create a new Razorpay Order
  */
@@ -19,9 +33,9 @@ export async function createCheckoutOrder(userId: string, productKey: string) {
   const product = await prisma.product.findUnique({ where: { key: productKey } });
   if (!product) throw new Error("Invalid productKey");
 
-  const amount = product.price; 
+  const amount = product.price;
   const currency = product.currency ?? "INR";
-  
+
   // Create a unique receipt ID
   const rec = `u_${userId.slice(0, 8)}_${String(Date.now()).slice(-5)}`;
   const receipt = rec.slice(0, 40);
@@ -41,7 +55,8 @@ export async function createCheckoutOrder(userId: string, productKey: string) {
       amount: Number(order.amount),
       currency: order.currency,
       status: order.status ?? "created",
-      metadata: { raw: order },
+      // serialize SDK object and cast to Prisma.InputJsonValue
+      metadata: toPrismaJson({ raw: order }),
     },
   });
 
@@ -102,12 +117,18 @@ export async function handleWebhook(rawBody: string, signature: string) {
     // Update Order Status
     const dbOrder = await prisma.order.findUnique({ where: { providerOrderId } });
     if (dbOrder) {
+      // build merged metadata as plain object, then cast to Prisma JSON
+      const existingMetadata = (dbOrder.metadata ?? {}) as Record<string, unknown>;
+      const merged = {
+        ...existingMetadata,
+        webhook_payment: payment,
+      };
       await prisma.order.update({
         where: { id: dbOrder.id },
         data: {
           providerPaymentId,
           status: payment.status ?? "captured",
-          metadata: { ...((dbOrder.metadata as object) || {}), webhook_payment: payment },
+          metadata: toPrismaJson(merged),
         },
       });
     }
@@ -136,14 +157,14 @@ export async function handleWebhook(rawBody: string, signature: string) {
 async function _activateSubscription(providerOrderId: string, providerPaymentId: string) {
   const order = await prisma.order.findUnique({
     where: { providerOrderId },
-    include: { product: true }
+    include: { product: true },
   });
 
   if (!order || !order.product || !order.userId) return;
 
   // Idempotency: Check if already processed
   const existingSub = await prisma.userSubscription.findFirst({
-    where: { providerSubId: providerPaymentId } 
+    where: { providerSubId: providerPaymentId },
   });
 
   if (!existingSub) {
@@ -173,10 +194,10 @@ async function _activateSubscription(providerOrderId: string, providerPaymentId:
 
     await prisma.order.update({
       where: { id: order.id },
-      data: { status: "paid", providerPaymentId }
+      data: { status: "paid", providerPaymentId },
     });
   }
-  
+
   return { success: true };
 }
 

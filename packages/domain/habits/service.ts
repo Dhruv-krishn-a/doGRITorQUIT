@@ -79,7 +79,8 @@ export async function toggleHabitLog(userId: string, habitId: string, date: Date
       where: {
         habitId_date: { habitId, date: normalizedDate }
       },
-      create: { habitId, date: normalizedDate, completed: true },
+      // <-- include userId here so Prisma's required field is satisfied
+      create: { habitId, userId, date: normalizedDate, completed: true },
       update: { completed: true }
     });
   } else {
