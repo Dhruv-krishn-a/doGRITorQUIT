@@ -1,3 +1,4 @@
+// packages/domain/plans/service.ts
 import { prisma } from "@/lib/prisma"; // keep this alias working via tsconfig
 import { formatPlanForClient } from "./format";
 import { assertPlanCreationAllowed } from "../billing/entitlements";

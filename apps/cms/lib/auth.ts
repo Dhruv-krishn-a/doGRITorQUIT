@@ -1,3 +1,4 @@
+// apps/cms/lib/auth.ts
 import { prisma } from "./prisma";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";

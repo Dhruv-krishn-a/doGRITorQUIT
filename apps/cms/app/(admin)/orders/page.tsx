@@ -1,7 +1,5 @@
 // apps/cms/app/(admin)/orders/page.tsx
 import type { Metadata } from "next";
-// ✅ FIXED: Only import what you actually use (getOrders). 
-// Removed unused imports to prevent TS errors.
 import { getOrders } from "@domain/cms"; 
 
 export const metadata: Metadata = {
