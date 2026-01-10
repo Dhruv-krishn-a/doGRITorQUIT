@@ -1,15 +1,11 @@
-// packages/domain/billing/entitlements.ts
 import { prisma } from "@/lib/prisma";
-import type { Tier } from "@prisma/client";
-
-// Legacy constant kept for type safety, though logic is now dynamic
 export const LEGACY_ENTITLEMENTS = {}; 
 
 type FeatureMap = Record<string, any>;
 
 export interface UserEntitlements {
   userId: string;
-  tierFallback?: Tier;
+  tierFallback?: string; 
   product?: {
     id: string;
     key: string;
@@ -23,9 +19,7 @@ export interface UserEntitlements {
   productKey: string;
 }
 
-/**
- * Get active user subscription using the new UserSubscription model.
- */
+
 export async function getActiveUserSubscription(userId: string) {
   return prisma.userSubscription.findFirst({
     where: {
@@ -47,9 +41,7 @@ export async function getActiveUserSubscription(userId: string) {
   }).catch(() => null);
 }
 
-/**
- * ✅ FETCH ENTITLEMENTS (Dynamic "Free" Tier logic)
- */
+
 export async function getUserEntitlements(userId: string): Promise<UserEntitlements> {
   const user = await prisma.user.findUnique({ 
     where: { id: userId }, 
@@ -61,7 +53,6 @@ export async function getUserEntitlements(userId: string): Promise<UserEntitleme
   let product = null;
   let features: FeatureMap = {};
 
-  // 1. Try to get Active Paid Subscription
   const sub = await prisma.userSubscription.findFirst({
     where: { userId, status: { in: ["active", "trialing"] } },
     include: { product: { include: { productFeatures: { include: { feature: true } } } } },
@@ -71,7 +62,6 @@ export async function getUserEntitlements(userId: string): Promise<UserEntitleme
   if (sub && sub.product) {
     product = sub.product;
   } 
-  // 2. If no sub, fetch the "FREE" product definition from DB
   else {
     const freeProduct = await prisma.product.findUnique({
       where: { key: "FREE" },
@@ -94,7 +84,7 @@ export async function getUserEntitlements(userId: string): Promise<UserEntitleme
 
   return {
     userId,
-    tierFallback: user.tier as Tier,
+    tierFallback: user.tier, 
     product: product ? {
       id: product.id,
       key: product.key,
@@ -109,9 +99,7 @@ export async function getUserEntitlements(userId: string): Promise<UserEntitleme
   };
 }
 
-/**
- * ✅ RESTORED: Check if user can create more plans
- */
+
 export async function assertPlanCreationAllowed(userId: string) {
   const ent = await getUserEntitlements(userId);
 
