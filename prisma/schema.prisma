@@ -11,20 +11,15 @@ generator client {
 // USER & AUTHENTICATION
 // --------------------------------------------------------
 
-enum Tier {
-  FREE
-  PRO
-  TEAM
-}
-
 model User {
   id           String   @id // Maps to Supabase Auth ID
   email        String   @unique
   name         String?
   avatarUrl    String?
-  tier         Tier     @default(FREE)
+  tier         String   @default("Free tier")
   role         String   @default("user") // "admin" | "user"
   aiUsageCount Int      @default(0)
+  customAiLimit Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

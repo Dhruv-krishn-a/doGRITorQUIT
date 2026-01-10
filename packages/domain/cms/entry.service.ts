@@ -1,3 +1,4 @@
+// packages/domain/cms/entry.service.ts
 import { prisma } from "@/lib/prisma";
 
 // ✅ ADD: Get a single published entry by slug

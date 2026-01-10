@@ -1,33 +1,11 @@
-// packages/domain/billing/entitlements.ts
 import { prisma } from "@/lib/prisma";
-import type { Tier } from "@prisma/client";
+export const LEGACY_ENTITLEMENTS = {}; 
 
-/**
- * Legacy static entitlements kept for migration fallback.
- */
-export const LEGACY_ENTITLEMENTS: Record<Tier, {
-  maxPlans: number | typeof Infinity;
-  aiGeneration: boolean;
-}> = {
-  FREE: {
-    maxPlans: 3,
-    aiGeneration: false, 
-  },
-  PRO: {
-    maxPlans: Infinity,
-    aiGeneration: true,
-  },
-  TEAM: {
-    maxPlans: Infinity,
-    aiGeneration: true,
-  },
-};
-
-type FeatureMap = Record<string, unknown>;
+type FeatureMap = Record<string, any>;
 
 export interface UserEntitlements {
   userId: string;
-  tierFallback?: Tier;
+  tierFallback?: string; 
   product?: {
     id: string;
     key: string;
@@ -36,11 +14,12 @@ export interface UserEntitlements {
     currency?: string | null;
   } | null;
   features: FeatureMap;
+  user: any; 
+  productName: string;
+  productKey: string;
 }
 
-/**
- * Get active user subscription using the new UserSubscription model.
- */
+
 export async function getActiveUserSubscription(userId: string) {
   return prisma.userSubscription.findFirst({
     where: {
@@ -62,68 +41,83 @@ export async function getActiveUserSubscription(userId: string) {
   }).catch(() => null);
 }
 
-/**
- * Build a resolved entitlements object for a user.
- */
+
 export async function getUserEntitlements(userId: string): Promise<UserEntitlements> {
-  const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, tier: true } });
+  const user = await prisma.user.findUnique({ 
+    where: { id: userId }, 
+    select: { id: true, tier: true, customAiLimit: true, aiUsageCount: true } 
+  });
+  
   if (!user) throw new Error("User not found");
 
-  const sub = await getActiveUserSubscription(userId);
+  let product = null;
+  let features: FeatureMap = {};
 
-  if (!sub || !sub.product) {
-    const tier = user.tier as Tier;
-    const legacy = LEGACY_ENTITLEMENTS[tier] ?? LEGACY_ENTITLEMENTS.FREE;
-    const features: FeatureMap = {
-      AI_PLAN: { enabled: legacy.aiGeneration },
-      MAX_PLANS: { limit: legacy.maxPlans === Infinity ? Number.POSITIVE_INFINITY : (legacy.maxPlans as number) },
-    };
-    return {
-      userId,
-      tierFallback: tier,
-      product: null,
-      features,
-    };
+  const sub = await prisma.userSubscription.findFirst({
+    where: { userId, status: { in: ["active", "trialing"] } },
+    include: { product: { include: { productFeatures: { include: { feature: true } } } } },
+    orderBy: { currentPeriodEnd: "desc" }
+  });
+
+  if (sub && sub.product) {
+    product = sub.product;
+  } 
+  else {
+    const freeProduct = await prisma.product.findUnique({
+      where: { key: "FREE" },
+      include: {
+        productFeatures: { include: { feature: true } },
+      },
+    });
+
+    if (freeProduct) {
+      product = freeProduct;
+    }
   }
 
-  const product = sub.product;
-  const features: FeatureMap = {};
-  for (const pf of product.productFeatures ?? []) {
-    // If value is a simple boolean or structured object, we store it
-    features[pf.feature.key] = pf.value ?? { enabled: true };
+  // 3. Map features from whichever product we found
+  if (product && product.productFeatures) {
+    for (const pf of product.productFeatures) {
+      features[pf.feature.key] = pf.value ?? { enabled: true };
+    }
   }
 
   return {
     userId,
-    product: {
+    tierFallback: user.tier, 
+    product: product ? {
       id: product.id,
       key: product.key,
       name: product.name,
       price: product.price ?? null,
       currency: product.currency ?? null,
-    },
+    } : null,
+    productName: product?.name || "Free Tier", 
+    productKey: product?.key || "FREE",
     features,
+    user
   };
 }
+
 
 export async function assertPlanCreationAllowed(userId: string) {
   const ent = await getUserEntitlements(userId);
 
-  const maxPlansVal = ent.features?.MAX_PLANS;
-  let allowedLimit: number | typeof Infinity | null = null;
+  // 1. Check for Feature Override
+  const maxPlansFeat = ent.features['MAX_PLANS'];
+  let allowedLimit: number | typeof Infinity = 3; // Default default
 
-  if (maxPlansVal && typeof (maxPlansVal as any).limit !== "undefined") {
-    const v = (maxPlansVal as any).limit;
-    allowedLimit = v === "Infinity" || v === "infinite" ? Infinity : Number(v);
-  }
-
-  if (allowedLimit == null && ent.tierFallback) {
-    const legacy = LEGACY_ENTITLEMENTS[ent.tierFallback];
-    allowedLimit = legacy?.maxPlans ?? 0;
-  }
-
-  if (allowedLimit == null) {
-    allowedLimit = 3; 
+  if (maxPlansFeat) {
+    // Handle { limit: 10 } or direct number
+    if (typeof maxPlansFeat.limit === 'number') allowedLimit = maxPlansFeat.limit;
+    else if (typeof maxPlansFeat.value === 'number') allowedLimit = maxPlansFeat.value;
+    else if (maxPlansFeat === 'Infinity' || maxPlansFeat.limit === 'Infinity') allowedLimit = Infinity;
+  } 
+  else {
+    // 2. Fallback based on Product Key
+    if (ent.productKey.includes('PRO') || ent.productKey.includes('TEAM')) {
+      allowedLimit = Infinity;
+    }
   }
 
   if (allowedLimit === Infinity) return;
@@ -138,62 +132,26 @@ export async function assertPlanCreationAllowed(userId: string) {
 }
 
 /**
- * Get the max days allowed for a single plan.
+ * ✅ RESTORED: Get max days allowed for a plan
  */
 export async function getMaxPlanDaysForUser(userId: string): Promise<number> {
   const ent = await getUserEntitlements(userId);
   
-  // 1. Check Product Feature Configuration
-  // Looks for feature key "MAX_PLAN_DAYS" with a value like { value: 30 }
-  const featureVal = ent.features?.['MAX_PLAN_DAYS'] as any;
-  if (featureVal && typeof featureVal.value === 'number') {
-    return featureVal.value;
+  const featureVal = ent.features['MAX_PLAN_DAYS'];
+  
+  if (featureVal) {
+    if (typeof featureVal.value === 'number') return featureVal.value;
+    if (typeof featureVal === 'number') return featureVal;
   }
 
-  // 2. Fallback Defaults
-  if (ent.tierFallback === 'FREE') return 7; // Free users capped at 7 days
-  return 30; // Default pro cap
+  // Fallback Defaults
+  if (ent.productKey === 'FREE') return 7; 
+  return 30; 
 }
 
 /**
- * Check if user can use AI generation with dynamic limits.
+ * ✅ RESTORED: Increment AI usage
  */
-export async function canUseAIGenerationForUser(userId: string): Promise<boolean> {
-  const user = await prisma.user.findUnique({ 
-    where: { id: userId },
-    select: { id: true, tier: true, aiUsageCount: true } 
-  });
-
-  if (!user) return false;
-
-  const ent = await getUserEntitlements(userId);
-
-  // 1. Determine Limit
-  let limit = 1; // Default Free limit
-
-  // Check if product defines a specific limit via "AI_GEN_LIMIT" feature
-  const limitFeature = ent.features?.['AI_GEN_LIMIT'] as any;
-  
-  if (limitFeature && typeof limitFeature.value === 'number') {
-    limit = limitFeature.value;
-  } else {
-    // Legacy Fallback Checks
-    // A. Check for simple enable flag
-    const simpleAiFeature = ent.features?.['AI_PLAN'] as any;
-    if (simpleAiFeature && simpleAiFeature.enabled === true) {
-        // If simple enabled flag is present without specific limit, assume "Pro" behavior
-        limit = 100; 
-    }
-    // B. Check Tier/Key Name
-    else if (user.tier === 'PRO' || user.tier === 'TEAM' || ent.product?.key.toUpperCase().includes('PRO')) {
-        limit = 100; // Legacy Pro limit
-    }
-  }
-
-  // 2. Check Usage against Limit
-  return user.aiUsageCount < limit;
-}
-
 export async function incrementAIUsage(userId: string) {
   await prisma.user.update({
     where: { id: userId },
@@ -201,7 +159,57 @@ export async function incrementAIUsage(userId: string) {
   });
 }
 
+/**
+ * ✅ RESTORED: Get raw feature value
+ */
 export async function getFeatureForUser(userId: string, featureKey: string): Promise<unknown> {
   const ent = await getUserEntitlements(userId);
   return ent.features?.[featureKey];
+}
+
+/**
+ * ✅ RESTORED & DYNAMIC: Get AI Usage Stats
+ */
+export async function getAIUsageStats(userId: string) {
+  const ent = await getUserEntitlements(userId);
+  const user = ent.user;
+
+  // 1. Priority: User Override
+  if (user.customAiLimit !== null && user.customAiLimit !== undefined) {
+    return {
+      used: user.aiUsageCount,
+      limit: user.customAiLimit,
+      remaining: Math.max(0, user.customAiLimit - user.aiUsageCount)
+    };
+  }
+
+  // 2. Priority: Product Feature (From DB)
+  let limit = 0; 
+  
+  const limitFeature = ent.features['AI_GEN_LIMIT'];
+  
+  if (limitFeature) {
+    if (typeof limitFeature.value === 'number') limit = limitFeature.value;
+    else if (typeof limitFeature === 'number') limit = limitFeature;
+  } 
+  // Fallback if DB is empty/unconfigured
+  else if (ent.productKey === 'FREE') {
+    limit = 5; 
+  } else {
+    limit = 100;
+  }
+
+  return {
+    used: user.aiUsageCount,
+    limit: limit,
+    remaining: Math.max(0, limit - user.aiUsageCount)
+  };
+}
+
+/**
+ * ✅ RESTORED: Boolean check for AI generation
+ */
+export async function canUseAIGenerationForUser(userId: string): Promise<boolean> {
+  const stats = await getAIUsageStats(userId);
+  return stats.used < stats.limit;
 }
