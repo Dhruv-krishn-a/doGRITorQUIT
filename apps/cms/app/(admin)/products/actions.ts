@@ -2,7 +2,7 @@
 "use server";
 
 import { getAdminUser } from "@/lib/auth";
-import { createProduct as createSvc, deleteProduct as deleteSvc } from "@domain/cms";
+import { cms } from "@domain"; // Import cms namespace from domain
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -14,16 +14,12 @@ const createProductSchema = z.object({
   description: z.string().optional(),
 });
 
-// --- Actions ---
+// --- Product Actions ---
 
 export async function createProductAction(formData: FormData) {
-  // 1. Security Check
   const admin = await getAdminUser();
-  if (!admin) {
-    throw new Error("Unauthorized: Admin access required");
-  }
+  if (!admin) throw new Error("Unauthorized: Admin access required");
 
-  // 2. Validation
   const parsed = createProductSchema.safeParse({
     name: formData.get("name"),
     key: formData.get("key"),
@@ -33,11 +29,10 @@ export async function createProductAction(formData: FormData) {
 
   if (!parsed.success) {
     console.error("Validation Error:", parsed.error);
-    return; // In a real app, you'd return { error: parsed.error.flatten() }
+    return;
   }
 
-  // 3. Execution
-  await createSvc({
+  await cms.createProduct({
     name: parsed.data.name,
     key: parsed.data.key,
     priceRupees: parsed.data.price,
@@ -51,6 +46,60 @@ export async function deleteProductAction(productId: string) {
   const admin = await getAdminUser();
   if (!admin) throw new Error("Unauthorized");
 
-  await deleteSvc(productId);
+  await cms.deleteProduct(productId);
   revalidatePath("/products");
+}
+
+// --- Feature Actions ---
+
+/**
+ * Creates a new System Feature Definition (e.g. AI_GEN_LIMIT)
+ */
+export async function createSystemFeature(formData: FormData) {
+  const admin = await getAdminUser();
+  if (!admin) throw new Error("Unauthorized");
+  
+  const key = String(formData.get("key"));
+  const description = String(formData.get("description"));
+  
+  await cms.createFeature(key, description);
+  revalidatePath("/products"); // Refresh all product pages potentially
+}
+
+/**
+ * Adds a feature to the product (Enables it)
+ */
+export async function toggleProductFeature(formData: FormData) {
+  const productId = String(formData.get("productId"));
+  const featureId = String(formData.get("featureId"));
+  
+  // We use "toggle" in the service, passing true adds it
+  await cms.toggleProductFeature(productId, featureId, true);
+  revalidatePath(`/products/${productId}`);
+}
+
+/**
+ * Removes a feature from the product (Disables/Locks it)
+ */
+export async function removeProductFeature(formData: FormData) {
+  const productId = String(formData.get("productId"));
+  const featureId = String(formData.get("featureId"));
+  
+  // Passing false removes it
+  await cms.toggleProductFeature(productId, featureId, false);
+  revalidatePath(`/products/${productId}`);
+}
+
+/**
+ * Updates a numeric value (e.g. Max Plans = 10)
+ */
+export async function updateFeatureValue(formData: FormData) {
+  const productId = String(formData.get("productId"));
+  const featureId = String(formData.get("featureId"));
+  const value = formData.get("value");
+  
+  if (value) {
+    await cms.updateFeatureValue(productId, featureId, value.toString());
+  }
+  revalidatePath(`/products/${productId}`);
 }

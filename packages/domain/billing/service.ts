@@ -217,3 +217,22 @@ export async function getUserOrders(userId: string) {
     invoiceUrl: null 
   }));
 }
+
+export async function getPublicPlans() {
+  return prisma.product.findMany({
+    where: {
+      active: true,
+      key: { not: "FREE" }, // Don't sell the free tier
+    },
+    include: {
+      productFeatures: {
+        include: {
+          feature: true,
+        },
+      },
+    },
+    orderBy: {
+      price: "asc",
+    },
+  });
+}

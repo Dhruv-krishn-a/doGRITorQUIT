@@ -1,4 +1,6 @@
+// packages/domain/billing/entitlements.ts
 import { prisma } from "@/lib/prisma";
+
 export const LEGACY_ENTITLEMENTS = {}; 
 
 type FeatureMap = Record<string, any>;
@@ -18,7 +20,6 @@ export interface UserEntitlements {
   productName: string;
   productKey: string;
 }
-
 
 export async function getActiveUserSubscription(userId: string) {
   return prisma.userSubscription.findFirst({
@@ -40,7 +41,6 @@ export async function getActiveUserSubscription(userId: string) {
     },
   }).catch(() => null);
 }
-
 
 export async function getUserEntitlements(userId: string): Promise<UserEntitlements> {
   const user = await prisma.user.findUnique({ 
@@ -75,7 +75,6 @@ export async function getUserEntitlements(userId: string): Promise<UserEntitleme
     }
   }
 
-  // 3. Map features from whichever product we found
   if (product && product.productFeatures) {
     for (const pf of product.productFeatures) {
       features[pf.feature.key] = pf.value ?? { enabled: true };
@@ -99,22 +98,48 @@ export async function getUserEntitlements(userId: string): Promise<UserEntitleme
   };
 }
 
+/**
+ * ✅ NEW: Get page access permissions
+ */
+export async function getPagePermissions(userId: string) {
+  const ent = await getUserEntitlements(userId);
+  const isFree = ent.productKey === 'FREE';
+
+  // Helper: If feature exists, use its value. 
+  // If missing: PAID users allow by default, FREE users block by default.
+  const check = (key: string) => {
+    const feat = ent.features[key];
+    if (feat) {
+      if (feat.enabled === false) return false;
+      if (feat.value === false) return false;
+      return true; 
+    }
+    if (isFree) return false; 
+    return true; 
+  };
+
+  return {
+    canViewDashboard: true,
+    canViewSubscription: true,
+    canViewPlans: check("ACCESS_PLANS"),
+    canViewTasks: check("ACCESS_TASKS"),
+    canViewChecklist: check("ACCESS_CHECKLIST"),
+    canViewAnalytics: check("ACCESS_ANALYTICS"),
+  };
+}
 
 export async function assertPlanCreationAllowed(userId: string) {
   const ent = await getUserEntitlements(userId);
 
-  // 1. Check for Feature Override
   const maxPlansFeat = ent.features['MAX_PLANS'];
-  let allowedLimit: number | typeof Infinity = 3; // Default default
+  let allowedLimit: number | typeof Infinity = 3; 
 
   if (maxPlansFeat) {
-    // Handle { limit: 10 } or direct number
     if (typeof maxPlansFeat.limit === 'number') allowedLimit = maxPlansFeat.limit;
     else if (typeof maxPlansFeat.value === 'number') allowedLimit = maxPlansFeat.value;
     else if (maxPlansFeat === 'Infinity' || maxPlansFeat.limit === 'Infinity') allowedLimit = Infinity;
   } 
   else {
-    // 2. Fallback based on Product Key
     if (ent.productKey.includes('PRO') || ent.productKey.includes('TEAM')) {
       allowedLimit = Infinity;
     }
@@ -131,27 +156,17 @@ export async function assertPlanCreationAllowed(userId: string) {
   }
 }
 
-/**
- * ✅ RESTORED: Get max days allowed for a plan
- */
 export async function getMaxPlanDaysForUser(userId: string): Promise<number> {
   const ent = await getUserEntitlements(userId);
-  
   const featureVal = ent.features['MAX_PLAN_DAYS'];
-  
   if (featureVal) {
     if (typeof featureVal.value === 'number') return featureVal.value;
     if (typeof featureVal === 'number') return featureVal;
   }
-
-  // Fallback Defaults
   if (ent.productKey === 'FREE') return 7; 
   return 30; 
 }
 
-/**
- * ✅ RESTORED: Increment AI usage
- */
 export async function incrementAIUsage(userId: string) {
   await prisma.user.update({
     where: { id: userId },
@@ -159,22 +174,15 @@ export async function incrementAIUsage(userId: string) {
   });
 }
 
-/**
- * ✅ RESTORED: Get raw feature value
- */
 export async function getFeatureForUser(userId: string, featureKey: string): Promise<unknown> {
   const ent = await getUserEntitlements(userId);
   return ent.features?.[featureKey];
 }
 
-/**
- * ✅ RESTORED & DYNAMIC: Get AI Usage Stats
- */
 export async function getAIUsageStats(userId: string) {
   const ent = await getUserEntitlements(userId);
   const user = ent.user;
 
-  // 1. Priority: User Override
   if (user.customAiLimit !== null && user.customAiLimit !== undefined) {
     return {
       used: user.aiUsageCount,
@@ -183,16 +191,13 @@ export async function getAIUsageStats(userId: string) {
     };
   }
 
-  // 2. Priority: Product Feature (From DB)
   let limit = 0; 
-  
   const limitFeature = ent.features['AI_GEN_LIMIT'];
   
   if (limitFeature) {
     if (typeof limitFeature.value === 'number') limit = limitFeature.value;
     else if (typeof limitFeature === 'number') limit = limitFeature;
   } 
-  // Fallback if DB is empty/unconfigured
   else if (ent.productKey === 'FREE') {
     limit = 5; 
   } else {
@@ -206,9 +211,6 @@ export async function getAIUsageStats(userId: string) {
   };
 }
 
-/**
- * ✅ RESTORED: Boolean check for AI generation
- */
 export async function canUseAIGenerationForUser(userId: string): Promise<boolean> {
   const stats = await getAIUsageStats(userId);
   return stats.used < stats.limit;

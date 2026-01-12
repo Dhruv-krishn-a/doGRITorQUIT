@@ -4,27 +4,20 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { 
-  Loader2, 
-  Check, 
-  CreditCard, 
-  Zap, 
-  Calendar, 
-  History, 
-  LayoutGrid, 
-  Download,
-  AlertCircle,
-  LucideIcon,
-  TrendingUp
+  Loader2, Check, CreditCard, Zap, Calendar, History, 
+  LayoutGrid, Download, AlertCircle, LucideIcon, 
+  ShieldCheck, X
 } from "lucide-react";
 
-// --- Types ---
+// --- 1. Types & Interfaces ---
+
 interface Product {
   id: string;
   name: string;
   key: string;
   price: number;
   description: string;
-  features?: string[];
+  currency: string;
 }
 
 interface PaymentRecord {
@@ -45,20 +38,21 @@ interface ActiveSubscription {
   status?: string;
 }
 
+interface UsageStats {
+  aiGenerated: number;
+  aiLimit: number | null; // Null implies infinity
+  remaining: number | null;
+}
+
 interface SubscriptionData {
   activeSubscription?: ActiveSubscription;
-  // Usage is now nullable to represent "loading" vs "no data" vs "real data"
-  usage?: {
-    aiGenerated: number;
-    // aiLimit can be null if the backend sends Infinity (JSON serializes Infinity as null)
-    aiLimit: number | null; 
-    remaining: number | null;
-  };
+  usage?: UsageStats;
   history?: PaymentRecord[];
 }
 
-// --- Razorpay Types ---
-interface RazorpayResponse {
+// Razorpay SDK Types
+
+interface RazorpaySuccessResponse {
   razorpay_payment_id: string;
   razorpay_order_id: string;
   razorpay_signature: string;
@@ -66,9 +60,12 @@ interface RazorpayResponse {
 
 interface RazorpayErrorResponse {
   error: {
-    description: string;
     code: string;
+    description: string;
     reason: string;
+    source: string;
+    step: string;
+    metadata: object;
   };
 }
 
@@ -76,12 +73,12 @@ interface RazorpayOptions {
   key: string;
   amount: number;
   currency: string;
-  order_id: string;
   name: string;
   description: string;
-  handler: (response: RazorpayResponse) => Promise<void>;
-  prefill?: Record<string, string>;
+  order_id: string;
+  handler: (response: RazorpaySuccessResponse) => void;
   theme?: { color: string };
+  modal?: { ondismiss?: () => void };
 }
 
 interface RazorpayInstance {
@@ -89,75 +86,82 @@ interface RazorpayInstance {
   on: (event: string, handler: (response: RazorpayErrorResponse) => void) => void;
 }
 
-interface LocalWindow {
-  Razorpay?: new (options: RazorpayOptions) => RazorpayInstance;
+// ✅ FIX: Define a standalone constructor type instead of extending Window globally
+interface RazorpayConstructor {
+  new (options: RazorpayOptions): RazorpayInstance;
 }
 
-// --- Components ---
+// --- 2. Helper Components ---
 
-interface StatCardProps {
-  icon: LucideIcon;
-  label: string;
-  value: string | number;
-  subtext?: string;
-  colorClass: string;
-}
+const LoadingSkeleton = () => (
+  <div className="animate-pulse space-y-8">
+    <div className="flex gap-4">
+      <div className="h-32 bg-slate-100 rounded-2xl flex-1" />
+      <div className="h-32 bg-slate-100 rounded-2xl flex-1" />
+      <div className="h-32 bg-slate-100 rounded-2xl flex-1" />
+    </div>
+    <div className="h-96 bg-slate-100 rounded-2xl" />
+  </div>
+);
 
-const StatCard = ({ icon: Icon, label, value, subtext, colorClass }: StatCardProps) => (
-  <div className="bg-white border border-slate-200 rounded-xl p-5 flex items-start gap-4 shadow-sm h-full transition-all hover:shadow-md">
-    <div className={`p-3 rounded-lg ${colorClass} shrink-0`}>
-      <Icon size={20} />
+const Notification = ({ message, type, onClose }: { message: string, type: 'success' | 'error', onClose: () => void }) => (
+  <div className={`fixed bottom-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-bottom-5 fade-in duration-300 ${
+    type === 'success' ? 'bg-slate-900 text-white' : 'bg-red-500 text-white'
+  }`}>
+    {type === 'success' ? <Check size={20} /> : <AlertCircle size={20} />}
+    <p className="font-medium text-sm">{message}</p>
+    <button onClick={onClose} className="ml-2 hover:opacity-75"><X size={16} /></button>
+  </div>
+);
+
+const StatCard = ({ icon: Icon, label, value, subtext, colorClass }: { 
+  icon: LucideIcon; label: string; value: string | number; subtext?: string; colorClass: string 
+}) => (
+  <div className="bg-white border border-slate-200 rounded-2xl p-6 flex items-start gap-5 shadow-sm hover:shadow-md transition-all duration-300">
+    <div className={`p-3.5 rounded-xl ${colorClass} shrink-0`}>
+      <Icon size={22} />
     </div>
     <div>
-      <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">{label}</p>
-      <h3 className="text-xl font-bold text-slate-900">{value}</h3>
-      {subtext && <p className="text-slate-400 text-sm mt-1">{subtext}</p>}
+      <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1.5">{label}</p>
+      <h3 className="text-2xl font-bold text-slate-900 tracking-tight">{value}</h3>
+      {subtext && <p className="text-slate-400 text-sm mt-1 font-medium">{subtext}</p>}
     </div>
   </div>
 );
 
-const UsageBar = ({ used, limit }: { used: number; limit: number | null }) => {
-  // Interpret null as Infinity (Unlimited)
-  const effectiveLimit = limit === null ? Infinity : limit;
-  const isUnlimited = effectiveLimit === Infinity;
-
-  // Calculate percentage (capped at 100%)
-  const percentage = isUnlimited ? 0 : Math.min((used / effectiveLimit) * 100, 100);
-  
-  // UX: Show red if > 90% used
-  const isCritical = !isUnlimited && percentage > 90;
-  
-  // Calculate remaining
-  const remaining = isUnlimited ? "Unlimited" : Math.max(0, effectiveLimit - used);
+const UsageCard = ({ usage }: { usage: UsageStats }) => {
+  const limit = usage.aiLimit === null ? Infinity : usage.aiLimit;
+  const isUnlimited = limit === Infinity;
+  const percent = isUnlimited ? 0 : Math.min((usage.aiGenerated / limit) * 100, 100);
+  const isCritical = !isUnlimited && percent > 90;
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col justify-center h-full hover:shadow-md transition-shadow">
-      <div className="flex justify-between items-end mb-2">
+    <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300">
+      <div className="flex justify-between items-start mb-4">
         <div>
-          <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1">
-            <TrendingUp size={12} /> AI Usage
+          <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5">
+            <Zap size={14} className="text-amber-500" /> AI Credits
           </p>
-          <div className="flex items-baseline gap-1">
-            <span className="text-xl font-bold text-slate-900">{used}</span>
-            <span className="text-slate-400 text-sm">/ {isUnlimited ? "∞" : effectiveLimit}</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-2xl font-bold text-slate-900">{usage.aiGenerated}</span>
+            <span className="text-slate-400 font-medium">/ {isUnlimited ? "∞" : limit}</span>
           </div>
         </div>
-        <div className="text-right">
-           <span className={`text-xs font-bold px-2 py-1 rounded ${isCritical ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>
-             {isUnlimited ? "Unlimited" : `${remaining} left`}
-           </span>
-        </div>
+        <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
+          isUnlimited ? 'bg-indigo-50 text-indigo-700 border-indigo-100' :
+          isCritical ? 'bg-red-50 text-red-600 border-red-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'
+        }`}>
+          {isUnlimited ? "Unlimited Plan" : `${usage.remaining} Left`}
+        </span>
       </div>
       
-      {/* Progress Track */}
-      <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden relative">
+      <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden relative">
         {isUnlimited ? (
-           // Animated gradient for unlimited
-           <div className="h-full bg-linear-to-r from-blue-400/20 via-blue-500/20 to-blue-400/20 w-full animate-pulse" /> 
+           <div className="absolute inset-0 bg-linear-to-r from-indigo-500/20 via-indigo-500/40 to-indigo-500/20 w-full animate-pulse" />
         ) : (
           <div 
-            className={`h-full transition-all duration-500 ease-out rounded-full ${isCritical ? 'bg-red-500' : 'bg-blue-600'}`} 
-            style={{ width: `${percentage}%` }}
+            className={`h-full transition-all duration-700 ease-out rounded-full ${isCritical ? 'bg-red-500' : 'bg-indigo-600'}`} 
+            style={{ width: `${percent}%` }}
           />
         )}
       </div>
@@ -165,63 +169,133 @@ const UsageBar = ({ used, limit }: { used: number; limit: number | null }) => {
   );
 };
 
+const PlanCard = ({ 
+  product, isActive, onBuy, loadingKey 
+}: { 
+  product: Product; isActive: boolean; onBuy: (key: string) => void; loadingKey: string | null 
+}) => {
+  const isBuying = loadingKey === product.key;
+
+  return (
+    <div className={`relative flex flex-col p-6 rounded-3xl transition-all duration-300 ${
+      isActive 
+        ? 'bg-slate-900 text-white ring-4 ring-slate-200 shadow-2xl scale-[1.02]' 
+        : 'bg-white border border-slate-200 hover:border-slate-300 hover:shadow-xl hover:-translate-y-1'
+    }`}>
+      {isActive && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-lg flex items-center gap-1">
+          <ShieldCheck size={12} /> Active Plan
+        </div>
+      )}
+
+      <div className="mb-6">
+        <h3 className={`text-lg font-bold ${isActive ? 'text-white' : 'text-slate-900'}`}>{product.name}</h3>
+        <p className={`text-sm mt-1 ${isActive ? 'text-slate-400' : 'text-slate-500'}`}>
+          {product.description || "Unlock powerful features"}
+        </p>
+      </div>
+
+      <div className="mb-8 flex items-baseline gap-1">
+        <span className={`text-4xl font-extrabold ${isActive ? 'text-white' : 'text-slate-900'}`}>
+          ₹{(product.price / 100).toLocaleString()}
+        </span>
+        <span className={`text-sm font-medium ${isActive ? 'text-slate-400' : 'text-slate-500'}`}>/mo</span>
+      </div>
+
+      <div className={`w-full h-px mb-8 ${isActive ? 'bg-slate-800' : 'bg-slate-100'}`} />
+
+      <ul className="space-y-4 mb-8 flex-1">
+        {["Full AI Access", "Unlimited History", "Priority Support"].map((feat, i) => (
+          <li key={i} className="flex items-center gap-3 text-sm">
+            <div className={`p-0.5 rounded-full ${isActive ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
+              <Check size={14} strokeWidth={3} />
+            </div>
+            <span className={isActive ? 'text-slate-300' : 'text-slate-600'}>{feat}</span>
+          </li>
+        ))}
+      </ul>
+
+      <button
+        onClick={() => !isActive && onBuy(product.key)}
+        disabled={isActive || !!loadingKey}
+        className={`w-full py-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
+          isActive 
+            ? 'bg-slate-800 text-slate-500 cursor-not-allowed' 
+            : 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-900/10 active:scale-95'
+        }`}
+      >
+        {isActive ? "Current Plan" : isBuying ? <Loader2 className="animate-spin" /> : "Upgrade Now"}
+      </button>
+    </div>
+  );
+};
+
+// --- 3. Main Component ---
+
 export default function SubscriptionPage() {
+  const router = useRouter();
+  
+  // State
   const [products, setProducts] = useState<Product[]>([]);
   const [data, setData] = useState<SubscriptionData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [buying, setBuying] = useState<string | null>(null);
+  const [buyingKey, setBuyingKey] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"plans" | "history">("plans");
-  
-  const router = useRouter();
+  const [toast, setToast] = useState<{ msg: string, type: 'success' | 'error' } | null>(null);
 
+  // Fetch Data
   useEffect(() => {
     let mounted = true;
-    async function load() {
+    async function loadData() {
       try {
         const [pRes, sRes] = await Promise.all([
           fetch("/api/billing/products"),
           fetch("/api/billing/subscription"),
         ]);
         
-        if(!pRes.ok || !sRes.ok) throw new Error("Failed to fetch data");
-
-        const [pJson, sJson] = await Promise.all([pRes.json(), sRes.json()]);
-        
-        if (!mounted) return;
-        setProducts(pJson || []);
-        setData(sJson || {});
-      } catch (err) {
-        console.error("Failed to load billing data", err);
+        if (mounted) {
+          const pData = await pRes.json();
+          const sData = await sRes.json();
+          setProducts(pData || []);
+          setData(sData || {});
+        }
+      } catch (error) {
+        console.error("Data load failed:", error);
+        setToast({ msg: "Failed to load subscription data", type: "error" });
       } finally {
         if (mounted) setLoading(false);
       }
     }
-    load();
+    loadData();
     return () => { mounted = false; };
   }, []);
 
-  async function buy(productKey: string) {
-    setBuying(productKey);
+  // Razorpay Handler
+  const handleBuy = async (productKey: string) => {
+    setBuyingKey(productKey);
     try {
-      const r = await fetch("/api/billing/create-order", {
+      // 1. Create Order
+      const res = await fetch("/api/billing/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ productKey }),
       });
-      const json = await r.json();
-      
-      if (!r.ok) throw new Error(json.error || "Order creation failed");
+      const orderData = await res.json();
 
+      if (!res.ok) throw new Error(orderData.error || "Failed to create order");
+
+      // 2. Open Razorpay
       const options: RazorpayOptions = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "",
-        amount: json.amount,
-        currency: json.currency,
-        order_id: json.orderId,
-        name: "Planner App",
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "Planner AI",
         description: `Upgrade to ${productKey}`,
+        order_id: orderData.orderId,
         theme: { color: "#0f172a" },
-        handler: async function (response: RazorpayResponse) {
+        handler: async (response) => {
           try {
+            // 3. Verify Payment
             const verifyRes = await fetch("/api/billing/verify", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -233,231 +307,161 @@ export default function SubscriptionPage() {
             });
 
             if (verifyRes.ok) {
+              setToast({ msg: "Upgrade successful! Unlocking features...", type: "success" });
               router.refresh();
-              window.location.reload(); 
+              setTimeout(() => window.location.reload(), 2000);
             } else {
-              alert("Payment verification failed. Please contact support.");
+              throw new Error("Payment verification failed");
             }
-          } catch (e) {
-            console.error(e);
-            alert("Error verifying payment.");
+          } catch {
+            setToast({ msg: "Payment verification failed", type: "error" });
           }
         },
+        modal: {
+            ondismiss: () => setBuyingKey(null)
+        }
       };
 
-      const win = window as unknown as LocalWindow;
+      // ✅ FIX: Use simple unknown casting, then intersection with our type
+      const win = window as unknown as { Razorpay?: RazorpayConstructor };
 
       if (!win.Razorpay) {
-          alert("Payment gateway failed to load. Please check your connection.");
-          return;
+        throw new Error("Razorpay SDK not loaded");
       }
 
       const rzp = new win.Razorpay(options);
-      rzp.on('payment.failed', function (response: RazorpayErrorResponse){
-        alert("Payment Failed: " + response.error.description);
-      });
       
+      rzp.on("payment.failed", (response: RazorpayErrorResponse) => {
+        setToast({ msg: response.error.description, type: "error" });
+        setBuyingKey(null);
+      });
       rzp.open();
 
     } catch (err) {
-      console.error(err);
-      alert(err instanceof Error ? err.message : "An unknown error occurred");
-    } finally {
-      setBuying(null);
+        const errorMessage = err instanceof Error ? err.message : "Something went wrong";
+        setToast({ msg: errorMessage, type: "error" });
+        setBuyingKey(null);
     }
-  }
-
-  if (loading) return (
-    <div className="flex h-[80vh] items-center justify-center flex-col gap-4 text-slate-400 font-medium animate-pulse">
-      <Loader2 className="animate-spin text-blue-600" size={32} /> 
-      <p>Syncing subscription details...</p>
-    </div>
-  );
-
-  const activeSub = data?.activeSubscription;
-  // ✅ FIX: No magic number "5". If API returns usage, use it. Otherwise 0.
-  const usage = data?.usage || { aiGenerated: 0, aiLimit: 0, remaining: 0 };
-  const history = data?.history || [];
-
-  const getBadgeColor = (key: string) => {
-    if (key.includes("PRO")) return "bg-purple-100 text-purple-700 border-purple-200";
-    if (key.includes("TEAM")) return "bg-blue-100 text-blue-700 border-blue-200";
-    return "bg-slate-100 text-slate-700 border-slate-200";
   };
 
+  if (loading) {
+    return (
+      <div className="max-w-6xl mx-auto py-12 px-6">
+        <LoadingSkeleton />
+      </div>
+    );
+  }
+
+  const activeSub = data?.activeSubscription;
+  const usage = data?.usage || { aiGenerated: 0, aiLimit: 5, remaining: 5 };
+  const history = data?.history || [];
+  const currentPlanId = activeSub?.product?.id;
+
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4 space-y-8">
+    <div className="max-w-6xl mx-auto py-10 px-4 sm:px-6 space-y-12 pb-24">
       
-      {/* --- Header Section --- */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Subscription & Usage</h1>
-          <p className="text-slate-500 mt-1">Manage your plan limits, upgrades, and billing history.</p>
+      {/* --- 1. Header & Stats --- */}
+      <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Subscription & Limits</h1>
+            <p className="text-slate-500 mt-2 text-lg">Manage your plan, track usage, and view billing history.</p>
+          </div>
         </div>
-        {activeSub && (
-          <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-2 rounded-full text-sm font-semibold border border-emerald-100 shadow-sm animate-in fade-in slide-in-from-top-2">
-            <Check size={16} strokeWidth={3} />
-            {activeSub.product?.name} Active
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <StatCard 
+            icon={CreditCard}
+            label="Current Plan"
+            value={activeSub?.product?.name || "Free Tier"}
+            subtext={activeSub?.currentPeriodEnd ? `Renews: ${new Date(activeSub.currentPeriodEnd).toLocaleDateString()}` : "Standard Access"}
+            colorClass="bg-blue-100 text-blue-600"
+          />
+          <UsageCard usage={usage} />
+          <StatCard 
+            icon={Calendar}
+            label="Billing Status"
+            value={activeSub?.status === 'active' ? "Active" : "No Method"}
+            subtext={activeSub?.status === 'active' ? "Auto-renewal enabled" : "Add payment method"}
+            colorClass={activeSub?.status === 'active' ? "bg-emerald-100 text-emerald-600" : "bg-slate-100 text-slate-500"}
+          />
+        </div>
+      </div>
+
+      {/* --- 2. Tabs Navigation --- */}
+      <div className="border-b border-slate-200">
+        <div className="flex gap-8">
+          {[
+            { id: "plans", label: "Available Plans", icon: LayoutGrid },
+            { id: "history", label: "Payment History", icon: History }
+          ].map((tab) => {
+            const isActive = activeTab === tab.id;
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as "plans" | "history")}
+                className={`pb-4 text-sm font-medium transition-all relative flex items-center gap-2 ${
+                  isActive ? "text-blue-600" : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                <Icon size={18} />
+                {tab.label}
+                {isActive && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-full layoutId='tab'" />}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* --- 3. Content Area --- */}
+      <div className="min-h-96">
+        {activeTab === "plans" && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {products.map((p) => (
+              <PlanCard 
+                key={p.id} 
+                product={p} 
+                isActive={currentPlanId === p.id} 
+                onBuy={handleBuy} 
+                loadingKey={buyingKey}
+              />
+            ))}
           </div>
         )}
-      </div>
 
-      {/* --- Stats Overview --- */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* 1. Plan Info */}
-        <StatCard 
-          icon={CreditCard}
-          label="Current Plan"
-          value={activeSub?.product?.name || "Free Tier"}
-          subtext={activeSub?.currentPeriodEnd ? `Renews: ${new Date(activeSub.currentPeriodEnd).toLocaleDateString()}` : "Lifetime Access"}
-          colorClass="bg-blue-100 text-blue-600"
-        />
-
-        {/* 2. AI Usage (Dynamic) */}
-        <UsageBar used={usage.aiGenerated} limit={usage.aiLimit} />
-
-        {/* 3. Billing Status */}
-        <StatCard 
-          icon={Calendar}
-          label="Billing Status"
-          value={activeSub?.status === 'active' ? "Good Standing" : "No Payment Method"}
-          subtext={activeSub?.status === 'active' ? "Next invoice incoming" : "Upgrade to unlock features"}
-          colorClass="bg-indigo-100 text-indigo-600"
-        />
-      </div>
-
-      {/* --- Tabs Navigation --- */}
-      <div className="border-b border-slate-200 sticky top-0 bg-gray-50/80 backdrop-blur-sm z-10 pt-4">
-        <div className="flex gap-8">
-          <button
-            onClick={() => setActiveTab("plans")}
-            className={`pb-4 text-sm font-medium transition-all relative ${
-              activeTab === "plans" 
-                ? "text-blue-600" 
-                : "text-slate-500 hover:text-slate-800"
-            }`}
-          >
-            <span className="flex items-center gap-2"><LayoutGrid size={16}/> Available Plans</span>
-            {activeTab === "plans" && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-full layoutId='tab'" />}
-          </button>
-
-          <button
-            onClick={() => setActiveTab("history")}
-            className={`pb-4 text-sm font-medium transition-all relative ${
-              activeTab === "history" 
-                ? "text-blue-600" 
-                : "text-slate-500 hover:text-slate-800"
-            }`}
-          >
-            <span className="flex items-center gap-2"><History size={16}/> Payment History</span>
-            {activeTab === "history" && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-full layoutId='tab'" />}
-          </button>
-        </div>
-      </div>
-
-      {/* --- Tab Content: Plans --- */}
-      {activeTab === "plans" && (
-        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 py-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {products.map((p) => {
-              const isCurrent = activeSub?.product?.id === p.id;
-              
-              return (
-                <div 
-                  key={p.id} 
-                  className={`relative flex flex-col rounded-2xl p-6 transition-all duration-300 ${
-                    isCurrent 
-                      ? 'bg-white ring-2 ring-blue-600 shadow-xl shadow-blue-900/5 scale-[1.02]' 
-                      : 'bg-white border border-slate-200 hover:border-slate-300 hover:shadow-lg'
-                  }`}
-                >
-                  <div className="flex justify-between items-start mb-4">
-                     <span className={`text-[10px] font-bold px-2 py-1 rounded border uppercase tracking-wider ${getBadgeColor(p.key)}`}>
-                        {p.key}
-                     </span>
-                     {isCurrent && <span className="text-blue-600 bg-blue-50 rounded-full p-1"><Check size={16} /></span>}
-                  </div>
-
-                  <h3 className="text-xl font-bold text-slate-900">{p.name}</h3>
-                  <div className="mt-2 mb-6 flex items-baseline gap-1">
-                    <span className="text-4xl font-extrabold text-slate-900">₹{p.price / 100}</span>
-                    <span className="text-slate-500 font-medium">/mo</span>
-                  </div>
-
-                  <div className="w-full h-px bg-slate-100 mb-6" />
-
-                  <div className="grow space-y-3 mb-8">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Includes</p>
-                    <ul className="space-y-3">
-                      <li className="flex items-start gap-3 text-sm text-slate-600">
-                        <Zap size={16} className="text-amber-500 mt-0.5 shrink-0" />
-                        <span>{p.description || "Full access to AI features"}</span>
-                      </li>
-                      <li className="flex items-start gap-3 text-sm text-slate-600">
-                        <Check size={16} className="text-emerald-500 mt-0.5 shrink-0" />
-                        <span>Higher Usage Limits</span>
-                      </li>
-                    </ul>
-                  </div>
-
-                  <button 
-                    className={`w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
-                      isCurrent 
-                        ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
-                        : "bg-slate-900 text-white hover:bg-slate-800 hover:scale-[1.02] shadow-lg shadow-slate-900/10 active:scale-95"
-                    }`}
-                    onClick={() => !isCurrent && buy(p.key)}
-                    disabled={!!buying || isCurrent}
-                  >
-                    {isCurrent ? (
-                      "Current Plan" 
-                    ) : (buying === p.key ? (
-                      <><Loader2 size={16} className="animate-spin" /> Processing...</>
-                    ) : (
-                      "Upgrade Now"
-                    ))}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* --- Tab Content: History --- */}
-      {activeTab === "history" && (
-        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 py-4">
-          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+        {activeTab === "history" && (
+          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
             {history.length > 0 ? (
               <table className="w-full text-left text-sm">
                 <thead className="bg-slate-50 border-b border-slate-200">
                   <tr>
-                    <th className="px-6 py-4 font-semibold text-slate-500 uppercase tracking-wider text-xs">Date</th>
-                    <th className="px-6 py-4 font-semibold text-slate-500 uppercase tracking-wider text-xs">Amount</th>
-                    <th className="px-6 py-4 font-semibold text-slate-500 uppercase tracking-wider text-xs">Status</th>
-                    <th className="px-6 py-4 font-semibold text-slate-500 uppercase tracking-wider text-xs text-right">Invoice</th>
+                    <th className="px-6 py-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Date</th>
+                    <th className="px-6 py-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Amount</th>
+                    <th className="px-6 py-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Status</th>
+                    <th className="px-6 py-4 font-bold text-slate-500 uppercase tracking-wider text-xs text-right">Invoice</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {history.map((record) => (
-                    <tr key={record.id} className="hover:bg-slate-50/50 transition-colors">
+                    <tr key={record.id} className="hover:bg-slate-50 transition-colors">
                       <td className="px-6 py-4 text-slate-900 font-medium">
                         {new Date(record.date).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 text-slate-600 font-mono">
-                        ₹{record.amount / 100}
+                        ₹{(record.amount / 100).toLocaleString()}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${
-                          record.status === 'paid' ? 'bg-emerald-100 text-emerald-800' : 
-                          record.status === 'pending' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold capitalize border ${
+                          record.status === 'paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
+                          record.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-red-50 text-red-700 border-red-100'
                         }`}>
                           {record.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                         <button className="text-blue-600 hover:text-blue-800 font-medium inline-flex items-center gap-1 transition-colors">
-                           <Download size={14} /> Download
+                         <button className="text-slate-400 hover:text-blue-600 transition-colors">
+                           <Download size={16} />
                          </button>
                       </td>
                     </tr>
@@ -465,20 +469,21 @@ export default function SubscriptionPage() {
                 </tbody>
               </table>
             ) : (
-              <div className="p-12 text-center text-slate-500">
-                <div className="bg-slate-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <History size={20} className="text-slate-400" />
-                </div>
-                <h3 className="text-slate-900 font-bold">No payment history</h3>
-                <p className="text-sm mt-1">You have not made any purchases yet.</p>
+              <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                <History size={48} strokeWidth={1} className="mb-4 opacity-50" />
+                <p>No payment history found.</p>
               </div>
             )}
           </div>
-          <div className="mt-4 flex items-center gap-2 p-4 bg-blue-50 text-blue-700 rounded-lg text-sm border border-blue-100">
-            <AlertCircle size={18} />
-            <span>Need help with a payment? <a href="#" className="underline font-bold hover:text-blue-800">Contact Support</a></span>
-          </div>
-        </div>
+        )}
+      </div>
+
+      {toast && (
+        <Notification 
+          message={toast.msg} 
+          type={toast.type} 
+          onClose={() => setToast(null)} 
+        />
       )}
     </div>
   );
