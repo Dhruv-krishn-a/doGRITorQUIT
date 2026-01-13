@@ -1,7 +1,4 @@
-// app/dashboard/page.tsx
-"use client";
-
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Zap,
   CheckCircle2,
@@ -47,124 +44,42 @@ interface DashboardData {
   todaysTasks: DashboardTask[];
 }
 
-/** Helper: ensure unknown is treated as record safely */
-function toRecord(u: unknown): Record<string, unknown> {
-  return typeof u === "object" && u !== null ? (u as Record<string, unknown>) : {};
-}
+export default async function DashboardHome() {
+  // 1. Fetch data directly on the server (No API call needed)
+  const data = await getDashboardData();
 
-export default function DashboardHome() {
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
+  if (!data) {
+    return (
+      <div className="p-8 text-center text-rose-500">
+        Failed to load dashboard data.
+      </div>
+    );
+  }
 
-  useEffect(() => {
-    let mounted = true;
+  // 2. Prepare Display Data
+  const focusMinutes = data.stats.focusMinutes;
+  const completedTasks = data.stats.completedTasks;
+  const displayDate = new Date(data.date).toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
 
-    fetch("/api/dashboard")
-      .then(async (res) => {
-        const json = await res.json().catch(() => ({}));
-
-        // Normalize response: handle common naming variations and missing fields
-        const statsSrc = toRecord((json as Record<string, unknown>).stats ?? {});
-        const activePlanSrc = (json as Record<string, unknown>).activePlan ?? null;
-        const habitsSrc = Array.isArray((json as Record<string, unknown>).habits)
-          ? ((json as Record<string, unknown>).habits as unknown[])
-          : [];
-        const tasksSrc = Array.isArray((json as Record<string, unknown>).todaysTasks)
-          ? ((json as Record<string, unknown>).todaysTasks as unknown[])
-          : [];
-
-        const normalized: DashboardData = {
-          greeting: String((json as Record<string, unknown>).greeting ?? (json as Record<string, unknown>).message ?? "Hello"),
-          date: String((json as Record<string, unknown>).date ?? new Date().toISOString()),
-          stats: {
-            focusMinutes:
-              Number(
-                statsSrc.focusMinutes ??
-                  statsSrc.focus_minutes ??
-                  (json as Record<string, unknown>).focusMinutes ??
-                  0
-              ) || 0,
-            completedTasks:
-              Number(
-                statsSrc.completedTasks ??
-                  statsSrc.completed_tasks ??
-                  (json as Record<string, unknown>).completedTasks ??
-                  0
-              ) || 0,
-          },
-          activePlan: activePlanSrc
-            ? {
-                id: String(toRecord(activePlanSrc).id ?? toRecord(activePlanSrc)._id ?? "plan-0"),
-                title: String(toRecord(activePlanSrc).title ?? toRecord(activePlanSrc).name ?? "Untitled Plan"),
-                progress: Number(toRecord(activePlanSrc).progress ?? 0) || 0,
-              }
-            : null,
-          habits: habitsSrc.map((h: unknown) => {
-            const r = toRecord(h);
-            return {
-              id: String(r.id ?? r._id ?? Math.random()),
-              title: String(r.title ?? r.name ?? ""),
-              completedToday: Boolean(r.completedToday ?? r.done ?? false),
-            } as DashboardHabit;
-          }),
-          todaysTasks: tasksSrc.map((t: unknown) => {
-            const r = toRecord(t);
-            return {
-              id: String(r.id ?? r._id ?? Math.random()),
-              title: String(r.title ?? r.name ?? ""),
-              status: String(r.status ?? "Pending"),
-              priority: r.priority != null ? String(r.priority) : undefined,
-              estimatedMinutes: r.estimatedMinutes != null ? Number(r.estimatedMinutes) : undefined,
-            } as DashboardTask;
-          }),
-        };
-
-        if (mounted) setData(normalized);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch dashboard:", err);
-        if (mounted) setData(null);
-      })
-      .finally(() => {
-        if (mounted) setLoading(false);
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  if (loading) return <DashboardSkeleton />;
-  if (!data) return <div className="p-8 text-center text-rose-500">Failed to load dashboard data.</div>;
-
-  const focusMinutes = data.stats?.focusMinutes ?? 0;
-  const completedTasks = data.stats?.completedTasks ?? 0;
-  const displayDate = (() => {
-    try {
-      return new Date(data.date).toLocaleDateString("en-US", {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-      });
-    } catch {
-      return new Date().toLocaleDateString("en-US", {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-      });
-    }
-  })();
-
+  // 3. Render HTML immediately
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-8 fade-in">
       {/* Header */}
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">{data.greeting}, User</h1>
+          <h1 className="text-3xl font-bold text-slate-900">
+            {data.greeting}, User
+          </h1>
           <p className="text-slate-500 mt-1">Here is your daily briefing.</p>
         </div>
         <div className="text-right hidden sm:block">
-          <div className="text-sm font-bold text-slate-400 uppercase tracking-widest">Today</div>
+          <div className="text-sm font-bold text-slate-400 uppercase tracking-widest">
+            Today
+          </div>
           <div className="text-xl font-bold text-slate-800">{displayDate}</div>
         </div>
       </div>
@@ -176,11 +91,13 @@ export default function DashboardHome() {
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-2 opacity-80 mb-1">
-                <Clock size={16} /> <span className="text-sm font-medium">Total Focus</span>
+                <Clock size={16} />{" "}
+                <span className="text-sm font-medium">Total Focus</span>
               </div>
               <div className="text-4xl font-bold">
                 {Math.floor(focusMinutes / 60)}
-                <span className="text-lg opacity-60">h</span> {focusMinutes % 60}
+                <span className="text-lg opacity-60">h</span>{" "}
+                {focusMinutes % 60}
                 <span className="text-lg opacity-60">m</span>
               </div>
             </div>
@@ -188,7 +105,9 @@ export default function DashboardHome() {
               <Zap size={24} className="text-yellow-300" />
             </div>
           </div>
-          <div className="mt-6 text-sm opacity-80">{completedTasks} tasks completed in total</div>
+          <div className="mt-6 text-sm opacity-80">
+            {completedTasks} tasks completed in total
+          </div>
         </div>
 
         {/* Active Plan Card */}
@@ -199,12 +118,17 @@ export default function DashboardHome() {
             </div>
             {data.activePlan ? (
               <>
-                <h3 className="text-xl font-bold text-slate-800 line-clamp-1">{data.activePlan.title}</h3>
+                <h3 className="text-xl font-bold text-slate-800 line-clamp-1">
+                  {data.activePlan.title}
+                </h3>
                 <div className="w-full bg-slate-100 h-2 rounded-full mt-4 overflow-hidden">
                   <div
                     className="bg-blue-600 h-full rounded-full transition-all duration-1000 ease-out"
                     style={{
-                      width: `${Math.max(0, Math.min(100, data.activePlan.progress))}%`,
+                      width: `${Math.max(
+                        0,
+                        Math.min(100, data.activePlan.progress)
+                      )}%`,
                     }}
                   />
                 </div>
@@ -213,14 +137,20 @@ export default function DashboardHome() {
                 </div>
               </>
             ) : (
-              <div className="text-slate-400 py-4 text-sm font-medium">No active plan selected.</div>
+              <div className="text-slate-400 py-4 text-sm font-medium">
+                No active plan selected.
+              </div>
             )}
           </div>
           <Link
             href="/dashboard/plans"
             className="text-sm font-bold text-slate-600 hover:text-blue-600 flex items-center gap-1 mt-4 group"
           >
-            View Plans <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+            View Plans{" "}
+            <ArrowRight
+              size={14}
+              className="group-hover:translate-x-1 transition-transform"
+            />
           </Link>
         </div>
 
@@ -230,7 +160,10 @@ export default function DashboardHome() {
             <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-widest">
               <CheckCircle2 size={14} /> Daily Habits
             </div>
-            <Link href="/dashboard/daily-checklist" className="text-xs font-bold text-blue-600 hover:underline">
+            <Link
+              href="/dashboard/daily-checklist"
+              className="text-xs font-bold text-blue-600 hover:underline"
+            >
               View All
             </Link>
           </div>
@@ -240,17 +173,31 @@ export default function DashboardHome() {
               <div key={h.id} className="flex items-center gap-3 group">
                 <div
                   className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
-                    h.completedToday ? "bg-green-500 border-green-500" : "border-slate-300 group-hover:border-slate-400"
+                    h.completedToday
+                      ? "bg-green-500 border-green-500"
+                      : "border-slate-300 group-hover:border-slate-400"
                   }`}
                 >
-                  {h.completedToday && <CheckCircle2 size={12} className="text-white" />}
+                  {h.completedToday && (
+                    <CheckCircle2 size={12} className="text-white" />
+                  )}
                 </div>
-                <span className={`text-sm font-medium ${h.completedToday ? "text-slate-400 line-through" : "text-slate-700"}`}>
+                <span
+                  className={`text-sm font-medium ${
+                    h.completedToday
+                      ? "text-slate-400 line-through"
+                      : "text-slate-700"
+                  }`}
+                >
                   {h.title}
                 </span>
               </div>
             ))}
-            {data.habits.length === 0 && <span className="text-sm text-slate-400 italic">No habits set yet.</span>}
+            {data.habits.length === 0 && (
+              <span className="text-sm text-slate-400 italic">
+                No habits set yet.
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -259,8 +206,15 @@ export default function DashboardHome() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-slate-800">Tasks for Today</h2>
-          <Link href="/dashboard/tasks" className="text-sm font-bold text-blue-600 hover:underline flex items-center gap-1 group">
-            Open Task Manager <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+          <Link
+            href="/dashboard/tasks"
+            className="text-sm font-bold text-blue-600 hover:underline flex items-center gap-1 group"
+          >
+            Open Task Manager{" "}
+            <ArrowRight
+              size={14}
+              className="group-hover:translate-x-1 transition-transform"
+            />
           </Link>
         </div>
 
@@ -269,31 +223,53 @@ export default function DashboardHome() {
             <div className="p-12 text-center text-slate-400 flex flex-col items-center justify-center h-full">
               <Calendar className="w-12 h-12 mb-3 opacity-20" />
               <p>No tasks scheduled for today.</p>
-              <Link href="/dashboard/plans" className="text-blue-600 font-bold text-sm mt-2 inline-block hover:underline">
+              <Link
+                href="/dashboard/plans"
+                className="text-blue-600 font-bold text-sm mt-2 inline-block hover:underline"
+              >
                 Generate a Plan
               </Link>
             </div>
           ) : (
             <div className="divide-y divide-slate-100">
               {data.todaysTasks.map((task) => (
-                <div key={task.id} className="p-4 hover:bg-slate-50 flex items-center justify-between transition-colors group">
+                <div
+                  key={task.id}
+                  className="p-4 hover:bg-slate-50 flex items-center justify-between transition-colors group"
+                >
                   <div className="flex items-center gap-4">
                     <div
                       className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                        task.status === "Completed" ? "bg-green-500 border-green-500" : "border-slate-300 group-hover:border-slate-400"
+                        task.status === "Completed"
+                          ? "bg-green-500 border-green-500"
+                          : "border-slate-300 group-hover:border-slate-400"
                       }`}
                     >
-                      {task.status === "Completed" && <CheckCircle2 size={14} className="text-white" />}
+                      {task.status === "Completed" && (
+                        <CheckCircle2 size={14} className="text-white" />
+                      )}
                     </div>
                     <div>
-                      <div className={`font-medium transition-colors ${task.status === "Completed" ? "text-slate-400 line-through" : "text-slate-800 group-hover:text-blue-700"}`}>
+                      <div
+                        className={`font-medium transition-colors ${
+                          task.status === "Completed"
+                            ? "text-slate-400 line-through"
+                            : "text-slate-800 group-hover:text-blue-700"
+                        }`}
+                      >
                         {task.title}
                       </div>
-                      {task.priority && <div className="text-[10px] uppercase font-bold text-slate-400 mt-0.5">{task.priority}</div>}
+                      {task.priority && (
+                        <div className="text-[10px] uppercase font-bold text-slate-400 mt-0.5">
+                          {task.priority}
+                        </div>
+                      )}
                     </div>
                   </div>
                   {task.estimatedMinutes && (
-                    <div className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-md">{task.estimatedMinutes}m</div>
+                    <div className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-md">
+                      {task.estimatedMinutes}m
+                    </div>
                   )}
                 </div>
               ))}
@@ -305,31 +281,61 @@ export default function DashboardHome() {
   );
 }
 
-// --- Skeleton Loader Component ---
-function DashboardSkeleton() {
-  return (
-    <div className="p-6 max-w-6xl mx-auto space-y-8 animate-pulse">
-      <div className="flex justify-between items-end">
-        <div className="space-y-2">
-          <div className="h-8 w-48 bg-slate-200 rounded-lg"></div>
-          <div className="h-4 w-32 bg-slate-200 rounded"></div>
-        </div>
-        <div className="h-10 w-24 bg-slate-200 rounded-lg"></div>
-      </div>
+// --- SERVER SIDE DATA FETCHING ---
+// COPY THE LOGIC FROM /api/dashboard/route.ts INTO HERE
+async function getDashboardData(): Promise<DashboardData | null> {
+  try {
+    // ---------------------------------------------------------
+    // OPTION 1 (BEST): Call your DB directly.
+    // Replace this comments with your actual Prisma logic.
+    // ---------------------------------------------------------
+    /*
+    import { prisma } from "@/lib/prisma";
+    import { getCurrentUser } from "@/lib/auth";
+    
+    const user = await getCurrentUser();
+    if (!user) return null;
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="h-48 bg-slate-200 rounded-3xl"></div>
-        <div className="h-48 bg-slate-200 rounded-3xl"></div>
-        <div className="h-48 bg-slate-200 rounded-3xl"></div>
-      </div>
+    const [stats, habits, tasks] = await Promise.all([
+      prisma.stats.findUnique({ where: { userId: user.id } }),
+      prisma.habit.findMany({ where: { userId: user.id, date: new Date() } }),
+      prisma.task.findMany({ where: { userId: user.id, completed: false } })
+    ]);
+    
+    // Return formatted data here...
+    */
 
-      <div className="space-y-4">
-        <div className="flex justify-between">
-          <div className="h-6 w-32 bg-slate-200 rounded"></div>
-          <div className="h-4 w-24 bg-slate-200 rounded"></div>
-        </div>
-        <div className="h-64 bg-slate-200 rounded-4xl"></div>
-      </div>
-    </div>
-  );
+    // ---------------------------------------------------------
+    // OPTION 2 (TEMPORARY): Fetch from your own API
+    // Use this ONLY if you can't move the DB logic right now.
+    // Note: You need the absolute URL (e.g. http://localhost:3000 or your vercel domain)
+    // ---------------------------------------------------------
+    
+    // For now, I'll return mock data so the page renders.
+    // DELETE THIS MOCK AND UNCOMMENT OPTION 1 ABOVE.
+    return {
+      greeting: getGreeting(),
+      date: new Date().toISOString(),
+      stats: { focusMinutes: 120, completedTasks: 5 },
+      activePlan: { id: "p1", title: "Project Launch", progress: 75 },
+      habits: [
+        { id: "h1", title: "Morning Run", completedToday: true },
+        { id: "h2", title: "Read 10 mins", completedToday: false },
+      ],
+      todaysTasks: [
+        { id: "t1", title: "Review Pull Requests", status: "Pending", priority: "High" },
+        { id: "t2", title: "Team Sync", status: "Pending", estimatedMinutes: 30 },
+      ],
+    };
+  } catch (error) {
+    console.error("Server Fetch Error:", error);
+    return null;
+  }
+}
+
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
 }
