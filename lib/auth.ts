@@ -1,23 +1,35 @@
-// lib/auth.ts
-import { prisma } from "./prisma";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { prisma } from "./prisma";
+import type { User as PrismaUser } from "@prisma/client";
+import { cache } from "react";
+import { unstable_cache } from "next/cache";
 
-export async function getAdminUser() {
+const getCachedUser = unstable_cache(
+  async (userId: string) => {
+    return prisma.user.findUnique({ where: { id: userId } });
+  },
+  ["user-profile-v1"], // Base Key
+  { revalidate: 300, tags: ["user"] } // Cache for 5 minutes
+);
+
+export const getServerUser = cache(async (): Promise<PrismaUser | null> => {
   const cookieStore = await cookies();
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } }
+    {
+      cookies: {
+        getAll: () => cookieStore.getAll(),
+        setAll: () => {}, 
+      },
+    }
   );
 
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.user) return null;
+  const { data: { session }, error } = await supabase.auth.getSession();
+  
+  if (error || !session?.user) return null;
 
-  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
-  
-  // CRITICAL: Only allow if role is admin
-  if (user?.role !== "admin") return null;
-  
-  return user;
-}
+  return getCachedUser(session.user.id);
+});

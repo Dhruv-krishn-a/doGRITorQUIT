@@ -88,8 +88,8 @@ async function _fetchEntitlements(userId: string): Promise<UserEntitlements> {
 // This makes the layout permissions check nearly instant (1-5ms)
 export const getUserEntitlements = unstable_cache(
   async (userId: string) => _fetchEntitlements(userId),
-  ["user-entitlements"],
-  { revalidate: 300, tags: ["entitlements"] } // Cache for 5 mins
+  ["user-entitlements-v1"], // Key namespace
+  { revalidate: 300, tags: ["entitlements"] } 
 );
 
 // ✅ 3. Update getPagePermissions to use the cached getter

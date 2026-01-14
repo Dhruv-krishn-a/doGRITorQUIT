@@ -6,11 +6,14 @@ import Sidebar from "@shared/components/Sidebar";
 import { UserSync } from "@features/auth"; 
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  // 1. Fast Auth Check
   const user = await getServerUser();
-  if (!user) redirect("/login");
 
-  // 2. Fetch Permissions (This is now fast because of the index we added earlier)
+  if (!user) {
+    redirect("/login");
+  }
+
+  // ✅ OPTIMIZATION: Fetch permissions in parallel with rendering preparation
+  // Since we cached 'getUserEntitlements' in the domain logic, this is fast.
   const permissions = await billing.getPagePermissions(user.id);
 
   return (

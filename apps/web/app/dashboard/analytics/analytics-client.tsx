@@ -1,17 +1,14 @@
-// apps/web/app/dashboard/analytics/page.tsx
+// apps/web/app/dashboard/analytics/analytics-client.tsx
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   LineChart, Line, PieChart, Pie, Cell, Legend
 } from "recharts";
-import { Loader2, TrendingUp, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { Loader2, TrendingUp, CheckCircle2, Clock } from "lucide-react";
 
 // --- Types ---
-
-// ✅ FIX: Added [key: string]: string | number to satisfy Recharts 'ChartDataInput' requirements
-
 interface DailyStat {
   day: string;
   focusMinutes: number;
@@ -34,43 +31,42 @@ interface TaskDistribution {
   [key: string]: string | number;
 }
 
-interface AnalyticsData {
+export interface AnalyticsData {
   dailyStats: DailyStat[];
   habitStats: HabitStat[];
   taskDistribution: TaskDistribution[];
 }
 
-// Type for the Tooltip Payload Item (Recharts internal shape)
-interface TooltipPayloadItem {
+interface AnalyticsClientProps {
+  data: AnalyticsData;
+}
+
+// ✅ FIX: Define explicit types for Recharts Tooltip props to avoid 'any'
+interface TooltipPayload {
   name: string;
-  value: number;
+  value: number | string;
   color: string;
   payload?: unknown;
   dataKey?: string | number;
 }
 
-// Explicit interface for CustomTooltip props
 interface CustomTooltipProps {
   active?: boolean;
-  payload?: TooltipPayloadItem[];
+  payload?: TooltipPayload[];
   label?: string;
 }
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444']; 
 
-// --- Components ---
-
+// --- Custom Tooltip ---
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white p-3 border border-slate-100 shadow-xl rounded-lg text-sm">
         <p className="font-semibold text-slate-700 mb-2">{label}</p>
-        {payload.map((entry: TooltipPayloadItem, index: number) => (
+        {payload.map((entry, index) => (
           <div key={index} className="flex items-center gap-2 text-slate-600">
-            <div 
-              className="w-2 h-2 rounded-full" 
-              style={{ backgroundColor: entry.color }}
-            />
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
             <span className="capitalize">{entry.name}:</span>
             <span className="font-mono font-medium">{entry.value}</span>
           </div>
@@ -81,59 +77,9 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   return null;
 };
 
-const SkeletonCard = () => (
-  <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm animate-pulse h-32" />
-);
-
-const SkeletonChart = () => (
-  <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm animate-pulse h-96" />
-);
-
-export default function AnalyticsPage() {
-  const [data, setData] = useState<AnalyticsData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    fetch("/api/analytics")
-      .then(async (res) => {
-        if (!res.ok) throw new Error("Failed to load");
-        return res.json();
-      })
-      .then(setData)
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="max-w-6xl mx-auto p-6 space-y-8">
-        <div className="h-8 w-48 bg-slate-200 rounded animate-pulse" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <SkeletonCard /><SkeletonCard /><SkeletonCard />
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <SkeletonChart /><SkeletonChart />
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !data) {
-    return (
-      <div className="flex flex-col h-96 items-center justify-center text-slate-500">
-        <AlertCircle size={48} className="mb-4 text-rose-400" />
-        <p className="text-lg font-medium">Could not load analytics data.</p>
-        <button 
-          onClick={() => window.location.reload()}
-          className="mt-4 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors"
-        >
-          Try Again
-        </button>
-      </div>
-    );
-  }
-
+export default function AnalyticsClientPage({ data }: AnalyticsClientProps) {
+  // ✅ FIX: No useEffect, No Loading State. Data is passed from Server.
+  
   const totalFocus = data.dailyStats.reduce((acc, d) => acc + d.focusMinutes, 0);
   const totalTasksDone = data.dailyStats.reduce((acc, d) => acc + d.completed, 0);
   const avgHabitRate = data.habitStats.length > 0 
