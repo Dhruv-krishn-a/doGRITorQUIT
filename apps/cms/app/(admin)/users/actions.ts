@@ -1,25 +1,27 @@
-// apps/cms/app/(admin)/users/actions.ts
 "use server";
 
-import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { cms } from "@domain"; // Import from your domain package
 import { getAdminUser } from "@/lib/auth";
+import { revalidatePath } from "next/cache";
 
-export async function updateUserLimit(formData: FormData) {
-  // 1. Security Check
+export async function assignPlanAction(formData: FormData) {
   const admin = await getAdminUser();
   if (!admin) throw new Error("Unauthorized");
 
   const userId = String(formData.get("userId"));
-  const rawLimit = formData.get("limit");
+  const productId = String(formData.get("productId"));
 
-  // 2. Logic: If empty string, set to null (which resets to Plan Default)
-  const customAiLimit = rawLimit === "" ? null : Number(rawLimit);
+  await cms.assignUserPlan(userId, productId);
+  revalidatePath("/users");
+}
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: { customAiLimit },
-  });
+export async function updateRoleAction(formData: FormData) {
+  const admin = await getAdminUser();
+  if (!admin) throw new Error("Unauthorized");
 
+  const userId = String(formData.get("userId"));
+  const role = String(formData.get("role"));
+
+  await cms.updateUserRole(userId, role);
   revalidatePath("/users");
 }

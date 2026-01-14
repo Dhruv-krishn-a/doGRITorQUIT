@@ -1,4 +1,3 @@
-// apps/cms/app/(admin)/users/PlanSelect.tsx
 "use client";
 
 type Product = {
@@ -17,7 +16,7 @@ export default function PlanSelect({ currentProductId, products }: Props) {
     <select
       name="productId"
       defaultValue={currentProductId || "manual_free"}
-      className="border rounded text-sm p-1 cursor-pointer max-w-35 truncate"
+      className="border border-slate-300 rounded text-sm px-2 py-1 cursor-pointer bg-white max-w-35 truncate hover:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
       onChange={(e) => e.target.form?.requestSubmit()}
     >
       <option value="manual_free">No Active Plan</option>

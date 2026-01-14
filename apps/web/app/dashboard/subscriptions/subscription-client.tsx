@@ -1,4 +1,3 @@
-// apps/web/app/dashboard/subscriptions/subscription-client.tsx
 "use client";
 
 import { useState } from "react";
@@ -8,8 +7,53 @@ import {
   LayoutGrid, Download, AlertCircle, LucideIcon, 
   ShieldCheck, X
 } from "lucide-react";
+import { motion } from "framer-motion";
 
-// --- Types ---
+/* =======================
+   Type Definitions
+======================= */
+
+// --- Razorpay Types ---
+interface RazorpayPaymentResponse {
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+  razorpay_signature: string;
+}
+
+interface RazorpayError {
+  error: {
+    code: string;
+    description: string;
+    source: string;
+    step: string;
+    reason: string;
+    metadata: { order_id: string; payment_id: string };
+  };
+}
+
+interface RazorpayOptions {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description?: string;
+  order_id: string;
+  handler: (response: RazorpayPaymentResponse) => void;
+  theme?: { color: string };
+  modal?: { ondismiss?: () => void };
+}
+
+interface RazorpayInstance {
+  open: () => void;
+  on: (event: string, handler: (response: RazorpayError) => void) => void;
+}
+
+// ✅ FIXED: Standalone interface for window casting
+interface RazorpayWindow {
+  Razorpay: new (options: RazorpayOptions) => RazorpayInstance;
+}
+
+// --- Data Types ---
 export interface Product {
   id: string;
   name: string;
@@ -19,28 +63,24 @@ export interface Product {
   currency: string;
 }
 
-export interface PaymentRecord {
-  id: string;
-  date: string;
-  amount: number;
-  status: "paid" | "failed" | "pending";
-  invoiceUrl?: string;
-}
-
 export interface ActiveSubscription {
-  product?: {
-    id: string;
-    name: string;
-    key: string;
-  };
+  product?: { id: string; name: string; key: string };
   currentPeriodEnd?: string;
+  formattedRenewsAt?: string;
   status?: string;
 }
 
 export interface UsageStats {
   aiGenerated: number;
-  aiLimit: number | null; // Null implies infinity
+  aiLimit: number | null;
   remaining: number | null;
+}
+
+export interface PaymentRecord {
+  id: string;
+  formattedDate: string;
+  amount: number;
+  status: "paid" | "failed" | "pending";
 }
 
 export interface SubscriptionData {
@@ -49,63 +89,14 @@ export interface SubscriptionData {
   history?: PaymentRecord[];
 }
 
-interface SubscriptionClientProps {
+export interface SubscriptionClientProps {
   products: Product[];
   data: SubscriptionData;
 }
 
-// --- Razorpay SDK Types (Strictly Typed) ---
-
-interface RazorpaySuccessResponse {
-  razorpay_payment_id: string;
-  razorpay_order_id: string;
-  razorpay_signature: string;
-}
-
-interface RazorpayErrorResponse {
-  error: {
-    code: string;
-    description: string;
-    reason: string;
-    source: string;
-    step: string;
-    metadata: object;
-  };
-}
-
-interface RazorpayOptions {
-  key: string;
-  amount: number;
-  currency: string;
-  name: string;
-  description: string;
-  order_id: string;
-  // ✅ FIX: Replace 'any' with specific success type
-  handler: (response: RazorpaySuccessResponse) => void;
-  theme?: { color: string };
-  modal?: { ondismiss?: () => void };
-}
-
-interface RazorpayInstance {
-  open: () => void;
-  // ✅ FIX: Replace 'any' with specific error type
-  on: (event: string, handler: (response: RazorpayErrorResponse) => void) => void;
-}
-
-interface RazorpayConstructor {
-  new (options: RazorpayOptions): RazorpayInstance;
-}
-
-// --- Helper Components ---
-const Notification = ({ message, type, onClose }: { message: string, type: 'success' | 'error', onClose: () => void }) => (
-  <div className={`fixed bottom-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-bottom-5 fade-in duration-300 ${
-    type === 'success' ? 'bg-slate-900 text-white' : 'bg-red-500 text-white'
-  }`}>
-    {type === 'success' ? <Check size={20} /> : <AlertCircle size={20} />}
-    <p className="font-medium text-sm">{message}</p>
-    <button onClick={onClose} className="ml-2 hover:opacity-75"><X size={16} /></button>
-  </div>
-);
+/* =======================
+   Sub-Components
+======================= */
 
 const StatCard = ({ icon: Icon, label, value, subtext, colorClass }: { 
   icon: LucideIcon; label: string; value: string | number; subtext?: string; colorClass: string 
@@ -144,13 +135,12 @@ const UsageCard = ({ usage }: { usage: UsageStats }) => {
           isUnlimited ? 'bg-indigo-50 text-indigo-700 border-indigo-100' :
           isCritical ? 'bg-red-50 text-red-600 border-red-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'
         }`}>
-          {isUnlimited ? "Unlimited Plan" : `${usage.remaining} Left`}
+          {isUnlimited ? "Unlimited" : `${usage.remaining} Left`}
         </span>
       </div>
       
       <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden relative">
         {isUnlimited ? (
-           // ✅ FIX: Use bg-linear-to-r for newer Tailwind versions
            <div className="absolute inset-0 bg-linear-to-r from-indigo-500/20 via-indigo-500/40 to-indigo-500/20 w-full animate-pulse" />
         ) : (
           <div 
@@ -185,7 +175,7 @@ const PlanCard = ({
       <div className="mb-6">
         <h3 className={`text-lg font-bold ${isActive ? 'text-white' : 'text-slate-900'}`}>{product.name}</h3>
         <p className={`text-sm mt-1 ${isActive ? 'text-slate-400' : 'text-slate-500'}`}>
-          {product.description || "Unlock powerful features"}
+          {product.description || "Unlock higher limits and premium features."}
         </p>
       </div>
 
@@ -199,7 +189,7 @@ const PlanCard = ({
       <div className={`w-full h-px mb-8 ${isActive ? 'bg-slate-800' : 'bg-slate-100'}`} />
 
       <ul className="space-y-4 mb-8 flex-1">
-        {["Full AI Access", "Unlimited History", "Priority Support"].map((feat, i) => (
+        {["Higher AI Limits", "Priority Support", "Advanced Analytics"].map((feat, i) => (
           <li key={i} className="flex items-center gap-3 text-sm">
             <div className={`p-0.5 rounded-full ${isActive ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
               <Check size={14} strokeWidth={3} />
@@ -224,7 +214,10 @@ const PlanCard = ({
   );
 };
 
-// --- Main Client Component ---
+/* =======================
+   Main Component
+======================= */
+
 export default function SubscriptionClientPage({ products, data }: SubscriptionClientProps) {
   const router = useRouter();
   
@@ -237,91 +230,80 @@ export default function SubscriptionClientPage({ products, data }: SubscriptionC
   const history = data?.history || [];
   const currentPlanId = activeSub?.product?.id;
 
-  // Razorpay Handler
-  const handleBuy = async (productKey: string) => {
-    setBuyingKey(productKey);
+  async function handleBuy(productKey: string) {
     try {
+      setBuyingKey(productKey);
+
       // 1. Create Order
       const res = await fetch("/api/billing/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ productKey }),
       });
-      const orderData = await res.json();
+      const order = await res.json();
 
-      if (!res.ok) throw new Error(orderData.error || "Failed to create order");
+      if (!res.ok) throw new Error(order.error ?? "Order creation failed");
 
-      // 2. Open Razorpay
-      const options: RazorpayOptions = {
+      // 2. Load Razorpay (Safe Cast)
+      const rzWindow = window as unknown as RazorpayWindow;
+      if (typeof rzWindow.Razorpay === "undefined") {
+        throw new Error("Razorpay SDK not loaded. Please refresh.");
+      }
+
+      // 3. Open Payment Modal
+      const rzp = new rzWindow.Razorpay({
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "",
-        amount: orderData.amount,
-        currency: orderData.currency,
+        amount: order.amount,
+        currency: order.currency,
         name: "Planner AI",
         description: `Upgrade to ${productKey}`,
-        order_id: orderData.orderId,
+        order_id: order.orderId,
         theme: { color: "#0f172a" },
         handler: async (response) => {
+          // 4. Verify Payment
           try {
-            // 3. Verify Payment
-            const verifyRes = await fetch("/api/billing/verify", {
+            const verify = await fetch("/api/billing/verify", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_signature: response.razorpay_signature,
-              }),
+              body: JSON.stringify(response),
             });
 
-            if (verifyRes.ok) {
-              setToast({ msg: "Upgrade successful! Unlocking features...", type: "success" });
-              router.refresh();
-              // Force reload to ensure new permissions take effect
-              setTimeout(() => window.location.reload(), 2000);
-            } else {
-              throw new Error("Payment verification failed");
-            }
+            if (!verify.ok) throw new Error("Verification failed");
+
+            setToast({ msg: "Subscription activated! 🎉", type: "success" });
+            router.refresh();
+            setTimeout(() => window.location.reload(), 1500);
           } catch {
             setToast({ msg: "Payment verification failed", type: "error" });
           }
         },
         modal: {
-            ondismiss: () => setBuyingKey(null)
-        }
-      };
+          ondismiss: () => setBuyingKey(null),
+        },
+      });
 
-      const win = window as unknown as { Razorpay?: RazorpayConstructor };
-
-      if (!win.Razorpay) {
-        throw new Error("Razorpay SDK not loaded");
-      }
-
-      const rzp = new win.Razorpay(options);
-      
-      // ✅ FIX: Typed response properly
-      rzp.on("payment.failed", (response: RazorpayErrorResponse) => {
-        setToast({ msg: response.error.description, type: "error" });
+      rzp.on("payment.failed", (err) => {
+        setToast({ msg: err.error.description, type: "error" });
         setBuyingKey(null);
       });
+
       rzp.open();
 
     } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Something went wrong";
-        setToast({ msg: errorMessage, type: "error" });
-        setBuyingKey(null);
+      const msg = err instanceof Error ? err.message : "Something went wrong";
+      setToast({ msg, type: "error" });
+      setBuyingKey(null);
     }
-  };
+  }
 
   return (
     <div className="max-w-6xl mx-auto py-10 px-4 sm:px-6 space-y-12 pb-24">
       
-      {/* --- 1. Header & Stats --- */}
+      {/* --- Header & Stats Grid --- */}
       <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
+        <div>
             <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Subscription & Limits</h1>
             <p className="text-slate-500 mt-2 text-lg">Manage your plan, track usage, and view billing history.</p>
-          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -329,7 +311,7 @@ export default function SubscriptionClientPage({ products, data }: SubscriptionC
             icon={CreditCard}
             label="Current Plan"
             value={activeSub?.product?.name || "Free Tier"}
-            subtext={activeSub?.currentPeriodEnd ? `Renews: ${new Date(activeSub.currentPeriodEnd).toLocaleDateString()}` : "Standard Access"}
+            subtext={activeSub?.formattedRenewsAt ? `Renews: ${activeSub.formattedRenewsAt}` : "Standard Access"}
             colorClass="bg-blue-100 text-blue-600"
           />
           <UsageCard usage={usage} />
@@ -343,7 +325,7 @@ export default function SubscriptionClientPage({ products, data }: SubscriptionC
         </div>
       </div>
 
-      {/* --- 2. Tabs Navigation --- */}
+      {/* --- Tabs Navigation --- */}
       <div className="border-b border-slate-200">
         <div className="flex gap-8">
           {[
@@ -362,14 +344,19 @@ export default function SubscriptionClientPage({ products, data }: SubscriptionC
               >
                 <Icon size={18} />
                 {tab.label}
-                {isActive && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-full layoutId='tab'" />}
+                {isActive && (
+                  <motion.div 
+                    layoutId="activeTab"
+                    className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-full" 
+                  />
+                )}
               </button>
             )
           })}
         </div>
       </div>
 
-      {/* --- 3. Content Area --- */}
+      {/* --- Content Area --- */}
       <div className="min-h-96">
         {activeTab === "plans" && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -401,7 +388,7 @@ export default function SubscriptionClientPage({ products, data }: SubscriptionC
                   {history.map((record) => (
                     <tr key={record.id} className="hover:bg-slate-50 transition-colors">
                       <td className="px-6 py-4 text-slate-900 font-medium">
-                        {new Date(record.date).toLocaleDateString()}
+                        {record.formattedDate}
                       </td>
                       <td className="px-6 py-4 text-slate-600 font-mono">
                         ₹{(record.amount / 100).toLocaleString()}
@@ -433,12 +420,15 @@ export default function SubscriptionClientPage({ products, data }: SubscriptionC
         )}
       </div>
 
+      {/* --- Toast Notification --- */}
       {toast && (
-        <Notification 
-          message={toast.msg} 
-          type={toast.type} 
-          onClose={() => setToast(null)} 
-        />
+        <div className={`fixed bottom-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-bottom-5 fade-in duration-300 ${
+            toast.type === 'success' ? 'bg-slate-900 text-white' : 'bg-red-500 text-white'
+        }`}>
+            {toast.type === 'success' ? <Check size={20} /> : <AlertCircle size={20} />}
+            <p className="font-medium text-sm">{toast.msg}</p>
+            <button onClick={() => setToast(null)} className="ml-2 hover:opacity-75"><X size={16} /></button>
+        </div>
       )}
       
       {/* Load Razorpay Script */}

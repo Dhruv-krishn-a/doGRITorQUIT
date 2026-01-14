@@ -9,8 +9,6 @@ import { LayoutDashboard, Users, ShoppingBag, CreditCard, LogOut } from "lucide-
 export default function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  
-  // REMOVED: if (pathname === "/login") return null; -> Not needed anymore!
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,7 +17,7 @@ export default function AdminSidebar() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push("/login"); // Redirect to the public login page
+    router.push("/login"); 
     router.refresh();
   };
 
@@ -38,7 +36,7 @@ export default function AdminSidebar() {
       
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
           const Icon = item.icon;
           return (
             <Link

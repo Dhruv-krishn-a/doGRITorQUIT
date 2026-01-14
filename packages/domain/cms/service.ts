@@ -3,10 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { cache } from "react";
 
-// ... (Keep existing getDashboardCounts, getOrders, getRecentSales) ...
 
 export const getDashboardCounts = cache(async () => {
-  // ... (keep existing implementation)
   const [users, orders, activePlans, revenueResult] = await Promise.all([
     prisma.user.count(),
     prisma.order.count(),
@@ -27,7 +25,10 @@ export const getOrders = cache(async (limit = 100) => {
   });
 });
 
-export const getRecentSales = cache(async () => { return getOrders(5); });
+// ✅ ADDED: This was missing
+export const getRecentSales = cache(async () => { 
+  return getOrders(5); 
+});
 
 export const getProducts = cache(async () => {
   return prisma.product.findMany({
@@ -47,36 +48,30 @@ export const getAllFeatures = cache(async () => {
   return prisma.feature.findMany({ orderBy: { key: "asc" } });
 });
 
-/**
- * ✅ UPDATED: Fetch users with ROBUST subscription includes.
- * This fixes the "Badge defaulting to Free Tier" issue.
- */
-export const getUsersWithSubscriptions = cache(async (limit = 50) => {
+export const getUsersWithSubscriptions = cache(async (limit = 50, search?: string) => {
   return prisma.user.findMany({
     take: limit,
+    where: search ? {
+      OR: [
+        { email: { contains: search, mode: 'insensitive' } },
+        { name: { contains: search, mode: 'insensitive' } }
+      ]
+    } : undefined,
     orderBy: { createdAt: "desc" },
     include: {
       subscriptions: {
-        // Match the logic in entitlements.ts (active OR trialing)
         where: { status: { in: ["active", "trialing"] } },
         take: 1,
         orderBy: { currentPeriodEnd: 'desc' },
-        include: { 
-          product: { 
-            include: { 
-              productFeatures: { include: { feature: true } } 
-            } 
-          } 
-        } 
+        include: { product: true } 
       },
-      // Include custom limits
       habits: { select: { id: true } }, 
     },
   });
 });
 
-// ... (Keep ALL existing WRITE operations: createProduct, deleteProduct, etc.) ...
-// Ensure you copy the 'upsert' based createProduct logic from previous steps if needed here.
+// --- WRITE OPERATIONS ---
+
 export async function createProduct(data: { name: string; key: string; priceRupees: number; description?: string }) {
   const amount = Math.round(data.priceRupees * 100); 
   await prisma.product.upsert({
@@ -95,23 +90,24 @@ export async function createProduct(data: { name: string; key: string; priceRupe
       description: data.description,
     },
   });
-  revalidatePath("/products");
 }
 
 export async function deleteProduct(id: string) {
+  const hasSubs = await prisma.userSubscription.count({ where: { productId: id, status: "active" } });
+  if (hasSubs > 0) throw new Error("Cannot delete product with active subscriptions.");
+  
   await prisma.product.delete({ where: { id } });
-  revalidatePath("/products");
 }
 
 export async function updateFeatureValue(productId: string, featureId: string, rawValue: string | number) {
-  const numValue = parseInt(String(rawValue));
+  const numValue = Number(rawValue);
   if (isNaN(numValue)) return; 
+  
   await prisma.productFeature.upsert({
     where: { productId_featureId: { productId, featureId } },
     create: { productId, featureId, value: { value: numValue, enabled: true } },
     update: { value: { value: numValue, enabled: true } },
   });
-  revalidatePath(`/products/${productId}`);
 }
 
 export async function toggleProductFeature(productId: string, featureId: string, isEnabled: boolean) {
@@ -124,29 +120,27 @@ export async function toggleProductFeature(productId: string, featureId: string,
   } else {
     await prisma.productFeature.deleteMany({ where: { productId, featureId } });
   }
-  revalidatePath(`/products/${productId}`);
 }
 
 export async function createFeature(key: string, description: string) {
-  await prisma.feature.create({ data: { key, description } });
-  revalidatePath("/products");
+  await prisma.feature.upsert({
+    where: { key },
+    create: { key, description },
+    update: { description }
+  });
 }
 
-export async function assignUserPlan(userId: string, productId: string) {
-  // 1. Cancel existing
+export async function assignUserPlan(userId: string, productId: string | "manual_free") {
   await prisma.userSubscription.updateMany({
     where: { userId, status: { in: ["active", "trialing"] } },
     data: { status: "canceled", currentPeriodEnd: new Date() },
   });
 
-  if (!productId || productId === "manual_free") {
-    // Reset to "FREE" tier (Legacy field update)
-    await prisma.user.update({ where: { id: userId }, data: { tier: "FREE" } });
-    revalidatePath("/users");
+  if (productId === "manual_free") {
+    await prisma.user.update({ where: { id: userId }, data: { tier: "Free Tier" } });
     return;
   }
 
-  // 2. Create new sub
   const product = await prisma.product.findUnique({ where: { id: productId } });
   if (!product) throw new Error("Product not found");
 
@@ -158,26 +152,16 @@ export async function assignUserPlan(userId: string, productId: string) {
       userId,
       productId,
       status: "active",
-      provider: "manual_admin",
+      provider: "admin_manual",
       startedAt: now,
       currentPeriodEnd: thirtyDays,
     },
   });
 
-  // Legacy Tier sync
-  let newTier = "FREE";
-  if (product.key.toUpperCase().includes("PRO")) newTier = "PRO";
-  if (product.key.toUpperCase().includes("TEAM")) newTier = "TEAM";
-
-  await prisma.user.update({
-    where: { id: userId },
-    data: { tier: newTier as any },
-  });
-
-  revalidatePath("/users");
+  await prisma.user.update({ where: { id: userId }, data: { tier: product.name } });
 }
 
 export async function updateUserRole(userId: string, role: string) {
+  if(role !== "admin" && role !== "user") return;
   await prisma.user.update({ where: { id: userId }, data: { role } });
-  revalidatePath("/users");
 }

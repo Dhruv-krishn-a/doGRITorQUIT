@@ -1,7 +1,7 @@
-// apps/web/app/api/ai/plan/route.ts
 import { NextResponse } from "next/server";
 import { getServerUser } from "@/lib/auth";
-import { ai, plans, billing } from "@domain"; 
+import { ai, billing } from "@domain"; 
+import { getUserLimits } from "@/lib/user-limits"; // ✅ Import the helper
 
 export const maxDuration = 60; 
 export const dynamic = 'force-dynamic';
@@ -9,55 +9,56 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: Request) {
   try {
     const user = await getServerUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { prompt } = await req.json();
-    if (!prompt) {
-      return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
-    }
 
-    const canGenerate = await billing.canUseAIGenerationForUser(user.id);
-    if (!canGenerate) {
+    // -----------------------------------------------------------
+    // 1. CHECK LIMITS
+    // -----------------------------------------------------------
+    // This now correctly checks CMS > Plan > Free
+    const limits = await getUserLimits(user.id);
+
+    // If NOT unlimited AND remaining is <= 0 -> Block
+    if (!limits.isUnlimited && limits.remaining <= 0) {
       return NextResponse.json({ 
-        error: "Limit Reached. Please upgrade your plan or wait for the next cycle." 
+        error: "Limit Reached", 
+        message: `You have used ${limits.usage}/${limits.limit} credits. Please upgrade to continue.` 
       }, { status: 403 });
     }
 
+    // -----------------------------------------------------------
+    // 2. GENERATE PLAN
+    // -----------------------------------------------------------
     const enhancedPrompt = `
-      Create a detailed plan for: "${prompt}".
-      Return ONLY a raw JSON array of objects. Do not include markdown formatting (like \`\`\`json).
-      Each object must have these keys: "task title", "description", "date" (YYYY-MM-DD), "priority" (High/Medium/Low), "estimated minutes", "tags" (comma separated string), "subtasks" (comma separated string).
-      Ensure the plan covers a realistic timeframe starting from tomorrow.
+      You are a JSON-only API. 
+      Create a plan for: "${prompt}".
+      RULES:
+      1. RETURN ONLY A RAW JSON ARRAY. NO MARKDOWN.
+      2. Structure: [{"Day": 1, "Task Title": "...", "Description": "...", "Estimated Time (min)": 30}]
     `;
 
     const aiResponse = await ai.generatePlanFromPrompt(enhancedPrompt);
     const rawText = aiResponse.text;
 
+    // Validate JSON
     let tasksData;
     try {
-      const cleanJson = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
-      tasksData = JSON.parse(cleanJson);
-      
-      if (!Array.isArray(tasksData)) throw new Error("AI did not return an array");
+      const firstBracket = rawText.indexOf('[');
+      const lastBracket = rawText.lastIndexOf(']');
+      if (firstBracket === -1 || lastBracket === -1) throw new Error("No JSON array found");
+      tasksData = JSON.parse(rawText.substring(firstBracket, lastBracket + 1));
     } catch (parseError) {
-      console.error("AI JSON Parse Error:", parseError, "\nRaw Text:", rawText);
-      return NextResponse.json({ 
-        error: "Failed to process AI response. Please try again (Credit not used)." 
-      }, { status: 500 });
+      console.error("AI Parse Error:", parseError);
+      return NextResponse.json({ error: "AI response malformed" }, { status: 500 });
     }
 
-    const newPlan = await plans.importPlanJson(
-      user.id, 
-      `AI Plan: ${prompt.slice(0, 20)}...`, 
-      tasksData, 
-      new Date()
-    );
-
+    // -----------------------------------------------------------
+    // 3. INCREMENT USAGE
+    // -----------------------------------------------------------
     await billing.incrementAIUsage(user.id);
 
-    return NextResponse.json({ success: true, planId: newPlan.id });
+    return NextResponse.json({ success: true, data: tasksData });
 
   } catch (error) {
     console.error("[AI Plan Gen] Error:", error);

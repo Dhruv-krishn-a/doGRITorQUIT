@@ -1,28 +1,6 @@
-// apps/cms/lib/auth.ts
-import { prisma } from "./prisma";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { auth } from "@domain";
 
+// Wrap it in a function to ensure type safety and proper execution context
 export async function getAdminUser() {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { 
-      cookies: { 
-        getAll() { return cookieStore.getAll() }, 
-        setAll() {} 
-      } 
-    }
-  );
-
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.user) return null;
-
-  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
-  
-  // CRITICAL SECURITY CHECK
-  if (user?.role !== "admin") return null;
-  
-  return user;
+  return auth.getAdminUser();
 }

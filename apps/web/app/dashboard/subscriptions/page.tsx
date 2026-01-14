@@ -1,24 +1,17 @@
-// apps/web/app/dashboard/subscriptions/page.tsx
 import { getServerUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import SubscriptionClientPage, { Product, SubscriptionData } from "./subscription-client";
+import SubscriptionClientPage, { 
+  Product, 
+  SubscriptionData 
+} from "./subscription-client";
 import { prisma } from "@/lib/prisma";
 
-export default async function SubscriptionPage() {
-  const user = await getServerUser();
-  if (!user) redirect("/login");
-
-  // ✅ SERVER SIDE DATA FETCHING (Parallel)
-  const [products, subscriptionData] = await Promise.all([
-    getProducts(),
-    getSubscriptionData(user.id, user.aiUsageCount)
-  ]);
-
-  // ✅ RENDER UI
-  return <SubscriptionClientPage products={products} data={subscriptionData} />;
-}
-
-// --- Data Fetching Helpers ---
+// --- Helpers ---
+const dateFormatter = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "short",
+  year: "numeric"
+});
 
 async function getProducts(): Promise<Product[]> {
   try {
@@ -34,7 +27,6 @@ async function getProducts(): Promise<Product[]> {
         currency: true
       }
     });
-    // Ensure description is not null for frontend type compatibility
     return products.map(p => ({
       ...p,
       description: p.description || "" 
@@ -53,7 +45,7 @@ async function getSubscriptionData(userId: string, currentUsage: number): Promis
         status: { in: ["active", "trialing"] },
       },
       include: {
-        product: true,
+        product: true, 
       },
       orderBy: {
         currentPeriodEnd: "desc",
@@ -66,12 +58,25 @@ async function getSubscriptionData(userId: string, currentUsage: number): Promis
       take: 10,
     });
 
-    // Determine limits based on plan
-    let aiLimit = 5; // Default free
-    if (activeSub?.product?.key === "PRO_MONTHLY") aiLimit = 50;
-    if (activeSub?.product?.key === "PRO_YEARLY") aiLimit = 500;
-    // Assuming a special key for unlimited, or high number
-    const isUnlimited = activeSub?.product?.key === "ENTERPRISE"; 
+    // Default Limits
+    let aiLimit = 5; 
+    let isUnlimited = false;
+
+    if (activeSub?.product) {
+      // Safe cast to access potential CMS fields
+      const productData = activeSub.product as unknown as { aiLimit?: number };
+      
+      if (typeof productData.aiLimit === 'number') {
+         aiLimit = productData.aiLimit;
+         if (aiLimit === -1) isUnlimited = true;
+      } 
+      // Fallback hardcoded logic if DB field is missing
+      else {
+         if (activeSub.product.key === "PRO_MONTHLY") aiLimit = 50;
+         if (activeSub.product.key === "PRO_YEARLY") aiLimit = 500;
+         if (activeSub.product.key === "ENTERPRISE") isUnlimited = true;
+      }
+    }
 
     return {
       activeSubscription: activeSub ? {
@@ -81,6 +86,7 @@ async function getSubscriptionData(userId: string, currentUsage: number): Promis
           key: activeSub.product.key,
         },
         currentPeriodEnd: activeSub.currentPeriodEnd?.toISOString(),
+        formattedRenewsAt: activeSub.currentPeriodEnd ? dateFormatter.format(activeSub.currentPeriodEnd) : undefined,
         status: activeSub.status,
       } : undefined,
       usage: {
@@ -91,15 +97,29 @@ async function getSubscriptionData(userId: string, currentUsage: number): Promis
       history: orders.map(o => ({
         id: o.id,
         date: o.createdAt.toISOString(),
+        formattedDate: dateFormatter.format(o.createdAt),
         amount: o.amount,
         status: o.status === "paid" ? "paid" : o.status === "failed" ? "failed" : "pending",
       }))
     };
   } catch (error) {
     console.error("Failed to fetch subscription data:", error);
+    // Return safe default if error
     return { 
       usage: { aiGenerated: currentUsage, aiLimit: 5, remaining: Math.max(0, 5 - currentUsage) }, 
       history: [] 
     };
   }
+}
+
+export default async function SubscriptionPage() {
+  const user = await getServerUser();
+  if (!user) redirect("/login");
+
+  const [products, subscriptionData] = await Promise.all([
+    getProducts(),
+    getSubscriptionData(user.id, user.aiUsageCount)
+  ]);
+
+  return <SubscriptionClientPage products={products} data={subscriptionData} />;
 }

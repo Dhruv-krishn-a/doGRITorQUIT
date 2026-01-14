@@ -1,5 +1,6 @@
-// apps/cms/app/(admin)/users/RoleSelect.tsx
 "use client";
+
+import { useRouter } from "next/navigation";
 
 type Props = {
   defaultValue: string;
@@ -11,8 +12,7 @@ export default function RoleSelect({ defaultValue, name }: Props) {
     <select
       name={name}
       defaultValue={defaultValue}
-      className="border rounded text-sm p-1 cursor-pointer"
-      // This interactive event handler is now allowed because of "use client"
+      className="border border-slate-300 rounded text-sm px-2 py-1 cursor-pointer bg-white hover:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
       onChange={(e) => e.target.form?.requestSubmit()}
     >
       <option value="user">User</option>
