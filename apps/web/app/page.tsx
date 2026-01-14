@@ -1,4 +1,3 @@
-// apps/web/app/page.tsx
 'use client';
 
 import React, { useLayoutEffect, useRef } from 'react';
@@ -16,7 +15,10 @@ import {
   MoreVertical
 } from 'lucide-react';
 
-if (typeof window !== 'undefined') gsap.registerPlugin(ScrollTrigger);
+// Register GSAP plugins safely
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 export default function Home() {
   const mainRef = useRef<HTMLDivElement | null>(null);
@@ -29,7 +31,9 @@ export default function Home() {
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const ctx = gsap.context(() => {
-      // HERO PARALLAX
+      // --- ANIMATION LOGIC STARTS HERE ---
+      
+      // 1. Mouse Blob Interaction
       const hero = root.querySelector<HTMLElement>('.hero-section');
       const blob1 = root.querySelector<HTMLElement>('.hero-blob-1');
       const blob2 = root.querySelector<HTMLElement>('.hero-blob-2');
@@ -68,7 +72,7 @@ export default function Home() {
         if (blob2) gsap.to(blob2, { y: '+=18', repeat: -1, yoyo: true, duration: 8, ease: 'sine.inOut', delay: 0.6 });
       }
 
-      // HERO INTRO
+      // 2. Hero Intro Stagger
       if (!prefersReduced) {
         const intro = gsap.timeline({ defaults: { duration: 0.8, ease: 'power3.out' } });
         intro
@@ -82,14 +86,14 @@ export default function Home() {
         gsap.set('.ai-text-input', { width: '100%' });
       }
 
-      // small hover / micro interactions (task rows)
+      // 3. Hover Micro-interactions
       gsap.utils.toArray<HTMLElement>('.task-row-1, .task-row-2').forEach((el) => {
         const hover = gsap.to(el, { y: -6, paused: true, duration: 0.28, ease: 'power1.out' });
         el.addEventListener('mouseenter', () => hover.play());
         el.addEventListener('mouseleave', () => hover.reverse());
       });
 
-      // Utility: reveal sections with ScrollTrigger (used site-wide)
+      // 4. General Section Reveals
       function reveal(selector: string) {
         gsap.utils.toArray<HTMLElement>(selector).forEach((el) => {
           ScrollTrigger.create({
@@ -103,16 +107,14 @@ export default function Home() {
         });
       }
 
-      // Master timeline pinned experience (desktop)
+      // 5. Desktop Pinned Animation (The complicated scroll part)
       const mm = gsap.matchMedia();
 
       mm.add('(min-width: 1024px)', () => {
         const masterTl = gsap.timeline({ paused: true });
-
-        // make sure dashboard-preview exists
         const dashboardPreview = root.querySelector<HTMLElement>('.dashboard-view');
 
-        // Phase 1: AI creation — highlight left step 1 and sidebar "Dashboard"
+        // Step A: AI Creation
         masterTl
           .addLabel('ai-start')
           .to('.text-step-1', { color: '#0f172a', scale: 1.03, opacity: 1, filter: 'blur(0px)', duration: 0.6 })
@@ -122,7 +124,6 @@ export default function Home() {
           .to('.ai-cursor', { opacity: 1, duration: 0.08 }, '<')
           .to('.ai-text-input', { width: '100%', duration: 2.2, ease: 'steps(28)' })
           .to('.ai-cursor', { opacity: 0, duration: 0.08 })
-          // show the dashboard preview behind the modal
           .call(() => {
             if (dashboardPreview) {
               gsap.set(dashboardPreview, { display: 'block' });
@@ -133,12 +134,19 @@ export default function Home() {
 
         masterTl.addLabel('map-start');
 
-        // Phase 2: Task mapping — move focus to Tasks nav and animate checkboxes
+        // Step B: Task Mapping
+        // FIX: First, hide the Dashboard View overlay so it doesn't overlap the Tasks list
         masterTl
-          .to('.text-step-1', { color: '#94a3b8', scale: 1, opacity: 0.35, filter: 'blur(2px)', duration: 0.5 })
+          .to('.dashboard-view', { opacity: 0, duration: 0.4 })
+          .set('.dashboard-view', { display: 'none' }) 
+          
+          // Then animate the sidebar and text
+          .to('.text-step-1', { color: '#94a3b8', scale: 1, opacity: 0.35, filter: 'blur(2px)', duration: 0.5 }, '<')
           .to('.text-step-2', { color: '#0f172a', scale: 1.03, opacity: 1, filter: 'blur(0px)', duration: 0.6 }, '<')
           .to('.nav-item-dashboard', { backgroundColor: 'transparent', color: '#64748b', duration: 0.3 }, '<')
           .to('.nav-item-tasks', { backgroundColor: '#fdf2ff', color: '#7c3aed', duration: 0.3 }, '<')
+          
+          // Task checklist animations
           .to('.task-row-1 .checkbox-fill', { scale: 1, duration: 0.28, ease: 'back.out(3)' })
           .to('.task-row-1 .task-text', { textDecoration: 'line-through', opacity: 0.5 }, '<')
           .to('.task-row-2 .checkbox-fill', { scale: 1, duration: 0.28, ease: 'back.out(3)' })
@@ -146,23 +154,25 @@ export default function Home() {
 
         masterTl.addLabel('analytics-start');
 
-        // Phase 3: Analytics — switch nav, slide app screen, animate charts
+        // Step C: Analytics
         masterTl
           .to('.text-step-2', { color: '#94a3b8', scale: 1, opacity: 0.35, filter: 'blur(2px)', duration: 0.4 })
           .to('.text-step-3', { color: '#0f172a', scale: 1.03, opacity: 1, filter: 'blur(0px)', duration: 0.6 }, '<')
           .to('.nav-item-tasks', { backgroundColor: 'transparent', color: '#64748b', duration: 0.3 }, '<')
           .to('.nav-item-analytics', { backgroundColor: '#F3E8FF', color: '#7E22CE', duration: 0.3 }, '<')
-          .to('.app-screen', { x: '-100%', duration: 0.9, ease: 'power2.inOut' })
+          
+          // FIX: Change x from '-100%' to '-50%'
+          // Since the element is 200% wide, -50% translates it by 100% of the parent width (revealing the 2nd half)
+          .to('.app-screen', { x: '-50%', duration: 0.9, ease: 'power2.inOut' })
+          
           .fromTo(
             '.chart-bar',
             { scaleY: 0 },
             { scaleY: 1, transformOrigin: 'bottom', stagger: 0.08, duration: 1.1, ease: 'back.out(1.4)' },
             '<0.1'
           )
-          // small flourish: pop the stat cards
           .fromTo('.grid > .bg-white.p-4', { y: 8, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.08, duration: 0.5 }, '<');
 
-        // Create ScrollTrigger to drive the master timeline while user scrolls
         ScrollTrigger.create({
           animation: masterTl,
           trigger: '.pinned-container',
@@ -174,17 +184,13 @@ export default function Home() {
           invalidateOnRefresh: true,
         });
 
-        // Return cleanup for matchMedia
-        return () => {
-          // reverse cleanup handled in outer cleanup
-        };
+        return () => {};
       });
 
-      // Mobile / small screens: simple reveals
+      // Mobile Handling
       mm.add('(max-width: 1023px)', () => {
         reveal('.feature, .roadmap-step, .testimonial, .pricing-card, .faq-item');
-        // also animate small icons for each narrative step
-        gsap.utils.toArray<HTMLElement>('.text-step-1, .text-step-2, .text-step-3').forEach((el, i) => {
+        gsap.utils.toArray<HTMLElement>('.text-step-1, .text-step-2, .text-step-3').forEach((el) => {
           ScrollTrigger.create({
             trigger: el,
             start: 'top 85%',
@@ -195,14 +201,13 @@ export default function Home() {
         return () => {};
       });
 
-      // Reveal sections across sizes
+      // Common Reveals
       reveal('.feature');
       reveal('.roadmap-step');
       reveal('.testimonial');
       reveal('.pricing-card');
       reveal('.faq-item');
 
-      // cleanup
       return () => {
         if (hero) hero.removeEventListener('mousemove', onMouse as EventListener);
         cancelAnimationFrame(mouseRef.current.rAF);
@@ -215,8 +220,12 @@ export default function Home() {
 
   return (
     <div ref={mainRef} className="bg-[#FDF2F8] font-sans text-slate-900 selection:bg-purple-200 overflow-x-hidden">
-      {/* NAV */}
-      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center mix-blend-multiply pointer-events-none" aria-hidden>
+      
+      {/* =====================================================================================
+          SECTION: NAVIGATION
+          Top Bar (Logo, Login Link)
+      ===================================================================================== */}
+      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center mix-blend-multiply pointer-events-none" aria-hidden="true">
         <div className="flex items-center gap-2 font-bold text-xl tracking-tight pointer-events-auto">
           <div className="w-8 h-8 bg-slate-900 text-white rounded-lg flex items-center justify-center">
             <span className="font-serif italic">P</span>
@@ -228,7 +237,10 @@ export default function Home() {
         </Link>
       </nav>
 
-      {/* HERO */}
+      {/* =====================================================================================
+          SECTION: HERO
+          Large text, floating blobs, Call to Action button
+      ===================================================================================== */}
       <section className="hero-section min-h-screen flex flex-col items-center justify-center relative overflow-hidden pt-20">
         <div className="hero-blob-1 absolute top-1/4 -left-20 rounded-full blur-[100px] opacity-40" style={{ width: '500px', height: '500px', background: 'rgba(139,92,246,0.22)' }} />
         <div className="hero-blob-2 absolute bottom-0 right-0 rounded-full blur-[120px] opacity-40" style={{ width: '520px', height: '520px', background: 'rgba(236,72,153,0.18)' }} />
@@ -256,15 +268,19 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="absolute bottom-10 animate-bounce text-slate-400" aria-hidden>
+        <div className="absolute bottom-10 animate-bounce text-slate-400" aria-hidden="true">
           <div className="w-px h-12 bg-slate-300 mx-auto mb-2" />
           <p className="text-xs uppercase tracking-widest">Scroll to Explore</p>
         </div>
       </section>
 
-      {/* PINNED EXPERIENCE */}
+      {/* =====================================================================================
+          SECTION: SCROLL EXPERIENCE (PINNED)
+          The split screen effect where the right side simulates the app usage
+      ===================================================================================== */}
       <div className="pinned-container relative w-full lg:h-screen flex flex-col lg:flex-row overflow-hidden bg-white/50 backdrop-blur-sm">
-        {/* LEFT NARRATIVE (steps) */}
+        
+        {/* --- LEFT SIDE: NARRATIVE STEPS --- */}
         <div className="w-full lg:w-1/3 lg:h-full flex flex-col justify-center px-8 lg:px-16 py-12 lg:py-0 space-y-16 lg:space-y-24 z-10">
           <div className="text-step-1 opacity-30 blur-[2px] transition-all duration-500">
             <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center mb-4">
@@ -297,10 +313,10 @@ export default function Home() {
           </div>
         </div>
 
-        {/* RIGHT APP SIMULATION */}
+        {/* --- RIGHT SIDE: APP SIMULATION --- */}
         <div className="w-full lg:w-2/3 min-h-[50vh] lg:h-full bg-[#F3F4F6] relative overflow-hidden flex items-center justify-center p-8">
           <div className="relative w-full max-w-5xl aspect-video bg-[#FDF2F8] rounded-2xl shadow-2xl border border-white/50 overflow-hidden flex">
-            {/* SIDEBAR */}
+            {/* App Sidebar */}
             <div className="w-64 bg-[#FDF2F8] border-r border-slate-200/60 p-6 hidden md:flex flex-col gap-6 shrink-0 z-20">
               <div className="font-bold text-slate-800 text-lg mb-4">Planner</div>
               <div className="space-y-1">
@@ -316,9 +332,9 @@ export default function Home() {
               </div>
             </div>
 
-            {/* APP CONTENT */}
+            {/* App Content Area */}
             <div className="flex-1 relative overflow-hidden">
-              {/* Dashboard preview (initial hidden view that masterTl will reveal) */}
+              {/* 1. Dashboard Preview (Hidden initially) */}
               <div className="dashboard-view absolute inset-0 z-40 hidden opacity-0 pointer-events-none">
                 <div className="h-full p-8 flex flex-col">
                   <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6 flex items-center justify-between">
@@ -345,7 +361,7 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* AI modal (initially on top) */}
+              {/* 2. AI Modal Overlay (Initially Visible) */}
               <div className="ai-modal absolute inset-0 z-50 flex items-center justify-center bg-black/5 backdrop-blur-sm">
                 <div className="bg-white w-[90%] max-w-2xl rounded-2xl shadow-2xl border border-slate-100 p-0 overflow-hidden">
                   <div className="bg-slate-50 border-b p-4 flex justify-between items-center">
@@ -381,9 +397,10 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Sliding app-screen (tasks -> analytics) */}
+              {/* 3. Sliding Screen Container (Tasks -> Analytics) */}
               <div className="app-screen w-[200%] h-full flex transition-transform ease-out">
-                {/* SLIDE 1: Tasks */}
+                
+                {/* SLIDE A: Tasks View */}
                 <div className="w-1/2 h-full p-8 overflow-y-auto bg-[#FDF2F8]">
                   <header className="flex justify-between items-center mb-8">
                     <div>
@@ -422,11 +439,10 @@ export default function Home() {
                         </div>
                       </div>
                     </div>
-
                   </div>
                 </div>
 
-                {/* SLIDE 2: Analytics */}
+                {/* SLIDE B: Analytics View */}
                 <div className="w-1/2 h-full p-8 bg-[#FDF2F8]">
                   <header className="mb-8">
                     <h2 className="text-3xl font-bold text-slate-800">Performance</h2>
@@ -468,13 +484,15 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              {/* end app-screen */}
             </div>
           </div>
         </div>
       </div>
 
-      {/* FEATURES (site-wide GSAP reveals will animate these) */}
+      {/* =====================================================================================
+          SECTION: FEATURES
+          3 Column Layout with images
+      ===================================================================================== */}
       <section className="py-20 bg-white">
         <div className="max-w-6xl mx-auto px-6">
           <h2 className="text-4xl font-extrabold text-slate-900 mb-6">Features that actually ship work</h2>
@@ -505,7 +523,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ROADMAP */}
+      {/* =====================================================================================
+          SECTION: ROADMAP
+          Q1, Q2, Q3 milestones
+      ===================================================================================== */}
       <section className="py-20 bg-[#F9FAFB]">
         <div className="max-w-6xl mx-auto px-6">
           <h2 className="text-4xl font-extrabold text-slate-900 mb-6">Roadmap</h2>
@@ -527,7 +548,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* TESTIMONIALS */}
+      {/* =====================================================================================
+          SECTION: TESTIMONIALS
+      ===================================================================================== */}
       <section className="py-20 bg-white">
         <div className="max-w-6xl mx-auto px-6">
           <h2 className="text-4xl font-extrabold text-slate-900 mb-6">Loved by builders</h2>
@@ -548,7 +571,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* PRICING */}
+      {/* =====================================================================================
+          SECTION: PRICING
+      ===================================================================================== */}
       <section className="py-20 bg-[#F9FAFB]">
         <div className="max-w-6xl mx-auto px-6">
           <h2 className="text-4xl font-extrabold text-slate-900 mb-6">Pricing</h2>
@@ -579,7 +604,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FAQ */}
+      {/* =====================================================================================
+          SECTION: FAQ
+      ===================================================================================== */}
       <section className="py-20 bg-white">
         <div className="max-w-4xl mx-auto px-6">
           <h2 className="text-4xl font-extrabold text-slate-900 mb-6">FAQ</h2>
@@ -598,7 +625,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA FOOTER */}
+      {/* =====================================================================================
+          SECTION: FOOTER
+      ===================================================================================== */}
       <footer className="py-24 bg-linear-to-r from-purple-600 to-pink-500 text-white text-center">
         <div className="max-w-3xl mx-auto px-6 space-y-6">
           <h2 className="text-3xl font-extrabold">Stop Planning. Start Executing.</h2>

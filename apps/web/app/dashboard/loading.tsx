@@ -1,33 +1,29 @@
-// apps/web/app/dashboard/loading.tsx
 import React from "react";
 
 export default function Loading() {
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-8 animate-pulse">
+    <div className="space-y-8 animate-pulse">
       {/* Header Skeleton */}
       <div className="flex justify-between items-end">
-        <div className="space-y-2">
-          <div className="h-8 w-48 bg-slate-200 rounded-lg"></div>
-          <div className="h-4 w-32 bg-slate-200 rounded"></div>
+        <div className="space-y-3">
+          <div className="h-10 w-64 bg-slate-200 rounded-2xl"></div>
+          <div className="h-5 w-40 bg-slate-100 rounded-xl"></div>
         </div>
-        <div className="h-10 w-24 bg-slate-200 rounded-lg"></div>
+        <div className="h-9 w-32 bg-slate-100 rounded-full"></div>
       </div>
 
-      {/* Stats Grid Skeleton */}
+      {/* Grid Skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="h-48 bg-slate-200 rounded-3xl"></div>
-        <div className="h-48 bg-slate-200 rounded-3xl"></div>
-        <div className="h-48 bg-slate-200 rounded-3xl"></div>
+        {/* Card 1 */}
+        <div className="h-64 bg-slate-200 rounded-4xl"></div>
+        {/* Card 2 */}
+        <div className="h-64 bg-slate-100 rounded-4xl border border-slate-200"></div>
+        {/* Card 3 */}
+        <div className="h-64 bg-slate-100 rounded-4xl border border-slate-200"></div>
       </div>
 
-      {/* Tasks Skeleton */}
-      <div className="space-y-4">
-        <div className="flex justify-between">
-          <div className="h-6 w-32 bg-slate-200 rounded"></div>
-          <div className="h-4 w-24 bg-slate-200 rounded"></div>
-        </div>
-        <div className="h-64 bg-slate-200 rounded-4xl"></div>
-      </div>
+      {/* Large Bottom Skeleton */}
+      <div className="h-80 bg-slate-100 rounded-[2.5rem] border border-slate-200"></div>
     </div>
   );
 }
