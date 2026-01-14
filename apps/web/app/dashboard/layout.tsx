@@ -1,28 +1,22 @@
 // apps/web/app/dashboard/layout.tsx
 import { redirect } from "next/navigation";
-import { getServerUser } from "@/lib/auth"; // Ensure this uses cookies/headers
-import { billing } from "@domain"; // Import the permission logic
+import { getServerUser } from "@/lib/auth"; 
+import { billing } from "@domain"; 
 import Sidebar from "@shared/components/Sidebar";
-import { UserSync } from "@features/auth"; // Assuming this is a Client Component
+import { UserSync } from "@features/auth"; 
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  // 1. Server-Side Auth Check (Faster, Secure)
+  // 1. Fast Auth Check
   const user = await getServerUser();
+  if (!user) redirect("/login");
 
-  if (!user) {
-    redirect("/login");
-  }
-
-  // 2. Fetch Permissions for this user
+  // 2. Fetch Permissions (This is now fast because of the index we added earlier)
   const permissions = await billing.getPagePermissions(user.id);
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* 3. Pass permissions to Client Sidebar */}
       <Sidebar permissions={permissions} />
-      
       <main className="flex-1 p-6 overflow-auto">
-        {/* UserSync runs on client to ensure DB sync if needed */}
         <UserSync /> 
         {children}
       </main>
