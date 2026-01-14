@@ -45,24 +45,36 @@ export async function getActiveUserSubscription(userId: string) {
 export async function getUserEntitlements(userId: string): Promise<UserEntitlements> {
   const user = await prisma.user.findUnique({ 
     where: { id: userId }, 
-    select: { id: true, tier: true, customAiLimit: true, aiUsageCount: true } 
+    include: {
+      subscriptions: {
+        where: { status: { in: ["active", "trialing"] } },
+        orderBy: { currentPeriodEnd: "desc" },
+        take: 1,
+        include: {
+           product: {
+             include: {
+               productFeatures: { include: { feature: true } }
+             }
+           }
+        }
+      }
+    }
   });
   
   if (!user) throw new Error("User not found");
 
   let product = null;
-  let features: FeatureMap = {};
+  const features: FeatureMap = {};
 
-  const sub = await prisma.userSubscription.findFirst({
-    where: { userId, status: { in: ["active", "trialing"] } },
-    include: { product: { include: { productFeatures: { include: { feature: true } } } } },
-    orderBy: { currentPeriodEnd: "desc" }
-  });
+  // Check the included subscription
+  const activeSub = user.subscriptions[0];
 
-  if (sub && sub.product) {
-    product = sub.product;
+  if (activeSub && activeSub.product) {
+    product = activeSub.product;
   } 
   else {
+    // Only fetch FREE product if no active sub exists
+    // This reduces DB load for paid users who don't need this query
     const freeProduct = await prisma.product.findUnique({
       where: { key: "FREE" },
       include: {

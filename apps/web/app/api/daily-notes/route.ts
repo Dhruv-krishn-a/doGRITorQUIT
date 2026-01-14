@@ -1,3 +1,4 @@
+// apps/web/app/api/daily-notes/route.ts
 import { NextResponse } from "next/server";
 import { getServerUser } from "@/lib/auth";
 import { habits } from "@domain";

@@ -8,46 +8,55 @@ export async function getDashboardStats(userId: string) {
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
-  // 1. Fetch Today's Tasks
-  const todaysTasks = await prisma.task.findMany({
-    where: {
-      userId,
-      date: { gte: today, lt: tomorrow },
-      status: { not: "Discarded" }
-    },
-    orderBy: { priority: 'desc' },
-    take: 5
-  });
+  // 1. Parallelize Queries using Promise.all
+  // We run independent queries at the same time, not one after another.
+  const [todaysTasks, habits, focusAgg, activePlan] = await Promise.all([
+    // A. Today's Tasks
+    prisma.task.findMany({
+      where: {
+        userId,
+        date: { gte: today, lt: tomorrow },
+        status: { not: "Discarded" }
+      },
+      orderBy: { priority: 'desc' },
+      take: 5
+    }),
 
-  // 2. Fetch Active Habits & Today's Logs
-  const habits = await prisma.habit.findMany({
-    where: { userId, active: true },
-    include: {
-      logs: { where: { date: today } }
-    },
-    orderBy: { order: 'asc' }
-  });
+    // B. Habits with Logs
+    prisma.habit.findMany({
+      where: { userId, active: true },
+      include: {
+        logs: { where: { date: today } }
+      },
+      orderBy: { order: 'asc' }
+    }),
 
-  // 3. Calculate Focus Time (Sum of timeSpentMinutes on tasks updated today)
-  // Note: This is a rough approximation based on updated tasks. 
-  // For precise analytics, we'd need a separate TimeLog table, 
-  // but for now, summing task.timeSpentMinutes is acceptable for the MVP.
-  const allTasks = await prisma.task.findMany({
-    where: { userId },
-    select: { timeSpentMinutes: true, status: true }
-  });
+    // C. ✅ OPTIMIZED: Database Aggregation
+    // Instead of fetching ALL tasks, we ask DB for the Sum and Count directly.
+    prisma.task.aggregate({
+      where: { userId },
+      _sum: { timeSpentMinutes: true },
+      _count: { id: true },
+    }),
+
+    // D. Active Plan
+    prisma.plan.findFirst({
+      where: { userId },
+      orderBy: { updatedAt: 'desc' },
+      include: { 
+        _count: { select: { tasks: true } },
+        tasks: { where: { status: "Completed" }, select: { id: true } } // Select only ID to be light
+      }
+    })
+  ]);
+
+  // Calculate stats from aggregation results
+  const totalFocusMinutes = focusAgg._sum.timeSpentMinutes || 0;
   
-  const totalFocusMinutes = allTasks.reduce((acc, t) => acc + (t.timeSpentMinutes || 0), 0);
-  const completedTasksCount = allTasks.filter(t => t.status === "Completed").length;
-
-  // 4. Get Active Plan info
-  const activePlan = await prisma.plan.findFirst({
-    where: { userId },
-    orderBy: { updatedAt: 'desc' },
-    include: { 
-      _count: { select: { tasks: true } },
-      tasks: { where: { status: "Completed" } }
-    }
+  // Note: Your previous code counted "Completed" status manually. 
+  // If you need total completed tasks ever:
+  const completedTasksCount = await prisma.task.count({
+    where: { userId, status: "Completed" }
   });
 
   return {
@@ -56,7 +65,7 @@ export async function getDashboardStats(userId: string) {
     stats: {
       focusMinutes: totalFocusMinutes,
       completedTasks: completedTasksCount,
-      habitStreak: 0, // Placeholder for now
+      habitStreak: 0, 
     },
     todaysTasks,
     habits: habits.map(h => ({
@@ -66,7 +75,9 @@ export async function getDashboardStats(userId: string) {
     activePlan: activePlan ? {
       id: activePlan.id,
       title: activePlan.title,
-      progress: Math.round((activePlan.tasks.length / (activePlan._count.tasks || 1)) * 100)
+      progress: activePlan._count.tasks > 0 
+        ? Math.round((activePlan.tasks.length / activePlan._count.tasks) * 100) 
+        : 0
     } : null
   };
 }

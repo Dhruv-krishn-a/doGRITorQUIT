@@ -1,3 +1,4 @@
+// apps/web/app/dashboard/subscriptions/page.tsx
 import { getServerUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import SubscriptionClientPage, { Product, SubscriptionData } from "./subscription-client";

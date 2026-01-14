@@ -22,7 +22,7 @@ CODE_EXTENSIONS = {
     ".java", ".cpp", ".c", ".h",
     ".cs", ".go", ".rs",
     ".html", ".htm", ".css", ".scss",
-    ".json", ".yml", ".yaml",
+    ".yml", ".yaml",
     ".sh", ".bash", ".md", ".xml"
 }
 

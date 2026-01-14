@@ -1,43 +1,37 @@
 // apps/cms/middleware.ts
 import { type NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
+
+/**
+ * CMS middleware: lightweight session presence check.
+ * Detailed role checks (admin) should be done in server layout/pages or via an admin endpoint
+ * that does proper Supabase/Prisma checks — not in middleware.
+ */
+const PUBLIC_FILE = /\.(.*)$/;
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
-    request: { headers: request.headers },
-  });
+  const pathname = request.nextUrl.pathname;
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return request.cookies.getAll(); },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            request.cookies.set(name, value)
-          );
-          response = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-
-  const { data: { user } } = await supabase.auth.getUser();
-
-  // Protect Admin Routes
-  if (request.nextUrl.pathname.startsWith("/") && request.nextUrl.pathname !== "/login") {
-    if (!user) {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
-    // Note: detailed role checking (Admin vs User) is often better done 
-    // in the layout/page or via a custom claim to avoid excessive DB hits in middleware
+  if (
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/static") ||
+    PUBLIC_FILE.test(pathname) ||
+    pathname === "/favicon.ico" ||
+    pathname === "/login"
+  ) {
+    return NextResponse.next();
   }
 
-  return response;
+  const cookiePairs = request.cookies.getAll().map(c => ({ name: c.name, value: c.value }));
+  const hasSupabaseSession = cookiePairs.some(
+    (c) =>
+      c.name.includes("sb") && (c.name.includes("token") || c.name.includes("session") || c.value)
+  );
+
+  if (!hasSupabaseSession) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {

@@ -1,3 +1,4 @@
+// apps/web/app/api/public/content/[type]/route.ts
 import { NextResponse } from "next/server";
 import { cms, billing } from "@domain"; 
 import { getServerUser } from "@/lib/auth"; 

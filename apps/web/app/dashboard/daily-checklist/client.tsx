@@ -1,3 +1,4 @@
+// apps/web/app/dashboard/daily-checklist/client.tsx
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";

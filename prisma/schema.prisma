@@ -12,13 +12,13 @@ generator client {
 // --------------------------------------------------------
 
 model User {
-  id           String   @id // Maps to Supabase Auth ID
-  email        String   @unique
-  name         String?
-  avatarUrl    String?
-  tier         String   @default("Free tier")
-  role         String   @default("user") // "admin" | "user"
-  aiUsageCount Int      @default(0)
+  id            String    @id // Maps to Supabase Auth ID
+  email         String    @unique
+  name          String?
+  avatarUrl     String?
+  tier          String    @default("Free tier")
+  role          String    @default("user") // "admin" | "user"
+  aiUsageCount  Int       @default(0)
   customAiLimit Int?
 
   createdAt DateTime @default(now())
@@ -29,7 +29,7 @@ model User {
   // Productivity
   plans      Plan[]
   tasks      Task[]
-  
+   
   // Habits & Notes (New System)
   habits     Habit[]
   habitLogs  HabitLog[] // Direct relation for faster querying
@@ -39,7 +39,7 @@ model User {
   entries       Entry[]            @relation("UserEntries")
   orders        Order[]
   subscriptions UserSubscription[]
-  
+   
   // Legacy
   subscription  Subscription?
 
@@ -64,6 +64,8 @@ model Plan {
   user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   tasks Task[]
 
+  // ✅ OPTIMIZATION
+  @@index([userId, updatedAt])
   @@map("plans")
 }
 
@@ -89,16 +91,20 @@ model Task {
   subtasks Subtask[]
   tags     TaskTag[]
 
+  // ✅ OPTIMIZATION: Indexes moved INSIDE the model block
+  @@index([userId, date])
+  @@index([userId, status])
+  
   @@map("tasks")
 }
 
 model Subtask {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   taskId    String
   title     String
-  completed Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  completed Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
@@ -106,9 +112,9 @@ model Subtask {
 }
 
 model Tag {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  createdAt DateTime @default(now())
+  id        String    @id @default(uuid())
+  name      String    @unique
+  createdAt DateTime  @default(now())
 
   tasks TaskTag[]
 
@@ -116,10 +122,10 @@ model Tag {
 }
 
 model TaskTag {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   taskId    String
   tagId     String
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
   tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
@@ -133,14 +139,14 @@ model TaskTag {
 // --------------------------------------------------------
 
 model Habit {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   userId    String
   title     String
-  icon      String?  @default("circle") // e.g., "dumbbell", "book"
-  color     String?  @default("text-blue-500") // e.g., "text-blue-500"
-  order     Int      @default(0)
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
+  icon      String?   @default("circle") // e.g., "dumbbell", "book"
+  color     String?   @default("text-blue-500") // e.g., "text-blue-500"
+  order     Int       @default(0)
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
 
   user User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   logs HabitLog[]
@@ -149,27 +155,28 @@ model Habit {
 }
 
 model HabitLog {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   habitId   String
   userId    String
   date      DateTime // Stored as YYYY-MM-DD T00:00:00Z (Start of Day)
-  completed Boolean  @default(false)
+  completed Boolean   @default(false)
 
   habit Habit @relation(fields: [habitId], references: [id], onDelete: Cascade)
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Optimization: Allow fetching all logs for a user in a date range without joining Habit
+  // ✅ OPTIMIZATION
   @@index([userId, date])
+   
   // Constraint: One log per habit per day
   @@unique([habitId, date])
   @@map("habit_logs")
 }
 
 model DailyNote {
-  id      String   @id @default(uuid())
+  id      String    @id @default(uuid())
   userId  String
   date    DateTime // Stored as YYYY-MM-DD
-  content String?  @db.Text
+  content String?   @db.Text
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -182,12 +189,12 @@ model DailyNote {
 // --------------------------------------------------------
 
 model ContentType {
-  id        String   @id @default(cuid())
-  key       String   @unique
+  id        String    @id @default(cuid())
+  key       String    @unique
   name      String
   schema    Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   entries Entry[]
 
@@ -217,11 +224,11 @@ model Entry {
 }
 
 model Revision {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   entryId   String
   data      Json
   createdBy String
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
 
@@ -229,8 +236,8 @@ model Revision {
 }
 
 model Media {
-  id         String   @id @default(cuid())
-  key        String   @unique
+  id         String    @id @default(cuid())
+  key        String    @unique
   url        String
   filename   String
   mimeType   String
@@ -238,7 +245,7 @@ model Media {
   width      Int?
   height     Int?
   uploadedBy String?
-  createdAt  DateTime @default(now())
+  createdAt  DateTime  @default(now())
 
   @@map("media")
 }
@@ -248,15 +255,15 @@ model Media {
 // --------------------------------------------------------
 
 model Product {
-  id          String   @id @default(cuid())
-  key         String   @unique // e.g., "PRO_MONTHLY"
+  id          String    @id @default(cuid())
+  key         String    @unique // e.g., "PRO_MONTHLY"
   name        String
   description String?
   price       Int // in paise
-  currency    String   @default("INR")
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  currency    String    @default("INR")
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   productFeatures ProductFeature[]
   subscriptions   UserSubscription[]
@@ -264,10 +271,10 @@ model Product {
 }
 
 model Feature {
-  id          String   @id @default(cuid())
-  key         String   @unique // "AI_PLAN", "MAX_PLANS"
+  id          String    @id @default(cuid())
+  key         String    @unique // "AI_PLAN", "MAX_PLANS"
   description String?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now())
 
   productFeatures ProductFeature[]
 }
@@ -298,20 +305,23 @@ model UserSubscription {
 
   user    User    @relation(fields: [userId], references: [id])
   product Product @relation(fields: [productId], references: [id])
+
+  // ✅ OPTIMIZATION
+  @@index([userId, status])
 }
 
 model Order {
-  id                String   @id @default(cuid())
+  id                String    @id @default(cuid())
   userId            String?
   productId         String?
   amount            Int
-  currency          String   @default("INR")
-  providerOrderId   String?  @unique
+  currency          String    @default("INR")
+  providerOrderId   String?   @unique
   providerPaymentId String?
   status            String
   metadata          Json?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   user    User?    @relation(fields: [userId], references: [id])
   product Product? @relation(fields: [productId], references: [id])

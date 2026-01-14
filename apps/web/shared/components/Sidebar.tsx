@@ -33,16 +33,22 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
     .filter((n) => n.group === "dashboard" && n.visible)
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
-  const [collapsed, setCollapsed] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
+  // Deterministic initial state so server HTML matches client initial render.
+  const [collapsed, setCollapsed] = useState<boolean>(false);
+
+  // Read persisted preference on client after mount (client-only)
+  useEffect(() => {
     try {
       const raw = localStorage.getItem("ui.sidebarCollapsed");
-      return raw === "true";
+      if (raw !== null) {
+        setCollapsed(raw === "true");
+      }
     } catch {
-      return false;
+      // Ignore localStorage read errors (privacy mode, etc.)
     }
-  });
+  }, []);
 
+  // Persist preference whenever collapsed changes (client-only)
   useEffect(() => {
     try {
       localStorage.setItem("ui.sidebarCollapsed", String(collapsed));
@@ -76,7 +82,7 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
         <nav className="flex-1 px-1 py-2 overflow-auto">
           {dashboardNav.map((item) => {
             const active = pathname === item.path;
-            
+
             // Determine if item is allowed
             // If permissions aren't loaded yet (undefined), default to ALLOW to avoid flickering lock
             // or BLOCK if you prefer strictness. Here we default true to be safe during loading.
@@ -84,9 +90,9 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
             const isAllowed = permissions && permKey ? permissions[permKey] : true;
 
             if (!isAllowed) {
-               // 🔒 LOCKED ITEM
-               return (
-                <div 
+              // 🔒 LOCKED ITEM
+              return (
+                <div
                   key={item.id}
                   className="flex items-center gap-3 px-3 py-2 rounded-md my-1 mx-2 text-slate-400 cursor-not-allowed opacity-70 group relative"
                   title="Upgrade to unlock"
@@ -100,7 +106,7 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
                   )}
                   {collapsed && <Lock size={12} className="absolute top-1 right-1" />}
                 </div>
-               );
+              );
             }
 
             return (

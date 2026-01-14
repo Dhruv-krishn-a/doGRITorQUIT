@@ -1,3 +1,4 @@
+// apps/web/app/dashboard/plans/[planId]/plan-detail-client.tsx
 "use client";
 
 import React, { useState } from "react";

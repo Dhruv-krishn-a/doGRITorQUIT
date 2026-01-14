@@ -1,3 +1,4 @@
+// apps/web/app/api/analytics/route.ts
 import { NextResponse } from "next/server";
 import { getServerUser } from "@/lib/auth";
 import { analytics } from "@domain";

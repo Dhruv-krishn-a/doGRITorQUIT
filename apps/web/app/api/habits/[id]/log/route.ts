@@ -1,3 +1,4 @@
+// apps/web/app/api/habits/[id]/log/route.ts
 import { NextResponse } from "next/server";
 // ✅ FIX 1: Use standard auth helper
 import { getServerUser } from "@/lib/auth";

@@ -1,3 +1,4 @@
+// apps/web/app/api/cms/entries/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 // ✅ FIX 1: Use standard auth helper (fixes cookie errors + redundant logic)

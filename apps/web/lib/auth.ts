@@ -2,14 +2,17 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client"; // Import Prisma types for error handling
+import type { User as PrismaUser } from "@prisma/client";
+import { cache } from "react"; // ✅ IMPORT THIS
+
+// Removed the global 'userCache' Map as it is ineffective in Serverless
 
 /**
- * Gets the current authenticated user.
- * If the user exists in Supabase but not in Prisma (first login),
- * it automatically creates the user record in Postgres.
+ * ✅ WRAP WITH REACT CACHE
+ * This ensures the DB query runs only once per request,
+ * even if getServerUser is called in 10 different components.
  */
-export async function getServerUser() {
+export const getServerUser = cache(async (): Promise<PrismaUser | null> => {
   const cookieStore = await cookies();
 
   const supabase = createServerClient(
@@ -17,46 +20,37 @@ export async function getServerUser() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() { return cookieStore.getAll() },
-        setAll() {} // We are in a Server Action/Component, so we don't set cookies here
+        getAll: () => cookieStore.getAll(),
+        setAll: () => {}, 
       },
     }
   );
 
-  // 1. Validate Session with Supabase
+  // 1. Check Supabase Session
   const { data: { user: supabaseUser }, error } = await supabase.auth.getUser();
-  
-  if (error || !supabaseUser?.id || !supabaseUser.email) {
-    return null;
-  }
 
-  // 2. Fetch User from Prisma DB
-  let user = await prisma.user.findUnique({
+  if (error || !supabaseUser) return null;
+
+  // 2. Fetch User from Prisma
+  // We select only needed fields if possible, but finding unique is fast.
+  const user = await prisma.user.findUnique({
     where: { id: supabaseUser.id },
   });
 
-  // 3. User Sync (If missing in DB, create them now)
+  // 3. Auto-create if missing (Sync logic)
   if (!user) {
     try {
-      user = await prisma.user.create({
+      return await prisma.user.create({
         data: {
           id: supabaseUser.id,
-          email: supabaseUser.email,
-          // Fallback name logic
-          name: supabaseUser.user_metadata?.name || supabaseUser.email.split('@')[0], 
+          email: supabaseUser.email!,
+          name: supabaseUser.user_metadata?.name || supabaseUser.email!.split("@")[0],
         },
       });
-    } catch (err) {
-      // ✅ FIX: Use strict type check for Prisma errors
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
-        // Race condition: User created by parallel request, just fetch it again
-        user = await prisma.user.findUnique({ where: { id: supabaseUser.id } });
-      } else {
-        // Log unexpected errors
-        console.error("Failed to sync user:", err);
-      }
+    } catch {
+      return prisma.user.findUnique({ where: { id: supabaseUser.id } });
     }
   }
 
   return user;
-}
+});

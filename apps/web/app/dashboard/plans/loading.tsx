@@ -1,3 +1,4 @@
+// apps/web/app/dashboard/plans/loading.tsx
 import React from "react";
 
 export default function PlansLoading() {

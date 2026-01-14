@@ -1,9 +1,12 @@
+// apps/cms/next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // 1. THIS IS REQUIRED for code from 'packages/' to work
-  transpilePackages: ["@domain", "@config", "@api"],
-  
-  // 2. Helps catch bugs
+  // IMPORTANT: Only transpile what you *absolutely* need.
+  // If @domain/@config are pure ESM/TS packages built to target Node/Browser,
+  // prefer building them into distributable JS instead of transpiling them at runtime.
+  // Remove transpilePackages if possible; leave only the minimal package names if required.
+  // transpilePackages: ["@domain"],
+
   reactStrictMode: true,
 };
 

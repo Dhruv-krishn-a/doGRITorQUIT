@@ -1,3 +1,4 @@
+// apps/web/app/dashboard/layout.tsx
 import { redirect } from "next/navigation";
 import { getServerUser } from "@/lib/auth"; // Ensure this uses cookies/headers
 import { billing } from "@domain"; // Import the permission logic

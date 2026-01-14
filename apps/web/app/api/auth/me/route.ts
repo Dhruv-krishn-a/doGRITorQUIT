@@ -1,3 +1,4 @@
+// apps/web/app/api/auth/me/route.ts
 import { NextResponse } from "next/server";
 // ✅ FIX 1: Import from the consolidated auth file
 import { getServerUser } from "@/lib/auth"; 

@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 import Razorpay from "razorpay";
 import crypto from "crypto";
+// ✅ IMPORT CACHE
+import { unstable_cache } from "next/cache"; 
 
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || "";
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || "";
@@ -17,7 +19,10 @@ function toPrismaJson(value: unknown): Prisma.InputJsonValue {
   return JSON.parse(JSON.stringify(value)) as unknown as Prisma.InputJsonValue;
 }
 
+// ... [Keep createCheckoutOrder, verifyAndActivateSubscription, handleWebhook, _activateSubscription, getUserSubscription, getUserOrders as they were] ...
+
 export async function createCheckoutOrder(userId: string, productKey: string) {
+  // ... existing code ...
   const product = await prisma.product.findUnique({ where: { key: productKey } });
   if (!product) throw new Error("Invalid productKey");
 
@@ -126,9 +131,6 @@ export async function handleWebhook(rawBody: string, signature: string) {
   }
 }
 
-/**
- * ✅ FIXED: Updates User Tier with the REAL Product Name
- */
 async function _activateSubscription(providerOrderId: string, providerPaymentId: string) {
   const order = await prisma.order.findUnique({
     where: { providerOrderId },
@@ -137,7 +139,6 @@ async function _activateSubscription(providerOrderId: string, providerPaymentId:
 
   if (!order || !order.product || !order.userId) return;
 
-  // Idempotency check
   const existingSub = await prisma.userSubscription.findFirst({
     where: { providerSubId: providerPaymentId },
   });
@@ -146,7 +147,6 @@ async function _activateSubscription(providerOrderId: string, providerPaymentId:
     const now = new Date();
     const thirtyDays = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
-    // 1. Create Subscription
     await prisma.userSubscription.create({
       data: {
         userId: order.userId,
@@ -159,14 +159,11 @@ async function _activateSubscription(providerOrderId: string, providerPaymentId:
       },
     });
 
-    // 2. ✅ Update User Label to match Product Name
-    // This ensures Supabase 'tier' column matches the actual purchased plan
     await prisma.user.update({ 
       where: { id: order.userId }, 
       data: { tier: order.product.name } 
     });
 
-    // 3. Mark Order Paid
     await prisma.order.update({
       where: { id: order.id },
       data: { status: "paid", providerPaymentId },
@@ -218,21 +215,27 @@ export async function getUserOrders(userId: string) {
   }));
 }
 
-export async function getPublicPlans() {
-  return prisma.product.findMany({
-    where: {
-      active: true,
-      key: { not: "FREE" }, // Don't sell the free tier
-    },
-    include: {
-      productFeatures: {
-        include: {
-          feature: true,
+// ✅ OPTIMIZED: Cache this result! Plans rarely change.
+// Revalidates every hour (3600 seconds) or when tags are invalidated
+export const getPublicPlans = unstable_cache(
+  async () => {
+    return prisma.product.findMany({
+      where: {
+        active: true,
+        key: { not: "FREE" }, 
+      },
+      include: {
+        productFeatures: {
+          include: {
+            feature: true,
+          },
         },
       },
-    },
-    orderBy: {
-      price: "asc",
-    },
-  });
-}
+      orderBy: {
+        price: "asc",
+      },
+    });
+  },
+  ["public-plans-list"], // Key
+  { revalidate: 3600, tags: ["plans"] } // Config
+);

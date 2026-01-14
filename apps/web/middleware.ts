@@ -1,52 +1,53 @@
 // apps/web/middleware.ts
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  });
+/**
+ * Lightweight middleware:
+ * - Do NOT call Supabase or DB here (no network calls).
+ * - Only check if a session cookie exists and protect pages that need auth.
+ *
+ * NOTE: replace 'sb-access-token' below if your Supabase cookie name differs.
+ */
+const PUBLIC_FILE = /\.(.*)$/;
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Let static files, images and _next be served without middleware checks
+  if (
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/static") ||
+    PUBLIC_FILE.test(pathname) ||
+    pathname === "/favicon.ico" ||
+    pathname.startsWith("/api/public")
+  ) {
+    return NextResponse.next();
+  }
+
+  // Quick cookie existence check (no network)
+  // Supabase SSR sets a cookie like 'sb-access-token' / 'sb:token' depending on config.
+  // We look for any cookie that contains 'sb' and 'token' to be robust.
+  const cookiePairs = request.cookies.getAll().map(c => ({ name: c.name, value: c.value }));
+  const hasSupabaseSession = cookiePairs.some(
+    (c) =>
+      c.name.includes("sb") && (c.name.includes("token") || c.name.includes("session") || c.value)
   );
 
-  await supabase.auth.getUser();
+  // Protect dashboard/admin routes: if no cookie, redirect to login
+  if (pathname.startsWith("/dashboard") || pathname.startsWith("/admin")) {
+    if (!hasSupabaseSession) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("next", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
 
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    // apply to all routes except static assets and public API routes
+    "/((?!_next/static|_next/image|favicon.ico|api/public|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
