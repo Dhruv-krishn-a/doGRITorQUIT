@@ -1,4 +1,3 @@
-// apps/web/app/dashboard/page.tsx
 import React, { Suspense } from "react";
 import {
   Zap, CheckCircle2, Clock, Calendar, ArrowRight, Target
@@ -12,13 +11,17 @@ export default async function DashboardHome() {
   const user = await getServerUser();
   if (!user) redirect("/login");
 
+  // ✅ FIX: Safely access name from user_metadata if top-level name is missing
+  const displayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+  const firstName = displayName.split(' ')[0];
+
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-8 fade-in">
       {/* ✅ INSTANT LOAD: Header shows up immediately from cached user data */}
       <div className="flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">
-            Welcome back, {user.name?.split(' ')[0] || 'User'}
+            Welcome back, {firstName}
           </h1>
           <p className="text-slate-500 mt-1">Here is your daily briefing.</p>
         </div>

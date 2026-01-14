@@ -1,23 +1,12 @@
-// packages/domain/auth/auth.service.ts
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { prisma } from "@/lib/prisma"; 
-import { cache } from "react";
-import { unstable_cache } from "next/cache";
-
-// Cached helper to fetch user from DB
-const getCachedUser = unstable_cache(
-  async (userId: string) => {
-    return prisma.user.findUnique({ where: { id: userId } });
-  },
-  ["user-profile-v1"], 
-  { revalidate: 300, tags: ["user"] } 
-);
+import { prisma } from "../../../lib/prisma"; // Adjust path as needed based on your monorepo structure
 
 /**
- * Get the current authenticated user (Standard User)
+ * Validates the session against Supabase Auth server.
+ * Use this instead of getSession() for security.
  */
-export const getServerUser = cache(async () => {
+export async function getServerUser() {
   const cookieStore = await cookies();
 
   const supabase = createServerClient(
@@ -26,21 +15,44 @@ export const getServerUser = cache(async () => {
     {
       cookies: {
         getAll: () => cookieStore.getAll(),
-        setAll: () => {}, 
+        setAll: () => {}, // Read-only in server components
       },
     }
   );
 
-  const { data: { session }, error } = await supabase.auth.getSession();
-  
-  if (error || !session?.user) return null;
+  // ✅ FIX: Use getUser() instead of getSession()
+  const { data: { user }, error } = await supabase.auth.getUser();
 
-  return getCachedUser(session.user.id);
-});
+  if (error || !user) return null;
 
-
-export const getAdminUser = cache(async () => {
-  const user = await getServerUser();
-  if (!user || user.role !== "admin") return null;
   return user;
-});
+}
+
+export async function getAdminUser() {
+  const cookieStore = await cookies();
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll: () => cookieStore.getAll(),
+        setAll: () => {},
+      },
+    }
+  );
+
+  // ✅ FIX: Use getUser() to securely verify the token
+  const { data: { user }, error } = await supabase.auth.getUser();
+
+  if (error || !user) return null;
+
+  // Check role in database
+  const dbUser = await prisma.user.findUnique({
+    where: { id: user.id },
+  });
+
+  if (!dbUser || dbUser.role !== "admin") return null;
+
+  return dbUser;
+}

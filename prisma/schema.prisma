@@ -18,6 +18,8 @@ model User {
   avatarUrl     String?
   tier          String    @default("Free tier")
   role          String    @default("user") // "admin" | "user"
+  
+  
   aiUsageCount  Int       @default(0)
   customAiLimit Int?
 

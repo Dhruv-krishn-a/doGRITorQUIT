@@ -189,3 +189,14 @@ export async function resetUserAIUsage(userId: string) {
   });
   revalidatePath("/users");
 }
+
+export async function removeProductFeature(productId: string, featureId: string) {
+  return prisma.productFeature.delete({
+    where: {
+      productId_featureId: {
+        productId,
+        featureId,
+      },
+    },
+  });
+}

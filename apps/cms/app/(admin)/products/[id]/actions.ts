@@ -1,3 +1,4 @@
+// apps/cms/app/(admin)/products/[id]/actions.ts
 "use server";
 
 import { cms } from "@domain";

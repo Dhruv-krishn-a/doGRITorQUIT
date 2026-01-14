@@ -1,14 +1,14 @@
-//packages/domain/billing/entitlements.ts
+// packages/domain/billing/entitlements.ts
 import { prisma } from "@/lib/prisma";
-import { unstable_cache } from "next/cache"; 
+import { unstable_cache } from "next/cache";
 
-export const LEGACY_ENTITLEMENTS = {}; 
+export const LEGACY_ENTITLEMENTS = {};
 
 type FeatureMap = Record<string, any>;
 
 export interface UserEntitlements {
   userId: string;
-  tierFallback?: string; 
+  tierFallback?: string;
   product?: {
     id: string;
     key: string;
@@ -17,31 +17,31 @@ export interface UserEntitlements {
     currency?: string | null;
   } | null;
   features: FeatureMap;
-  user: any; 
+  user: any;
   productName: string;
   productKey: string;
 }
 
-// ✅ 1. Internal Fetcher Logic
+// Internal fetcher
 async function _fetchEntitlements(userId: string): Promise<UserEntitlements> {
-  const user = await prisma.user.findUnique({ 
-    where: { id: userId }, 
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
     include: {
       subscriptions: {
         where: { status: { in: ["active", "trialing"] } },
         orderBy: { currentPeriodEnd: "desc" },
         take: 1,
         include: {
-           product: {
-             include: {
-               productFeatures: { include: { feature: true } }
-             }
-           }
+          product: {
+            include: {
+              productFeatures: { include: { feature: true } }
+            }
+          }
         }
       }
     }
   });
-  
+
   if (!user) throw new Error("User not found");
 
   let product = null;
@@ -50,8 +50,7 @@ async function _fetchEntitlements(userId: string): Promise<UserEntitlements> {
 
   if (activeSub && activeSub.product) {
     product = activeSub.product;
-  } 
-  else {
+  } else {
     const freeProduct = await prisma.product.findUnique({
       where: { key: "FREE" },
       include: {
@@ -69,7 +68,7 @@ async function _fetchEntitlements(userId: string): Promise<UserEntitlements> {
 
   return {
     userId,
-    tierFallback: user.tier, 
+    tierFallback: user.tier,
     product: product ? {
       id: product.id,
       key: product.key,
@@ -77,21 +76,19 @@ async function _fetchEntitlements(userId: string): Promise<UserEntitlements> {
       price: product.price ?? null,
       currency: product.currency ?? null,
     } : null,
-    productName: product?.name || "Free Tier", 
+    productName: product?.name || "Free Tier",
     productKey: product?.key || "FREE",
     features,
     user
   };
 }
 
-// ✅ 2. Cached Getter
 export const getUserEntitlements = unstable_cache(
   async (userId: string) => _fetchEntitlements(userId),
-  ["user-entitlements-v1"], // Key namespace
-  { revalidate: 300, tags: ["entitlements"] } 
+  ["user-entitlements-v1"],
+  { revalidate: 300, tags: ["entitlements"] }
 );
 
-// ✅ 3. Permission Checks
 export async function getPagePermissions(userId: string) {
   const ent = await getUserEntitlements(userId);
   const isFree = ent.productKey === 'FREE';
@@ -101,10 +98,10 @@ export async function getPagePermissions(userId: string) {
     if (feat) {
       if (feat.enabled === false) return false;
       if (feat.value === false) return false;
-      return true; 
+      return true;
     }
-    if (isFree) return false; 
-    return true; 
+    if (isFree) return false;
+    return true;
   };
 
   return {
@@ -125,29 +122,12 @@ export async function getActiveUserSubscription(userId: string) {
   }).catch(() => null);
 }
 
+/**
+ * ✅ NO-OP: We removed plan storage limits.
+ * Users can create as many plans as they want, provided they pay the AI cost to generate them.
+ */
 export async function assertPlanCreationAllowed(userId: string) {
-  const ent = await getUserEntitlements(userId); 
-  const maxPlansFeat = ent.features['MAX_PLANS'];
-  let allowedLimit: number | typeof Infinity = 3; 
-
-  if (maxPlansFeat) {
-    if (typeof maxPlansFeat.limit === 'number') allowedLimit = maxPlansFeat.limit;
-    else if (typeof maxPlansFeat.value === 'number') allowedLimit = maxPlansFeat.value;
-    else if (maxPlansFeat === 'Infinity' || maxPlansFeat.limit === 'Infinity') allowedLimit = Infinity;
-  } else {
-    if (ent.productKey.includes('PRO') || ent.productKey.includes('TEAM')) {
-      allowedLimit = Infinity;
-    }
-  }
-
-  if (allowedLimit === Infinity) return;
-  const planCount = await prisma.plan.count({ where: { userId } });
-
-  if (planCount >= (allowedLimit as number)) {
-    const err: any = new Error("Plan limit reached.");
-    err.code = "ENTITLEMENT_LIMIT";
-    throw err;
-  }
+  return; 
 }
 
 export async function getMaxPlanDaysForUser(userId: string): Promise<number> {
@@ -157,8 +137,9 @@ export async function getMaxPlanDaysForUser(userId: string): Promise<number> {
     if (typeof featureVal.value === 'number') return featureVal.value;
     if (typeof featureVal === 'number') return featureVal;
   }
-  if (ent.productKey === 'FREE') return 7; 
-  return 30; 
+  // Standard defaults
+  if (ent.productKey === 'FREE') return 7;
+  return 30;
 }
 
 export async function incrementAIUsage(userId: string) {
@@ -173,25 +154,18 @@ export async function getFeatureForUser(userId: string, featureKey: string): Pro
   return ent.features?.[featureKey];
 }
 
-/**
- * ✅ UPDATED: Fetches live usage counts to handle resets instantly.
- */
 export async function getAIUsageStats(userId: string) {
-  // 1. Get STATIC plan details (Cached is fine here)
   const ent = await getUserEntitlements(userId);
   
-  // 2. ✅ FETCH FRESH USAGE DATA (Bypass Cache)
-  // We query just the fields we need to be fast
   const freshUser = await prisma.user.findUnique({
     where: { id: userId },
     select: { aiUsageCount: true, customAiLimit: true }
   });
 
-  // Safe fallback if user somehow not found
   const usageCount = freshUser?.aiUsageCount ?? 0;
   const customLimit = freshUser?.customAiLimit;
 
-  // 3. Logic: Check Custom Limit First
+  // 1. Check Custom Limit (Admin Override)
   if (customLimit !== null && customLimit !== undefined) {
     return {
       used: usageCount,
@@ -200,7 +174,7 @@ export async function getAIUsageStats(userId: string) {
     };
   }
 
-  // 4. Logic: Fallback to Plan Limits
+  // 2. Check Plan Limit
   let limit = 0; 
   const limitFeature = ent.features['AI_GEN_LIMIT'];
   
@@ -220,7 +194,12 @@ export async function getAIUsageStats(userId: string) {
   };
 }
 
+/**
+ * ✅ CHECK: Only checks AI Credits.
+ */
 export async function canUseAIGenerationForUser(userId: string): Promise<boolean> {
   const stats = await getAIUsageStats(userId);
-  return stats.used < stats.limit;
+  if (stats.limit === Infinity) return true;
+  if (stats.used >= stats.limit) return false;
+  return true;
 }
