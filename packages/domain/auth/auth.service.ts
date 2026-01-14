@@ -1,8 +1,23 @@
+// packages/domain/auth/auth.service.ts
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { prisma } from "@/lib/prisma"; // Make sure this path is valid in your domain package, or use relative
+import { prisma } from "@/lib/prisma"; 
+import { cache } from "react";
+import { unstable_cache } from "next/cache";
 
-export async function getAdminUser() {
+// Cached helper to fetch user from DB
+const getCachedUser = unstable_cache(
+  async (userId: string) => {
+    return prisma.user.findUnique({ where: { id: userId } });
+  },
+  ["user-profile-v1"], 
+  { revalidate: 300, tags: ["user"] } 
+);
+
+/**
+ * Get the current authenticated user (Standard User)
+ */
+export const getServerUser = cache(async () => {
   const cookieStore = await cookies();
 
   const supabase = createServerClient(
@@ -11,20 +26,21 @@ export async function getAdminUser() {
     {
       cookies: {
         getAll: () => cookieStore.getAll(),
-        setAll: () => {},
+        setAll: () => {}, 
       },
     }
   );
 
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session }, error } = await supabase.auth.getSession();
+  
+  if (error || !session?.user) return null;
 
-  if (!session?.user) return null;
+  return getCachedUser(session.user.id);
+});
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-  });
 
+export const getAdminUser = cache(async () => {
+  const user = await getServerUser();
   if (!user || user.role !== "admin") return null;
-
   return user;
-}
+});

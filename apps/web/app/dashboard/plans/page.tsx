@@ -1,27 +1,51 @@
 // apps/web/app/dashboard/plans/page.tsx
 import React from "react";
 import { redirect } from "next/navigation";
-import { getServerUser } from "@/lib/auth"; // 
-import { plans } from "@domain"; // 
+import { getServerUser } from "@/lib/auth"; 
+import { plans, billing } from "@domain"; 
 import PlansClient from "./plans-client";
+import { FeatureLocked } from "@/shared/components/FeatureLocked";
 
-// --- Server Component ---
+export const metadata = {
+  title: "My Plans | Planner AI",
+};
+
 export default async function PlanningPage() {
-  // 1. Auth Check (Server Side)
-  // We check auth immediately on the server. If not logged in, redirect.
   const user = await getServerUser();
-  
-  if (!user) {
-    redirect("/login");
+  if (!user) redirect("/login");
+
+  // 1. Fetch Permissions & Entitlements in Parallel
+  const [userPlans, permissions, entitlements] = await Promise.all([
+    plans.listPlansForUser(user.id),
+    billing.getPagePermissions(user.id),
+    billing.getUserEntitlements(user.id)
+  ]);
+
+  // 2. Check Access Permission
+  if (!permissions.canViewPlans) {
+    return <FeatureLocked title="Project Planning" description="Upgrade to create and manage detailed project plans." />;
   }
 
-  // 2. Fetch Real Data Directly
-  // We call the domain function directly. 
-  // No fetch('api/plans'), no network overhead, no waiting for the browser.
-  // This runs right next to your database.
-  const userPlans = await plans.listPlansForUser(user.id);
+  // 3. Check Creation Limits (MAX_PLANS)
+  let maxPlans = 1; // Default fallback
+  const limitFeat = entitlements.features['MAX_PLANS'];
+  
+  if (limitFeat) {
+    // Handle both raw number or object structure
+    maxPlans = (typeof limitFeat.value === 'number') ? limitFeat.value 
+             : (typeof limitFeat === 'number') ? limitFeat 
+             : 3; // Default free limit
+  } else if (entitlements.productKey !== 'FREE') {
+    maxPlans = Infinity; // Paid plans usually unlimited if not specified
+  }
 
-  // 3. Pass data to the Client Component
-  // We pass the fetched plans as a prop to the interactive part of the page.
-  return <PlansClient initialPlans={userPlans} />;
+  const isLimitReached = maxPlans !== Infinity && userPlans.length >= maxPlans;
+
+  return (
+    <PlansClient 
+      initialPlans={userPlans} 
+      isLimitReached={isLimitReached}
+      maxPlans={maxPlans}
+    />
+  );
 }

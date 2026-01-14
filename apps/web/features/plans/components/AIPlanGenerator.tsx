@@ -9,12 +9,10 @@ import {
 import { useToast } from "@shared/components/ToastProvider";
 import { motion, AnimatePresence } from "framer-motion";
 
-// --- Utility Helper (Fixes 'cn' not found error) ---
 function cn(...classes: (string | undefined | null | false)[]) {
   return classes.filter(Boolean).join(" ");
 }
 
-// --- Types (Fixes 'any' type errors) ---
 interface AIPlanItem {
   Day: number;
   "Task Title": string;
@@ -22,14 +20,14 @@ interface AIPlanItem {
   "Estimated Time (min)": number;
   Priority?: string;
   Subtasks?: string[];
-  [key: string]: unknown; // Allow flexibility for extra AI fields
+  [key: string]: unknown; 
 }
 
 interface ChatMessage {
   id: string;
   role: "user" | "ai";
   text: string;
-  planData?: AIPlanItem[]; // Typed array instead of any[]
+  planData?: AIPlanItem[]; 
   timestamp: number;
   isError?: boolean;      
   isLimitError?: boolean; 
@@ -45,12 +43,11 @@ export default function AIPlanGenerator() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   
-  // UX State for Waiting
   const [loading, setLoading] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [loadingStep, setLoadingStep] = useState(0); // 0 to 100
+  const [loadingStep, setLoadingStep] = useState(0); 
+
   
-  // Logic State
   const [startDate, setStartDate] = useState<string>(
     new Date().toISOString().slice(0, 10)
   );
@@ -64,7 +61,6 @@ export default function AIPlanGenerator() {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading, loadingStep]);
 
-  // --- TIMER & PROGRESS SIMULATION ---
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (loading) {

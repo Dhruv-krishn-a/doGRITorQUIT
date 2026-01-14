@@ -1,6 +1,6 @@
 //packages/domain/billing/entitlements.ts
 import { prisma } from "@/lib/prisma";
-import { unstable_cache } from "next/cache"; // ✅ Import cache
+import { unstable_cache } from "next/cache"; 
 
 export const LEGACY_ENTITLEMENTS = {}; 
 
@@ -85,14 +85,13 @@ async function _fetchEntitlements(userId: string): Promise<UserEntitlements> {
 }
 
 // ✅ 2. Cached Getter
-// This makes the layout permissions check nearly instant (1-5ms)
 export const getUserEntitlements = unstable_cache(
   async (userId: string) => _fetchEntitlements(userId),
   ["user-entitlements-v1"], // Key namespace
   { revalidate: 300, tags: ["entitlements"] } 
 );
 
-// ✅ 3. Update getPagePermissions to use the cached getter
+// ✅ 3. Permission Checks
 export async function getPagePermissions(userId: string) {
   const ent = await getUserEntitlements(userId);
   const isFree = ent.productKey === 'FREE';
@@ -118,7 +117,6 @@ export async function getPagePermissions(userId: string) {
   };
 }
 
-// ... Keep existing exports ...
 export async function getActiveUserSubscription(userId: string) {
   return prisma.userSubscription.findFirst({
     where: { userId, status: { in: ["active", "trialing"] } },
@@ -128,7 +126,7 @@ export async function getActiveUserSubscription(userId: string) {
 }
 
 export async function assertPlanCreationAllowed(userId: string) {
-  const ent = await getUserEntitlements(userId); // Uses cache now
+  const ent = await getUserEntitlements(userId); 
   const maxPlansFeat = ent.features['MAX_PLANS'];
   let allowedLimit: number | typeof Infinity = 3; 
 
@@ -153,7 +151,7 @@ export async function assertPlanCreationAllowed(userId: string) {
 }
 
 export async function getMaxPlanDaysForUser(userId: string): Promise<number> {
-  const ent = await getUserEntitlements(userId); // Uses cache now
+  const ent = await getUserEntitlements(userId);
   const featureVal = ent.features['MAX_PLAN_DAYS'];
   if (featureVal) {
     if (typeof featureVal.value === 'number') return featureVal.value;
@@ -175,18 +173,34 @@ export async function getFeatureForUser(userId: string, featureKey: string): Pro
   return ent.features?.[featureKey];
 }
 
+/**
+ * ✅ UPDATED: Fetches live usage counts to handle resets instantly.
+ */
 export async function getAIUsageStats(userId: string) {
+  // 1. Get STATIC plan details (Cached is fine here)
   const ent = await getUserEntitlements(userId);
-  const user = ent.user;
+  
+  // 2. ✅ FETCH FRESH USAGE DATA (Bypass Cache)
+  // We query just the fields we need to be fast
+  const freshUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { aiUsageCount: true, customAiLimit: true }
+  });
 
-  if (user.customAiLimit !== null && user.customAiLimit !== undefined) {
+  // Safe fallback if user somehow not found
+  const usageCount = freshUser?.aiUsageCount ?? 0;
+  const customLimit = freshUser?.customAiLimit;
+
+  // 3. Logic: Check Custom Limit First
+  if (customLimit !== null && customLimit !== undefined) {
     return {
-      used: user.aiUsageCount,
-      limit: user.customAiLimit,
-      remaining: Math.max(0, user.customAiLimit - user.aiUsageCount)
+      used: usageCount,
+      limit: customLimit,
+      remaining: Math.max(0, customLimit - usageCount)
     };
   }
 
+  // 4. Logic: Fallback to Plan Limits
   let limit = 0; 
   const limitFeature = ent.features['AI_GEN_LIMIT'];
   
@@ -200,9 +214,9 @@ export async function getAIUsageStats(userId: string) {
   }
 
   return {
-    used: user.aiUsageCount,
+    used: usageCount,
     limit: limit,
-    remaining: Math.max(0, limit - user.aiUsageCount)
+    remaining: Math.max(0, limit - usageCount)
   };
 }
 

@@ -63,7 +63,15 @@ export const getUsersWithSubscriptions = cache(async (limit = 50, search?: strin
         where: { status: { in: ["active", "trialing"] } },
         take: 1,
         orderBy: { currentPeriodEnd: 'desc' },
-        include: { product: true } 
+        include: { 
+          product: {
+            include: {
+              productFeatures: {
+                include: { feature: true }
+              }
+            }
+          }
+        } 
       },
       habits: { select: { id: true } }, 
     },
@@ -164,4 +172,20 @@ export async function assignUserPlan(userId: string, productId: string | "manual
 export async function updateUserRole(userId: string, role: string) {
   if(role !== "admin" && role !== "user") return;
   await prisma.user.update({ where: { id: userId }, data: { role } });
+}
+
+export async function updateUserCustomLimit(userId: string, limit: number | null) {
+  await prisma.user.update({
+    where: { id: userId },
+    data: { customAiLimit: limit },
+  });
+  revalidatePath("/users");
+}
+
+export async function resetUserAIUsage(userId: string) {
+  await prisma.user.update({
+    where: { id: userId },
+    data: { aiUsageCount: 0 },
+  });
+  revalidatePath("/users");
 }

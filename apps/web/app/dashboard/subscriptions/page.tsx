@@ -1,125 +1,90 @@
-import { getServerUser } from "@/lib/auth";
+// apps/web/app/dashboard/subscriptions/page.tsx
+import { auth, payment, billing } from "@domain";
 import { redirect } from "next/navigation";
-import SubscriptionClientPage, { 
-  Product, 
-  SubscriptionData 
-} from "./subscription-client";
-import { prisma } from "@/lib/prisma";
+import SubscriptionClientPage from "./subscription-client";
 
-// --- Helpers ---
-const dateFormatter = new Intl.DateTimeFormat("en-GB", {
-  day: "numeric",
-  month: "short",
-  year: "numeric"
-});
+export const metadata = {
+  title: "Subscription | Planner AI",
+};
 
-async function getProducts(): Promise<Product[]> {
-  try {
-    const products = await prisma.product.findMany({
-      where: { active: true },
-      orderBy: { price: "asc" },
-      select: {
-        id: true,
-        name: true,
-        key: true,
-        price: true,
-        description: true,
-        currency: true
-      }
-    });
-    return products.map(p => ({
-      ...p,
-      description: p.description || "" 
-    }));
-  } catch (error) {
-    console.error("Failed to fetch products:", error);
-    return [];
-  }
-}
+export default async function SubscriptionPage() {
+  // 1. Auth Check
+  const user = await auth.getServerUser();
+  if (!user) redirect("/login");
 
-async function getSubscriptionData(userId: string, currentUsage: number): Promise<SubscriptionData> {
-  try {
-    const activeSub = await prisma.userSubscription.findFirst({
-      where: {
-        userId: userId,
-        status: { in: ["active", "trialing"] },
-      },
-      include: {
-        product: true, 
-      },
-      orderBy: {
-        currentPeriodEnd: "desc",
-      },
-    });
+  // 2. Fetch All Data in Parallel
+  const [rawProducts, entitlements, usageStats, rawHistory] = await Promise.all([
+    payment.getPublicPlans(),
+    billing.getUserEntitlements(user.id),
+    billing.getAIUsageStats(user.id),
+    payment.getUserOrders(user.id),
+  ]);
 
-    const orders = await prisma.order.findMany({
-      where: { userId: userId },
-      orderBy: { createdAt: "desc" },
-      take: 10,
-    });
+  // 3. Transform Products
+  const products = rawProducts.map(p => ({
+    id: p.id,
+    name: p.name,
+    key: p.key,
+    price: p.price,
+    currency: p.currency,
+    description: p.description || "",
+  }));
 
-    // Default Limits
-    let aiLimit = 5; 
-    let isUnlimited = false;
-
-    if (activeSub?.product) {
-      // Safe cast to access potential CMS fields
-      const productData = activeSub.product as unknown as { aiLimit?: number };
-      
-      if (typeof productData.aiLimit === 'number') {
-         aiLimit = productData.aiLimit;
-         if (aiLimit === -1) isUnlimited = true;
-      } 
-      // Fallback hardcoded logic if DB field is missing
-      else {
-         if (activeSub.product.key === "PRO_MONTHLY") aiLimit = 50;
-         if (activeSub.product.key === "PRO_YEARLY") aiLimit = 500;
-         if (activeSub.product.key === "ENTERPRISE") isUnlimited = true;
-      }
+  // 4. Transform History (Explicitly typed status)
+  const history = rawHistory.map((order) => {
+    let status: "paid" | "failed" | "pending" = "pending";
+    if (order.status === "paid" || order.status === "captured") {
+      status = "paid";
+    } else if (order.status === "failed") {
+      status = "failed";
     }
 
     return {
-      activeSubscription: activeSub ? {
-        product: {
-          id: activeSub.product.id,
-          name: activeSub.product.name,
-          key: activeSub.product.key,
-        },
-        currentPeriodEnd: activeSub.currentPeriodEnd?.toISOString(),
-        formattedRenewsAt: activeSub.currentPeriodEnd ? dateFormatter.format(activeSub.currentPeriodEnd) : undefined,
-        status: activeSub.status,
+      id: order.id,
+      formattedDate: new Date(order.date).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+      }),
+      amount: order.amount,
+      status: status 
+    };
+  });
+
+  // 5. Extract Active Subscription
+  const activeSub = entitlements.user.subscriptions?.[0]; 
+
+  // ✅ FIX: Ensure currentPeriodEnd is treated as a Date object before using date methods
+  const endDate = activeSub?.currentPeriodEnd ? new Date(activeSub.currentPeriodEnd) : undefined;
+
+  const clientData = {
+    activeSubscription: activeSub ? {
+      product: activeSub.product ? {
+        id: activeSub.product.id,
+        name: activeSub.product.name,
+        key: activeSub.product.key,
       } : undefined,
-      usage: {
-        aiGenerated: currentUsage,
-        aiLimit: isUnlimited ? null : aiLimit,
-        remaining: isUnlimited ? null : Math.max(0, aiLimit - currentUsage),
-      },
-      history: orders.map(o => ({
-        id: o.id,
-        date: o.createdAt.toISOString(),
-        formattedDate: dateFormatter.format(o.createdAt),
-        amount: o.amount,
-        status: o.status === "paid" ? "paid" : o.status === "failed" ? "failed" : "pending",
-      }))
-    };
-  } catch (error) {
-    console.error("Failed to fetch subscription data:", error);
-    // Return safe default if error
-    return { 
-      usage: { aiGenerated: currentUsage, aiLimit: 5, remaining: Math.max(0, 5 - currentUsage) }, 
-      history: [] 
-    };
-  }
-}
+      status: activeSub.status,
+      // Safe conversion
+      currentPeriodEnd: endDate?.toISOString(),
+      formattedRenewsAt: endDate 
+        ? endDate.toLocaleDateString("en-GB", { 
+            day: "numeric", month: "short", year: "numeric" 
+          }) 
+        : undefined,
+    } : undefined,
+    usage: {
+      aiGenerated: usageStats.used,
+      aiLimit: usageStats.limit === Infinity ? null : usageStats.limit, 
+      remaining: usageStats.remaining === Infinity ? null : usageStats.remaining
+    },
+    history: history
+  };
 
-export default async function SubscriptionPage() {
-  const user = await getServerUser();
-  if (!user) redirect("/login");
-
-  const [products, subscriptionData] = await Promise.all([
-    getProducts(),
-    getSubscriptionData(user.id, user.aiUsageCount)
-  ]);
-
-  return <SubscriptionClientPage products={products} data={subscriptionData} />;
+  return (
+    <SubscriptionClientPage 
+      products={products} 
+      data={clientData} 
+    />
+  );
 }

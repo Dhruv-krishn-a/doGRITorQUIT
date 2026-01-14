@@ -1,34 +1,37 @@
+// apps/web/app/api/ai/plan/route.ts
 import { NextResponse } from "next/server";
-import { getServerUser } from "@/lib/auth";
-import { ai, billing } from "@domain"; 
-import { getUserLimits } from "@/lib/user-limits"; // ✅ Import the helper
+import { ai, billing, auth } from "@domain"; // ✅ Centralized imports
 
 export const maxDuration = 60; 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
-    const user = await getServerUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // 1. Authenticate (using Domain Auth)
+    const user = await auth.getServerUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const { prompt } = await req.json();
 
     // -----------------------------------------------------------
-    // 1. CHECK LIMITS
+    // 2. CHECK LIMITS (Centralized Domain Logic)
     // -----------------------------------------------------------
-    // This now correctly checks CMS > Plan > Free
-    const limits = await getUserLimits(user.id);
+    // This checks Custom Override -> Plan Limit -> Free Limit automatically
+    const canGenerate = await billing.canUseAIGenerationForUser(user.id);
 
-    // If NOT unlimited AND remaining is <= 0 -> Block
-    if (!limits.isUnlimited && limits.remaining <= 0) {
+    if (!canGenerate) {
+      // Optional: Fetch stats just for the error message
+      const stats = await billing.getAIUsageStats(user.id);
       return NextResponse.json({ 
         error: "Limit Reached", 
-        message: `You have used ${limits.usage}/${limits.limit} credits. Please upgrade to continue.` 
+        message: `You have used ${stats.used}/${stats.limit} credits. Please upgrade to continue.` 
       }, { status: 403 });
     }
 
     // -----------------------------------------------------------
-    // 2. GENERATE PLAN
+    // 3. GENERATE PLAN
     // -----------------------------------------------------------
     const enhancedPrompt = `
       You are a JSON-only API. 
@@ -54,8 +57,9 @@ export async function POST(req: Request) {
     }
 
     // -----------------------------------------------------------
-    // 3. INCREMENT USAGE
+    // 4. INCREMENT USAGE
     // -----------------------------------------------------------
+    // Only increment if generation was successful
     await billing.incrementAIUsage(user.id);
 
     return NextResponse.json({ success: true, data: tasksData });

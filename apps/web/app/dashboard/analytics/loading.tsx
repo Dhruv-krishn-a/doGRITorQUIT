@@ -1,3 +1,4 @@
+// apps/web/app/dashboard/analytics/loading.tsx
 import React from "react";
 
 export default function Loading() {
