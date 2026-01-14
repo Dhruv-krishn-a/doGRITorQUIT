@@ -3,8 +3,23 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import type { User as PrismaUser } from "@prisma/client";
-import { cache } from "react"; // ✅ Required for Server Components
+import { cache } from "react";
+import { unstable_cache } from "next/cache";
 
+// 1. Internal DB Fetcher
+const fetchUserFromDb = async (userId: string) => {
+  return prisma.user.findUnique({ where: { id: userId } });
+};
+
+// 2. Cached Layer (Revalidates every 10 mins)
+const getCachedUser = unstable_cache(
+  async (userId: string) => fetchUserFromDb(userId),
+  ["user-profile"], 
+  { revalidate: 600, tags: ["user"] }
+);
+
+// 3. Main Auth Function
+// 'cache' dedupes requests in a single render. 'unstable_cache' persists across requests.
 export const getServerUser = cache(async (): Promise<PrismaUser | null> => {
   const cookieStore = await cookies();
 
@@ -19,19 +34,10 @@ export const getServerUser = cache(async (): Promise<PrismaUser | null> => {
     }
   );
 
-  // 1. Check Session (Fast)
-  const { data: { session }, error } = await supabase.auth.getSession();
+  const { data: { user: supabaseUser }, error } = await supabase.auth.getUser();
   
-  if (error || !session?.user) {
-    return null;
-  }
+  if (error || !supabaseUser) return null;
 
-  // 2. Fetch User (Optimized)
-  // We DO NOT try to 'create' the user here. That is slow. 
-  // We assume the user exists (created on login callback).
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-  });
-
-  return user;
+  // ✅ OPTIMIZATION: Return cached user data instantly
+  return getCachedUser(supabaseUser.id);
 });

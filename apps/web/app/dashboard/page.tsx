@@ -6,7 +6,7 @@ import {
 import Link from "next/link";
 import { getServerUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { dashboard } from "@domain"; // Uses your optimized domain logic
+import { dashboard } from "@domain"; 
 
 export default async function DashboardHome() {
   const user = await getServerUser();
@@ -14,7 +14,7 @@ export default async function DashboardHome() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-8 fade-in">
-      {/* ✅ INSTANT LOAD: This part shows up immediately */}
+      {/* ✅ INSTANT LOAD: Header shows up immediately from cached user data */}
       <div className="flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">
@@ -34,7 +34,7 @@ export default async function DashboardHome() {
 
 // Separate async component for the heavy lifting
 async function AsyncDashboardContent({ userId }: { userId: string }) {
-  // This fetches the optimized data from your domain package
+  // This uses the optimized aggregation query
   const data = await dashboard.getDashboardStats(userId);
 
   if (!data) return <div className="text-red-500">Unable to load data.</div>;
@@ -43,7 +43,6 @@ async function AsyncDashboardContent({ userId }: { userId: string }) {
 
   return (
     <>
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-linear-to-br from-indigo-600 to-violet-700 rounded-3xl p-6 text-white shadow-xl shadow-indigo-200">
           <div className="flex items-start justify-between">
@@ -60,7 +59,6 @@ async function AsyncDashboardContent({ userId }: { userId: string }) {
           <div className="mt-6 text-sm opacity-80">{stats.completedTasks} tasks completed</div>
         </div>
 
-        {/* Active Plan */}
         <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-widest mb-3">
@@ -83,7 +81,6 @@ async function AsyncDashboardContent({ userId }: { userId: string }) {
           </Link>
         </div>
 
-        {/* Habits */}
         <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-widest">
@@ -105,7 +102,6 @@ async function AsyncDashboardContent({ userId }: { userId: string }) {
         </div>
       </div>
 
-      {/* Today's Tasks */}
       <div className="bg-white border border-slate-200 rounded-4xl shadow-sm overflow-hidden min-h-64">
         {todaysTasks.length === 0 ? (
           <div className="p-12 text-center text-slate-400 flex flex-col items-center justify-center h-full">

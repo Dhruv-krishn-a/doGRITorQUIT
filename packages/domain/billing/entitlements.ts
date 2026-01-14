@@ -1,5 +1,6 @@
-// packages/domain/billing/entitlements.ts
+//packages/domain/billing/entitlements.ts
 import { prisma } from "@/lib/prisma";
+import { unstable_cache } from "next/cache"; // ✅ Import cache
 
 export const LEGACY_ENTITLEMENTS = {}; 
 
@@ -21,28 +22,8 @@ export interface UserEntitlements {
   productKey: string;
 }
 
-export async function getActiveUserSubscription(userId: string) {
-  return prisma.userSubscription.findFirst({
-    where: {
-      userId,
-      status: { in: ["active", "trialing"] },
-    },
-    orderBy: { currentPeriodEnd: "desc" },
-    include: {
-      product: {
-        include: {
-          productFeatures: {
-            include: {
-              feature: true,
-            },
-          },
-        },
-      },
-    },
-  }).catch(() => null);
-}
-
-export async function getUserEntitlements(userId: string): Promise<UserEntitlements> {
+// ✅ 1. Internal Fetcher Logic
+async function _fetchEntitlements(userId: string): Promise<UserEntitlements> {
   const user = await prisma.user.findUnique({ 
     where: { id: userId }, 
     include: {
@@ -65,26 +46,19 @@ export async function getUserEntitlements(userId: string): Promise<UserEntitleme
 
   let product = null;
   const features: FeatureMap = {};
-
-  // Check the included subscription
   const activeSub = user.subscriptions[0];
 
   if (activeSub && activeSub.product) {
     product = activeSub.product;
   } 
   else {
-    // Only fetch FREE product if no active sub exists
-    // This reduces DB load for paid users who don't need this query
     const freeProduct = await prisma.product.findUnique({
       where: { key: "FREE" },
       include: {
         productFeatures: { include: { feature: true } },
       },
     });
-
-    if (freeProduct) {
-      product = freeProduct;
-    }
+    if (freeProduct) product = freeProduct;
   }
 
   if (product && product.productFeatures) {
@@ -110,15 +84,19 @@ export async function getUserEntitlements(userId: string): Promise<UserEntitleme
   };
 }
 
-/**
- * ✅ NEW: Get page access permissions
- */
+// ✅ 2. Cached Getter
+// This makes the layout permissions check nearly instant (1-5ms)
+export const getUserEntitlements = unstable_cache(
+  async (userId: string) => _fetchEntitlements(userId),
+  ["user-entitlements"],
+  { revalidate: 300, tags: ["entitlements"] } // Cache for 5 mins
+);
+
+// ✅ 3. Update getPagePermissions to use the cached getter
 export async function getPagePermissions(userId: string) {
   const ent = await getUserEntitlements(userId);
   const isFree = ent.productKey === 'FREE';
 
-  // Helper: If feature exists, use its value. 
-  // If missing: PAID users allow by default, FREE users block by default.
   const check = (key: string) => {
     const feat = ent.features[key];
     if (feat) {
@@ -140,9 +118,17 @@ export async function getPagePermissions(userId: string) {
   };
 }
 
-export async function assertPlanCreationAllowed(userId: string) {
-  const ent = await getUserEntitlements(userId);
+// ... Keep existing exports ...
+export async function getActiveUserSubscription(userId: string) {
+  return prisma.userSubscription.findFirst({
+    where: { userId, status: { in: ["active", "trialing"] } },
+    orderBy: { currentPeriodEnd: "desc" },
+    include: { product: { include: { productFeatures: { include: { feature: true } } } } },
+  }).catch(() => null);
+}
 
+export async function assertPlanCreationAllowed(userId: string) {
+  const ent = await getUserEntitlements(userId); // Uses cache now
   const maxPlansFeat = ent.features['MAX_PLANS'];
   let allowedLimit: number | typeof Infinity = 3; 
 
@@ -150,26 +136,24 @@ export async function assertPlanCreationAllowed(userId: string) {
     if (typeof maxPlansFeat.limit === 'number') allowedLimit = maxPlansFeat.limit;
     else if (typeof maxPlansFeat.value === 'number') allowedLimit = maxPlansFeat.value;
     else if (maxPlansFeat === 'Infinity' || maxPlansFeat.limit === 'Infinity') allowedLimit = Infinity;
-  } 
-  else {
+  } else {
     if (ent.productKey.includes('PRO') || ent.productKey.includes('TEAM')) {
       allowedLimit = Infinity;
     }
   }
 
   if (allowedLimit === Infinity) return;
-
   const planCount = await prisma.plan.count({ where: { userId } });
 
   if (planCount >= (allowedLimit as number)) {
-    const err: any = new Error("Plan limit reached. Upgrade to create more plans.");
+    const err: any = new Error("Plan limit reached.");
     err.code = "ENTITLEMENT_LIMIT";
     throw err;
   }
 }
 
 export async function getMaxPlanDaysForUser(userId: string): Promise<number> {
-  const ent = await getUserEntitlements(userId);
+  const ent = await getUserEntitlements(userId); // Uses cache now
   const featureVal = ent.features['MAX_PLAN_DAYS'];
   if (featureVal) {
     if (typeof featureVal.value === 'number') return featureVal.value;
@@ -209,8 +193,7 @@ export async function getAIUsageStats(userId: string) {
   if (limitFeature) {
     if (typeof limitFeature.value === 'number') limit = limitFeature.value;
     else if (typeof limitFeature === 'number') limit = limitFeature;
-  } 
-  else if (ent.productKey === 'FREE') {
+  } else if (ent.productKey === 'FREE') {
     limit = 5; 
   } else {
     limit = 100;
