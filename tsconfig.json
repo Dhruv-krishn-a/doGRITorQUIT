@@ -20,6 +20,6 @@
     }
   },
   // ✅ FIX: Broaden the include pattern so it doesn't complain about being empty
-  "include": ["**/*.ts", "**/*.tsx", "**/*.js"],
+  "include": ["**/*.ts", "**/*.tsx", "**/*.js", "apps/cms/next.config.mjs"],
   "exclude": ["node_modules", "dist", "apps", "packages"] 
 }

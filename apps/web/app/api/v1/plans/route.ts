@@ -1,67 +1,44 @@
+// apps/web/app/api/v1/config/route.ts
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import { plans } from "@domain";
-import { getServerUser } from "@/lib/auth-server";
+import { getServerUser } from "@/lib/auth-server"; 
+import { getUserSyncPermission } from "@domain/billing/permissions"; // The dynamic function we discussed
 
-// Initialize a standard client for verifying tokens
-// We use the standard client here because we are validating a raw 'Bearer' token string
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    let userId: string | null = null;
+    // 1. Verify User Session
+    const user = await getServerUser();
 
-    // ----------------------------------------------------------------
-    // 1. AUTH STRATEGY: CHECK HEADER (Mobile)
-    // ----------------------------------------------------------------
-    const authHeader = request.headers.get("Authorization");
-    
-    if (authHeader) {
-      // Extract token: "Bearer eyJhbG..."
-      const token = authHeader.replace("Bearer ", "");
-      
-      // Verify token with Supabase
-      const { data: { user }, error } = await supabase.auth.getUser(token);
-      
-      if (!error && user) {
-        userId = user.id;
+    // 2. Handle Guest / Unauthenticated Users
+    if (!user) {
+      return NextResponse.json({
+        isGuest: true,
+        permissions: {
+          canSync: false,    // Guests are always local-only
+          maxTasks: 10,      // strict limit for guests
+          localStorage: true // guests need local storage to do anything
+        }
+      });
+    }
+
+    // 3. Fetch Dynamic Permissions from DB (via Domain Layer)
+    const permissions = await getUserSyncPermission(user.id);
+
+    // 4. Return Config to Mobile App
+    return NextResponse.json({
+      isGuest: false,
+      userId: user.id,
+      email: user.email,
+      permissions: {
+        ...permissions,
+        // You can add extra feature flags here safely
+        betaFeatures: false 
       }
-    }
-
-    // ----------------------------------------------------------------
-    // 2. AUTH STRATEGY: CHECK COOKIES (Web / Fallback)
-    // ----------------------------------------------------------------
-    if (!userId) {
-      const webUser = await getServerUser();
-      if (webUser) {
-        userId = webUser.id;
-      }
-    }
-
-    // ----------------------------------------------------------------
-    // 3. IF STILL NO USER -> 401 UNAUTHORIZED
-    // ----------------------------------------------------------------
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Unauthorized. Please provide a valid Bearer token or session." },
-        { status: 401 }
-      );
-    }
-
-    // ----------------------------------------------------------------
-    // 4. FETCH DATA (Using Shared Domain Logic)
-    // ----------------------------------------------------------------
-    const userPlans = await plans.listPlansForUser(userId);
-
-    return NextResponse.json(userPlans);
+    });
 
   } catch (error) {
-    console.error("[API] Get Plans Error:", error);
+    console.error("[Config API] Error:", error);
     return NextResponse.json(
-      { error: "Internal Server Error" }, 
+      { error: "Failed to fetch configuration" },
       { status: 500 }
     );
   }

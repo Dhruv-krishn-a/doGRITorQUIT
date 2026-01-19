@@ -46,12 +46,5 @@
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.17",
     "zod": "^4.3.5"
-  },
-  "overrides": {
-    "react": "$react",
-    "react-dom": "$react-dom",
-    "lucide-react": {
-      "react": "^18.2.0"
-    }
   }
 }
