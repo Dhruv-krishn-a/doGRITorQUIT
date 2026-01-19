@@ -1,6 +1,6 @@
 import React from "react";
 import { notFound, redirect } from "next/navigation";
-import { getServerUser } from "@/lib/auth"; 
+import { getServerUser } from "@/lib/auth-server"; 
 import { plans } from "@domain"; 
 import PlanDetailClient, { ExtendedPlan } from "./plan-detail-client";
 

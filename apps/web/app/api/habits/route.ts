@@ -1,6 +1,6 @@
 // apps/web/app/api/habits/route.ts
 import { NextResponse } from "next/server";
-import { getServerUser } from "@/lib/auth";
+import { getServerUser } from "@/lib/auth-server";
 import { habits } from "@domain";
 
 export async function GET(req: Request) {

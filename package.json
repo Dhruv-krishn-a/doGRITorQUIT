@@ -5,10 +5,11 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
+    "type-check": "tsc --noEmit",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
-    "db:generate": "prisma generate --schema=prisma/schema.prisma",
-    "postinstall": "prisma generate",
+    "db:generate": "npm --workspace @planner/db run generate",
+    "postinstall": "npm run db:generate",
     "build:web": "npx turbo run build --filter=web",
     "build:cms": "npx turbo run build --filter=cms"
   },
@@ -20,27 +21,37 @@
   "engines": {
     "node": ">=18"
   },
-  "packageManager": "npm@11.6.4",
+  "packageManager": "npm@10.9.0",
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
-    "@prisma/client": "^6.19.1",
+    "@studio-freight/react-lenis": "^0.0.47",
     "@supabase/supabase-js": "^2.87.1",
     "@tailwindcss/postcss": "^4.1.17",
+    "agentkeepalive": "^4.6.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "form-data-encoder": "^4.1.0",
+    "formdata-node": "^6.0.3",
     "framer-motion": "^12.26.2",
     "gsap": "^3.14.2",
     "lucide-react": "^0.562.0",
+    "node-fetch": "^3.3.2",
     "postcss": "^8.5.6",
-    "prisma": "^6.19.1",
     "razorpay": "^2.9.6",
     "recharts": "^3.6.0",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.17",
     "zod": "^4.3.5"
+  },
+  "overrides": {
+    "react": "$react",
+    "react-dom": "$react-dom",
+    "lucide-react": {
+      "react": "^18.2.0"
+    }
   }
 }

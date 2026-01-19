@@ -1,6 +1,6 @@
 // apps/web/app/api/billing/create-order/route.ts
 import { NextResponse } from "next/server";
-import { getServerUser } from "@/lib/auth";
+import { getServerUser } from "@/lib/auth-server";
 import { payment } from "@domain"; 
 
 export async function POST(req: Request) {

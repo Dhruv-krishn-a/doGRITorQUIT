@@ -1,6 +1,6 @@
 // apps/web/app/api/billing/subscription/route.ts
 import { NextResponse } from "next/server";
-import { getServerUser } from "@/lib/auth";
+import { getServerUser } from "@/lib/auth-server";
 // ✅ Import 'billing' and 'payment' from the domain package
 import { payment, billing } from "@domain"; 
 

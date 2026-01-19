@@ -1,6 +1,8 @@
-
 {
   "name": "@planner/api",
   "version": "0.0.0",
-  "main": "index.ts"
+  "main": "index.ts",
+  "dependencies": {
+    "zod": "^4.3.5"
+  }
 }

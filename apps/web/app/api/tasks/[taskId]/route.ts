@@ -1,8 +1,7 @@
-// apps/web/app/api/tasks/[taskId]/route.ts
 import { NextResponse } from "next/server";
-import { getServerUser } from "@/lib/auth";
-import { plans } from "@domain";
-import { prisma } from "@/lib/prisma";
+import { getServerUser } from "@/lib/auth-server"; // ✅ New Auth Server Helper
+import { updateTask, addTimeSpent } from "@planner/domain/plans/service";
+import { completeTask, deleteTask } from "@planner/domain/tasks/service"; // ✅ Import the "Engine"
 
 export async function PATCH(
   req: Request, 
@@ -17,14 +16,21 @@ export async function PATCH(
     const { taskId } = await params;
     const body = await req.json();
 
-    // Handle "Time Log" special case
+    // 1. Handle "Time Log" special case
     if (typeof body.addMinutes === 'number') {
-      const updated = await plans.addTimeSpent(user.id, taskId, body.addMinutes);
+      const updated = await addTimeSpent(user.id, taskId, body.addMinutes);
       return NextResponse.json(updated);
     }
 
-    // Handle Standard Update
-    const updated = await plans.updateTask(user.id, taskId, body);
+    // 2. Handle Completion (CRITICAL: Must use Manual Engine)
+    // We check if the user is marking it as completed/done
+    if (body.completed === true || body.status === "completed") {
+      const updated = await completeTask(user.id, taskId);
+      return NextResponse.json(updated);
+    }
+
+    // 3. Handle Standard Update (Title, Description, etc.)
+    const updated = await updateTask(user.id, taskId, body);
     return NextResponse.json(updated);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Internal Server Error";
@@ -44,21 +50,13 @@ export async function DELETE(
     
     const { taskId } = await params;
 
-    const task = await prisma.task.findUnique({
-      where: { id: taskId },
-      include: { plan: true }
-    });
-
-    if (!task || !task.plan || task.plan.userId !== user.id) {
-       return NextResponse.json({ error: "Task not found or unauthorized" }, { status: 404 });
-    }
-
-    await prisma.task.delete({
-      where: { id: taskId }
-    });
+    // ✅ FIXED: Use Domain Service instead of raw Prisma.
+    // This ensures Plan.totalTasks is decremented correctly.
+    await deleteTask(user.id, taskId);
 
     return NextResponse.json({ success: true });
   } catch (err) {
+    console.error("Delete Error", err);
     const message = err instanceof Error ? err.message : "Internal Server Error";
     return NextResponse.json({ error: message }, { status: 500 });
   }

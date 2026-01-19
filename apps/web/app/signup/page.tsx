@@ -1,9 +1,7 @@
 // apps/web/app/signup/page.tsx
 "use client";
-
-import dynamic from "next/dynamic";
-const AuthForm = dynamic(() => import("@/features/auth/components/AuthForm"), { ssr: false });
+import AuthPage from "../../features/auth/components/AuthPage";
 
 export default function SignupPage() {
-  return <AuthForm />;
+  return <AuthPage view="signup" />;
 }

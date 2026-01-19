@@ -1,21 +1,29 @@
 {
-  "extends": "@repo/typescript-config/nextjs.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "target": "es2018",
+    "lib": ["dom", "dom.iterable", "esnext"],
+
     "plugins": [{ "name": "next" }],
-    "baseUrl": ".",
+    
     "paths": {
+      // Local App Aliases
       "@/*": ["./*"],
+      "@/utils/*": ["./utils/*"],
+      "@/hooks/*": ["./hooks/*"],
       
-      "@/utils/*": ["utils/*"],
-      "@/hooks/*": ["hooks/*"],
-      
-      // Feature aliases
-      "@domain/*": ["../../packages/domain/*"],
+      // Domain Alias
       "@domain": ["../../packages/domain/index.ts"],
-      "@features/*": ["features/*"],
-      "@features": ["features/index.ts"],
-      "@shared/*": ["shared/*"],
-      "@shared": ["shared/index.ts"]
+      "@domain/*": ["../../packages/domain/*"],
+      
+      // Config Alias
+      "@planner/config": ["../../packages/config/index.ts"],
+
+      // Feature aliases
+      "@features/*": ["./features/*"],
+      "@features": ["./features/index.ts"],
+      "@shared/*": ["./shared/*"],
+      "@shared": ["./shared/index.ts"]
     }
   },
   "include": [

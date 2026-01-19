@@ -14,14 +14,22 @@ export async function getUserLimits(userId: string) {
     where: { id: userId },
     select: {
       id: true,
-      aiUsageCount: true,
-      customAiLimit: true, // ✅ Must exist in schema
+      // ✅ FIX 1: Fetch from the correct relation (aiUsage), not a flat field
+      aiUsage: { select: { count: true } }, 
+      customAiLimit: true,
       subscriptions: {
         where: { status: { in: ["active", "trialing"] } },
         take: 1,
         orderBy: { currentPeriodEnd: "desc" },
         include: {
-          product: true, // Fetch product details
+          product: {
+            // ✅ FIX 2: Explicitly include features so TS knows they exist
+            include: {
+              productFeatures: {
+                include: { feature: true }
+              }
+            }
+          },
         },
       },
     },
@@ -29,14 +37,14 @@ export async function getUserLimits(userId: string) {
 
   if (!user) throw new Error("User not found");
 
-  const usage = user.aiUsageCount || 0;
+  // ✅ FIX 3: Safe usage access
+  const usage = user.aiUsage?.count ?? 0;
 
   // ---------------------------------------------------------
   // 1. CHECK CMS OVERRIDE (Highest Priority)
   // ---------------------------------------------------------
   if (user.customAiLimit !== null) {
     const limit = user.customAiLimit;
-    // Assuming -1 means Unlimited in your CMS
     const isUnlimited = limit === -1; 
     
     return {
@@ -54,29 +62,34 @@ export async function getUserLimits(userId: string) {
   const activeSub = user.subscriptions[0];
 
   if (activeSub && activeSub.product) {
-    let limit = 5; // Fallback
+    let limit = 5; // Default fallback for paid plans
     let isUnlimited = false;
 
-    // A. Check for "productFeatures" if your schema uses it (Advanced)
-    // Note: We cast to 'any' to prevent TS errors if you haven't generated types yet
-    const productAny = activeSub.product as any;
-    
-    if (productAny.productFeatures?.length > 0) {
-       // ... Logic to extract feature limit would go here
-    }
+    // A. Check Product Features (The "Correct" DB Way)
+    // Now strictly typed because of the 'include' above
+    const limitFeature = activeSub.product.productFeatures.find(
+      (pf) => pf.feature.key === "AI_GEN_LIMIT"
+    );
 
-    // B. Simpler Fallback: Check hardcoded keys (Robust)
-    // This ensures it works even if your DB 'Feature' tables are empty
-    const pKey = activeSub.product.key;
-    
-    if (pKey === "PRO_MONTHLY") limit = 50;
-    else if (pKey === "PRO_YEARLY") limit = 500;
-    else if (pKey === "ENTERPRISE") isUnlimited = true;
-    
-    // C. Check direct DB field if you added 'aiLimit' to Product model
-    if (typeof productAny.aiLimit === 'number') {
-        limit = productAny.aiLimit;
-        if (limit === -1) isUnlimited = true;
+    if (limitFeature) {
+      // Handle Prisma JSON value safely
+      const val = limitFeature.value;
+      
+      if (typeof val === 'number') {
+        limit = val;
+      } else if (typeof val === 'object' && val !== null) {
+        // Handle { value: 100 } or { limit: 100 } structure
+        const obj = val as Record<string, unknown>;
+        if (typeof obj.value === 'number') limit = obj.value;
+        else if (typeof obj.limit === 'number') limit = obj.limit;
+      }
+    } 
+    // B. Simpler Fallback: Hardcoded Keys (Robustness)
+    else {
+      const pKey = activeSub.product.key;
+      if (pKey === "PRO_MONTHLY") limit = 50;
+      else if (pKey === "PRO_YEARLY") limit = 500;
+      else if (pKey === "ENTERPRISE") isUnlimited = true;
     }
 
     return {
@@ -84,7 +97,7 @@ export async function getUserLimits(userId: string) {
       usage: usage,
       remaining: isUnlimited ? 999999 : Math.max(0, limit - usage),
       isUnlimited: isUnlimited,
-      source: `SUBSCRIPTION_${pKey}`,
+      source: `SUBSCRIPTION_${activeSub.product.key}`,
     };
   }
 

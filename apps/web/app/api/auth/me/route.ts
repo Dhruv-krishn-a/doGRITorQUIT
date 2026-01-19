@@ -1,35 +1,55 @@
-// apps/web/app/api/auth/me/route.ts
 import { NextResponse } from "next/server";
-// ✅ FIX 1: Import from the consolidated auth file
-import { getServerUser } from "@/lib/auth"; 
+// Use the import path that works for your project structure. 
+// If you have a specific server auth file, use that.
+import { getServerUser } from "@/lib/auth-server"; 
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    // ✅ FIX 2: Use getServerUser which returns the full user object
     const authUser = await getServerUser();
     
     if (!authUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Refetching to ensure we strictly select only public fields
-    const user = await prisma.user.findUnique({
+    // ✅ FIX: Select fields from the 'profile' relation
+    const dbUser = await prisma.user.findUnique({
       where: { id: authUser.id },
       select: {
         id: true,
         email: true,
-        name: true,
         tier: true,
-        avatarUrl: true,
-        createdAt: true
+        createdAt: true,
+        // We fetch the profile relation here
+        profile: {
+          select: {
+            name: true,
+            avatarUrl: true
+          }
+        }
       }
     });
 
-    return NextResponse.json(user);
+    if (!dbUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // ✅ FIX: Flatten the response
+    // The frontend expects { name: "...", ... } not { profile: { name: "..." } }
+    const formattedUser = {
+      id: dbUser.id,
+      email: dbUser.email,
+      tier: dbUser.tier,
+      createdAt: dbUser.createdAt,
+      name: dbUser.profile?.name || null,
+      avatarUrl: dbUser.profile?.avatarUrl || null,
+    };
+
+    return NextResponse.json(formattedUser);
+
   } catch (err) {
-    // ✅ FIX 3: Remove 'any' and handle type safety
     const message = err instanceof Error ? err.message : "Internal Server Error";
+    console.error("Auth Me Error:", message);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

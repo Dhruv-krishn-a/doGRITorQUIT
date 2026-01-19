@@ -1,4 +1,3 @@
-// apps/cms/app/(admin)/products/[id]/page.tsx
 import React from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -25,16 +24,28 @@ export default async function ProductDetailPage({ params }: Props) {
 
   if (!product) notFound();
 
-  const activeFeatureIds = new Set(product.productFeatures.map(pf => pf.featureId));
-  const availableFeatures = allFeatures.filter(f => !activeFeatureIds.has(f.id));
+  // ✅ FIX: Safe ID handling for Sets
+  const activeFeatureIds = new Set(product.productFeatures.map(pf => String(pf.featureId)));
+  const availableFeatures = allFeatures.filter(f => !activeFeatureIds.has(String(f.id)));
 
-  // Sort: Access (Locks) first, then Limits (Gauges)
+  // ✅ FIX: Robust Sort Logic (Handle null keys safely)
   const sortedFeatures = product.productFeatures.sort((a, b) => {
-    const aIsAccess = a.feature.key.startsWith("ACCESS_");
-    const bIsAccess = b.feature.key.startsWith("ACCESS_");
-    if (aIsAccess === bIsAccess) return a.feature.key.localeCompare(b.feature.key);
+    const keyA = String(a.feature.key ?? "");
+    const keyB = String(b.feature.key ?? "");
+    
+    const aIsAccess = keyA.startsWith("ACCESS_");
+    const bIsAccess = keyB.startsWith("ACCESS_");
+    
+    if (aIsAccess === bIsAccess) return keyA.localeCompare(keyB);
     return aIsAccess ? -1 : 1;
   });
+
+  // ✅ FIX: Safe Product Variables
+  const productName = String(product.name ?? "Untitled Plan");
+  const productKey = String(product.key ?? "NO_KEY");
+  const productDesc = String(product.description ?? "Plan configuration.");
+  const productPrice = Number(product.price ?? 0);
+  const productId = String(product.id);
 
   return (
     <div className="max-w-7xl mx-auto pb-20">
@@ -45,16 +56,16 @@ export default async function ProductDetailPage({ params }: Props) {
         <div className="flex justify-between items-start border-b border-slate-200 pb-6">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-slate-900">{product.name}</h1>
+              <h1 className="text-3xl font-bold text-slate-900">{productName}</h1>
               <span className="bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded text-xs font-mono font-bold border border-slate-200">
-                {product.key}
+                {productKey}
               </span>
             </div>
-            <p className="text-slate-500 mt-2 max-w-xl">{product.description || "Plan configuration."}</p>
+            <p className="text-slate-500 mt-2 max-w-xl">{productDesc}</p>
           </div>
           <div className="text-right">
             <div className="text-3xl font-black text-slate-900 tracking-tight">
-              ₹{(product.price / 100).toLocaleString()}
+              ₹{(productPrice / 100).toLocaleString()}
             </div>
             <div className="text-sm font-medium text-slate-400 uppercase tracking-wide">Monthly</div>
           </div>
@@ -76,12 +87,17 @@ export default async function ProductDetailPage({ params }: Props) {
                 <div className="p-12 text-center text-slate-400 italic">No features configured.</div>
               ) : (
                 sortedFeatures.map((pf) => {
-                  const isAccess = pf.feature.key.startsWith("ACCESS_");
+                  // ✅ FIX: Safe Feature Access
+                  const featureKey = String(pf.feature.key ?? "");
+                  const featureDesc = String(pf.feature.description ?? "");
+                  const featureId = String(pf.feature.id);
+                  const isAccess = featureKey.startsWith("ACCESS_");
+                  
                   const rawVal = pf.value as any;
-                  const currentValue = rawVal?.value ?? rawVal?.limit ?? 0;
+                  const currentValue = Number(rawVal?.value ?? rawVal?.limit ?? 0);
 
                   return (
-                    <div key={pf.feature.id} className="p-5 flex items-center justify-between group hover:bg-slate-50/50 transition-colors">
+                    <div key={featureId} className="p-5 flex items-center justify-between group hover:bg-slate-50/50 transition-colors">
                       <div className="flex items-start gap-4">
                         <div className={`p-2.5 rounded-xl mt-0.5 shadow-sm border ${
                           isAccess ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-blue-50 border-blue-100 text-blue-600'
@@ -89,18 +105,23 @@ export default async function ProductDetailPage({ params }: Props) {
                           {isAccess ? <Lock size={18} /> : <Gauge size={18} />}
                         </div>
                         <div>
-                          <div className="font-bold text-slate-800 text-sm">{pf.feature.key}</div>
-                          <div className="text-xs text-slate-500 mt-0.5">{pf.feature.description}</div>
+                          <div className="font-bold text-slate-800 text-sm">{featureKey}</div>
+                          <div className="text-xs text-slate-500 mt-0.5">{featureDesc}</div>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-4">
                         {!isAccess ? (
                           <form action={updateFeatureValue} className="flex items-center gap-2">
-                             <input type="hidden" name="productId" value={product.id} />
-                             <input type="hidden" name="featureId" value={pf.featureId} />
+                             <input type="hidden" name="productId" value={productId} />
+                             <input type="hidden" name="featureId" value={featureId} />
                              <div className="relative flex items-center">
-                               <input name="value" type="number" defaultValue={currentValue} className="w-24 pl-3 pr-9 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500" />
+                               <input 
+                                 name="value" 
+                                 type="number" 
+                                 defaultValue={currentValue} 
+                                 className="w-24 pl-3 pr-9 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500" 
+                               />
                                <button className="absolute right-2 text-slate-300 hover:text-blue-600"><Save size={16} /></button>
                              </div>
                           </form>
@@ -110,8 +131,8 @@ export default async function ProductDetailPage({ params }: Props) {
                           </span>
                         )}
                         <form action={removeProductFeature}>
-                          <input type="hidden" name="productId" value={product.id} />
-                          <input type="hidden" name="featureId" value={pf.featureId} />
+                          <input type="hidden" name="productId" value={productId} />
+                          <input type="hidden" name="featureId" value={featureId} />
                           <button className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={16} /></button>
                         </form>
                       </div>
@@ -152,19 +173,26 @@ export default async function ProductDetailPage({ params }: Props) {
               <span className="bg-slate-800 text-slate-400 text-[10px] px-2 py-0.5 rounded-full font-mono">{availableFeatures.length}</span>
             </div>
             <div className="p-3 space-y-1 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
-              {availableFeatures.map(f => (
-                <form key={f.id} action={toggleProductFeature}>
-                  <input type="hidden" name="productId" value={product.id} />
-                  <input type="hidden" name="featureId" value={f.id} />
-                  <button className="w-full text-left p-3 rounded-xl hover:bg-slate-800 transition-all group border border-transparent hover:border-slate-700">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className={`text-xs font-bold ${f.key.startsWith("ACCESS_") ? 'text-emerald-400' : 'text-blue-400'}`}>{f.key}</span>
-                      <Plus size={14} className="opacity-0 group-hover:opacity-100 transition-opacity text-white" />
-                    </div>
-                    <div className="text-[11px] text-slate-500 leading-tight truncate">{f.description}</div>
-                  </button>
-                </form>
-              ))}
+              {availableFeatures.map(f => {
+                // ✅ FIX: Safe access for sidebar items
+                const fKey = String(f.key ?? "UNKNOWN");
+                const fDesc = String(f.description ?? "");
+                const fId = String(f.id);
+                
+                return (
+                  <form key={fId} action={toggleProductFeature}>
+                    <input type="hidden" name="productId" value={productId} />
+                    <input type="hidden" name="featureId" value={fId} />
+                    <button className="w-full text-left p-3 rounded-xl hover:bg-slate-800 transition-all group border border-transparent hover:border-slate-700">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className={`text-xs font-bold ${fKey.startsWith("ACCESS_") ? 'text-emerald-400' : 'text-blue-400'}`}>{fKey}</span>
+                        <Plus size={14} className="opacity-0 group-hover:opacity-100 transition-opacity text-white" />
+                      </div>
+                      <div className="text-[11px] text-slate-500 leading-tight truncate">{fDesc}</div>
+                    </button>
+                  </form>
+                );
+              })}
             </div>
           </div>
         </div>

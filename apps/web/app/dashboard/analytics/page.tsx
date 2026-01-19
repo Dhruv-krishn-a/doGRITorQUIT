@@ -1,6 +1,6 @@
 // apps/web/app/dashboard/analytics/page.tsx
 import { billing, analytics } from "@domain";
-import { getServerUser } from "@/lib/auth";
+import { getServerUser } from "@/lib/auth-server";
 import { redirect } from "next/navigation";
 import { FeatureLocked } from "@/shared/components/FeatureLocked";
 import AnalyticsClientPage, { AnalyticsData } from "./analytics-client"; // Import new client

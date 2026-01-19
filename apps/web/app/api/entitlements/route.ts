@@ -1,7 +1,7 @@
-// apps/web/app/api/entitlements/route.ts
 import { NextResponse } from "next/server";
-import { getServerUser } from "@/lib/auth";
-import { billing } from "@domain";
+import { getServerUser } from "@/lib/auth-server"; 
+// ✅ FIX: Import the correct functions from your domain package
+import { fetchUserEntitlements, getAIUsageStats } from "@domain/billing/entitlements"; 
 
 export async function GET() {
   try {
@@ -11,23 +11,21 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const entitlements = await billing.getUserEntitlements(user.id);
+    // ✅ FIX: Call 'fetchUserEntitlements' (New Name)
+    // We also fetch usage stats in parallel for the UI
+    const [entitlements, usage] = await Promise.all([
+      fetchUserEntitlements(user.id),
+      getAIUsageStats(user.id)
+    ]);
 
-    const maxPlansFeature = entitlements.features["MAX_PLANS"] as { limit?: number } | undefined;
-    const aiLimitFeature = entitlements.features["AI_GEN_LIMIT"] as { limit?: number } | undefined;
-
+    // Return combined data
     return NextResponse.json({
-      tier: entitlements.tierFallback, 
-      productName: entitlements.product?.name ?? "Free Tier",
-      features: {
-        maxPlans: maxPlansFeature?.limit ?? 3,
-        aiGeneration: !!aiLimitFeature, 
-        raw: entitlements.features 
-      }
+      ...entitlements,
+      usage, // { used: 5, limit: 10, remaining: 5 }
     });
 
-  } catch (err) {
-    console.error("Entitlements Error:", err);
-    return NextResponse.json({ error: "Internal Error" }, { status: 500 });
+  } catch (error) {
+    console.error("[Entitlements API] Error:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

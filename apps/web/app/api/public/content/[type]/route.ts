@@ -1,7 +1,6 @@
-// apps/web/app/api/public/content/[type]/route.ts
 import { NextResponse } from "next/server";
 import { cms, billing } from "@domain"; 
-import { getServerUser } from "@/lib/auth"; 
+import { getServerUser } from "@/lib/auth-server"; 
 
 export async function GET(
   req: Request, 
@@ -26,15 +25,20 @@ export async function GET(
           return NextResponse.json({ entry, accessible: false });
         }
 
-        const ent = await billing.getUserEntitlements(userId);
-        const tierReq = entry.requiresTier; // e.g., "PRO"
+        // ✅ FIX: Use the correct function name 'fetchUserEntitlements'
+        const ent = await billing.fetchUserEntitlements(userId);
+        const tierReq = entry.requiresTier; 
 
         let accessible = false;
         
-        if (ent.product?.key) {
-           accessible = ent.product.key === tierReq || ent.product.key.includes("PRO") || ent.product.key.includes("TEAM");
+        // Use the safe 'productKey' property from the new entitlements structure
+        const currentKey = ent.productKey || "";
+
+        if (currentKey) {
+           accessible = currentKey === tierReq || currentKey.includes("PRO") || currentKey.includes("TEAM");
         }
         
+        // Fallback check
         if (!accessible && ent.tierFallback) {
           accessible = ent.tierFallback === tierReq || ent.tierFallback === "PRO" || ent.tierFallback === "TEAM";
         }

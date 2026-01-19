@@ -1,13 +1,33 @@
-// apps/cms/next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // IMPORTANT: Only transpile what you *absolutely* need.
-  // If @domain/@config are pure ESM/TS packages built to target Node/Browser,
-  // prefer building them into distributable JS instead of transpiling them at runtime.
-  // Remove transpilePackages if possible; leave only the minimal package names if required.
-  // transpilePackages: ["@domain"],
+  // 1. Keep transpiling your local packages
+  transpilePackages: ["@planner/domain", "@planner/db", "@planner/api"],
 
-  reactStrictMode: true,
+  // 2. Mark heavyweight libraries as external
+  experimental: {
+    serverComponentsExternalPackages: ["@planner/domain", "openai", "razorpay"],
+  },
+  
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**", 
+      },
+    ],
+  },
+
+  // 3. THE FIX: Manually externalize the missing dependencies
+  webpack: (config) => {
+    config.externals.push({
+      'node-fetch': 'commonjs node-fetch',
+      'formdata-node': 'commonjs formdata-node',
+      'agentkeepalive': 'commonjs agentkeepalive',
+      'form-data-encoder': 'commonjs form-data-encoder',
+      'formdata-node/file-from-path': 'commonjs formdata-node/file-from-path',
+    });
+    return config;
+  },
 };
 
 module.exports = nextConfig;

@@ -1,6 +1,6 @@
 // apps/web/app/api/dashboard/route.ts
 import { NextResponse } from "next/server";
-import { getServerUser } from "@/lib/auth";
+import { getServerUser } from "@/lib/auth-server";
 import { dashboard } from "@domain";
 
 export async function GET() {

@@ -1,9 +1,9 @@
-import { cms } from "@domain"; // Ensure billing is imported if needed, usually cms covers this read
+import { cms } from "@domain"; 
 import { assignPlanAction, updateRoleAction } from "./actions";
 import { Search, Shield, User as UserIcon } from "lucide-react";
 import RoleSelect from "./RoleSelect";
 import PlanSelect from "./PlanSelect";
-import LimitManager from "./Limitmanager"; // Import the new component
+import LimitManager from "./Limitmanager"; 
 
 export const metadata = {
   title: "Users | CMS Admin",
@@ -12,12 +12,18 @@ export const metadata = {
 export default async function UsersPage({ searchParams }: { searchParams: { q?: string } }) {
   const query = searchParams.q || "";
   
-  // 1. Fetch Users (Now includes productFeatures thanks to Step 1)
+  // 1. Fetch Users
   const users = await cms.getUsersWithSubscriptions(50, query);
   
   // 2. Fetch Products
-  const products = await cms.getProducts();
-  const productOptions = products.map(p => ({ id: p.id, name: p.name, key: p.key }));
+  const productsRaw = await cms.getProducts();
+  
+  // ✅ FIX: Strict casting to ensure 'products' prop receives valid strings
+  const productOptions = productsRaw.map(p => ({ 
+    id: String(p.id), 
+    name: String(p.name ?? "Unknown Plan"), 
+    key: String(p.key) 
+  }));
 
   return (
     <div className="max-w-7xl mx-auto pb-20">
@@ -52,41 +58,41 @@ export default async function UsersPage({ searchParams }: { searchParams: { q?: 
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {users.map((user) => {
-                const activeSub = user.subscriptions[0];
-                const currentProductId = activeSub?.product?.id;
+              {users.map((userData) => {
+                const user = userData as any; 
+                
+                const profile = user.profile || {};
+                const aiUsage = user.aiUsage || { count: 0 };
+                const activeSub = user.subscriptions?.[0];
+                const currentProductId = activeSub?.product?.id ? String(activeSub.product.id) : undefined;
 
-                // --- Calculate Limit Logic ---
-                let effectiveLimit = 5; // Default
+                let effectiveLimit = 5; 
 
-                if (user.customAiLimit !== null) {
-                    // 1. Custom Limit Override
-                    effectiveLimit = user.customAiLimit;
+                if (user.customAiLimit !== null && user.customAiLimit !== undefined) {
+                    effectiveLimit = Number(user.customAiLimit);
                 } else if (activeSub?.product && 'productFeatures' in activeSub.product) {
-                    // 2. Plan Limit
-                    // We cast activeSub.product because Prisma types can be deep/complex here
                     const prod = activeSub.product as any;
                     const limitFeat = prod.productFeatures.find((f: any) => f.feature.key === 'AI_GEN_LIMIT');
                     
                     if (limitFeat) {
                          const val = limitFeat.value;
-                         effectiveLimit = val.value ?? val.limit ?? 5;
+                         effectiveLimit = Number(val.value ?? val.limit ?? 5);
                     } else if (activeSub.product.key !== 'FREE') {
-                        effectiveLimit = 100; // Hard fallback for paid plans if feature is missing
+                        effectiveLimit = 100; 
                     }
                 }
 
                 return (
-                  <tr key={user.id} className="hover:bg-slate-50/50 transition-colors group">
+                  <tr key={String(user.id)} className="hover:bg-slate-50/50 transition-colors group">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 border border-slate-200">
-                          {user.avatarUrl ? (
-                            <img src={user.avatarUrl} alt="" className="w-full h-full rounded-full object-cover" />
+                        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 border border-slate-200 overflow-hidden">
+                          {profile.avatarUrl ? (
+                            <img src={profile.avatarUrl} alt="" className="w-full h-full object-cover" />
                           ) : <UserIcon size={20} />}
                         </div>
                         <div>
-                          <div className="font-medium text-slate-900">{user.name || "No Name"}</div>
+                          <div className="font-medium text-slate-900">{profile.name || "No Name"}</div>
                           <div className="text-xs text-slate-500 font-mono">{user.email}</div>
                         </div>
                       </div>
@@ -94,22 +100,22 @@ export default async function UsersPage({ searchParams }: { searchParams: { q?: 
                     
                     <td className="p-4">
                       <form action={updateRoleAction}>
-                          <input type="hidden" name="userId" value={user.id} />
-                          <RoleSelect defaultValue={user.role} name="role" />
+                          <input type="hidden" name="userId" value={String(user.id)} />
+                          <RoleSelect defaultValue={String(user.role)} name="role" />
                       </form>
                     </td>
 
                     <td className="p-4">
                        <form action={assignPlanAction}>
-                          <input type="hidden" name="userId" value={user.id} />
+                          <input type="hidden" name="userId" value={String(user.id)} />
                           <PlanSelect products={productOptions} currentProductId={currentProductId} />
                        </form>
                     </td>
 
                     <td className="p-4">
                         <LimitManager 
-                            userId={user.id}
-                            usage={user.aiUsageCount}
+                            userId={String(user.id)}
+                            usage={Number(aiUsage.count)}
                             currentLimit={effectiveLimit}
                             customLimit={user.customAiLimit}
                         />

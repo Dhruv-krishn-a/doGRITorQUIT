@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { siteNav } from "../../../../packages/config/siteNav";
+import { siteNav } from "../../config/site";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Lock,
@@ -54,6 +54,7 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const [isClient, setIsClient] = useState(false);
 
+  // ✅ FIX: Reverted to "dashboard" because the error confirms it IS a valid type in this file.
   const dashboardNav = siteNav
     .filter((n) => n.group === "dashboard" && n.visible)
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
@@ -91,7 +92,7 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
       animate={collapsed ? "collapsed" : "expanded"}
       variants={sidebarVariants}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="relative h-screen bg-slate-50/50 backdrop-blur-xl border-r border-slate-200/60 z-50 flex flex-col justify-between"
+      className="relative h-screen bg-slate-50/50 backdrop-blur-xl border-r border-slate-200/60 z-60 flex flex-col justify-between"
     >
       {/* --- Header / Logo --- */}
       <div className="flex items-center justify-between p-5 mb-2">

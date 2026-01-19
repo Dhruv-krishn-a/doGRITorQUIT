@@ -1,5 +1,5 @@
 // packages/domain/cms/entry.service.ts
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@planner/db";
 
 // ✅ ADD: Get a single published entry by slug
 export async function getPublishedBySlug(typeKey: string, slug: string, locale?: string) {

@@ -1,5 +1,7 @@
-// apps/web/app/dashboard/subscriptions/page.tsx
-import { auth, payment, billing } from "@domain";
+// ✅ FIX 1: Import from the correct package alias "@planner/domain"
+import { billing, payment } from "@planner/domain";
+// ✅ FIX 2: Use the local auth helper, NOT the domain one
+import { getServerUser } from "@/lib/auth-server"; 
 import { redirect } from "next/navigation";
 import SubscriptionClientPage from "./subscription-client";
 
@@ -8,14 +10,16 @@ export const metadata = {
 };
 
 export default async function SubscriptionPage() {
-  // 1. Auth Check
-  const user = await auth.getServerUser();
+  // 1. Auth Check (Using Local Helper)
+  // This now runs on the Next.js server, reads cookies, and gets the ID.
+  const user = await getServerUser();
   if (!user) redirect("/login");
 
   // 2. Fetch All Data in Parallel
+  // ✅ FIX 3: billing.fetchUserEntitlements matches your domain export
   const [rawProducts, entitlements, usageStats, rawHistory] = await Promise.all([
     payment.getPublicPlans(),
-    billing.getUserEntitlements(user.id),
+    billing.fetchUserEntitlements(user.id), 
     billing.getAIUsageStats(user.id),
     payment.getUserOrders(user.id),
   ]);
@@ -52,9 +56,10 @@ export default async function SubscriptionPage() {
   });
 
   // 5. Extract Active Subscription
+  // Entitlements returns the rich user object because of your domain query
   const activeSub = entitlements.user.subscriptions?.[0]; 
 
-  // ✅ FIX: Ensure currentPeriodEnd is treated as a Date object before using date methods
+  // ✅ Safe Date Conversion
   const endDate = activeSub?.currentPeriodEnd ? new Date(activeSub.currentPeriodEnd) : undefined;
 
   const clientData = {
@@ -65,7 +70,6 @@ export default async function SubscriptionPage() {
         key: activeSub.product.key,
       } : undefined,
       status: activeSub.status,
-      // Safe conversion
       currentPeriodEnd: endDate?.toISOString(),
       formattedRenewsAt: endDate 
         ? endDate.toLocaleDateString("en-GB", { 

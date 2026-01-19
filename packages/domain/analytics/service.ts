@@ -1,5 +1,5 @@
-// packages/domain/analytics/service.ts
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@planner/db";
+import { TaskStatus } from "@prisma/client"; // ✅ Import Enum is mandatory
 
 export async function getAnalyticsData(userId: string) {
   const endDate = new Date();
@@ -12,7 +12,8 @@ export async function getAnalyticsData(userId: string) {
       where: {
         userId,
         date: { gte: startDate, lte: endDate },
-        status: { not: "Discarded" }
+        // ✅ FIX 1: Use Enum 'archived' instead of string "Discarded"
+        status: { not: TaskStatus.archived } 
       },
       select: {
         date: true,
@@ -62,7 +63,9 @@ export async function getAnalyticsData(userId: string) {
     const dayTasks = tasksByDate.get(dateStr) || [];
 
     const focusMinutes = dayTasks.reduce((acc, t) => acc + (t.timeSpentMinutes || 0), 0);
-    const completed = dayTasks.filter(t => t.status === "Completed").length;
+    
+    // ✅ FIX 2: Check against Enum (lowercase 'completed')
+    const completed = dayTasks.filter(t => t.status === TaskStatus.completed).length;
     const total = dayTasks.length;
 
     dailyStats.push({
@@ -84,6 +87,7 @@ export async function getAnalyticsData(userId: string) {
 
   return {
     dailyStats,
+    // Note: t.status here returns the lowercase enum string (e.g. "pending", "completed")
     taskDistribution: taskCounts.map(t => ({ name: t.status, value: t._count.id })),
     habitStats
   };

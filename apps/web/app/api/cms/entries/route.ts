@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 // ✅ FIX 1: Use standard auth helper (fixes cookie errors + redundant logic)
-import { getServerUser } from "@/lib/auth";
+import { getServerUser } from "@/lib/auth-server";
 // ✅ FIX 2: Import 'cms' namespace, then access 'createDraft' (or entryService if you renamed it)
 import { cms } from "@domain"; 
 

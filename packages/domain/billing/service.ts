@@ -1,10 +1,7 @@
-// packages/domain/billing/service.ts
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@planner/db";
 import type { Prisma } from "@prisma/client";
 import Razorpay from "razorpay";
 import crypto from "crypto";
-// ✅ IMPORT CACHE
-import { unstable_cache } from "next/cache"; 
 
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || "";
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || "";
@@ -19,10 +16,7 @@ function toPrismaJson(value: unknown): Prisma.InputJsonValue {
   return JSON.parse(JSON.stringify(value)) as unknown as Prisma.InputJsonValue;
 }
 
-// ... [Keep createCheckoutOrder, verifyAndActivateSubscription, handleWebhook, _activateSubscription, getUserSubscription, getUserOrders as they were] ...
-
 export async function createCheckoutOrder(userId: string, productKey: string) {
-  // ... existing code ...
   const product = await prisma.product.findUnique({ where: { key: productKey } });
   if (!product) throw new Error("Invalid productKey");
 
@@ -147,6 +141,7 @@ async function _activateSubscription(providerOrderId: string, providerPaymentId:
     const now = new Date();
     const thirtyDays = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
+    // Create Subscription
     await prisma.userSubscription.create({
       data: {
         userId: order.userId,
@@ -159,11 +154,13 @@ async function _activateSubscription(providerOrderId: string, providerPaymentId:
       },
     });
 
+    // ✅ UPDATE TIER: This works because 'tier' is now a String in Schema
     await prisma.user.update({ 
       where: { id: order.userId }, 
       data: { tier: order.product.name } 
     });
 
+    // Update Order
     await prisma.order.update({
       where: { id: order.id },
       data: { status: "paid", providerPaymentId },
@@ -215,27 +212,21 @@ export async function getUserOrders(userId: string) {
   }));
 }
 
-// ✅ OPTIMIZED: Cache this result! Plans rarely change.
-// Revalidates every hour (3600 seconds) or when tags are invalidated
-export const getPublicPlans = unstable_cache(
-  async () => {
-    return prisma.product.findMany({
-      where: {
-        active: true,
-        key: { not: "FREE" }, 
-      },
-      include: {
-        productFeatures: {
-          include: {
-            feature: true,
-          },
+export async function getPublicPlans() {
+  return prisma.product.findMany({
+    where: {
+      active: true,
+      key: { not: "FREE" }, 
+    },
+    include: {
+      productFeatures: {
+        include: {
+          feature: true,
         },
       },
-      orderBy: {
-        price: "asc",
-      },
-    });
-  },
-  ["public-plans-list"], // Key
-  { revalidate: 3600, tags: ["plans"] } // Config
-);
+    },
+    orderBy: {
+      price: "asc",
+    },
+  });
+}

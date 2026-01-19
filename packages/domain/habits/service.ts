@@ -1,5 +1,5 @@
 // packages/domain/habits/service.ts
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@planner/db";
 
 /**
  * Get Habits and Logs for a specific date range

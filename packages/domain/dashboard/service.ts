@@ -1,5 +1,5 @@
 // packages/domain/dashboard/service.ts
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@planner/db";
 
 export async function getDashboardStats(userId: string) {
   const today = new Date();
@@ -8,15 +8,14 @@ export async function getDashboardStats(userId: string) {
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
-  // 1. Parallelize Queries using Promise.all
-  // We run independent queries at the same time, not one after another.
-  const [todaysTasks, habits, focusAgg, activePlan] = await Promise.all([
+  // 1. Parallelize Queries
+  const [todaysTasks, habits, userStats, activePlan] = await Promise.all([
     // A. Today's Tasks
     prisma.task.findMany({
       where: {
         userId,
         date: { gte: today, lt: tomorrow },
-        status: { not: "Discarded" }
+        status: { not: "archived" }
       },
       orderBy: { priority: 'desc' },
       take: 5
@@ -31,41 +30,28 @@ export async function getDashboardStats(userId: string) {
       orderBy: { order: 'asc' }
     }),
 
-    // C. ✅ OPTIMIZED: Database Aggregation
-    // Instead of fetching ALL tasks, we ask DB for the Sum and Count directly.
-    prisma.task.aggregate({
-      where: { userId },
-      _sum: { timeSpentMinutes: true },
-      _count: { id: true },
+    // C. ✅ OPTIMIZED: Read from UserStats table (Instant)
+    prisma.userStats.findUnique({
+      where: { userId }
     }),
 
-    // D. Active Plan
+    // D. Active Plan (Read pre-calculated progress)
     prisma.plan.findFirst({
-      where: { userId },
+      where: { userId, isArchived: false },
       orderBy: { updatedAt: 'desc' },
-      include: { 
-        _count: { select: { tasks: true } },
-        tasks: { where: { status: "Completed" }, select: { id: true } } // Select only ID to be light
-      }
+      // No need to include tasks or count relations anymore
     })
   ]);
-
-  // Calculate stats from aggregation results
-  const totalFocusMinutes = focusAgg._sum.timeSpentMinutes || 0;
-  
-  // Note: Your previous code counted "Completed" status manually. 
-  // If you need total completed tasks ever:
-  const completedTasksCount = await prisma.task.count({
-    where: { userId, status: "Completed" }
-  });
 
   return {
     greeting: getGreeting(),
     date: today,
     stats: {
-      focusMinutes: totalFocusMinutes,
-      completedTasks: completedTasksCount,
-      habitStreak: 0, 
+      focusMinutes: 0, // Fallback if you aren't tracking this in UserStats yet
+      // Use the pre-calculated stats
+      completedTasks: userStats?.completedTasks ?? 0,
+      totalTasks: userStats?.totalTasks ?? 0,
+      habitStreak: userStats?.currentStreak ?? 0, 
     },
     todaysTasks,
     habits: habits.map(h => ({
@@ -75,9 +61,10 @@ export async function getDashboardStats(userId: string) {
     activePlan: activePlan ? {
       id: activePlan.id,
       title: activePlan.title,
-      progress: activePlan._count.tasks > 0 
-        ? Math.round((activePlan.tasks.length / activePlan._count.tasks) * 100) 
-        : 0
+      // ✅ READ DIRECTLY
+      progress: activePlan.progress,
+      total: activePlan.totalTasks,
+      completed: activePlan.completedTasks
     } : null
   };
 }

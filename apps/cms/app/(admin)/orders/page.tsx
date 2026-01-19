@@ -28,28 +28,46 @@ export default async function OrdersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {orders.map(order => (
-                <tr key={order.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="p-4 font-mono text-xs text-slate-500">
-                    {order.providerOrderId || order.id}
-                  </td>
-                  <td className="p-4 font-medium text-slate-900">{order.user?.email}</td>
-                  <td className="p-4 text-slate-600">{order.product?.name || "Unknown"}</td>
-                  <td className="p-4 font-mono font-medium">₹{(order.amount / 100).toLocaleString()}</td>
-                  <td className="p-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold capitalize border ${
-                      order.status === 'paid' || order.status === 'captured' 
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-100' 
-                      : 'bg-amber-50 text-amber-700 border-amber-100'
-                    }`}>
-                      {order.status}
-                    </span>
-                  </td>
-                  <td className="p-4 text-slate-500">
-                    {new Date(order.createdAt).toLocaleString()}
-                  </td>
-                </tr>
-              ))}
+              {orders.map(order => {
+                // ✅ Fix 1: Ensure safe values for rendering
+                const orderId = String(order.id);
+                const providerOrderId = order.providerOrderId ? String(order.providerOrderId) : orderId;
+                const userEmail = order.user?.email ? String(order.user.email) : "No Email";
+                const productName = order.product?.name ? String(order.product.name) : "Unknown";
+                
+                // ✅ Fix 2: Handle numeric math safely
+                // Force cast to Number to prevent 'left-hand side' arithmetic errors
+                const amount = Number(order.amount ?? 0); 
+                const status = String(order.status);
+                
+                // ✅ Fix 3: Handle Date safely
+                const dateString = order.createdAt ? new Date(order.createdAt as any).toLocaleString() : "N/A";
+
+                return (
+                  <tr key={orderId} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="p-4 font-mono text-xs text-slate-500">
+                      {providerOrderId}
+                    </td>
+                    <td className="p-4 font-medium text-slate-900">{userEmail}</td>
+                    <td className="p-4 text-slate-600">{productName}</td>
+                    <td className="p-4 font-mono font-medium">
+                      ₹{(amount / 100).toLocaleString()}
+                    </td>
+                    <td className="p-4">
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold capitalize border ${
+                        status === 'paid' || status === 'captured' 
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-100' 
+                        : 'bg-amber-50 text-amber-700 border-amber-100'
+                      }`}>
+                        {status}
+                      </span>
+                    </td>
+                    <td className="p-4 text-slate-500">
+                      {dateString}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

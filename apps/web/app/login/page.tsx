@@ -1,8 +1,7 @@
-//apps/web/app/login/page.tsx
+// apps/web/app/login/page.tsx
 "use client";
-import dynamic from "next/dynamic";
-const AuthForm = dynamic(() => import("../../features/auth/components/AuthForm"), { ssr: false });
+import AuthPage from "../../features/auth/components/AuthPage";
 
 export default function LoginPage() {
-  return <AuthForm />;
+  return <AuthPage view="login" />;
 }

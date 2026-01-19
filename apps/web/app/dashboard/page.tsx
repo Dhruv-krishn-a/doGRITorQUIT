@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import { getServerUser } from "@/lib/auth";
+import { getServerUser } from "@/lib/auth-server";
 import { redirect } from "next/navigation";
 import { dashboard } from "@domain";
 import DashboardUI from "./DashboardUI";

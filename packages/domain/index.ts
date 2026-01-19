@@ -1,3 +1,4 @@
+// packages/domain/index.ts
 // Ensure this line uses the path to the file containing the named export
 export * as auth from "./auth/auth.service";
 

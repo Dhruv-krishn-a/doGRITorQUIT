@@ -1,6 +1,6 @@
 // apps/web/app/dashboard/daily-checklist/page.tsx
 import { billing } from "@domain";
-import { getServerUser } from "@/lib/auth";
+import { getServerUser } from "@/lib/auth-server";
 import { redirect } from "next/navigation";
 import { FeatureLocked } from "@/shared/components/FeatureLocked";
 import ChecklistClientPage, { HabitType, LogType, NoteType } from "./client";

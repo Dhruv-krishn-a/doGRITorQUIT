@@ -1,7 +1,7 @@
 // apps/web/app/api/plans/route.ts
 import { NextResponse } from "next/server";
 // ✅ FIX 1: Use standard auth helper
-import { getServerUser } from "@/lib/auth";
+import { getServerUser } from "@/lib/auth-server";
 import { plans } from "@domain"; 
 
 export async function GET() {

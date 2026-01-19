@@ -1,11 +1,10 @@
-// apps/cms/app/(admin)/page.tsx
 import { cms } from "@domain";
 import { getAdminUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { 
   Users, ShoppingBag, CreditCard, TrendingUp, 
-  ArrowRight, ExternalLink 
+  ArrowRight
 } from "lucide-react";
 
 export const metadata = {
@@ -16,17 +15,18 @@ export default async function DashboardPage() {
   const admin = await getAdminUser();
   if (!admin) redirect("/login");
 
-  // Fetch data in parallel using Domain Service
   const [stats, recentOrders] = await Promise.all([
     cms.getDashboardCounts(),
     cms.getRecentSales(),
   ]);
 
+  const displayName = (admin as any).profile?.name || admin.email || "Admin";
+
   return (
     <div className="max-w-7xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-800">Overview</h1>
-        <p className="text-slate-500 mt-1">Welcome back, {admin.name || "Admin"}. Here is what's happening today.</p>
+        <p className="text-slate-500 mt-1">Welcome back, {displayName}. Here is what's happening today.</p>
       </div>
       
       {/* KPI Cards */}
@@ -78,34 +78,47 @@ export default async function DashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {recentOrders.map(order => (
-                <tr key={order.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-6 py-4 text-xs font-mono text-slate-400">
-                    {order.providerOrderId ? order.providerOrderId.slice(-8) : order.id.slice(0, 8)}...
-                  </td>
-                  <td className="px-6 py-4 text-sm font-medium text-slate-900">
-                    {order.user?.email || "Unknown User"}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-slate-600">
-                    {order.product?.name || "Deleted Plan"}
-                  </td>
-                  <td className="px-6 py-4 text-sm font-mono text-slate-700 font-medium">
-                    ₹{(order.amount / 100).toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold capitalize border ${
-                      order.status === 'paid' || order.status === 'captured' 
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-100' 
-                        : 'bg-amber-50 text-amber-700 border-amber-100'
-                    }`}>
-                      {order.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-slate-500">
-                    {new Date(order.createdAt).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))}
+              {recentOrders.map(order => {
+                // ✅ FIX: Strict casting for strict TS mode
+                const orderId = String(order.id);
+                const providerId = order.providerOrderId ? String(order.providerOrderId) : orderId;
+                const userEmail = order.user?.email ? String(order.user.email) : "Unknown User";
+                const productName = order.product?.name ? String(order.product.name) : "Deleted Plan";
+                const amount = Number(order.amount ?? 0);
+                const status = String(order.status);
+                
+                // Safe date handling
+                const dateString = order.createdAt ? new Date(order.createdAt as any).toLocaleDateString() : "N/A";
+
+                return (
+                  <tr key={orderId} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="px-6 py-4 text-xs font-mono text-slate-400">
+                      {providerId.length > 8 ? providerId.slice(-8) : providerId}...
+                    </td>
+                    <td className="px-6 py-4 text-sm font-medium text-slate-900">
+                      {userEmail}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-slate-600">
+                      {productName}
+                    </td>
+                    <td className="px-6 py-4 text-sm font-mono text-slate-700 font-medium">
+                      ₹{(amount / 100).toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold capitalize border ${
+                        status === 'paid' || status === 'captured' 
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-100' 
+                          : 'bg-amber-50 text-amber-700 border-amber-100'
+                      }`}>
+                        {status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-slate-500">
+                      {dateString}
+                    </td>
+                  </tr>
+                );
+              })}
               {recentOrders.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-slate-400">

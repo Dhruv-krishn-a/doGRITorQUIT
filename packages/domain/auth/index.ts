@@ -1,7 +1,7 @@
 // packages/domain/auth/auth.service.ts
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { prisma } from "../../../lib/prisma";
+import { prisma } from "@planner/db";
 
 export async function getAdminUser() {
   const cookieStore = cookies();

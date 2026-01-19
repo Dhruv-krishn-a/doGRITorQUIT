@@ -1,6 +1,6 @@
 // apps/web/app/dashboard/tasks/page.tsx
 import { billing } from "@domain";
-import { getServerUser } from "@/lib/auth";
+import { getServerUser } from "@/lib/auth-server";
 import { redirect } from "next/navigation";
 import { FeatureLocked } from "@/shared/components/FeatureLocked";
 import TasksClientPage, { ExtendedTask } from "./tasks-client";

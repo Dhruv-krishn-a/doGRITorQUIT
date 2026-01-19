@@ -1,6 +1,6 @@
 // apps/web/app/api/analytics/route.ts
 import { NextResponse } from "next/server";
-import { getServerUser } from "@/lib/auth";
+import { getServerUser } from "@/lib/auth-server";
 import { analytics } from "@domain";
 
 export async function GET() {

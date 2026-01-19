@@ -1,7 +1,6 @@
-// apps/web/app/api/tasks/route.ts
 import { NextResponse } from "next/server";
-import { getServerUser } from "@/lib/auth";
-import { plans } from "@domain";
+import { getServerUser } from "@/lib/auth-server"; // ✅ New Auth Server Helper
+import { getAllTasksForUser } from "@planner/domain/plans/service"; // ✅ Correct import
 
 export async function GET() {
   try {
@@ -11,7 +10,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const tasks = await plans.getAllTasksForUser(user.id);
+    const tasks = await getAllTasksForUser(user.id);
     
     return NextResponse.json(tasks);
   } catch (err) {

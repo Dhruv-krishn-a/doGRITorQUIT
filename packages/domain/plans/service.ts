@@ -1,5 +1,6 @@
 // packages/domain/plans/service.ts
-import { prisma } from "@/lib/prisma"; // keep this alias working via tsconfig
+import { prisma } from "@planner/db"; 
+import { TaskStatus } from "@prisma/client"; // ✅ Import Enum for type safety
 import { formatPlanForClient } from "./format";
 import { assertPlanCreationAllowed } from "../billing/entitlements";
 
@@ -171,7 +172,7 @@ export async function importPlanJson(
           date,
           priority,
           estimatedMinutes: estimatedMinutes || null,
-          status: "Pending",
+          status: TaskStatus.pending, // ✅ FIX: Use Enum (lowercase "pending")
         },
       });
 
@@ -219,13 +220,14 @@ export async function importPlanJson(
   });
 }
 
-export async function updateTask(userId: string, taskId: string, data: { title?: string; description?: string; status?: string }) {
+// ✅ FIX: Update 'status' type to use TaskStatus Enum or cast it
+export async function updateTask(userId: string, taskId: string, data: { title?: string; description?: string; status?: TaskStatus }) {
   const task = await prisma.task.findFirst({ where: { id: taskId, userId } });
   if (!task) throw new Error("Task not found");
 
   return prisma.task.update({
     where: { id: taskId },
-    data
+    data: data // Now safe because 'status' matches the Prisma type
   });
 }
 
@@ -262,10 +264,7 @@ export async function getAllTasksForUser(userId: string) {
   });
 }
 
-// ✅ ADDED: Fix for the missing function error
 export async function toggleSubtask(userId: string, subtaskId: string, completed: boolean) {
-  // We check that the user owns the plan linked to the task that owns this subtask
-  // "subtask" (lowercase s) matches your import usage above.
   return prisma.subtask.update({
     where: {
       id: subtaskId,

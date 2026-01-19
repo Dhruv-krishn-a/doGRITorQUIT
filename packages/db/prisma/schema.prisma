@@ -1,0 +1,475 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../../node_modules/.prisma/client"
+}
+
+/**
+ * Enums: formatted vertically for correct parsing
+ */
+enum UserRole {
+  user
+  admin
+  system
+}
+
+enum TaskStatus {
+  pending
+  in_progress
+  blocked
+  completed
+  archived
+}
+
+enum Priority {
+  low
+  medium
+  high
+  urgent
+}
+
+enum EntryStatus {
+  draft
+  published
+  archived
+}
+
+enum SubscriptionStatus {
+  active
+  past_due
+  canceled
+  trialing
+}
+
+/**
+ * --------------------
+ * CORE AUTH / PROFILE
+ * --------------------
+ */
+model User {
+  id    String   @id // Supabase Auth ID
+  email String   @unique
+  role  UserRole @default(user)
+
+  tier  String   @default("Free Tier")
+
+  customAiLimit Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  profile            UserProfile?
+  stats              UserStats?
+  plans              Plan[]
+  tasks              Task[]
+  habits             Habit[]
+  habitLogs          HabitLog[]
+  dailyNotes         DailyNote[]
+  entries            Entry[]           @relation("UserEntries")
+  orders             Order[]
+  subscriptions      UserSubscription[]
+  legacySubscription Subscription?
+  aiUsage            AiUsage?
+  aiUsageLogs        AiUsageLog[]
+
+  @@index([role])
+  @@index([tier]) 
+  @@map("users")
+}
+
+model UserProfile {
+  userId    String  @id
+  name      String?
+  avatarUrl String?
+  bio       String?
+  locale    String?
+  timezone  String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+/**
+ * Move high-write counter out of User to avoid hot-row contention
+ */
+model AiUsage {
+  userId    String    @id
+  count     Int       @default(0)
+  resetAt   DateTime?
+  updatedAt DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([resetAt])
+  @@map("ai_usage")
+}
+
+/**
+ * Append-only log for analytics/audit (cheap writes)
+ */
+model AiUsageLog {
+  id        String   @id @default(cuid())
+  userId    String
+  delta     Int
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("ai_usage_logs")
+}
+
+/**
+ * Snapshot / read-optimized stats for fast dashboard reads
+ */
+model UserStats {
+  userId String @id
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  totalPlans     Int       @default(0)
+  totalTasks     Int       @default(0)
+  completedTasks Int       @default(0)
+  activeHabits   Int       @default(0)
+  currentStreak  Int       @default(0)
+  lastActiveAt   DateTime?
+
+  @@map("user_stats")
+}
+
+/**
+ * --------------------
+ * PLANS & TASKS
+ * --------------------
+ */
+
+model Plan {
+  id          String    @id @default(uuid())
+  userId      String
+  title       String
+  description String?
+  startDate   DateTime?
+  endDate     DateTime?
+
+  // Denormalized counters
+  totalTasks     Int @default(0)
+  completedTasks Int @default(0)
+  progress       Int @default(0)
+
+  isArchived Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks Task[]
+
+  @@index([userId, isArchived])
+  @@index([userId, updatedAt])
+  @@map("plans")
+}
+
+model Task {
+  id               String     @id @default(uuid())
+  planId           String?
+  userId           String
+  title            String
+  description      String?
+  date             DateTime? // day assigned (nullable)
+  dueDate          DateTime?
+  completed        Boolean    @default(false)
+  status           TaskStatus @default(pending)
+  priority         Priority?
+  estimatedMinutes Int?
+  timeSpentMinutes Int?       @default(0)
+  metadata         Json?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  plan     Plan?     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subtasks Subtask[]
+  tags     TaskTag[]
+
+  @@index([userId, date])
+  @@index([userId, status])
+  @@index([userId, priority])
+  @@index([planId, completed])
+  @@map("tasks")
+}
+
+model Subtask {
+  id        String   @id @default(uuid())
+  taskId    String
+  title     String
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@map("subtasks")
+}
+
+model Tag {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  tasks TaskTag[]
+
+  @@map("tags")
+}
+
+model TaskTag {
+  taskId    String
+  tagId     String
+  createdAt DateTime @default(now())
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, tagId])
+  @@index([tagId])
+  @@map("task_tags")
+}
+
+/**
+ * --------------------
+ * HABITS & DAILY NOTES
+ * --------------------
+ */
+
+model Habit {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  icon      String?  @default("circle")
+  color     String?  @default("text-blue-500")
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  user User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs HabitLog[]
+
+  @@index([userId, active])
+  @@map("habits")
+}
+
+model HabitLog {
+  id        String   @id @default(uuid())
+  habitId   String
+  userId    String
+  date      DateTime
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  habit Habit @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([habitId, date])
+  @@index([userId, date])
+  @@map("habit_logs")
+}
+
+model DailyNote {
+  id      String   @id @default(uuid())
+  userId  String
+  date    DateTime
+  content String?  @db.Text
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId])
+  @@map("daily_notes")
+}
+
+/**
+ * --------------------
+ * CMS & MEDIA
+ * --------------------
+ */
+
+model ContentType {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  name      String
+  schema    Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  entries Entry[]
+
+  @@map("content_types")
+}
+
+model Entry {
+  id            String      @id @default(cuid())
+  contentTypeId String
+  slug          String?     @unique
+  title         String?
+  status        EntryStatus @default(draft)
+  excerpt       String?
+  thumbnailUrl  String?
+  data          Json
+  locale        String?     @default("en")
+  requiresTier  String?
+  publishedAt   DateTime?
+  createdById   String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  contentType ContentType @relation(fields: [contentTypeId], references: [id])
+  createdBy   User        @relation("UserEntries", fields: [createdById], references: [id])
+  revisions   Revision[]
+
+  @@index([slug])
+  @@index([contentTypeId, publishedAt])
+  @@map("entries")
+}
+
+model Revision {
+  id        String   @id @default(cuid())
+  entryId   String
+  data      Json
+  createdBy String
+  createdAt DateTime @default(now())
+
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@index([entryId, createdAt])
+  @@map("revisions")
+}
+
+model Media {
+  id         String   @id @default(cuid())
+  key        String   @unique
+  url        String
+  filename   String
+  mimeType   String
+  size       Int
+  width      Int?
+  height     Int?
+  uploadedBy String?
+  createdAt  DateTime @default(now())
+
+  @@index([uploadedBy])
+  @@map("media")
+}
+
+/**
+ * --------------------
+ * BILLING
+ * --------------------
+ */
+
+model Product {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  name        String
+  description String?
+  price       Int // paise
+  currency    String   @default("INR")
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  productFeatures ProductFeature[]
+  subscriptions   UserSubscription[]
+  orders          Order[]
+
+  @@map("products")
+}
+
+model Feature {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  productFeatures ProductFeature[]
+
+  @@map("features")
+}
+
+model ProductFeature {
+  id        String @id @default(cuid())
+  productId String
+  featureId String
+  value     Json
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  feature Feature @relation(fields: [featureId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, featureId])
+  @@map("product_features")
+}
+
+model UserSubscription {
+  id               String             @id @default(cuid())
+  userId           String
+  productId        String
+  status           SubscriptionStatus
+  startedAt        DateTime           @default(now())
+  currentPeriodEnd DateTime?
+  provider         String?
+  providerSubId    String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([userId, status])
+  @@map("user_subscriptions")
+}
+
+model Order {
+  id                String   @id @default(cuid())
+  userId            String
+  productId         String?
+  amount            Int
+  currency          String   @default("INR")
+  providerOrderId   String?  @unique
+  providerPaymentId String?
+  status            String
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id])
+  product Product? @relation(fields: [productId], references: [id])
+
+  @@index([userId])
+  @@index([productId])
+  @@map("orders")
+}
+
+/**
+ * Legacy subscription: plan to migrate off
+ */
+model Subscription {
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  stripeCustomer   String?   @db.VarChar(191)
+  stripeSubId      String?   @unique @db.VarChar(191)
+  priceId          String?
+  status           String?
+  currentPeriodEnd DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([stripeCustomer])
+  @@index([stripeSubId])
+  @@map("subscriptions")
+}

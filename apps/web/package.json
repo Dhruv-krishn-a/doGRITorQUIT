@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint --max-warnings 0",
-    "check-types": "next typegen && tsc --noEmit"
+    "check-types": "next typegen && tsc --noEmit",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.1.0",
@@ -27,7 +28,9 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "tailwind-merge": "^3.4.0",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "@planner/db": "*",
+    "@planner/domain": "*"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",

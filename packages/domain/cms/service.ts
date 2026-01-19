@@ -1,10 +1,9 @@
-// packages/domain/cms/service.ts
-import { prisma } from "@/lib/prisma"; 
+import { prisma } from "@planner/db";
 import { revalidatePath } from "next/cache";
-import { cache } from "react";
 
+// --- READ OPERATIONS ---
 
-export const getDashboardCounts = cache(async () => {
+export async function getDashboardCounts() {
   const [users, orders, activePlans, revenueResult] = await Promise.all([
     prisma.user.count(),
     prisma.order.count(),
@@ -12,9 +11,9 @@ export const getDashboardCounts = cache(async () => {
     prisma.order.aggregate({ where: { status: "paid" }, _sum: { amount: true } })
   ]);
   return { users, orders, activePlans, totalRevenue: revenueResult._sum.amount || 0 };
-});
+};
 
-export const getOrders = cache(async (limit = 100) => {
+export async function getOrders(limit = 100) {
   return prisma.order.findMany({
     take: limit,
     orderBy: { createdAt: "desc" },
@@ -23,42 +22,47 @@ export const getOrders = cache(async (limit = 100) => {
       product: { select: { name: true } },
     },
   });
-});
+};
 
-// ✅ ADDED: This was missing
-export const getRecentSales = cache(async () => { 
+export const getRecentSales = async () => { 
   return getOrders(5); 
-});
+};
 
-export const getProducts = cache(async () => {
+export const getProducts = async () => {
   return prisma.product.findMany({
     orderBy: { price: "asc" },
     include: { productFeatures: { include: { feature: true } } }
   });
-});
+};
 
-export const getProductDetail = cache(async (id: string) => {
+export const getProductDetail = async (id: string) => {
   return prisma.product.findUnique({
     where: { id },
     include: { productFeatures: { include: { feature: true } } },
   });
-});
+};
 
-export const getAllFeatures = cache(async () => {
+export const getAllFeatures = async () => {
   return prisma.feature.findMany({ orderBy: { key: "asc" } });
-});
+};
 
-export const getUsersWithSubscriptions = cache(async (limit = 50, search?: string) => {
+export const getUsersWithSubscriptions = async (limit = 50, search?: string) => {
   return prisma.user.findMany({
     take: limit,
     where: search ? {
       OR: [
         { email: { contains: search, mode: 'insensitive' } },
-        { name: { contains: search, mode: 'insensitive' } }
+        { 
+          profile: { 
+            name: { contains: search, mode: 'insensitive' } 
+          } 
+        }
       ]
     } : undefined,
     orderBy: { createdAt: "desc" },
     include: {
+      profile: true,
+      aiUsage: true, 
       subscriptions: {
         where: { status: { in: ["active", "trialing"] } },
         take: 1,
@@ -76,7 +80,7 @@ export const getUsersWithSubscriptions = cache(async (limit = 50, search?: strin
       habits: { select: { id: true } }, 
     },
   });
-});
+};
 
 // --- WRITE OPERATIONS ---
 
@@ -166,12 +170,16 @@ export async function assignUserPlan(userId: string, productId: string | "manual
     },
   });
 
-  await prisma.user.update({ where: { id: userId }, data: { tier: product.name } });
+  // ✅ FIX: Explicit String() cast to satisfy strict TypeScript check
+  await prisma.user.update({ 
+    where: { id: userId }, 
+    data: { tier: String(product.name ?? "Premium Plan") } 
+  });
 }
 
 export async function updateUserRole(userId: string, role: string) {
   if(role !== "admin" && role !== "user") return;
-  await prisma.user.update({ where: { id: userId }, data: { role } });
+  await prisma.user.update({ where: { id: userId }, data: { role: role as any } });
 }
 
 export async function updateUserCustomLimit(userId: string, limit: number | null) {
@@ -179,13 +187,13 @@ export async function updateUserCustomLimit(userId: string, limit: number | null
     where: { id: userId },
     data: { customAiLimit: limit },
   });
-  revalidatePath("/users");
 }
 
 export async function resetUserAIUsage(userId: string) {
-  await prisma.user.update({
-    where: { id: userId },
-    data: { aiUsageCount: 0 },
+  await prisma.aiUsage.upsert({
+    where: { userId },
+    create: { userId, count: 0 },
+    update: { count: 0 }
   });
   revalidatePath("/users");
 }

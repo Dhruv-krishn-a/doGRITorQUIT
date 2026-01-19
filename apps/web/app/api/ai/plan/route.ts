@@ -1,6 +1,6 @@
 // apps/web/app/api/ai/plan/route.ts
 import { NextResponse } from "next/server";
-import { getServerUser } from "@/lib/auth";
+import { getServerUser } from "@/lib/auth-server";
 import { ai, billing } from "@domain";
 
 export const maxDuration = 60;
@@ -72,7 +72,7 @@ export async function POST(req: Request) {
     // 5. Extract JSON (if present)
     let planData = null;
     try {
-      const jsonMatch = rawText.match(/```json\n([\s\S]*?)\n```/) || rawText.match(/\[\s*\{.*\}\s*\]/s);
+      const jsonMatch = rawText.match(/```json\n([\s\S]*?)\n```/) || rawText.match(/\[\s*\{[\s\S]*\}\s*\]/);
       if (jsonMatch) {
         const jsonString = jsonMatch[1] || jsonMatch[0];
         planData = JSON.parse(jsonString);
