@@ -1,4 +1,3 @@
-// apps/web/shared/components/Footer.tsx
 "use client";
 
 import React from "react";
@@ -26,12 +25,12 @@ export default function Footer({ nav }: { nav: NavItem[] }) {
   return (
     <footer className="relative bg-slate-50 pt-12 pb-6 border-t border-slate-200 overflow-hidden font-sans text-slate-900">
       
-      {/* Background Pattern */}
+      {/* Background Pattern (Dot Grid) */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
            style={{ backgroundImage: 'radial-gradient(#6366f1 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
       </div>
 
-      {/* Decorative Blob */}
+      {/* Decorative Blur Blob */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-100/40 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -61,7 +60,7 @@ export default function Footer({ nav }: { nav: NavItem[] }) {
              </div>
           </div>
 
-          {/* --- Links Column (Span 2) --- */}
+          {/* --- Product Links (Span 2) --- */}
           <div className="lg:col-span-2 lg:col-start-6">
             <h3 className="font-bold text-slate-900 mb-3 text-xs uppercase tracking-wider">Product</h3>
             <ul className="space-y-2">
@@ -76,7 +75,7 @@ export default function Footer({ nav }: { nav: NavItem[] }) {
             </ul>
           </div>
 
-          {/* --- Company Column (Span 2) --- */}
+          {/* --- Company Links (Span 2) --- */}
           <div className="lg:col-span-2">
             <h3 className="font-bold text-slate-900 mb-3 text-xs uppercase tracking-wider">Company</h3>
             <ul className="space-y-2">
@@ -86,7 +85,7 @@ export default function Footer({ nav }: { nav: NavItem[] }) {
             </ul>
           </div>
 
-          {/* --- Newsletter Column (Span 4) --- */}
+          {/* --- Newsletter (Span 4) --- */}
           <div className="lg:col-span-4">
             <h3 className="font-bold text-slate-900 mb-3 text-xs uppercase tracking-wider">Stay Updated</h3>
             <form className="relative group max-w-xs" onSubmit={(e) => e.preventDefault()}>
@@ -133,7 +132,6 @@ export default function Footer({ nav }: { nav: NavItem[] }) {
   );
 }
 
-// --- Helper Components ---
 
 function SocialIcon({ icon, href, label }: { icon: React.ReactNode, href: string, label: string }) {
   return (

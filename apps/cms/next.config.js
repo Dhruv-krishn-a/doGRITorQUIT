@@ -1,10 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // ✅ 1. Tell Next.js to compile your internal workspace packages
   transpilePackages: ["@planner/domain", "@planner/db", "@planner/api"],
 
-  // ✅ 2. Only keep native/heavy binaries here. 
-  // REMOVED "@planner/domain" because it is just TS code and needs to be bundled.
   experimental: {
     serverComponentsExternalPackages: ["openai", "razorpay"],
   },
@@ -18,7 +15,6 @@ const nextConfig = {
     ],
   },
 
-  // 3. Keep your webpack fixes if they were solving specific node-fetch issues
   webpack: (config) => {
     config.externals.push({
       'node-fetch': 'commonjs node-fetch',

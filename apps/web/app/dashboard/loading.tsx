@@ -13,17 +13,11 @@ export default function Loading() {
       </div>
 
       {/* Grid Skeleton */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Card 1 */}
-        <div className="h-64 bg-slate-200 rounded-4xl"></div>
-        {/* Card 2 */}
-        <div className="h-64 bg-slate-100 rounded-4xl border border-slate-200"></div>
-        {/* Card 3 */}
-        <div className="h-64 bg-slate-100 rounded-4xl border border-slate-200"></div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 h-125">
+        <div className="md:col-span-1 bg-slate-200 rounded-4xl"></div>
+        <div className="md:col-span-2 bg-slate-100 rounded-4xl border border-slate-200"></div>
+        <div className="md:col-span-1 bg-slate-100 rounded-4xl border border-slate-200"></div>
       </div>
-
-      {/* Large Bottom Skeleton */}
-      <div className="h-80 bg-slate-100 rounded-[2.5rem] border border-slate-200"></div>
     </div>
   );
 }

@@ -1,273 +1,244 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { motion, Variants } from "framer-motion";
+import { motion } from "framer-motion";
 import {
-  Zap,
-  CheckCircle2,
-  Clock,
-  Calendar,
-  ArrowRight,
-  Target,
-  Trophy,
-  MoreHorizontal
+  CheckCircle2, Clock, Calendar, ArrowRight, Target,
+  Trophy, MoreHorizontal, Plus, Brain, Flame,
+  Play
 } from "lucide-react";
 
-// Define the shape of data coming from your domain
+// --- Types ---
 type DashboardData = {
+  user: { firstName: string; level: number; xp: number; nextLevelXp: number };
   stats: {
     focusMinutes: number;
     completedTasks: number;
+    streakDays: number;
+    efficiencyScore: number; // e.g., 85%
   };
-  activePlan: {
-    title: string;
-    progress: number;
-  } | null;
-  habits: Array<{
-    id: string;
-    title: string;
-    completedToday: boolean;
-  }>;
-  todaysTasks: Array<{
-    id: string;
-    title: string;
-    status: string;
-    estimatedMinutes?: number;
-    startTime?: string;
-  }>;
-};
-
-// Animation Variants (Explicitly typed to fix TS errors)
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { type: "spring", stiffness: 100 } 
-  },
+  activityHeatmap: Array<{ date: string; count: number }>; // For the mini-graph
+  activePlan: { title: string; progress: number; totalDays: number; currentDay: number } | null;
+  habits: Array<{ id: string; title: string; completedToday: boolean; streak: number }>;
+  todaysTasks: Array<{ id: string; title: string; status: string; priority: string; time?: string }>;
+  upcomingEvents: Array<{ title: string; time: string; date: string }>;
 };
 
 export default function DashboardUI({ data }: { data: DashboardData }) {
-  const { stats, activePlan, habits, todaysTasks } = data;
+  const [quickTask, setQuickTask] = useState("");
+  const { user, stats, activePlan, habits, todaysTasks, upcomingEvents } = data;
 
   const hours = Math.floor(stats.focusMinutes / 60);
   const mins = stats.focusMinutes % 60;
+  const xpPercentage = Math.min(100, (user.xp / user.nextLevelXp) * 100);
 
   return (
     <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="space-y-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-6 pb-10"
     >
-      {/* Top Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* --- ROW 1: Welcome & Gamification --- */}
+      <div className="flex flex-col md:flex-row gap-6 items-stretch">
         
-        {/* Card 1: Focus Stats (The "Hero" Card) */}
-        <motion.div variants={itemVariants} className="relative overflow-hidden group">
-          <div className="absolute inset-0 bg-linear-to-br from-indigo-600 to-violet-700 rounded-4xl transition-transform duration-500 group-hover:scale-[1.02]" />
-          
-          {/* Decorative shapes */}
-          <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-500/30 rounded-full blur-xl" />
-
-          <div className="relative p-7 h-full flex flex-col justify-between text-white">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="flex items-center gap-2 text-indigo-100 font-medium text-sm mb-1">
-                  <Clock size={16} /> Total Focus
-                </p>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-5xl font-black tracking-tighter">
-                    {hours}<span className="text-2xl font-semibold opacity-60">h</span>
-                  </span>
-                  <span className="text-5xl font-black tracking-tighter ml-2">
-                    {mins}<span className="text-2xl font-semibold opacity-60">m</span>
-                  </span>
-                </div>
+        {/* Welcome & Level */}
+        <div className="flex-1 bg-white rounded-4xl p-6 border border-slate-100 shadow-sm flex items-center justify-between relative overflow-hidden">
+           <div className="relative z-10">
+              <h1 className="text-2xl font-bold text-slate-800">
+                Ready to crush it, <span className="text-indigo-600">{user.firstName}</span>? 🚀
+              </h1>
+              <p className="text-slate-500 text-sm mt-1 mb-4">You are on a {stats.streakDays}-day streak! Keep the fire burning.</p>
+              
+              {/* XP Bar */}
+              <div className="flex items-center gap-3">
+                 <div className="text-xs font-bold text-slate-700 bg-slate-100 px-2 py-1 rounded-md">Lvl {user.level}</div>
+                 <div className="h-2.5 w-48 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-linear-to-r from-indigo-500 to-purple-500" style={{ width: `${xpPercentage}%` }} />
+                 </div>
+                 <span className="text-xs text-slate-400 font-medium">{user.xp}/{user.nextLevelXp} XP</span>
               </div>
-              <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10 shadow-inner">
-                 <Zap size={24} className="text-amber-300 fill-amber-300" />
-              </div>
-            </div>
-            
-            <div className="mt-6 flex items-center gap-3 bg-black/10 p-3 rounded-2xl border border-white/5 backdrop-blur-sm">
-               <Trophy size={18} className="text-yellow-300" />
-               <span className="text-sm font-medium text-indigo-50">
-                 {stats.completedTasks} tasks crushed today
-               </span>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Card 2: Active Plan */}
-        <motion.div 
-          variants={itemVariants} 
-          className="bg-white rounded-4xl p-7 border border-slate-100 shadow-xl shadow-slate-200/50 flex flex-col justify-between relative overflow-hidden group"
-        >
-          <div className="absolute top-0 right-0 p-7 opacity-5 group-hover:opacity-10 transition-opacity">
-            <Target size={100} />
-          </div>
-
-          <div>
-            <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-widest mb-4">
-              <Target size={14} /> Current Mission
-            </div>
-            
-            {activePlan ? (
-              <>
-                <h3 className="text-xl font-bold text-slate-800 leading-tight mb-6 line-clamp-2">
-                  {activePlan.title}
-                </h3>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs font-bold">
-                    <span className="text-slate-400">Progress</span>
-                    <span className="text-indigo-600">{activePlan.progress}%</span>
-                  </div>
-                  <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: `${activePlan.progress}%` }}
-                      transition={{ duration: 1, ease: "easeOut", delay: 0.5 }}
-                      className="h-full rounded-full bg-linear-to-r from-blue-500 to-indigo-600"
-                    />
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="flex flex-col items-center justify-center h-32 text-slate-400 text-sm font-medium bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
-                No active plan
-              </div>
-            )}
-          </div>
-
-          <Link href="/dashboard/plans" className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-indigo-600 hover:text-indigo-700 transition-colors group/link">
-            {activePlan ? "Continue Plan" : "Start a Plan"} 
-            <ArrowRight size={16} className="group-hover/link:translate-x-1 transition-transform" />
-          </Link>
-        </motion.div>
-
-        {/* Card 3: Habits */}
-        <motion.div variants={itemVariants} className="bg-white rounded-4xl p-7 border border-slate-100 shadow-xl shadow-slate-200/50">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-widest">
-              <CheckCircle2 size={14} /> Habits
-            </div>
-            <Link href="/dashboard/daily-checklist" className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors">
-              <MoreHorizontal size={20} />
-            </Link>
-          </div>
-
-          <div className="space-y-3">
-            {habits.slice(0, 3).map((h) => (
-              <div key={h.id} className="group flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer">
-                <div 
-                  className={`
-                    w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300
-                    ${h.completedToday 
-                      ? "bg-green-500 border-green-500 shadow-md shadow-green-200 scale-110" 
-                      : "border-slate-300 group-hover:border-indigo-400"}
-                  `}
-                >
-                  {h.completedToday && <CheckCircle2 size={14} className="text-white" />}
-                </div>
-                <span className={`text-sm font-medium transition-colors ${h.completedToday ? "text-slate-400 line-through decoration-slate-300" : "text-slate-700"}`}>
-                  {h.title}
-                </span>
-              </div>
-            ))}
-            {habits.length === 0 && (
-              <div className="text-center py-6">
-                 <p className="text-sm text-slate-400 italic">No habits tracking yet.</p>
-                 <Link href="/dashboard/daily-checklist" className="text-xs font-bold text-indigo-600 mt-2 block hover:underline">
-                    + Add Habit
-                 </Link>
-              </div>
-            )}
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Bottom: Today's Tasks (Timeline Style) */}
-      <motion.div variants={itemVariants} className="bg-white rounded-4xl border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden min-h-75">
-        <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
-          <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-            <Calendar size={20} className="text-indigo-500" />
-            Today&apos;s Schedule
-          </h2>
-          <div className="flex gap-2">
-             <span className="text-xs font-semibold px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full border border-indigo-100">
-               {todaysTasks.filter(t => t.status === "Completed").length}/{todaysTasks.length} Done
-             </span>
-          </div>
+           </div>
+           
+           {/* Decorative BG */}
+           <div className="absolute right-0 top-0 h-full w-1/3 bg-linear-to-l from-indigo-50/50 to-transparent pointer-events-none" />
+           <Flame className="absolute right-8 top-1/2 -translate-y-1/2 text-orange-500/10 w-24 h-24" />
         </div>
 
-        {todaysTasks.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 text-slate-400">
-            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-              <Calendar className="w-8 h-8 opacity-20" />
-            </div>
-            <p className="font-medium">No tasks scheduled for today.</p>
-            <p className="text-sm opacity-60">Enjoy your free time!</p>
-          </div>
-        ) : (
-          <div className="p-2">
-            {todaysTasks.map((task, index) => (
-              <motion.div 
-                key={task.id} 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="group flex items-center gap-4 p-4 hover:bg-slate-50 rounded-2xl transition-all border border-transparent hover:border-slate-100"
-              >
-                {/* Status Indicator */}
-                <div 
-                  className={`
-                    w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300
-                    ${task.status === "Completed" 
-                      ? "bg-green-100 text-green-600" 
-                      : "bg-slate-100 text-slate-400 group-hover:bg-indigo-100 group-hover:text-indigo-600"}
-                  `}
-                >
-                  {task.status === "Completed" ? <CheckCircle2 size={18} /> : <div className="w-3 h-3 rounded-full border-2 border-current" />}
-                </div>
+        {/* Quick Action Buttons */}
+        <div className="flex gap-4">
+           <button className="flex flex-col items-center justify-center w-24 h-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-4xl transition-all shadow-lg shadow-indigo-200">
+              <Play size={24} className="mb-1 fill-white" />
+              <span className="text-xs font-bold">Focus</span>
+           </button>
+           <button className="flex flex-col items-center justify-center w-24 h-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 rounded-4xl transition-all">
+              <Brain size={24} className="mb-1" />
+              <span className="text-xs font-bold">Note</span>
+           </button>
+        </div>
+      </div>
 
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className={`font-semibold text-base truncate transition-colors ${task.status === "Completed" ? "text-slate-400 line-through" : "text-slate-800 group-hover:text-indigo-900"}`}>
-                    {task.title}
-                  </div>
-                  {task.estimatedMinutes && (
-                    <div className="flex items-center gap-1 text-xs text-slate-400 mt-0.5">
-                      <Clock size={10} />
-                      {task.estimatedMinutes} mins
+      {/* --- ROW 2: The Bento Grid --- */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 h-auto md:h-125">
+        
+        {/* COL 1: Main Stats (Vertical) */}
+        <div className="md:col-span-1 flex flex-col gap-6 h-full">
+           {/* Focus Card */}
+           <div className="flex-1 bg-linear-to-br from-slate-900 to-slate-800 rounded-[2.5rem] p-6 text-white flex flex-col justify-between relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+                 <Clock size={80} />
+              </div>
+              <div>
+                 <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Focus Time</p>
+                 <div className="text-4xl font-black">{hours}h {mins}m</div>
+              </div>
+              <div className="mt-4">
+                 <div className="flex justify-between text-xs text-slate-400 mb-1">
+                    <span>Efficiency</span>
+                    <span>{stats.efficiencyScore}%</span>
+                 </div>
+                 <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                    <div className="bg-green-400 h-full rounded-full" style={{ width: `${stats.efficiencyScore}%` }} />
+                 </div>
+              </div>
+           </div>
+
+           {/* Tasks Stats */}
+           <div className="h-40 bg-white border border-slate-200 rounded-[2.5rem] p-6 flex flex-col justify-center items-center relative">
+              <h3 className="text-4xl font-black text-slate-800">{stats.completedTasks}</h3>
+              <p className="text-slate-500 text-sm font-medium">Tasks Completed</p>
+              <div className="absolute top-4 right-4 text-green-500 bg-green-50 rounded-full p-1.5">
+                 <Trophy size={16} />
+              </div>
+           </div>
+        </div>
+
+        {/* COL 2: Active Plan & Habits (Wide Middle) */}
+        <div className="md:col-span-2 flex flex-col gap-6 h-full">
+           
+           {/* Active Plan */}
+           <div className="h-1/2 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-8 flex flex-col justify-between relative overflow-hidden">
+              <div className="flex justify-between items-start z-10">
+                 <div>
+                    <div className="flex items-center gap-2 text-indigo-600 text-xs font-bold uppercase tracking-widest mb-1">
+                       <Target size={14} /> Current Mission
                     </div>
-                  )}
-                </div>
+                    <h3 className="text-2xl font-bold text-slate-800">{activePlan?.title || "No Active Plan"}</h3>
+                 </div>
+                 <div className="text-right">
+                    <div className="text-3xl font-black text-slate-200">Day {activePlan?.currentDay}</div>
+                    <div className="text-xs text-slate-400">of {activePlan?.totalDays}</div>
+                 </div>
+              </div>
 
-                {/* Action/Time */}
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0">
-                   <button className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-600 shadow-xs hover:text-indigo-600 hover:border-indigo-200">
-                      Details
-                   </button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
-      </motion.div>
+              {activePlan ? (
+                 <div className="z-10">
+                    <div className="flex justify-between text-sm font-medium mb-2">
+                       <span className="text-slate-500">Progress</span>
+                       <span className="text-slate-900">{activePlan.progress}%</span>
+                    </div>
+                    <div className="w-full h-4 bg-slate-100 rounded-full overflow-hidden p-1">
+                       <motion.div 
+                          initial={{ width: 0 }}
+                          animate={{ width: `${activePlan.progress}%` }}
+                          transition={{ duration: 1 }}
+                          className="h-full bg-linear-to-r from-indigo-500 to-purple-500 rounded-full" 
+                       />
+                    </div>
+                 </div>
+              ) : (
+                 <Link href="/dashboard/plans" className="z-10 text-indigo-600 font-bold hover:underline">Start a Plan &rarr;</Link>
+              )}
+              
+              {/* Background Graph Decoration */}
+              <div className="absolute bottom-0 left-0 right-0 h-24 bg-linear-to-t from-indigo-50/50 to-transparent pointer-events-none" />
+           </div>
+
+           {/* Habits & Quick Capture */}
+           <div className="h-1/2 grid grid-cols-2 gap-6">
+              {/* Habits */}
+              <div className="bg-white rounded-[2.5rem] border border-slate-100 p-6 overflow-y-auto">
+                 <div className="flex justify-between items-center mb-4">
+                    <h4 className="font-bold text-slate-700">Habits</h4>
+                    <Link href="/dashboard/daily-checklist" className="text-slate-400 hover:text-indigo-600"><MoreHorizontal size={18}/></Link>
+                 </div>
+                 <div className="space-y-3">
+                    {habits.slice(0, 3).map(h => (
+                       <div key={h.id} className="flex items-center gap-3">
+                          <button className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${h.completedToday ? 'bg-indigo-500 border-indigo-500' : 'border-slate-300'}`}>
+                             {h.completedToday && <CheckCircle2 size={12} className="text-white" />}
+                          </button>
+                          <span className={`text-sm truncate ${h.completedToday ? 'text-slate-400 line-through' : 'text-slate-600'}`}>{h.title}</span>
+                       </div>
+                    ))}
+                 </div>
+              </div>
+
+              {/* Quick Capture */}
+              <div className="bg-indigo-50 rounded-[2.5rem] border border-indigo-100 p-6 flex flex-col justify-between">
+                 <div>
+                    <h4 className="font-bold text-indigo-900 mb-1">Quick Add</h4>
+                    <p className="text-xs text-indigo-600/70">Capture task instantly</p>
+                 </div>
+                 <div className="relative mt-2">
+                    <input 
+                       type="text" 
+                       value={quickTask}
+                       onChange={(e) => setQuickTask(e.target.value)}
+                       placeholder="Buy milk..." 
+                       className="w-full bg-white rounded-xl py-3 pl-4 pr-10 text-sm border-0 shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none placeholder:text-slate-300"
+                    />
+                    <button className="absolute right-2 top-2 p-1 bg-indigo-100 rounded-lg text-indigo-600 hover:bg-indigo-600 hover:text-white transition-colors">
+                       <Plus size={16} />
+                    </button>
+                 </div>
+              </div>
+           </div>
+        </div>
+
+        {/* COL 3: Today's Agenda (Right Sidebar) */}
+        <div className="md:col-span-1 bg-white rounded-[2.5rem] border border-slate-200 p-6 h-full flex flex-col overflow-hidden shadow-xl shadow-slate-200/50">
+           <div className="flex items-center justify-between mb-6">
+              <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                 <Calendar size={18} className="text-indigo-500" /> Agenda
+              </h3>
+              <span className="text-xs font-bold bg-slate-100 px-2 py-1 rounded text-slate-500">Today</span>
+           </div>
+
+           <div className="flex-1 overflow-y-auto pr-2 space-y-4 scrollbar-thin scrollbar-thumb-slate-100">
+              {todaysTasks.length === 0 && (
+                 <div className="text-center text-slate-400 text-sm mt-10">No tasks remaining! 🎉</div>
+              )}
+              {todaysTasks.map((task) => (
+                 <div key={task.id} className="group flex gap-3 items-start p-3 hover:bg-slate-50 rounded-2xl transition-colors border border-transparent hover:border-slate-100">
+                    <div className={`mt-1 w-2 h-2 rounded-full shrink-0 ${task.priority === 'HIGH' ? 'bg-rose-500' : task.priority === 'MEDIUM' ? 'bg-amber-400' : 'bg-blue-400'}`} />
+                    <div className="flex-1 min-w-0">
+                       <p className={`text-sm font-medium truncate ${task.status === 'completed' ? 'text-slate-400 line-through' : 'text-slate-700'}`}>{task.title}</p>
+                       {task.time && <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1"><Clock size={10} /> {task.time}</p>}
+                    </div>
+                 </div>
+              ))}
+              
+              {/* Upcoming Peek */}
+              {upcomingEvents.length > 0 && (
+                 <div className="pt-4 border-t border-slate-100 mt-4">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Up Next</p>
+                    {upcomingEvents.slice(0, 2).map((e, i) => (
+                       <div key={i} className="flex gap-3 text-xs text-slate-500 mb-2">
+                          <span className="font-mono text-indigo-400">{e.time}</span>
+                          <span className="truncate">{e.title}</span>
+                       </div>
+                    ))}
+                 </div>
+              )}
+           </div>
+
+           <Link href="/dashboard/tasks" className="mt-4 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-slate-50 text-slate-600 text-sm font-bold hover:bg-slate-100 transition-colors">
+              View All Tasks <ArrowRight size={16} />
+           </Link>
+        </div>
+
+      </div>
     </motion.div>
   );
 }

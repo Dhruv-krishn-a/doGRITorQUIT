@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import { getServerUser } from "@/lib/auth-server";
+import { getServerUser } from "@/lib/auth-server"; // Ensure this path is correct
 import { redirect } from "next/navigation";
 import { dashboard } from "@domain";
 import DashboardUI from "./DashboardUI";
@@ -18,7 +18,7 @@ export default async function DashboardHome() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl md:text-4xl font-black text-slate-800 tracking-tight">
-            Hello, <span className="text-transparent bg-clip-text  from-indigo-600 to-violet-600 bg-linear-to-r">{firstName}</span> 👋
+            Hello, <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-600 to-violet-600">{firstName}</span> 👋
           </h1>
           <p className="text-slate-500 font-medium mt-2 text-lg">
             Let&apos;s make today productive.
@@ -31,17 +31,17 @@ export default async function DashboardHome() {
 
       {/* Async Content Wrapper */}
       <Suspense fallback={<Loading />}>
-        <AsyncDashboardWrapper userId={user.id} />
+        <AsyncDashboardWrapper userId={user.id} firstName={firstName} />
       </Suspense>
     </div>
   );
 }
 
 // Separate async component to fetch data
-async function AsyncDashboardWrapper({ userId }: { userId: string }) {
-  const data = await dashboard.getDashboardStats(userId);
+async function AsyncDashboardWrapper({ userId, firstName }: { userId: string, firstName: string }) {
+  const dbData = await dashboard.getDashboardStats(userId);
 
-  if (!data) {
+  if (!dbData) {
     return (
       <div className="p-6 rounded-3xl bg-rose-50 border border-rose-100 text-rose-600 text-center">
         Unable to load dashboard data. Please try again later.
@@ -49,15 +49,49 @@ async function AsyncDashboardWrapper({ userId }: { userId: string }) {
     );
   }
 
-  // Sanitization: Convert DB 'null's to TypeScript 'undefined's
-  const sanitizedData = {
-    ...data,
-    todaysTasks: data.todaysTasks.map((task) => ({
-      ...task,
-      estimatedMinutes: task.estimatedMinutes ?? undefined,
-      // Removed access to task.startTime as it does not exist on the source type
+  // ENRICHMENT: Map DB data to the richer DashboardUI structure
+  const enrichedData = {
+    user: {
+      firstName,
+      level: 1, // Placeholder: You can calculate this later based on XP
+      xp: 0,    // Placeholder
+      nextLevelXp: 100
+    },
+    stats: {
+      focusMinutes: dbData.stats.focusMinutes,
+      completedTasks: dbData.stats.completedTasks,
+      streakDays: dbData.stats.habitStreak || 0,
+      efficiencyScore: 0 // Placeholder: Calculate (completed / total) * 100
+    },
+    activityHeatmap: [], // Placeholder
+    upcomingEvents: [],  // Placeholder
+    
+    // Transform Plan
+    activePlan: dbData.activePlan ? {
+      title: dbData.activePlan.title,
+      progress: dbData.activePlan.progress,
+      totalDays: 30, // Default/Placeholder if not in DB
+      currentDay: 1  // Default/Placeholder
+    } : null,
+
+    // Transform Habits
+    habits: dbData.habits.map((h) => ({
+      id: h.id,
+      title: h.title,
+      completedToday: h.completedToday,
+      streak: 0 // Placeholder if missing in DB
+    })),
+
+    // Transform Tasks
+    todaysTasks: dbData.todaysTasks.map((task) => ({
+      id: task.id,
+      title: task.title,
+      status: task.status,
+      // Handle missing priority or mapping mismatch
+      priority: task.priority || "MEDIUM", 
+      time: undefined // Placeholder
     })),
   };
 
-  return <DashboardUI data={sanitizedData} />;
+  return <DashboardUI data={enrichedData} />;
 }
