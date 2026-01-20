@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "es2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -16,10 +20,20 @@
     "incremental": true,
     "types": [],
     "paths": {
-      "@planner/*": ["./packages/*"]
+      "@planner/*": [
+        "./packages/*"
+      ]
     }
   },
-  // ✅ FIX: Broaden the include pattern so it doesn't complain about being empty
-  "include": ["**/*.ts", "**/*.tsx", "**/*.js", "apps/cms/next.config.mjs"],
-  "exclude": ["node_modules", "dist", "apps", "packages"] 
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js",
+    "apps/cms/next.config.mjs"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  "extends": "expo/tsconfig.base"
 }

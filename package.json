@@ -1,6 +1,7 @@
 {
   "name": "planner",
   "private": true,
+  "packageManager": "pnpm@8.10.0",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
@@ -8,24 +9,36 @@
     "type-check": "tsc --noEmit",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
-    "db:generate": "npm --workspace @planner/db run generate",
-    "postinstall": "npm run db:generate",
+    "db:generate": "pnpm --filter @planner/db run generate",
+    "postinstall": "pnpm run db:generate",
     "build:web": "npx turbo run build --filter=web",
     "build:cms": "npx turbo run build --filter=cms"
   },
-  "devDependencies": {
-    "prettier": "^3.7.4",
-    "turbo": "^2.6.3",
-    "typescript": "5.9.2"
+  "pnpm": {
+    "overrides": {
+      "mobile>react": "18.3.1",
+      "mobile>react-dom": "18.3.1",
+      "mobile>react-native": "0.76.6",
+      "react-native-reanimated>react": "18.3.1",
+      "react-native-safe-area-context>react": "18.3.1",
+      "mobile>@types/react": "^18.3.12",
+      "mobile>@types/react-dom": "^18.3.1",
+      "@types/react": "^19.0.8",
+      "@types/react-dom": "^19.0.3",
+      "react": "19.0.0",
+      "react-dom": "19.0.0"
+    }
   },
-  "engines": {
-    "node": ">=18"
-  },
-  "packageManager": "npm@10.9.0",
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
+  "devDependencies": {
+    "prettier": "^3.7.4",
+    "react-native-worklets-core": "^1.6.2",
+    "turbo": "^2.6.3",
+    "typescript": "5.9.2"
+  },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@studio-freight/react-lenis": "^0.0.47",
@@ -46,5 +59,8 @@
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.17",
     "zod": "^4.3.5"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

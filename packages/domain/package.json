@@ -9,14 +9,14 @@
     "./*": "./*.ts"
   },
   "dependencies": {
-    "@planner/db": "*",
+    "@planner/db": "workspace:*",
     "openai": "^4.20.1",
     "razorpay": "^2.9.2",
     "whatwg-url": "^5.0.0"
   },
   "peerDependencies": {
-    "next": "^14.0.0",
-    "react": "^18.0.0"
+    "next": ">=14.0.0",
+    "react": ">=18.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

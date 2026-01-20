@@ -1,4 +1,6 @@
-export const config = {
-  supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL!,
-  supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,
-};
+import Constants from "expo-constants";
+
+const debuggerHost = Constants.expoConfig?.hostUri;
+const localhost = debuggerHost?.split(":")[0] || "localhost";
+
+export const API_URL = `http://${localhost}:3000`; // Points to 'web' app

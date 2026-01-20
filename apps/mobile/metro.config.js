@@ -1,24 +1,20 @@
-const path = require("path");
 const { getDefaultConfig } = require("expo/metro-config");
+const { withNativeWind } = require("nativewind/metro");
+const path = require("path");
 
-// IMPORTANT: this must be the mobile app directory
 const projectRoot = __dirname;
-
-// Monorepo root
 const workspaceRoot = path.resolve(projectRoot, "../..");
 
 const config = getDefaultConfig(projectRoot);
 
-// Watch the monorepo, but DO NOT change projectRoot
+// 1. Monorepo Setup
 config.watchFolders = [workspaceRoot];
-
-// Resolve node_modules correctly
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, "node_modules"),
   path.resolve(workspaceRoot, "node_modules"),
 ];
+config.resolver.disableHierarchicalLookup = true;
 
-// THIS LINE IS CRITICAL — without it Metro walks upward
-config.projectRoot = projectRoot;
-
-module.exports = config;
+// 2. Wrap with NativeWind
+// Point this to where your global CSS file is
+module.exports = withNativeWind(config, { input: "./global.css" });

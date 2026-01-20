@@ -1,12 +1,18 @@
 import { View, Text, ScrollView } from 'react-native';
-// 1. Import 'styled' from nativewind
-import { styled } from 'nativewind';
+// 1. Change Import: 'styled' is gone, use 'cssInterop'
+import { cssInterop } from 'nativewind';
 import { LinearGradient } from 'expo-linear-gradient'; 
 import { BlurView } from 'expo-blur';
 
-// 2. Create styled versions of external components
-const StyledLinearGradient = styled(LinearGradient);
-const StyledBlurView = styled(BlurView);
+// 2. "Teach" external components to handle className
+// We map the 'className' prop to the 'style' prop
+cssInterop(LinearGradient, {
+  className: 'style',
+});
+
+cssInterop(BlurView, {
+  className: 'style',
+});
 
 export default function MobileDashboard() {
   return (
@@ -24,8 +30,8 @@ export default function MobileDashboard() {
 
         {/* Hero Card */}
         <View className="rounded-[30px] overflow-hidden shadow-lg shadow-indigo-200 mb-6">
-          {/* Use StyledLinearGradient instead of LinearGradient */}
-          <StyledLinearGradient
+          {/* 3. Use the ORIGINAL component directly with className */}
+          <LinearGradient
             colors={['#4f46e5', '#7c3aed']}
             className="p-6 h-48 justify-between"
           >
@@ -34,11 +40,11 @@ export default function MobileDashboard() {
               <Text className="text-white text-4xl font-black">4h 20m</Text>
             </View>
             
-            {/* Use StyledBlurView instead of BlurView */}
-            <StyledBlurView intensity={20} className="overflow-hidden rounded-xl bg-white/20 p-3 flex-row items-center gap-3">
+            {/* Use the ORIGINAL component directly */}
+            <BlurView intensity={20} className="overflow-hidden rounded-xl bg-white/20 p-3 flex-row items-center gap-3">
                <Text className="text-white font-bold">Current Streak: 12 Days 🔥</Text>
-            </StyledBlurView>
-          </StyledLinearGradient>
+            </BlurView>
+          </LinearGradient>
         </View>
 
         {/* Sync Status Indicator */}
