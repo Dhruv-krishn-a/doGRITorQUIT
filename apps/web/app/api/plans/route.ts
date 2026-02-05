@@ -1,30 +1,8 @@
-// apps/web/app/api/plans/route.ts
+//apps/web/app/api/plans/route.ts
 import { NextResponse } from "next/server";
-// ✅ FIX 1: Use standard auth helper
 import { getServerUser } from "@/lib/auth-server";
 import { plans } from "@domain"; 
 
-export async function GET() {
-  try {
-    const user = await getServerUser();
-    
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // ✅ FIX 2: Use user.id
-    const userPlans = await plans.listPlansForUser(user.id);
-
-    return NextResponse.json(userPlans);
-  } catch (err) {
-    // ✅ FIX 3: Remove 'any' and handle safe logging
-    console.error("[GET /api/plans] ERROR:", err);
-    return NextResponse.json(
-      { error: "Failed to fetch plans" }, 
-      { status: 500 }
-    );
-  }
-}
 
 export async function POST(req: Request) {
   try {
@@ -35,9 +13,11 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
+    // Log the received body to debug
+    console.log("[POST /api/plans] Payload:", body);
+
     const { title, description, startDate, endDate } = body;
 
-    // ✅ FIX 4: Use user.id
     const newPlan = await plans.createPlanForUser(user.id, {
       title,
       description,
@@ -49,15 +29,18 @@ export async function POST(req: Request) {
   } catch (err) {
     console.error("[POST /api/plans] ERROR:", err);
     
-    // ✅ FIX 5: Safe type checking for domain errors
+    // ✅ FIX: Extract the actual error message
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
     const errorObj = err as { code?: string; message?: string };
     
+    // Handle specific business logic errors
     if (errorObj.code === "ENTITLEMENT_LIMIT") {
         return NextResponse.json({ error: errorObj.message }, { status: 403 });
     }
     
+    // ✅ Return the REAL error message to the frontend for debugging
     return NextResponse.json(
-      { error: "Failed to create plan" }, 
+      { error: errorMessage }, 
       { status: 500 }
     );
   }

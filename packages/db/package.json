@@ -11,6 +11,7 @@
     }
   },
   "scripts": {
+    "prisma": "prisma",
     "build": "tsc",
     "generate": "prisma generate"
   },

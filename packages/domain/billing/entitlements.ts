@@ -1,8 +1,6 @@
 import { prisma } from "@planner/db";
 
-export const LEGACY_ENTITLEMENTS = {};
-
-type FeatureMap = Record<string, any>;
+export type FeatureMap = Record<string, any>;
 
 export interface UserEntitlements {
   userId: string;
@@ -11,20 +9,17 @@ export interface UserEntitlements {
     id: string;
     key: string;
     name: string;
-    price?: number | null;
-    currency?: string | null;
   } | null;
   features: FeatureMap;
-  user: any;
   productName: string;
   productKey: string;
+  user: any;
 }
 
 export async function fetchUserEntitlements(userId: string): Promise<UserEntitlements> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: {
-      profile: true, 
       subscriptions: {
         where: { status: { in: ["active", "trialing"] } },
         orderBy: { currentPeriodEnd: "desc" },
@@ -41,7 +36,6 @@ export async function fetchUserEntitlements(userId: string): Promise<UserEntitle
   });
 
   if (!user) {
-    console.warn(`[Entitlements] User ${userId} authenticated but not found in DB.`);
     return {
       userId,
       tierFallback: "Free",
@@ -49,76 +43,63 @@ export async function fetchUserEntitlements(userId: string): Promise<UserEntitle
       productName: "Free Tier",
       productKey: "FREE",
       features: {},
-      user: { 
-        id: userId, 
-        email: "", 
-        name: "Guest", 
-        avatarUrl: null 
-      }
+      user: null,
     };
   }
 
-  // 1. Determine Active Product
-  let product = null;
-  const activeSub = user.subscriptions[0];
+  // ✅ FIX: Type as 'any' to prevent Prisma Type Mismatch errors 
+  let product: any = user.subscriptions[0]?.product || null;
 
-  if (activeSub && activeSub.product) {
-    product = activeSub.product;
-  } else {
-    // Fallback to Free Tier if no subscription
-    const freeProduct = await prisma.product.findUnique({
+  if (!product) {
+    // Fallback: Load the "FREE" plan configuration from DB
+    product = await prisma.product.findUnique({
       where: { key: "FREE" },
-      include: {
-        productFeatures: { include: { feature: true } },
-      },
+      include: { productFeatures: { include: { feature: true } } }
     });
-    if (freeProduct) product = freeProduct;
   }
 
   // 2. Build Feature Map
   const features: FeatureMap = {};
-  if (product && product.productFeatures) {
-    for (const pf of product.productFeatures) {
-      // ✅ FIX: Force key to be a string to avoid 'Date cannot be used as index' error
+  if (product?.productFeatures) {
+    product.productFeatures.forEach((pf: any) => {
       const key = String(pf.feature.key);
-      features[key] = pf.value ?? { enabled: true };
-    }
+      features[key] = pf.value ?? true;
+    });
   }
+
+  const productKey = product?.key ? String(product.key) : "FREE";
 
   return {
     userId,
-    // ✅ FIX: Safe access for tier
-    tierFallback: user.tier ? String(user.tier) : undefined,
+    tierFallback: user.tier ? String(user.tier) : "Free",
     product: product ? {
       id: String(product.id),
-      key: String(product.key),
-      name: String(product.name ?? "Unknown Plan"),
-      price: typeof product.price === 'number' ? product.price : 0, 
-      currency: product.currency ? String(product.currency) : "INR",
+      key: productKey,
+      name: String(product.name),
     } : null,
-    // ✅ FIX: Safe access for name/key
     productName: product?.name ? String(product.name) : "Free Tier",
-    productKey: product?.key ? String(product.key) : "FREE",
+    productKey,
     features,
-    user: {
-      ...user,
-      name: user.profile?.name ?? "User",
-      avatarUrl: user.profile?.avatarUrl
-    }
+    user: user,
   };
 }
 
 export async function getPagePermissions(userId: string) {
   const ent = await fetchUserEntitlements(userId);
-  const isFree = ent.productKey === 'FREE';
+  const isFree = ent.productKey.toUpperCase() === 'FREE';
 
+  // The Gatekeeper
   const check = (key: string) => {
     const feat = ent.features[key];
-    if (feat) {
-      if (feat.enabled === false) return false;
-      if (feat.value === false) return false;
+
+    // 1. If explicitly present in DB -> Obey DB
+    if (feat !== undefined) {
+      if (feat === false) return false;
+      if (typeof feat === 'object' && feat.enabled === false) return false;
       return true;
     }
+
+    // 2. If MISSING -> Block for Free, Allow for Pro
     if (isFree) return false; 
     return true; 
   };
@@ -126,12 +107,14 @@ export async function getPagePermissions(userId: string) {
   return {
     canViewDashboard: true,
     canViewSubscription: true,
-    canViewPlans: check("ACCESS_TASKS") || check("ACCESS_PLANS"),
+    canViewPlans: check("ACCESS_PLANS"),
     canViewTasks: check("ACCESS_TASKS"),
-    canViewChecklist: true,
+    canViewChecklist: check("ACCESS_HABITS"),
     canViewAnalytics: check("ACCESS_ANALYTICS"),
   };
 }
+
+// --- Helper Functions ---
 
 export async function getActiveUserSubscription(userId: string) {
   return prisma.userSubscription.findFirst({
@@ -159,11 +142,11 @@ export async function getMaxPlanDaysForUser(userId: string): Promise<number> {
   const featureVal = ent.features['MAX_PLAN_DAYS'];
   
   if (featureVal) {
-    if (typeof featureVal.value === 'number') return featureVal.value;
-    if (typeof featureVal === 'number') return featureVal;
+    const val = typeof featureVal === 'object' ? featureVal.value : featureVal;
+    return Number(val) || 30;
   }
   
-  if (ent.productKey === 'FREE') return 7;
+  if (ent.productKey.toUpperCase() === 'FREE') return 7;
   return 30;
 }
 
@@ -173,18 +156,7 @@ export async function incrementAIUsage(userId: string) {
     create: { userId, count: 1 },
     update: { count: { increment: 1 } }
   });
-
-  await prisma.aiUsageLog.create({
-    data: {
-      userId,
-      delta: 1
-    }
-  });
-}
-
-export async function getFeatureForUser(userId: string, featureKey: string): Promise<unknown> {
-  const ent = await fetchUserEntitlements(userId);
-  return ent.features?.[featureKey];
+  await prisma.aiUsageLog.create({ data: { userId, delta: 1 } });
 }
 
 export async function getAIUsageStats(userId: string) {
@@ -199,28 +171,34 @@ export async function getAIUsageStats(userId: string) {
   });
   
   const usageCount = freshUser?.aiUsage?.count ?? 0;
-  const customLimit = freshUser?.customAiLimit;
-
-  if (customLimit !== null && customLimit !== undefined) {
+  
+  // 1. Check for User-Specific Override (Database)
+  if (freshUser?.customAiLimit != null) {
     return {
       used: usageCount,
-      limit: Number(customLimit),
-      remaining: Math.max(0, Number(customLimit) - usageCount)
+      limit: Number(freshUser.customAiLimit),
+      remaining: Math.max(0, Number(freshUser.customAiLimit) - usageCount)
     };
   }
 
+  // 2. Check for Plan-Specific Limit (Database)
+  // This value comes from the CMS (productFeatures table)
   let limit = 0; 
   const limitFeature = ent.features['AI_GEN_LIMIT'];
   
   if (limitFeature) {
-    if (typeof limitFeature.value === 'number') limit = limitFeature.value;
-    else if (typeof limitFeature === 'number') limit = limitFeature;
-    else if (limitFeature.limit) limit = limitFeature.limit;
-  } else if (ent.productKey === 'FREE') {
-    limit = 5; 
+     // Handle cases where value is stored as raw number OR as JSON object { value: 50 }
+     const val = typeof limitFeature === 'object' ? (limitFeature.value ?? limitFeature.limit) : limitFeature;
+     limit = Number(val);
   } else {
-    limit = 100;
+     // ✅ Fallback only if strictly missing from DB
+     // If you deleted the key from the Free plan, this will run.
+     // Defaulting to 5 as a safe 'starter' limit if nothing is configured.
+     limit = 5; 
   }
+
+  // Ensure limit is a valid number, fallback to 0 if NaN
+  if (isNaN(limit)) limit = 0;
 
   return {
     used: usageCount,
@@ -232,6 +210,5 @@ export async function getAIUsageStats(userId: string) {
 export async function canUseAIGenerationForUser(userId: string): Promise<boolean> {
   const stats = await getAIUsageStats(userId);
   if (stats.limit === Infinity) return true;
-  if (stats.used >= stats.limit) return false;
-  return true;
+  return stats.used < stats.limit;
 }

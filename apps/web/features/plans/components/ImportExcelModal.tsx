@@ -1,6 +1,6 @@
-// apps/web/app/components/Plan/ImportExcelModal.tsx
 "use client";
 import React, { useRef, useState } from "react";
+import { FileSpreadsheet, Download, AlertCircle, UploadCloud } from "lucide-react";
 import Modal from "../../../shared/components/ui/Modal";
 import Button from "../../../shared/components/ui/Button";
 import * as XLSX from "xlsx";
@@ -14,9 +14,9 @@ type Props = {
 export default function ImportExcelModal({ isOpen, onClose, onImport }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [planName, setPlanName] = useState("");
-  // Ensure we use substring to get a valid YYYY-MM-DD string
   const [startDate, setStartDate] = useState(new Date().toISOString().substring(0, 10));
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   if (!isOpen) return null;
@@ -24,22 +24,42 @@ export default function ImportExcelModal({ isOpen, onClose, onImport }: Props) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0] ?? null;
     setFile(f);
+    setError(null);
     if (f && !planName) setPlanName(f.name.replace(/\.[^/.]+$/, ""));
+  };
+
+  const handleDownloadTemplate = () => {
+    const headers = ["Day", "Task Title", "Subtasks", "Priority", "Notes", "Expected Hours", "Tags"];
+    // Updated data to use ;; as separator
+    const data = [
+      ["1", "Learn React Basics", "Components;; Props;; State", "High", "Focus on functional components", "2", "react;; frontend"],
+      ["2", "Setup Database", "Install PostgreSQL;; Create Schema", "Medium", "Use Docker if possible", "3", "db;; sql"],
+    ];
+    
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template");
+    XLSX.writeFile(wb, "Plan_Import_Template.xlsx");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file) return alert("Select a file");
+    if (!file) {
+        setError("Please select a file to import.");
+        return;
+    }
 
     setLoading(true);
+    setError(null);
+
     try {
       const ab = await file.arrayBuffer();
       const wb = XLSX.read(ab, { type: "array" });
       const firstSheetName = wb.SheetNames[0];
-      if (!firstSheetName) throw new Error("No sheets found");
+      if (!firstSheetName) throw new Error("No sheets found in the file.");
 
       const sheet = wb.Sheets[firstSheetName];
-      if (!sheet) throw new Error("Sheet data not found");
+      if (!sheet) throw new Error("Sheet data not found.");
 
       const json = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: "" });
       const startObj = new Date(startDate);
@@ -47,26 +67,47 @@ export default function ImportExcelModal({ isOpen, onClose, onImport }: Props) {
       const tasks = json.map((row) => {
         let dateVal = row["Date"] ?? row["date"] ?? "";
         
-        // Calculate date from "Day" column (e.g. Day 1 = startDate)
+        // Robust Day Parsing: Handle "Day 1", "1", "Day: 1"
         if (!dateVal && (row["Day"] || row["day"])) {
-            const dayNum = parseInt(String(row["Day"] || row["day"]));
-            if (!isNaN(dayNum)) {
+            const rawDay = String(row["Day"] || row["day"]);
+            const dayNum = parseInt(rawDay.replace(/\D/g, "") || "0"); 
+            
+            if (!isNaN(dayNum) && dayNum > 0) {
                 const d = new Date(startObj);
                 d.setDate(d.getDate() + (dayNum - 1));
                 dateVal = d.toISOString();
             }
         }
 
+        // Parse Subtasks - Updated to split ONLY by ;;
+        const rawSubtasks = String(row["Subtasks"] ?? row["subtasks"] ?? "");
+        const subtasksArray = rawSubtasks
+          .split(";;")
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0);
+
+        // Parse Tags - Updated to split ONLY by ;;
+        const rawTags = String(row["Tags"] ?? row["tags"] ?? "");
+        const tagsArray = rawTags
+          .split(";;")
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0);
+
+        // Normalize Priority
+        const rawPriority = String(row["Priority"] ?? "").toLowerCase();
+
         return {
             Date: String(dateVal),
             "Task Title": String(row["Task Title"] ?? row["Task"] ?? row["Title"] ?? ""),
             Notes: String(row["Notes"] ?? row["Description"] ?? ""),
-            Priority: String(row["Priority"] ?? ""),
+            Priority: rawPriority, 
             "Expected Hours": String(row["Expected Hours"] ?? row["Estimated Time (min)"] ?? ""),
-            Subtasks: String(row["Subtasks"] ?? ""),
-            Tags: String(row["Tags"] ?? ""),
+            Subtasks: subtasksArray,
+            Tags: tagsArray,
         };
       });
+
+      if (tasks.length === 0) throw new Error("No valid tasks found in the file.");
 
       const res = await fetch("/api/plans/import-json", {
         method: "POST",
@@ -75,7 +116,6 @@ export default function ImportExcelModal({ isOpen, onClose, onImport }: Props) {
       });
 
       if (!res.ok) {
-        // Try to parse JSON error message from server
         const errData = await res.json().catch(() => null);
         throw new Error(errData?.error || await res.text() || "Import failed");
       }
@@ -86,60 +126,194 @@ export default function ImportExcelModal({ isOpen, onClose, onImport }: Props) {
       setPlanName("");
     } catch (err) {
       console.error(err);
-      alert("Import failed: " + (err instanceof Error ? err.message : String(err)));
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Import Plan (CSV/Excel)">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm text-(--text-secondary) mb-1">Plan name</label>
-          <input
-            className="w-full bg-(--bg-secondary) border rounded px-3 py-2"
-            value={planName}
-            onChange={(e) => setPlanName(e.target.value)}
-            placeholder="My Learning Plan"
-          />
+    <Modal 
+        isOpen={isOpen} 
+        onClose={onClose} 
+        title="Import Plan" 
+        className="z-9999!"
+        panelClassName="!max-w-4xl" 
+    >
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 max-h-[80vh] overflow-y-auto pr-1">
+        
+        {/* Left Side: Form */}
+        <div className="flex-1 order-1 space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4">
+                
+                {/* Plan Name */}
+                <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Plan Name</label>
+                <input
+                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-hidden"
+                    value={planName}
+                    onChange={(e) => setPlanName(e.target.value)}
+                    placeholder="e.g. Full Stack Roadmap 2024"
+                />
+                </div>
+
+                {/* Start Date */}
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Start Date (Day 1)</label>
+                    <input 
+                        type="date" 
+                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-hidden"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                    />
+                </div>
+
+                {/* File Upload Area */}
+                <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Upload File</label>
+                <div 
+                    onClick={() => fileRef.current?.click()}
+                    className={`relative border-2 border-dashed rounded-xl p-6 transition-all cursor-pointer group flex flex-col items-center justify-center text-center
+                    ${file ? 'border-indigo-400 bg-indigo-50/30' : 'border-slate-200 hover:border-indigo-400 hover:bg-slate-50'}
+                    `}
+                >
+                    <input 
+                        ref={fileRef} 
+                        type="file" 
+                        accept=".xlsx,.xls,.csv" 
+                        onChange={handleFileChange} 
+                        className="hidden"
+                    />
+                    
+                    {file ? (
+                        <>
+                            <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mb-2">
+                                <FileSpreadsheet size={20} />
+                            </div>
+                            <p className="text-sm font-medium text-indigo-900 truncate max-w-50">{file.name}</p>
+                            <p className="text-xs text-indigo-500 mt-1">Click to change</p>
+                        </>
+                    ) : (
+                        <>
+                            <div className="w-10 h-10 bg-slate-100 text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-500 rounded-full flex items-center justify-center mb-2 transition-colors">
+                                <UploadCloud size={20} />
+                            </div>
+                            <p className="text-sm text-slate-600 font-medium">Click to upload or drag & drop</p>
+                            <p className="text-xs text-slate-400 mt-1">.xlsx, .xls, or .csv</p>
+                        </>
+                    )}
+                </div>
+                </div>
+
+                {/* Error Message */}
+                {error && (
+                    <div className="p-3 bg-red-50 text-red-700 text-sm rounded-lg flex items-start gap-2">
+                        <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                        <span>{error}</span>
+                    </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex justify-end gap-3 pt-2">
+                    <Button type="button" variant="ghost" onClick={onClose} disabled={loading}>
+                        Cancel
+                    </Button>
+                    <Button type="submit" variant="primary" disabled={loading || !file} className="min-w-25">
+                        {loading ? "Importing..." : "Import Plan"}
+                    </Button>
+                </div>
+            </form>
         </div>
 
-        <div>
-            <label className="block text-sm text-(--text-secondary) mb-1">Start Date (Day 1)</label>
-            <input 
-                type="date" 
-                className="w-full bg-(--bg-secondary) border rounded px-3 py-2"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-            />
-        </div>
+        {/* Right Side: Guide & Template */}
+        <div className="w-full lg:w-72 xl:w-80 order-2 bg-slate-50 rounded-xl p-4 sm:p-5 border border-slate-200 flex flex-col">
+            <h4 className="font-semibold text-slate-800 flex items-center gap-2 mb-3 shrink-0">
+                <FileSpreadsheet size={16} className="text-indigo-500" />
+                Format Guide
+            </h4>
+            
+            <p className="text-xs text-slate-500 mb-4 leading-relaxed shrink-0">
+                Supported columns (headers must match):
+            </p>
 
-        <div>
-          <label className="block text-sm text-(--text-secondary) mb-1">File</label>
-          <input 
-            ref={fileRef} 
-            type="file" 
-            accept=".xlsx,.xls,.csv" 
-            onChange={handleFileChange} 
-            className="block w-full text-sm text-slate-500
-              file:mr-4 file:py-2 file:px-4
-              file:rounded-full file:border-0
-              file:text-sm file:font-semibold
-              file:bg-blue-50 file:text-blue-700
-              hover:file:bg-blue-100"
-          />
-        </div>
+            {/* Scrollable container for the list items */}
+            <div className="space-y-3 overflow-y-auto flex-1 pr-1 custom-scrollbar">
+                
+                {/* 1. Day */}
+                <div className="bg-white p-2.5 rounded border border-slate-200/60 shadow-xs">
+                    <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">Day</span>
+                        <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 rounded font-medium">Required</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 leading-tight">&quot;1&quot; or &quot;Day 1&quot;. Determines the date.</p>
+                </div>
 
-        <div className="flex justify-end gap-3 mt-6">
-          <Button type="button" variant="ghost" onClick={onClose} disabled={loading}>
-            Cancel
-          </Button>
-          <Button type="submit" variant="primary" disabled={loading || !file}>
-            {loading ? "Importing..." : "Import Plan"}
-          </Button>
+                {/* 2. Task Title */}
+                <div className="bg-white p-2.5 rounded border border-slate-200/60 shadow-xs">
+                    <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">Task Title</span>
+                        <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 rounded font-medium">Required</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 leading-tight">The main goal of the task.</p>
+                </div>
+
+                {/* 3. Subtasks */}
+                <div className="bg-white p-2.5 rounded border border-slate-200/60 shadow-xs">
+                    <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">Subtasks</span>
+                        <span className="text-[10px] bg-indigo-50 text-indigo-600 px-1.5 rounded font-medium">Optional</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 leading-tight">Split by <b>;;</b> (e.g. &quot;Read;; Write&quot;)</p>
+                </div>
+
+                {/* 4. Priority */}
+                <div className="bg-white p-2.5 rounded border border-slate-200/60 shadow-xs">
+                    <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">Priority</span>
+                        <span className="text-[10px] bg-indigo-50 text-indigo-600 px-1.5 rounded font-medium">Optional</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 leading-tight">High, Medium, or Low.</p>
+                </div>
+
+                 {/* 5. Notes */}
+                 <div className="bg-white p-2.5 rounded border border-slate-200/60 shadow-xs">
+                    <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">Notes</span>
+                        <span className="text-[10px] bg-indigo-50 text-indigo-600 px-1.5 rounded font-medium">Optional</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 leading-tight">Any extra description or details.</p>
+                </div>
+
+                {/* 6. Expected Hours */}
+                <div className="bg-white p-2.5 rounded border border-slate-200/60 shadow-xs">
+                    <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">Expected Hours</span>
+                        <span className="text-[10px] bg-indigo-50 text-indigo-600 px-1.5 rounded font-medium">Optional</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 leading-tight">Number (e.g. &quot;2&quot; or &quot;2.5&quot;).</p>
+                </div>
+
+                 {/* 7. Tags */}
+                 <div className="bg-white p-2.5 rounded border border-slate-200/60 shadow-xs">
+                    <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">Tags</span>
+                        <span className="text-[10px] bg-indigo-50 text-indigo-600 px-1.5 rounded font-medium">Optional</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 leading-tight">Split by <b>;;</b> (e.g. &quot;sql;; db&quot;).</p>
+                </div>
+            </div>
+
+            <div className="mt-5 pt-4 border-t border-slate-200 shrink-0">
+                <button 
+                    onClick={handleDownloadTemplate}
+                    className="w-full py-2 px-3 bg-white border border-slate-300 hover:border-indigo-400 hover:text-indigo-600 text-slate-600 text-xs font-medium rounded-lg shadow-xs transition-all flex items-center justify-center gap-2 group"
+                >
+                    <Download size={14} className="text-slate-400 group-hover:text-indigo-500" />
+                    Download Template
+                </button>
+            </div>
         </div>
-      </form>
+      </div>
     </Modal>
   );
 }

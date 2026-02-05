@@ -1,66 +1,68 @@
 // packages/domain/ai/service.ts
 import OpenAI from "openai";
-// Import the strict type for the API response
-import type { ChatCompletion } from "openai/resources/chat/completions";
+import { constructPlanningPrompt } from "./prompt-builder";
 
-// Define an interface for your return value to ensure consistency
 export interface AIPlanResponse {
   text: string;
-  raw: ChatCompletion;
+  raw: any;
 }
 
-export async function generatePlanFromPrompt(prompt: string): Promise<AIPlanResponse> {
+export async function generatePlanFromPrompt(prompt: string, isJsonMode = false): Promise<AIPlanResponse> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-  const siteName = "Planner App";
 
   if (!apiKey) {
-    throw new Error("OPENROUTER_API_KEY is not defined in environment variables");
+    throw new Error("OPENROUTER_API_KEY is not defined");
   }
 
-  // Initialize OpenAI client pointing to OpenRouter
   const openai = new OpenAI({
     baseURL: "https://openrouter.ai/api/v1",
     apiKey: apiKey,
     defaultHeaders: {
       "HTTP-Referer": siteUrl,
-      "X-Title": siteName,
+      "X-Title": "Planner App",
     },
   });
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "mistralai/devstral-2512:free",
+      model: "meta-llama/llama-3.3-70b-instruct",
       messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
+        { role: "system", content: "You are a precise JSON generator." }, 
+        { role: "user", content: prompt }
       ],
+      max_tokens: 4096,
+      temperature: 0.7, 
+      top_p: 0.9,
+      response_format: isJsonMode ? { type: "json_object" } : undefined
     });
 
-    // Strict null checks: content can be null in the OpenAI types
     const content = completion.choices[0]?.message?.content ?? "";
+    return { text: content, raw: completion };
 
-    return { 
-      text: content, 
-      raw: completion 
-    };
-
-  } catch (error: unknown) {
-    // "unknown" is safer than "any" in TypeScript strict mode
-    console.error("OpenRouter/Llama API Error:", error);
-    
-    let errorMessage = "Failed to generate content";
-    
-    // Type Guard to safely access the error message
-    if (error instanceof Error) {
-      errorMessage = error.message;
-    } else if (typeof error === "object" && error !== null && "message" in error) {
-        // Handle cases where error might be an API object but not an Error instance
-        errorMessage = String((error as { message: unknown }).message);
-    }
-    
-    throw new Error(errorMessage);
+  } catch (error: any) {
+    console.error("OpenRouter API Error:", error);
+    throw new Error(error.message || "Failed to generate content");
   }
+}
+
+export async function generateStructuredPlan(
+  messages: { role: string; content: string }[],
+  batchConfig?: any,
+  isSyllabusMode?: boolean,
+  isRegenerateModule?: boolean,
+  isRegenerateDay?: boolean // ✅ NEW PARAM
+) {
+  const fullPrompt = constructPlanningPrompt(
+    messages, 
+    batchConfig, 
+    isSyllabusMode, 
+    isRegenerateModule,
+    isRegenerateDay
+  );
+  
+  // Enable JSON mode for any structured request
+  const isJson = !!batchConfig || !!isSyllabusMode || !!isRegenerateModule || !!isRegenerateDay;
+  
+  return generatePlanFromPrompt(fullPrompt, isJson);
 }

@@ -45,6 +45,13 @@ enum SubscriptionStatus {
   trialing
 }
 
+enum PlanStatus {
+  active
+  paused
+  completed
+  archived
+}
+
 /**
  * --------------------
  * CORE AUTH / PROFILE
@@ -162,6 +169,9 @@ model Plan {
   progress       Int @default(0)
 
   isArchived Boolean @default(false)
+
+  status      PlanStatus @default(active)
+  pausedAt    DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -1,3 +1,4 @@
+// apps/web/app/dashboard/plans/[planId]/page.tsx
 import React from "react";
 import { notFound, redirect } from "next/navigation";
 import { getServerUser } from "@/lib/auth-server"; 

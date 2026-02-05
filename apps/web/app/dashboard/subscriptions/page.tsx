@@ -1,6 +1,4 @@
-// ✅ FIX 1: Import from the correct package alias "@planner/domain"
 import { billing, payment } from "@planner/domain";
-// ✅ FIX 2: Use the local auth helper, NOT the domain one
 import { getServerUser } from "@/lib/auth-server"; 
 import { redirect } from "next/navigation";
 import SubscriptionClientPage from "./subscription-client";
@@ -10,13 +8,11 @@ export const metadata = {
 };
 
 export default async function SubscriptionPage() {
-  // 1. Auth Check (Using Local Helper)
-  // This now runs on the Next.js server, reads cookies, and gets the ID.
+  // 1. Auth Check 
   const user = await getServerUser();
   if (!user) redirect("/login");
 
-  // 2. Fetch All Data in Parallel
-  // ✅ FIX 3: billing.fetchUserEntitlements matches your domain export
+  // 2. Fetch Data
   const [rawProducts, entitlements, usageStats, rawHistory] = await Promise.all([
     payment.getPublicPlans(),
     billing.fetchUserEntitlements(user.id), 
@@ -34,7 +30,7 @@ export default async function SubscriptionPage() {
     description: p.description || "",
   }));
 
-  // 4. Transform History (Explicitly typed status)
+  // 4. Transform History
   const history = rawHistory.map((order) => {
     let status: "paid" | "failed" | "pending" = "pending";
     if (order.status === "paid" || order.status === "captured") {
@@ -55,11 +51,10 @@ export default async function SubscriptionPage() {
     };
   });
 
-  // 5. Extract Active Subscription
-  // Entitlements returns the rich user object because of your domain query
-  const activeSub = entitlements.user.subscriptions?.[0]; 
+  // 5. Extract Active Subscription (Safe Access)
+  // ✅ FIX: Use optional chaining (?.) on user and subscriptions to avoid crashes
+  const activeSub = entitlements.user?.subscriptions?.[0]; 
 
-  // ✅ Safe Date Conversion
   const endDate = activeSub?.currentPeriodEnd ? new Date(activeSub.currentPeriodEnd) : undefined;
 
   const clientData = {

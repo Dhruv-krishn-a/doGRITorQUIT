@@ -1,8 +1,25 @@
-// packages/domain/plans/service.ts
-import { prisma } from "@planner/db"; 
-import { TaskStatus } from "@prisma/client"; // ✅ Import Enum for type safety
+import { prisma } from "@planner/db";
+import { TaskStatus, Priority } from "@prisma/client";
 import { formatPlanForClient } from "./format";
 import { assertPlanCreationAllowed } from "../billing/entitlements";
+
+// Export types
+export { TaskStatus, Priority };
+
+// --- Helpers ---
+
+// Safe Priority Mapper (Handles "Medium" -> "medium" mismatch)
+function parsePriority(val: string | null | undefined): Priority | null {
+  if (!val) return null;
+  const normalized = val.toLowerCase().trim();
+  
+  if (normalized === "high") return Priority.high;
+  if (normalized === "medium") return Priority.medium;
+  if (normalized === "low") return Priority.low;
+  if (normalized === "urgent") return Priority.urgent;
+  
+  return null; 
+}
 
 /**
  * List plans for a user
@@ -22,11 +39,11 @@ export async function listPlansForUser(userId: string) {
     orderBy: { createdAt: "desc" },
   });
 
-  return plans.map(formatPlanForClient);
+  return (plans || []).map(formatPlanForClient);
 }
 
 /**
- * Get one plan (with tasks)
+ * Get one plan
  */
 export async function getPlanForUser(userId: string, planId: string) {
   const plan = await prisma.plan.findFirst({
@@ -34,7 +51,10 @@ export async function getPlanForUser(userId: string, planId: string) {
     include: {
       tasks: {
         orderBy: { date: "asc" },
-        include: { subtasks: true, tags: { include: { tag: true } } },
+        include: { 
+          subtasks: { orderBy: { createdAt: 'asc' } }, 
+          tags: { include: { tag: true } } 
+        },
       },
     },
   });
@@ -43,12 +63,11 @@ export async function getPlanForUser(userId: string, planId: string) {
 }
 
 /**
- * Create plan (enforces entitlements)
+ * Create plan
  */
 export async function createPlanForUser(userId: string, data: {
   title: string; description?: string | null; startDate?: string | null; endDate?: string | null;
 }) {
-  // Enforce entitlements
   await assertPlanCreationAllowed(userId);
 
   const plan = await prisma.plan.create({
@@ -65,7 +84,7 @@ export async function createPlanForUser(userId: string, data: {
 }
 
 /**
- * Delete plan (ensures ownership)
+ * Delete plan
  */
 export async function deletePlanForUser(userId: string, planId: string) {
   const plan = await prisma.plan.findFirst({ where: { id: planId, userId } });
@@ -75,9 +94,235 @@ export async function deletePlanForUser(userId: string, planId: string) {
   return true;
 }
 
+/**
+ * Day Operations (Shifting)
+ */
+export async function insertPlanDay(userId: string, planId: string, targetDateStr: string) {
+  return prisma.$transaction(async (tx) => {
+    const plan = await tx.plan.findFirst({ where: { id: planId, userId } });
+    if (!plan) throw new Error("Plan not found");
+
+    const targetDate = new Date(targetDateStr);
+    targetDate.setHours(0, 0, 0, 0);
+
+    // SQL Injection safe because targetDate is a Date object parameter
+    await tx.$executeRaw`
+      UPDATE "tasks"
+      SET "date" = "date" + INTERVAL '1 day'
+      WHERE "planId" = ${planId}
+      AND "date" >= ${targetDate}
+    `;
+
+    if (plan.endDate) {
+      await tx.plan.update({
+        where: { id: planId },
+        data: { endDate: new Date(plan.endDate.getTime() + 86400000) }
+      });
+    }
+  });
+}
+
+export async function deletePlanDay(userId: string, planId: string, targetDateStr: string) {
+  return prisma.$transaction(async (tx) => {
+    const plan = await tx.plan.findFirst({ where: { id: planId, userId } });
+    if (!plan) throw new Error("Plan not found");
+
+    const targetDate = new Date(targetDateStr);
+    targetDate.setHours(0, 0, 0, 0);
+
+    await tx.task.deleteMany({
+      where: { planId, date: targetDate }
+    });
+
+    await tx.$executeRaw`
+      UPDATE "tasks"
+      SET "date" = "date" - INTERVAL '1 day'
+      WHERE "planId" = ${planId}
+      AND "date" > ${targetDate}
+    `;
+
+    if (plan.endDate) {
+      await tx.plan.update({
+        where: { id: planId },
+        data: { endDate: new Date(plan.endDate.getTime() - 86400000) }
+      });
+    }
+  });
+}
 
 /**
- * Helper to normalize object keys to lowercase for fuzzy matching
+ * Task CRUD
+ */
+export async function createTask(userId: string, planId: string, data: {
+  title: string;
+  description?: string; 
+  date: string; 
+  priority?: string;    
+  estimatedMinutes?: number;
+  subtasks?: string[]; // Keeps string[] for easy creation
+}) {
+  const plan = await prisma.plan.findFirst({ where: { id: planId, userId } });
+  if (!plan) throw new Error("Plan not found");
+
+  const dateObj = new Date(data.date);
+  dateObj.setHours(0, 0, 0, 0);
+
+  const safePriority = parsePriority(data.priority);
+
+  return prisma.task.create({
+    data: {
+      userId,
+      planId,
+      title: data.title,
+      description: data.description || null,
+      date: dateObj,
+      priority: safePriority,
+      estimatedMinutes: data.estimatedMinutes ?? 0,
+      status: TaskStatus.pending,
+      subtasks: {
+        create: data.subtasks?.map(title => ({
+            title,
+            completed: false
+        })) || []
+      }
+    },
+    include: {
+        subtasks: true
+    }
+  });
+}
+
+/**
+ * UPDATE TASK (Fixed to sync subtasks)
+ */
+export async function updateTaskFully(userId: string, taskId: string, data: {
+  title?: string;
+  description?: string;
+  priority?: string;
+  estimatedMinutes?: number;
+  status?: string;
+  subtasks?: { title: string; completed: boolean }[]; // ✅ Accept Full Objects
+}) {
+  const task = await prisma.task.findFirst({ where: { id: taskId, userId } });
+  if (!task) throw new Error("Task not found");
+
+  const safePriority = data.priority ? parsePriority(data.priority) : undefined;
+  
+  let safeStatus: TaskStatus | undefined;
+  if (data.status) {
+     const s = data.status.toLowerCase();
+     if (s === 'completed') safeStatus = TaskStatus.completed;
+     else if (s === 'in_progress') safeStatus = TaskStatus.in_progress;
+     else if (s === 'pending') safeStatus = TaskStatus.pending;
+  }
+
+  // ✅ Transaction: Update details AND sync subtasks
+  return prisma.$transaction(async (tx) => {
+    // 1. Update Main Fields
+    const updated = await tx.task.update({
+        where: { id: taskId },
+        data: {
+            title: data.title,
+            description: data.description,
+            priority: safePriority,
+            estimatedMinutes: data.estimatedMinutes,
+            status: safeStatus,
+        }
+    });
+
+    // 2. Sync Subtasks (if array provided)
+    if (data.subtasks) {
+        // Clear old ones
+        await tx.subtask.deleteMany({ where: { taskId } });
+        
+        // Create new ones (preserving completed status)
+        if (data.subtasks.length > 0) {
+            await tx.subtask.createMany({
+                data: data.subtasks.map(s => ({
+                    taskId,
+                    title: s.title,
+                    completed: s.completed
+                }))
+            });
+        }
+    }
+
+    return updated;
+  });
+}
+
+export async function deleteTask(userId: string, taskId: string) {
+  const task = await prisma.task.findFirst({ where: { id: taskId, userId } });
+  if (!task) throw new Error("Task not found");
+  return prisma.task.delete({ where: { id: taskId } });
+}
+
+// Legacy alias
+export async function updateTask(userId: string, taskId: string, data: any) {
+  return updateTaskFully(userId, taskId, data);
+}
+
+/**
+ * Subtask CRUD
+ */
+export async function createSubtask(userId: string, taskId: string, title: string) {
+  const task = await prisma.task.findFirst({ where: { id: taskId, userId } });
+  if (!task) throw new Error("Task not found");
+
+  return prisma.subtask.create({
+    data: { taskId, title, completed: false }
+  });
+}
+
+export async function updateSubtask(userId: string, subtaskId: string, data: { title?: string; completed?: boolean }) {
+  const subtask = await prisma.subtask.findFirst({
+    where: { id: subtaskId, task: { userId } }
+  });
+  if (!subtask) throw new Error("Subtask not found");
+
+  return prisma.subtask.update({ where: { id: subtaskId }, data });
+}
+
+export async function deleteSubtask(userId: string, subtaskId: string) {
+  const subtask = await prisma.subtask.findFirst({
+    where: { id: subtaskId, task: { userId } }
+  });
+  if (!subtask) throw new Error("Subtask not found");
+
+  return prisma.subtask.delete({ where: { id: subtaskId } });
+}
+
+export async function toggleSubtask(userId: string, subtaskId: string, completed: boolean) {
+  return updateSubtask(userId, subtaskId, { completed });
+}
+
+/**
+ * Utilities
+ */
+export async function addTimeSpent(userId: string, taskId: string, minutesToAdd: number) {
+  const task = await prisma.task.findFirst({ where: { id: taskId, userId } });
+  if (!task) throw new Error("Task not found");
+
+  return prisma.task.update({
+    where: { id: taskId },
+    data: { timeSpentMinutes: (task.timeSpentMinutes || 0) + minutesToAdd }
+  });
+}
+
+export async function getAllTasksForUser(userId: string) {
+  return prisma.task.findMany({
+    where: { userId },
+    include: {
+      plan: { select: { title: true } },
+      subtasks: { orderBy: { createdAt: 'asc' } },
+      tags: { include: { tag: true } }
+    },
+    orderBy: [ { date: 'asc' }, { priority: 'desc' } ]
+  });
+}
+
+/**
+ * Import Logic
  */
 function normalizeRow(row: any) {
   const newRow: any = {};
@@ -87,82 +332,42 @@ function normalizeRow(row: any) {
   return newRow;
 }
 
-/**
- * Import JSON tasks into a new plan (transactional)
- */
-export async function importPlanJson(
-  userId: string, 
-  planName: string, 
-  tasksRows: any[], 
-  startDate?: string | Date
-) {
+export async function importPlanJson(userId: string, planName: string, tasksRows: any[], startDate?: string | Date) {
   return await prisma.$transaction(async (tx) => {
-    // 1. Determine Start Date
     let startObj = new Date();
-    if (startDate) {
-      startObj = new Date(startDate);
-    }
-    // Normalize to start of day to avoid timezone drift
+    if (startDate) startObj = new Date(startDate);
     startObj.setHours(0, 0, 0, 0);
 
     const plan = await tx.plan.create({
-      data: { 
-        userId, 
-        title: planName,
-        startDate: startObj 
-      },
+      data: { userId, title: planName, startDate: startObj },
     });
 
     for (const rawRow of tasksRows) {
       const row = normalizeRow(rawRow);
-
-      // 2. Fuzzy Match Title
-      const title = 
-        row["task title"] || 
-        row["title"] || 
-        row["task"] ||     
-        row["topic"] ||    
-        row["activity"] || 
-        "Untitled Task";
-
-      // 3. Fuzzy Match Description
-      const description = 
-        row["notes"] || 
-        row["description"] || 
-        row["details"] || 
-        row["summary"] ||
-        null;
+      const title = row["task title"] || row["title"] || row["task"] || "Untitled Task";
+      const description = row["notes"] || row["description"] || null;
       
-      // 4. Fuzzy Match Date/Day
       let date: Date | null = null;
-      
-      const dateStr = row["date"];
-      if (dateStr) {
-        date = new Date(dateStr);
-      } else {
-        const dayVal = row["day"] || row["day #"] || row["day_number"];
-        if (dayVal) {
-          let dayOffset = parseInt(String(dayVal).replace(/\D/g, ''));
-          if (!isNaN(dayOffset) && dayOffset > 0) {
-            // ✅ USE startObj for relative date calculation
-            const targetDate = new Date(startObj);
-            targetDate.setDate(targetDate.getDate() + (dayOffset - 1));
-            date = targetDate;
-          }
+      if (row["date"]) {
+        date = new Date(row["date"]);
+      } else if (row["day"] || row["day #"]) {
+        const dayVal = parseInt(String(row["day"] || row["day #"]).replace(/\D/g, ''));
+        if (!isNaN(dayVal) && dayVal > 0) {
+          const t = new Date(startObj);
+          t.setDate(t.getDate() + (dayVal - 1));
+          date = t;
         }
       }
 
-      // 5. Fuzzy Match Attributes
-      const priority = row["priority"] || null;
+      const priority = parsePriority(row["priority"]);
       
-      const expectedHours = row["expected hours"] || row["estimated time (min)"] || row["duration"];
-      let estimatedMinutes = 0;
+      const expectedHours = row["expected hours"] || row["estimated time (min)"];
+      let estMinutes = 0;
       if (expectedHours) {
         const val = Number(expectedHours);
-        estimatedMinutes = val < 10 ? Math.round(val * 60) : Math.round(val);
+        estMinutes = val < 10 ? Math.round(val * 60) : Math.round(val);
       }
 
-      // Create the Main Task
       const task = await tx.task.create({
         data: {
           planId: plan.id,
@@ -171,111 +376,28 @@ export async function importPlanJson(
           description,
           date,
           priority,
-          estimatedMinutes: estimatedMinutes || null,
-          status: TaskStatus.pending, // ✅ FIX: Use Enum (lowercase "pending")
+          estimatedMinutes: estMinutes || null,
+          status: TaskStatus.pending,
         },
       });
 
-      // 6. Fuzzy Match Subtasks
-      const subtasksRaw = 
-        row["subtasks"] || 
-        row["steps"] || 
-        row["checklist"] || 
-        row["tasks"]; 
-
+      const subtasksRaw = row["subtasks"]; 
       if (subtasksRaw) {
-        let subtasks: string[] = [];
-        if (Array.isArray(subtasksRaw)) {
-          subtasks = subtasksRaw.map(String);
-        } else {
-          subtasks = String(subtasksRaw).split(/[;,]/).map((s) => s.trim()).filter(Boolean);
-        }
-
+        const subtasks = Array.isArray(subtasksRaw) ? subtasksRaw.map(String) : String(subtasksRaw).split(/[;]/).map(s => s.trim()).filter(Boolean);
         for (const st of subtasks) {
           await tx.subtask.create({ data: { taskId: task.id, title: st } });
         }
       }
 
-      // 7. Fuzzy Match Tags
-      const tagsRaw = row["tags"] || row["categories"] || row["labels"];
+      const tagsRaw = row["tags"];
       if (tagsRaw) {
-         let tags: string[] = [];
-         if (Array.isArray(tagsRaw)) {
-            tags = tagsRaw.map(String);
-         } else {
-            tags = String(tagsRaw).split(/[;,]/).map((s) => s.trim()).filter(Boolean);
-         }
-
+         const tags = Array.isArray(tagsRaw) ? tagsRaw.map(String) : String(tagsRaw).split(/[;]/).map(s => s.trim()).filter(Boolean);
         for (const tname of tags) {
           const t = await tx.tag.upsert({ where: { name: tname }, update: {}, create: { name: tname } });
           await tx.taskTag.create({ data: { taskId: task.id, tagId: t.id } });
         }
       }
     }
-
     return plan;
-  }, {
-    maxWait: 5000,
-    timeout: 60000 
-  });
-}
-
-// ✅ FIX: Update 'status' type to use TaskStatus Enum or cast it
-export async function updateTask(userId: string, taskId: string, data: { title?: string; description?: string; status?: TaskStatus }) {
-  const task = await prisma.task.findFirst({ where: { id: taskId, userId } });
-  if (!task) throw new Error("Task not found");
-
-  return prisma.task.update({
-    where: { id: taskId },
-    data: data // Now safe because 'status' matches the Prisma type
-  });
-}
-
-/**
- * Log Time Spent on a Task
- */
-export async function addTimeSpent(userId: string, taskId: string, minutesToAdd: number) {
-  const task = await prisma.task.findFirst({ where: { id: taskId, userId } });
-  if (!task) throw new Error("Task not found");
-
-  return prisma.task.update({
-    where: { id: taskId },
-    data: { 
-      timeSpentMinutes: (task.timeSpentMinutes || 0) + minutesToAdd 
-    }
-  });
-}
-
-/**
- * Get ALL Tasks (Categorized logic will handle sorting in UI)
- */
-export async function getAllTasksForUser(userId: string) {
-  return prisma.task.findMany({
-    where: { userId },
-    include: {
-      plan: { select: { title: true } },
-      subtasks: { orderBy: { createdAt: 'asc' } },
-      tags: { include: { tag: true } }
-    },
-    orderBy: [
-      { date: 'asc' }, // Oldest first (for overdue)
-      { priority: 'desc' } // High priority first
-    ]
-  });
-}
-
-export async function toggleSubtask(userId: string, subtaskId: string, completed: boolean) {
-  return prisma.subtask.update({
-    where: {
-      id: subtaskId,
-      task: {
-        plan: {
-          userId: userId
-        }
-      }
-    },
-    data: {
-      completed
-    }
-  });
+  }, { maxWait: 5000, timeout: 60000 });
 }

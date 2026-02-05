@@ -1,4 +1,5 @@
 // apps/web/types/plan.ts
+
 export interface Plan {
   id: string;
   title: string;
@@ -56,4 +57,36 @@ export interface UpdatePlanInput {
   description?: string;
   startDate?: string;
   endDate?: string;
+}
+
+// --- AI ARCHITECT TYPES ---
+export interface SyllabusModule {
+  title: string;
+  topics: string[];
+  duration: string;
+}
+
+export interface SyllabusData {
+  title: string;
+  totalDays: number;
+  modules: SyllabusModule[];
+}
+
+export interface TaskBlueprint {
+  id?: string;
+  day: number;
+  title: string;
+  description?: string;
+  estimatedMinutes: number;
+  subtasks?: string[];
+  
+  // ✅ NEW FIELDS FOR "SENIOR" PLAN
+  resources?: string[];
+  outcome?: string;
+}
+
+export interface PlanBlueprintData {
+  title: string;
+  description: string;
+  tasks: TaskBlueprint[];
 }

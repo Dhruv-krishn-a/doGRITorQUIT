@@ -1,63 +1,49 @@
 import { NextResponse } from "next/server";
-import { getServerUser } from "@/lib/auth-server"; // ✅ New Auth Server Helper
-import { updateTask, addTimeSpent } from "@planner/domain/plans/service";
-import { completeTask, deleteTask } from "@planner/domain/tasks/service"; // ✅ Import the "Engine"
+import { getServerUser } from "@/lib/auth-server";
+// ✅ FIX: Import directly to avoid barrel file issues
+import { updateTaskFully, deleteTask } from "@planner/domain/plans/service";
 
 export async function PATCH(
-  req: Request, 
+  req: Request,
   { params }: { params: Promise<{ taskId: string }> }
 ) {
-  try {
-    const user = await getServerUser();
-    if (!user) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const user = await getServerUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  try {
     const { taskId } = await params;
     const body = await req.json();
 
-    // 1. Handle "Time Log" special case
-    if (typeof body.addMinutes === 'number') {
-      const updated = await addTimeSpent(user.id, taskId, body.addMinutes);
-      return NextResponse.json(updated);
-    }
+    console.log(`[PATCH Task] Updating ${taskId}`, body); // Debug Log
 
-    // 2. Handle Completion (CRITICAL: Must use Manual Engine)
-    // We check if the user is marking it as completed/done
-    if (body.completed === true || body.status === "completed") {
-      const updated = await completeTask(user.id, taskId);
-      return NextResponse.json(updated);
-    }
-
-    // 3. Handle Standard Update (Title, Description, etc.)
-    const updated = await updateTask(user.id, taskId, body);
+    const updated = await updateTaskFully(user.id, taskId, body);
+    
     return NextResponse.json(updated);
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Internal Server Error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[PATCH Task] Error:", err); // ✅ Log the actual error
+    return NextResponse.json(
+        { error: "Failed to update task", details: err instanceof Error ? err.message : String(err) }, 
+        { status: 500 }
+    );
   }
 }
 
 export async function DELETE(
-  req: Request, 
+  req: Request,
   { params }: { params: Promise<{ taskId: string }> }
 ) {
+  const user = await getServerUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   try {
-    const user = await getServerUser();
-    if (!user) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    
     const { taskId } = await params;
+    console.log(`[DELETE Task] Removing ${taskId}`); // Debug Log
 
-    // ✅ FIXED: Use Domain Service instead of raw Prisma.
-    // This ensures Plan.totalTasks is decremented correctly.
     await deleteTask(user.id, taskId);
-
+    
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("Delete Error", err);
-    const message = err instanceof Error ? err.message : "Internal Server Error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[DELETE Task] Error:", err); // ✅ Log the actual error
+    return NextResponse.json({ error: "Failed to delete task" }, { status: 500 });
   }
 }

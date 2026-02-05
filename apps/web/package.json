@@ -12,6 +12,9 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@hello-pangea/dnd": "^18.0.1",
+    "@planner/db": "*",
+    "@planner/domain": "*",
     "@prisma/adapter-pg": "^7.1.0",
     "@repo/ui": "*",
     "@supabase/auth-ui-react": "^0.4.7",
@@ -28,9 +31,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "tailwind-merge": "^3.4.0",
-    "xlsx": "^0.18.5",
-    "@planner/db": "*",
-    "@planner/domain": "*"
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",

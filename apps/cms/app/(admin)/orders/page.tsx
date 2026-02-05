@@ -1,6 +1,10 @@
-// apps/cms/app/(admin)/orders/page.tsx
 import { cms } from "@domain";
 import type { Metadata } from "next";
+
+// ✅ CRITICAL FIX: Forces this page to be dynamic.
+// This prevents the "PrismaClientInitializationError" during Vercel build
+// by stopping Next.js from trying to fetch database rows during the build process.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Orders | CMS Admin",
@@ -36,7 +40,6 @@ export default async function OrdersPage() {
                 const productName = order.product?.name ? String(order.product.name) : "Unknown";
                 
                 // ✅ Fix 2: Handle numeric math safely
-                // Force cast to Number to prevent 'left-hand side' arithmetic errors
                 const amount = Number(order.amount ?? 0); 
                 const status = String(order.status);
                 

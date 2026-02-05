@@ -13,10 +13,15 @@ import {
   Zap, Lock, Gauge, CheckCircle2 
 } from "lucide-react";
 
-type Props = { params: { id: string } };
+// ✅ CRITICAL: Force dynamic to prevent build errors
+export const dynamic = "force-dynamic";
+
+type Props = { params: Promise<{ id: string }> };
 
 export default async function ProductDetailPage({ params }: Props) {
-  const { id } = params;
+  const resolvedParams = await params;
+  const id = resolvedParams.id;
+
   const [product, allFeatures] = await Promise.all([
     cms.getProductDetail(id),
     cms.getAllFeatures(),
@@ -24,11 +29,11 @@ export default async function ProductDetailPage({ params }: Props) {
 
   if (!product) notFound();
 
-  // ✅ FIX: Safe ID handling for Sets
+  // Safe ID handling for Sets
   const activeFeatureIds = new Set(product.productFeatures.map(pf => String(pf.featureId)));
   const availableFeatures = allFeatures.filter(f => !activeFeatureIds.has(String(f.id)));
 
-  // ✅ FIX: Robust Sort Logic (Handle null keys safely)
+  // Robust Sort Logic
   const sortedFeatures = product.productFeatures.sort((a, b) => {
     const keyA = String(a.feature.key ?? "");
     const keyB = String(b.feature.key ?? "");
@@ -40,7 +45,6 @@ export default async function ProductDetailPage({ params }: Props) {
     return aIsAccess ? -1 : 1;
   });
 
-  // ✅ FIX: Safe Product Variables
   const productName = String(product.name ?? "Untitled Plan");
   const productKey = String(product.key ?? "NO_KEY");
   const productDesc = String(product.description ?? "Plan configuration.");
@@ -87,7 +91,6 @@ export default async function ProductDetailPage({ params }: Props) {
                 <div className="p-12 text-center text-slate-400 italic">No features configured.</div>
               ) : (
                 sortedFeatures.map((pf) => {
-                  // ✅ FIX: Safe Feature Access
                   const featureKey = String(pf.feature.key ?? "");
                   const featureDesc = String(pf.feature.description ?? "");
                   const featureId = String(pf.feature.id);
@@ -146,10 +149,13 @@ export default async function ProductDetailPage({ params }: Props) {
           <div className="bg-slate-50 rounded-2xl border border-slate-200 p-6">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Recommended Keys</h3>
             <div className="flex flex-wrap gap-3">
+              {/* ✅ I HAVE ADDED ACCESS_PLANS HERE */}
               {[
-                { key: "AI_GEN_LIMIT", desc: "Monthly AI credits" },
+                { key: "ACCESS_PLANS", desc: "Unlock Plans Page" }, 
                 { key: "ACCESS_TASKS", desc: "Unlock Tasks Page" },
                 { key: "ACCESS_ANALYTICS", desc: "Unlock Analytics" },
+                { key: "AI_GEN_LIMIT", desc: "Monthly AI credits" },
+                { key: "MAX_PLANS", desc: "Limit number of plans" },
               ].map(f => (
                 <form key={f.key} action={createSystemFeature}>
                   <input type="hidden" name="key" value={f.key} />
@@ -174,7 +180,6 @@ export default async function ProductDetailPage({ params }: Props) {
             </div>
             <div className="p-3 space-y-1 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
               {availableFeatures.map(f => {
-                // ✅ FIX: Safe access for sidebar items
                 const fKey = String(f.key ?? "UNKNOWN");
                 const fDesc = String(f.description ?? "");
                 const fId = String(f.id);

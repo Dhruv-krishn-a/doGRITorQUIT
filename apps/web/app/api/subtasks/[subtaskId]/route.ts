@@ -1,32 +1,46 @@
-// apps/web/app/api/plans/[id]/route.ts
+//apps/web/app/api/subtasks/[subtaskId]/route.ts
 import { NextResponse } from "next/server";
-// ✅ FIX 1: Use standard auth helper
 import { getServerUser } from "@/lib/auth-server";
-import { plans } from "@domain";
+import { updateSubtask, deleteSubtask } from "@planner/domain/plans/service";
 
+// PATCH: Handles both toggling completion AND renaming (editing)
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ subtaskId: string }> }
 ) {
   try {
     const user = await getServerUser();
-    
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { subtaskId } = await params;
-    const { completed } = await req.json();
+    const body = await req.json();
 
-    // ✅ FIX 2: Use user.id
-    const updated = await plans.toggleSubtask(user.id, subtaskId, completed);
+    // Body can contain { completed: boolean } OR { title: string } OR both
+    const updated = await updateSubtask(user.id, subtaskId, body);
     
     return NextResponse.json(updated);
   } catch (err) {
-    // ✅ FIX 3: Remove 'any' and handle type safety
-    console.error("Subtask Toggle Error:", err);
+    console.error("Subtask Update Error:", err);
+    return NextResponse.json({ error: "Failed to update subtask" }, { status: 500 });
+  }
+}
+
+// DELETE: Handles removing a subtask
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ subtaskId: string }> }
+) {
+  try {
+    const user = await getServerUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const { subtaskId } = await params;
+
+    await deleteSubtask(user.id, subtaskId);
     
-    const message = err instanceof Error ? err.message : "Internal Server Error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("Subtask Delete Error:", err);
+    return NextResponse.json({ error: "Failed to delete subtask" }, { status: 500 });
   }
 }

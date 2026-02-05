@@ -13,6 +13,9 @@ CREATE TYPE "EntryStatus" AS ENUM ('draft', 'published', 'archived');
 -- CreateEnum
 CREATE TYPE "SubscriptionStatus" AS ENUM ('active', 'past_due', 'canceled', 'trialing');
 
+-- CreateEnum
+CREATE TYPE "PlanStatus" AS ENUM ('active', 'paused', 'completed', 'archived');
+
 -- CreateTable
 CREATE TABLE "users" (
     "id" TEXT NOT NULL,
@@ -83,6 +86,8 @@ CREATE TABLE "plans" (
     "completedTasks" INTEGER NOT NULL DEFAULT 0,
     "progress" INTEGER NOT NULL DEFAULT 0,
     "isArchived" BOOLEAN NOT NULL DEFAULT false,
+    "status" "PlanStatus" NOT NULL DEFAULT 'active',
+    "pausedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
