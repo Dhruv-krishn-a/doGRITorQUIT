@@ -21,7 +21,15 @@ export default async function SubscriptionPage() {
   ]);
 
   // 3. Transform Products
-  const products = rawProducts.map(p => ({
+  // ✅ FIXED: Added explicit type to 'p' to fix build error
+  const products = rawProducts.map((p: { 
+    id: string; 
+    name: string; 
+    key: string; 
+    price: number; 
+    currency: string; 
+    description?: string | null 
+  }) => ({
     id: p.id,
     name: p.name,
     key: p.key,
@@ -31,7 +39,13 @@ export default async function SubscriptionPage() {
   }));
 
   // 4. Transform History
-  const history = rawHistory.map((order) => {
+  // ✅ FIXED: Added explicit type to 'order'
+  const history = rawHistory.map((order: { 
+    id: string; 
+    status: string; 
+    date: Date | string; 
+    amount: number 
+  }) => {
     let status: "paid" | "failed" | "pending" = "pending";
     if (order.status === "paid" || order.status === "captured") {
       status = "paid";
@@ -52,7 +66,6 @@ export default async function SubscriptionPage() {
   });
 
   // 5. Extract Active Subscription (Safe Access)
-  // ✅ FIX: Use optional chaining (?.) on user and subscriptions to avoid crashes
   const activeSub = entitlements.user?.subscriptions?.[0]; 
 
   const endDate = activeSub?.currentPeriodEnd ? new Date(activeSub.currentPeriodEnd) : undefined;
