@@ -15,6 +15,10 @@
       // Domain Alias
       "@domain": ["../../packages/domain/index.ts"],
       "@domain/*": ["../../packages/domain/*"],
+
+      // ✅ NEW: Database Alias (Fixes the build error)
+      "@planner/db": ["../../packages/db/index.ts"],
+      "@planner/db/*": ["../../packages/db/*"],
       
       // Config Alias
       "@planner/config": ["../../packages/config/index.ts"],
