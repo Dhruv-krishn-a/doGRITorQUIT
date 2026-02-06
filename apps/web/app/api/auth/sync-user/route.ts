@@ -2,9 +2,9 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { ensureUserExists } from "@/lib/ensureUserExists"; // change to relative import if your alias isn't configured
+import { ensureUserExists } from "@/lib/ensureUserExists"; 
 
-type SyncUser = { id: string; email: string; name?: string | null };
+type SyncUser = { id: string; email: string; name?: string | null; avatarUrl?: string | null };
 
 const SYNC_TTL_MS = 30 * 1000; // 30s
 const syncCache = new Map<string, { user: SyncUser; expiresAt: number }>();
@@ -48,7 +48,10 @@ export async function POST() {
     const supabaseUser = session.user;
     const userId = supabaseUser.id;
     const userEmail = supabaseUser.email;
-    const userName = supabaseUser.user_metadata?.name ?? undefined;
+    
+    // ✅ Extract metadata with fallbacks (Google usually sends 'full_name' or 'name', and 'avatar_url' or 'picture')
+    const userName = supabaseUser.user_metadata?.name || supabaseUser.user_metadata?.full_name;
+    const userAvatar = supabaseUser.user_metadata?.avatar_url || supabaseUser.user_metadata?.picture;
 
     if (!userEmail) {
       return NextResponse.json({ ok: false, error: "User email not found" }, { status: 400 });
@@ -60,8 +63,8 @@ export async function POST() {
       return NextResponse.json({ ok: true, user: cached.user, cached: true }, { status: 200 });
     }
 
-    // Ensure user exists in DB (create or update)
-    const persisted = await ensureUserExists(userId, userEmail, userName);
+    // ✅ Ensure user exists in DB (create or update), passing the avatar
+    const persisted = await ensureUserExists(userId, userEmail, userName, userAvatar);
 
     const safeUser: SyncUser = {
       id: persisted.id,

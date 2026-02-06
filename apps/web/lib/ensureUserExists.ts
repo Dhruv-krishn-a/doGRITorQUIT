@@ -1,43 +1,43 @@
-// ✅ Import from the shared package, not a local file
 import { prisma } from "@planner/db";
 
-export async function ensureUserExists(supabaseUserId: string, email: string, name?: string) {
+export async function ensureUserExists(
+  supabaseUserId: string,
+  email: string,
+  name?: string,
+  avatarUrl?: string
+) {
+  console.log(`[ensureUserExists] Starting for ${email}`);
   try {
+    // 1. Upsert User
     const user = await prisma.user.upsert({
       where: { id: supabaseUserId },
-      // 1. CREATE: Create User + Nested Profile
       create: {
         id: supabaseUserId,
         email,
-        tier: "Free Tier", // Set default tier
-        profile: {
-          create: {
-            name: name || email.split("@")[0], // Fallback to email prefix if no name
-          },
-        },
+        tier: "Free Tier",
       },
-      // 2. UPDATE: Update Email + Nested Profile Name
+      update: { email },
+    });
+
+    // 2. Upsert Profile
+    const profile = await prisma.userProfile.upsert({
+      where: { userId: supabaseUserId },
+      create: {
+        userId: supabaseUserId,
+        name: name || email.split("@")[0],
+        avatarUrl: avatarUrl,
+      },
       update: {
-        email,
-        profile: {
-          upsert: {
-            create: { name: name || email.split("@")[0] },
-            update: { name: name || undefined }, // Only update if name is provided
-          },
-        },
-      },
-      include: {
-        profile: true,
+        // Only update these if new values are provided
+        ...(name && { name }),
+        ...(avatarUrl && { avatarUrl }),
       },
     });
 
-    // Flatten the result so the UI gets a simple object with { ..., name: "Dhruv" }
-    return {
-      ...user,
-      name: user.profile?.name,
-    };
+    console.log(`[ensureUserExists] Success for ${email}`);
+    return { ...user, name: profile.name };
   } catch (error) {
-    console.error("Error ensuring user exists:", error);
+    console.error("[ensureUserExists] DB Error:", error);
     throw error;
   }
 }

@@ -1,4 +1,3 @@
-// apps/web/shared/components/Footer.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -6,7 +5,7 @@ import { motion, AnimatePresence, Variants } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../utils/supabase";
 import { 
-  Mail, Lock, ArrowRight, Loader2, Sparkles, AlertCircle
+  Mail, Lock, ArrowRight, Loader2, Sparkles, AlertCircle, CheckCircle2
 } from "lucide-react";
 import Link from "next/link";
 
@@ -20,9 +19,10 @@ export default function AuthPage({ view }: AuthPageProps) {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [redirectUrl, setRedirectUrl] = useState<string | undefined>(undefined);
 
-  // Animation variants with explicit typing
+  // Animation variants
   const containerVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: { 
@@ -38,8 +38,6 @@ export default function AuthPage({ view }: AuthPageProps) {
 
   useEffect(() => {
     setRedirectUrl(`${window.location.origin}/auth/callback`);
-    
-    // Check session
     supabase.auth.getSession().then(({ data }) => {
       if (data?.session) router.push("/dashboard");
     });
@@ -49,6 +47,7 @@ export default function AuthPage({ view }: AuthPageProps) {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccessMsg(null);
 
     try {
       if (view === "signup") {
@@ -58,17 +57,35 @@ export default function AuthPage({ view }: AuthPageProps) {
           options: { emailRedirectTo: redirectUrl },
         });
         if (signUpError) throw signUpError;
-        router.push("/dashboard"); 
+        setSuccessMsg("Account created! Please check your email to verify your account.");
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
-        if (signInError) throw signInError;
+        
+        if (signInError) {
+          if (signInError.message.includes("Invalid login credentials")) {
+            throw new Error("Account not found or password incorrect. Please register if you are new.");
+          }
+          throw signInError;
+        }
+
+        try {
+          await fetch('/api/auth/sync-user', { method: 'POST' });
+        } catch (syncErr) {
+          console.error("Login sync warning:", syncErr);
+        }
+        
         router.push("/dashboard");
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      console.error("Auth Logic Error:", err);
+      if (err instanceof TypeError && err.message === "Failed to fetch") {
+        setError("Network error. Please check your connection.");
+      } else {
+        setError(err instanceof Error ? err.message : "An error occurred");
+      }
     } finally {
       setLoading(false);
     }
@@ -77,9 +94,16 @@ export default function AuthPage({ view }: AuthPageProps) {
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
+      setError(null);
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: redirectUrl },
+        options: { 
+          redirectTo: redirectUrl,
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+          },
+        },
       });
       if (oauthError) throw oauthError;
     } catch (err: unknown) {
@@ -102,8 +126,8 @@ export default function AuthPage({ view }: AuthPageProps) {
         <div className="grid lg:grid-cols-2 w-full bg-white/60 backdrop-blur-xl rounded-[40px] shadow-2xl shadow-purple-900/10 border border-white/50 overflow-hidden min-h-150">
           
           {/* --- LEFT SIDE: Visuals --- */}
+          {/* Updated bg-gradient-to-br to bg-linear-to-br */}
           <div className="hidden lg:flex flex-col justify-between p-12 bg-linear-to-br from-indigo-600 to-purple-700 relative text-white overflow-hidden">
-             {/* Decorative Circles */}
              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
              <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/30 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
              
@@ -158,7 +182,7 @@ export default function AuthPage({ view }: AuthPageProps) {
               </p>
             </motion.div>
 
-            {/* ERROR ALERT */}
+            {/* MESSAGES */}
             <AnimatePresence>
               {error && (
                 <motion.div 
@@ -169,6 +193,17 @@ export default function AuthPage({ view }: AuthPageProps) {
                 >
                   <AlertCircle size={18} className="shrink-0 mt-0.5" />
                   <p>{error}</p>
+                </motion.div>
+              )}
+              {successMsg && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mb-6 p-4 bg-green-50 border border-green-100 rounded-xl flex items-start gap-3 text-green-700 text-sm"
+                >
+                  <CheckCircle2 size={18} className="shrink-0 mt-0.5" />
+                  <p>{successMsg}</p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -184,7 +219,7 @@ export default function AuthPage({ view }: AuthPageProps) {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     placeholder="name@example.com"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-11 pr-4 text-sm font-medium text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-11 pr-4 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400"
                   />
                 </div>
               </motion.div>
@@ -199,7 +234,7 @@ export default function AuthPage({ view }: AuthPageProps) {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     placeholder="••••••••"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-11 pr-4 text-sm font-medium text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-11 pr-4 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400"
                   />
                 </div>
               </motion.div>
