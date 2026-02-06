@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import { getServerUser } from "@/lib/auth-server"; // Ensure this path is correct
+import { getServerUser } from "@/lib/auth-server"; 
 import { redirect } from "next/navigation";
 import { dashboard } from "@domain";
 import DashboardUI from "./DashboardUI";
@@ -53,7 +53,7 @@ async function AsyncDashboardWrapper({ userId, firstName }: { userId: string, fi
   const enrichedData = {
     user: {
       firstName,
-      level: 1, // Placeholder: You can calculate this later based on XP
+      level: 1, // Placeholder
       xp: 0,    // Placeholder
       nextLevelXp: 100
     },
@@ -61,7 +61,7 @@ async function AsyncDashboardWrapper({ userId, firstName }: { userId: string, fi
       focusMinutes: dbData.stats.focusMinutes,
       completedTasks: dbData.stats.completedTasks,
       streakDays: dbData.stats.habitStreak || 0,
-      efficiencyScore: 0 // Placeholder: Calculate (completed / total) * 100
+      efficiencyScore: 0 // Placeholder
     },
     activityHeatmap: [], // Placeholder
     upcomingEvents: [],  // Placeholder
@@ -70,26 +70,24 @@ async function AsyncDashboardWrapper({ userId, firstName }: { userId: string, fi
     activePlan: dbData.activePlan ? {
       title: dbData.activePlan.title,
       progress: dbData.activePlan.progress,
-      totalDays: 30, // Default/Placeholder if not in DB
+      totalDays: 30, // Default/Placeholder
       currentDay: 1  // Default/Placeholder
     } : null,
 
     // Transform Habits
-    habits: dbData.habits.map((h) => ({
+    habits: dbData.habits.map((h: { id: string; title: string; completedToday: boolean }) => ({
       id: h.id,
       title: h.title,
       completedToday: h.completedToday,
-      streak: 0 // Placeholder if missing in DB
+      streak: 0 
     })),
 
-    // Transform Tasks
-    todaysTasks: dbData.todaysTasks.map((task) => ({
+    todaysTasks: dbData.todaysTasks.map((task: { id: string; title: string; status: string; priority?: string | null }) => ({
       id: task.id,
       title: task.title,
       status: task.status,
-      // Handle missing priority or mapping mismatch
       priority: task.priority || "MEDIUM", 
-      time: undefined // Placeholder
+      time: undefined 
     })),
   };
 
