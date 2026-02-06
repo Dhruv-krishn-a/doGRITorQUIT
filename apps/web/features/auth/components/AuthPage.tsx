@@ -66,7 +66,7 @@ export default function AuthPage({ view }: AuthPageProps) {
         
         if (signInError) {
           if (signInError.message.includes("Invalid login credentials")) {
-            throw new Error("Account not found or password incorrect. Please register if you are new.");
+            throw new Error("Account not found or password incorrect. Please signup if you are new.");
           }
           throw signInError;
         }

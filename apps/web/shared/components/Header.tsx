@@ -210,7 +210,7 @@ export default function Header({ nav }: Props) {
               ) : (
                 <div className="flex items-center gap-2">
                    <Link href="/login" className="text-sm font-semibold text-slate-600 hover:text-indigo-600 px-4 py-2.5 rounded-full hover:bg-indigo-50 transition-all">Sign in</Link>
-                   <Link href="/register" className="group flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white text-sm font-bold hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 transition-all transform active:scale-95">
+                   <Link href="/signup" className="group flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white text-sm font-bold hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 transition-all transform active:scale-95">
                      Get Started <ArrowRight size={14} className="opacity-70 group-hover:translate-x-1 transition-transform" />
                    </Link>
                 </div>
@@ -259,7 +259,7 @@ export default function Header({ nav }: Props) {
                     ) : (
                         <div className="flex flex-col gap-3">
                             <Link href="/login" onClick={handleMobileLinkClick} className="w-full text-center px-4 py-3.5 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-50 transition-colors">Sign In</Link>
-                            <Link href="/register" onClick={handleMobileLinkClick} className="w-full text-center px-4 py-3.5 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 shadow-lg shadow-slate-200 transition-all">Get Started</Link>
+                            <Link href="/signup" onClick={handleMobileLinkClick} className="w-full text-center px-4 py-3.5 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 shadow-lg shadow-slate-200 transition-all">Get Started</Link>
                         </div>
                     )}
                 </div>
