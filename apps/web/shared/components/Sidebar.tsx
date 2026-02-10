@@ -37,7 +37,7 @@ const ICONS_MAP: Record<string, React.ReactNode> = {
   "/dashboard/checklist": <CheckSquare size={20} />,
   "/dashboard/analytics": <BarChart3 size={20} />,
   "/dashboard/subscriptions": <CreditCard size={20} />,
-  "/settings": <Settings size={20} />,
+  "/dashboard/settings": <Settings size={20} />,
 };
 
 const PATH_TO_PERM: Record<string, keyof SidebarPermissions> = {

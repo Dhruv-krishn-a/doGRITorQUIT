@@ -1,3 +1,4 @@
+//apps/web/app/api/ai/plan/route.ts
 import { NextResponse } from "next/server";
 import { getServerUser } from "@/lib/auth-server";
 import { ai } from "@domain";

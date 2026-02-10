@@ -197,7 +197,7 @@ export default function Header({ nav }: Props) {
                             <DropdownItem href="/dashboard" icon={<LayoutDashboard size={16} />} label="Dashboard" onClick={() => setProfileOpen(false)} />
                             <DropdownItem href="/profile" icon={<User size={16} />} label="Profile" onClick={() => setProfileOpen(false)} />
                             <DropdownItem href="/settings/billing" icon={<CreditCard size={16} />} label="Billing" onClick={() => setProfileOpen(false)} />
-                            <DropdownItem href="/settings" icon={<Settings size={16} />} label="Settings" onClick={() => setProfileOpen(false)} />
+                            <DropdownItem href="/dashboard/settings" icon={<Settings size={16} />} label="Settings" onClick={() => setProfileOpen(false)} />
                         </div>
                         <div className="h-px bg-slate-100 my-2 mx-2" />
                         <button onClick={() => { setProfileOpen(false); setShowLogoutModal(true); }} className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-rose-600 rounded-xl hover:bg-rose-50 transition-colors text-left">

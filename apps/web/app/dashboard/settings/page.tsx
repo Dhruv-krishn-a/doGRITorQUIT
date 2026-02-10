@@ -18,7 +18,9 @@ export default async function SettingsPage() {
     id: user.id,
     email: user.email ?? "", 
     name: dbUser?.profile?.name ?? user.user_metadata?.full_name ?? "User",
-    tier: dbUser?.tier ?? "Free", 
+    tier: dbUser?.tier ?? "Free",
+    // We pass the provider just for info, but we won't rely on it for password logic
+    provider: user.app_metadata?.provider || "email",
   };
 
   return <SettingsClientPage user={userData} />;

@@ -1,15 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
-import { User, CreditCard, Shield, Clock, Check, Loader2, Lock } from "lucide-react";
+import { supabase } from "@/utils/supabase"; 
+import { User, CreditCard, Shield, Clock, Check, Loader2, Lock, AlertCircle, ChevronRight, Laptop, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 
-// --- Types ---
 export interface UserSettings {
   id: string;
   email: string;
   name?: string | null;
-  tier: string; // "FREE" | "PRO" | "TEAM" etc.
+  tier: string;
+  provider: string;
 }
 
 interface SettingsClientProps {
@@ -19,191 +21,351 @@ interface SettingsClientProps {
 export default function SettingsClientPage({ user }: SettingsClientProps) {
   const [activeTab, setActiveTab] = useState<"profile" | "billing">("profile");
   
-  // Form State
+  // -- PROFILE FORM --
   const [nameInput, setNameInput] = useState(user.name || "");
-  const [saving, setSaving] = useState(false);
-  const [savedSuccess, setSavedSuccess] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [savedProfileSuccess, setSavedProfileSuccess] = useState(false);
 
+  // -- PASSWORD FORM --
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [savingPass, setSavingPass] = useState(false);
+  const [passMessage, setPassMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+  // --- Handlers ---
   const handleSaveProfile = async () => {
-    setSaving(true);
-    // Simulate API call or real Server Action
+    setSavingProfile(true);
+    // Simulate DB Update
     await new Promise(r => setTimeout(r, 800));
-    setSavedSuccess(true);
-    setSaving(false);
-    setTimeout(() => setSavedSuccess(false), 2000);
+    setSavedProfileSuccess(true);
+    setSavingProfile(false);
+    setTimeout(() => setSavedProfileSuccess(false), 2000);
+  };
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPassMessage(null);
+    
+    if (newPassword.length < 6) {
+        setPassMessage({ type: 'error', text: "Password must be at least 6 characters." });
+        return;
+    }
+    if (newPassword !== confirmPassword) {
+        setPassMessage({ type: 'error', text: "Passwords do not match." });
+        return;
+    }
+
+    setSavingPass(true);
+    
+    const { error } = await supabase.auth.updateUser({
+        password: newPassword
+    });
+
+    if (error) {
+        setPassMessage({ type: 'error', text: error.message });
+    } else {
+        setPassMessage({ type: 'success', text: "Password updated successfully!" });
+        setNewPassword("");
+        setConfirmPassword("");
+        setTimeout(() => setShowPasswordForm(false), 2000);
+    }
+    setSavingPass(false);
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8 fade-in">
-      <div>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Settings</h1>
-        <p className="text-slate-500 mt-1">Manage your account preferences and subscription.</p>
+    <div className="max-w-5xl mx-auto p-6 md:p-10 space-y-10 font-sans text-slate-900 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-100 pb-8">
+        <div>
+           <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Settings</h1>
+           <p className="text-slate-500 mt-2 text-lg">Manage your personal preferences and plan.</p>
+        </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-8 border-b border-slate-200">
+      {/* Navigation Tabs */}
+      <div className="flex gap-1 p-1 bg-slate-100/50 rounded-xl w-fit">
         <button
           onClick={() => setActiveTab("profile")}
-          className={`pb-4 px-1 text-sm font-bold flex items-center gap-2 transition-all relative ${
+          className={`px-6 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${
             activeTab === "profile"
-              ? "text-slate-900"
-              : "text-slate-500 hover:text-slate-700"
+              ? "bg-white text-indigo-600 shadow-sm ring-1 ring-black/5"
+              : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
           }`}
         >
-          <User size={18} className={activeTab === "profile" ? "text-blue-600" : "text-slate-400"} /> 
-          Profile
-          {activeTab === "profile" && (
-            <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full" />
-          )}
+          <User size={18} /> Profile
         </button>
         <button
           onClick={() => setActiveTab("billing")}
-          className={`pb-4 px-1 text-sm font-bold flex items-center gap-2 transition-all relative ${
+          className={`px-6 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${
             activeTab === "billing"
-              ? "text-slate-900"
-              : "text-slate-500 hover:text-slate-700"
+              ? "bg-white text-indigo-600 shadow-sm ring-1 ring-black/5"
+              : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
           }`}
         >
-          <CreditCard size={18} className={activeTab === "billing" ? "text-blue-600" : "text-slate-400"} /> 
-          Billing & Plan
-          {activeTab === "billing" && (
-            <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full" />
-          )}
+          <CreditCard size={18} /> Billing
         </button>
       </div>
 
-      <div className="py-2">
-        <AnimatePresence mode="wait">
-            {activeTab === "profile" && (
-            <motion.div 
-                key="profile"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-6"
-            >
-                <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-                <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                    Personal Information
-                </h2>
-                <div className="grid gap-6 max-w-lg">
-                    <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
-                    <div className="relative">
-                        <input
-                            disabled
-                            value={user.email}
-                            className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-500 font-medium cursor-not-allowed pl-10"
-                        />
-                        <Lock className="absolute left-3 top-3.5 text-slate-400" size={16} />
-                    </div>
-                    <p className="text-xs text-slate-400 mt-2 flex items-center gap-1">
-                        <Shield size={10} /> Email is managed by your provider and cannot be changed here.
-                    </p>
-                    </div>
-                    
-                    <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Display Name</label>
-                    <input
-                        value={nameInput}
-                        onChange={(e) => setNameInput(e.target.value)}
-                        className="w-full p-3 border border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-medium text-slate-800"
-                        placeholder="Enter your name"
-                    />
+      <AnimatePresence mode="wait">
+        
+        {/* --- PROFILE TAB --- */}
+        {activeTab === "profile" && (
+          <motion.div 
+            key="profile"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="grid lg:grid-cols-3 gap-8"
+          >
+            {/* Left Column: General Info */}
+            <div className="lg:col-span-2 space-y-6">
+                
+                {/* Personal Info Card */}
+                <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="bg-indigo-50 p-2.5 rounded-xl text-indigo-600">
+                            <User size={20} />
+                        </div>
+                        <h2 className="text-lg font-bold text-slate-900">Personal Information</h2>
                     </div>
 
-                    <div className="pt-2">
-                        <button 
-                            onClick={handleSaveProfile}
-                            disabled={saving || savedSuccess}
-                            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
-                                savedSuccess 
-                                    ? "bg-emerald-500 text-white"
-                                    : "bg-slate-900 text-white hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20"
-                            }`}
-                        >
-                            {saving ? <Loader2 className="animate-spin" size={18} /> : 
-                             savedSuccess ? <Check size={18} /> : null}
-                            {saving ? "Saving..." : savedSuccess ? "Saved!" : "Save Changes"}
-                        </button>
+                    <div className="space-y-6 max-w-lg">
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Email Address</label>
+                            <div className="relative group">
+                                <MailIcon className="absolute left-3.5 top-3.5 text-slate-400" />
+                                <input
+                                    disabled
+                                    value={user.email}
+                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-500 font-medium cursor-not-allowed select-none"
+                                />
+                                <div className="absolute right-3.5 top-3.5">
+                                    <Lock size={16} className="text-slate-400" />
+                                </div>
+                            </div>
+                            <p className="text-xs text-slate-400 mt-2 ml-1">
+                                Used for login and billing. Cannot be changed.
+                            </p>
+                        </div>
+                        
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Display Name</label>
+                            <input
+                                value={nameInput}
+                                onChange={(e) => setNameInput(e.target.value)}
+                                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all font-medium text-slate-900 placeholder:text-slate-300"
+                                placeholder="e.g. Alex Maker"
+                            />
+                        </div>
+
+                        <div className="pt-2">
+                            <button 
+                                onClick={handleSaveProfile}
+                                disabled={savingProfile || savedProfileSuccess}
+                                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
+                                    savedProfileSuccess 
+                                        ? "bg-emerald-500 text-white shadow-emerald-500/20"
+                                        : "bg-slate-900 text-white hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20"
+                                }`}
+                            >
+                                {savingProfile ? <Loader2 className="animate-spin" size={18} /> : 
+                                savedProfileSuccess ? <Check size={18} /> : null}
+                                {savingProfile ? "Saving..." : savedProfileSuccess ? "Saved Successfully" : "Save Changes"}
+                            </button>
+                        </div>
                     </div>
                 </div>
+
+                {/* Password / Security Card */}
+                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="p-8 border-b border-slate-100">
+                         <div className="flex items-center gap-3 mb-2">
+                            <div className="bg-rose-50 p-2.5 rounded-xl text-rose-600">
+                                <Shield size={20} />
+                            </div>
+                            <h2 className="text-lg font-bold text-slate-900">Security</h2>
+                        </div>
+                        <p className="text-slate-500 text-sm pl-13">Manage your password and authentication.</p>
+                    </div>
+
+                    <div className="p-8 bg-slate-50/50">
+                        {!showPasswordForm ? (
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="font-bold text-slate-800">Password</h3>
+                                    {/* ✅ FIX: Universal text that works for everyone */}
+                                    <p className="text-sm text-slate-500 mt-1 max-w-sm leading-relaxed">
+                                        Update your password, or set a new one if you signed in via Google.
+                                    </p>
+                                </div>
+                                <button 
+                                    onClick={() => setShowPasswordForm(true)}
+                                    className="bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
+                                >
+                                    Manage Password
+                                </button>
+                            </div>
+                        ) : (
+                            <motion.form 
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                onSubmit={handleUpdatePassword}
+                                className="max-w-md space-y-4"
+                            >
+                                <div className="flex justify-between items-center mb-4">
+                                     <h3 className="font-bold text-slate-800">Update Password</h3>
+                                     <button 
+                                        type="button" 
+                                        onClick={() => setShowPasswordForm(false)}
+                                        className="text-xs font-bold text-slate-400 hover:text-slate-600"
+                                     >
+                                        Cancel
+                                     </button>
+                                </div>
+
+                                {passMessage && (
+                                    <div className={`p-3 rounded-lg text-sm font-medium flex items-center gap-2 ${
+                                        passMessage.type === 'success' 
+                                            ? "bg-emerald-50 text-emerald-700 border border-emerald-100" 
+                                            : "bg-rose-50 text-rose-700 border border-rose-100"
+                                    }`}>
+                                        {passMessage.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+                                        {passMessage.text}
+                                    </div>
+                                )}
+
+                                <div>
+                                    <input
+                                        type="password"
+                                        placeholder="New Password (min 6 chars)"
+                                        value={newPassword}
+                                        onChange={(e) => setNewPassword(e.target.value)}
+                                        className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <input
+                                        type="password"
+                                        placeholder="Confirm New Password"
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-sm"
+                                    />
+                                </div>
+                                <div className="flex justify-end pt-2">
+                                    <button
+                                        type="submit"
+                                        disabled={savingPass}
+                                        className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                                    >
+                                        {savingPass && <Loader2 className="animate-spin" size={14} />}
+                                        Save Password
+                                    </button>
+                                </div>
+                            </motion.form>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Right Column: Sessions / Other info */}
+            <div className="space-y-6">
+                 <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                    <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <Laptop size={18} className="text-slate-400" /> Active Session
+                    </h3>
+                    <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                        <div className="mt-1 w-2 h-2 rounded-full bg-emerald-500 shrink-0 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
+                        <div>
+                            <p className="text-sm font-bold text-slate-700">This Browser</p>
+                            <p className="text-xs text-slate-400 mt-0.5">Online now</p>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* --- BILLING TAB --- */}
+        {activeTab === "billing" && (
+          <motion.div 
+            key="billing"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-8"
+          >
+            {/* Current Plan Card */}
+            <div className="bg-linear-to-br from-slate-900 to-indigo-950 rounded-4xl p-8 md:p-10 text-white relative overflow-hidden shadow-2xl shadow-indigo-900/20 border border-indigo-500/20">
+              <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+                <div>
+                    <div className="flex items-center gap-2 mb-3">
+                         <div className="text-indigo-200 text-xs font-bold uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full backdrop-blur-md border border-white/10">Current Plan</div>
+                         {user.tier !== "FREE" && (
+                             <span className="bg-emerald-500 text-white text-[10px] px-2 py-1 rounded-full font-bold uppercase shadow-sm">Active</span>
+                         )}
+                    </div>
+                    <div className="text-5xl font-black flex items-center gap-3 tracking-tighter">
+                      {user.tier}
+                    </div>
+                    <p className="text-indigo-100/80 mt-4 max-w-md leading-relaxed text-base font-medium">
+                      {user.tier === "FREE" 
+                        ? "Upgrade to Pro to unlock unlimited AI planning, advanced analytics, and team collaboration features." 
+                        : "You have full access to all premium features including AI generation and team tools."}
+                    </p>
                 </div>
                 
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-                <div>
-                    <h3 className="font-bold text-slate-800">Account Security</h3>
-                    <p className="text-sm text-slate-500 mt-1">Manage your password and authentication methods.</p>
-                </div>
-                <button className="text-slate-700 border border-slate-200 px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-50 transition-colors">
-                    Manage Security
-                </button>
-                </div>
-            </motion.div>
-            )}
-
-            {activeTab === "billing" && (
-            <motion.div 
-                key="billing"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-8"
-            >
-                {/* Current Plan Card */}
-                <div className="bg-linear-to-br from-slate-900 to-slate-800 rounded-3xl p-8 text-white relative overflow-hidden shadow-2xl shadow-slate-900/10">
-                <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                    <div>
-                        <div className="flex items-center gap-2 mb-2">
-                             <div className="text-slate-400 text-xs font-bold uppercase tracking-widest">Current Plan</div>
-                             {user.tier !== "FREE" && (
-                                 <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">Active</span>
-                             )}
-                        </div>
-                        <div className="text-4xl font-bold flex items-center gap-3 tracking-tight">
-                        {user.tier} TIER
-                        </div>
-                        <p className="text-slate-400 mt-3 max-w-md leading-relaxed text-sm">
-                        {user.tier === "FREE" 
-                            ? "You are on the Free plan. Upgrade to unlock unlimited AI plans, advanced habit tracking, and team collaboration features." 
-                            : "You have full access to all premium features including AI generation and team tools."}
-                        </p>
-                    </div>
+                <div className="flex flex-col gap-3 w-full md:w-auto">
                     {user.tier === "FREE" ? (
-                        <button className="bg-white text-slate-900 px-8 py-3 rounded-xl font-bold hover:bg-blue-50 transition-colors shadow-lg shadow-white/10">
-                        Upgrade Now
-                        </button>
+                        <Link href="/dashboard/subscriptions">
+                            <button className="w-full md:w-auto bg-white text-indigo-950 px-8 py-3.5 rounded-xl font-bold hover:bg-indigo-50 transition-all shadow-lg shadow-white/10 flex items-center justify-center gap-2 group">
+                            Upgrade Now <ChevronRight size={18} className="group-hover:translate-x-0.5 transition-transform" />
+                            </button>
+                        </Link>
                     ) : (
-                        <button className="bg-white/10 text-white border border-white/20 px-6 py-2 rounded-lg font-medium text-sm hover:bg-white/20 transition-colors">
-                            Manage Subscription
-                        </button>
+                        <Link href="/dashboard/subscriptions">
+                            <button className="w-full md:w-auto bg-white/10 text-white border border-white/20 px-6 py-3 rounded-xl font-bold text-sm hover:bg-white/20 transition-all backdrop-blur-sm">
+                                Manage Subscription
+                            </button>
+                        </Link>
                     )}
                 </div>
-                {/* Decor */}
-                <div className="absolute -top-10 -right-10 opacity-5 rotate-12"><Shield size={300} /></div>
-                </div>
+              </div>
+              
+              {/* Decorative Background */}
+              <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/3 opacity-10 blur-3xl w-96 h-96 bg-indigo-500 rounded-full pointer-events-none" />
+              <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 opacity-10 blur-3xl w-80 h-80 bg-rose-500 rounded-full pointer-events-none" />
+            </div>
 
-                {/* Invoices List */}
-                <div>
-                <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <Clock size={18} className="text-slate-400" /> Billing History
-                </h3>
-                <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                    <div className="p-12 text-center flex flex-col items-center gap-3">
-                        <div className="bg-slate-50 p-4 rounded-full text-slate-300">
-                             <Clock size={32} />
-                        </div>
-                        <p className="text-slate-500 font-medium">No past invoices found.</p>
-                        <p className="text-slate-400 text-sm">Once you subscribe, your receipts will appear here.</p>
+            {/* Invoices List */}
+            <div>
+              <h3 className="text-lg font-bold text-slate-800 mb-5 flex items-center gap-2">
+                <Clock size={20} className="text-slate-400" /> Billing History
+              </h3>
+              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                <div className="p-16 text-center flex flex-col items-center gap-4">
+                    <div className="bg-slate-50 p-5 rounded-full text-slate-300 ring-8 ring-slate-50">
+                         <Clock size={32} />
+                    </div>
+                    <div>
+                        <p className="text-slate-900 font-bold text-lg">No past invoices found</p>
+                        <p className="text-slate-500 text-sm mt-1">Once you subscribe, your receipts will appear here.</p>
                     </div>
                 </div>
-                </div>
-            </motion.div>
-            )}
-        </AnimatePresence>
-      </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
+}
+
+// Simple Helper Components
+function MailIcon({ className }: { className?: string }) {
+    return <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
 }
