@@ -1,3 +1,4 @@
+//apps/web/features/plans/components/CreatePlanModal.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -94,7 +95,7 @@ export default function CreatePlanModal({
       isOpen={isOpen} 
       onClose={onClose} 
       title="Create New Plan"
-      className="z-[9999]!"
+      className="z-9999!"
     >
       <form onSubmit={handleSubmit} className="space-y-5">
         

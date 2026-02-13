@@ -1,29 +1,40 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PlanBlueprintData, SyllabusData, SyllabusModule, TaskBlueprint } from "@/types/plan";
-import { generateICS, downloadFile } from "@/lib/ics-generator"; // ✅ Import
+import { generateICS, downloadFile } from "@/lib/ics-generator"; 
 
 export type Message = {
   role: "user" | "assistant";
   content: string;
 };
 
-// ... (Normalizers - keeping them consistent)
 type RawModule = Record<string, unknown>;
 
+// ✅ FIX: Enhanced Normalizer with Type Safety (No 'any')
 function normalizeModule(mod: unknown): SyllabusModule {
   const m = mod as RawModule; 
   const title = (m.title || m.name || m.moduleName || "Untitled Module") as string;
+  
   let topics: string[] = ["General Review"];
+  
   if (Array.isArray(m.topics)) {
-    topics = m.topics.map(t => String(t));
+    topics = m.topics.map(t => {
+        // If it's an object { title: "X" }, extract the title safely
+        if (typeof t === 'object' && t !== null && 'title' in t) {
+            // ✅ FIX: Use Record<string, unknown> instead of 'any' to satisfy ESLint
+            return String((t as Record<string, unknown>).title);
+        }
+        return String(t);
+    });
   } else if (typeof m.topics === 'string') {
     topics = m.topics.split(',');
   }
+
   const durationVal = m.duration;
   const duration = typeof durationVal === 'number' 
     ? `${durationVal} days` 
     : (String(durationVal || "1 day"));
+    
   return { title, topics, duration };
 }
 
@@ -65,6 +76,7 @@ function normalizeSyllabus(raw: unknown, requestedDays: number): SyllabusData {
 }
 
 interface AIResponseTask {
+  day?: number;
   title?: string;
   description?: string;
   estimatedMinutes?: number;
@@ -200,8 +212,8 @@ export const useAIArchitect = (setOpen: (open: boolean) => void) => {
 
             if (chunkTasks.length > 0) {
                 const fixedTasks = chunkTasks.map((t, i) => ({
-                    id: `gen-${startDay+i}`,
-                    day: startDay + i,
+                    id: `gen-${startDay}-${i}`, 
+                    day: t.day || (startDay + i),
                     title: t.title || "Daily Task",
                     description: t.description || `Focus on ${currentModule.title}`,
                     estimatedMinutes: t.estimatedMinutes || 60,
@@ -216,7 +228,7 @@ export const useAIArchitect = (setOpen: (open: boolean) => void) => {
                 // Live Update
                 setCurrentBlueprint({
                     title: syllabus.title,
-                    description: `Building in progress... (${accumulatedTasks.length} / ${totalDays} days generated)`,
+                    description: `Building in progress... (${accumulatedTasks.length} tasks generated)`,
                     tasks: [...accumulatedTasks] 
                 });
             }
@@ -249,10 +261,16 @@ export const useAIArchitect = (setOpen: (open: boolean) => void) => {
     await generateInBatches(finalSyllabus);
   };
 
-  const regenerateSingleModule = async (index: number, module: SyllabusModule): Promise<SyllabusModule> => {
+  const regenerateSingleModule = async (index: number, module: SyllabusModule): Promise<void> => {
     const data = await callAI({ messages: [], isRegenerateModule: true, batchConfig: module });
     const rawModule = (data.planData || module) as unknown; 
-    return normalizeModule(rawModule); 
+    const normalized = normalizeModule(rawModule);
+    
+    if (currentSyllabus) {
+        const newModules = [...currentSyllabus.modules];
+        newModules[index] = normalized;
+        setCurrentSyllabus({ ...currentSyllabus, modules: newModules });
+    }
   };
   
   const regenerateDay = async (dayIndex: number, currentTask: TaskBlueprint, feedback?: string) => {
@@ -355,7 +373,6 @@ export const useAIArchitect = (setOpen: (open: boolean) => void) => {
      }
   };
 
-  // ✅ NEW: Download ICS Function
   const downloadICS = (startDate: string, skipWeekends: boolean) => {
     if (!currentBlueprint || !currentBlueprint.tasks) return;
 
@@ -364,7 +381,7 @@ export const useAIArchitect = (setOpen: (open: boolean) => void) => {
             currentBlueprint.title,
             currentBlueprint.tasks,
             startDate,
-            skipWeekends // ✅ Pass preference
+            skipWeekends 
         );
         
         const safeTitle = currentBlueprint.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
@@ -390,7 +407,7 @@ export const useAIArchitect = (setOpen: (open: boolean) => void) => {
     startPlan, 
     setMessages,
     regenerateDay,
-    downloadICS, // ✅ Exported
+    downloadICS,
     reorderTasks: () => {}, 
     handleImport: () => {}, 
     regeneratingDay: null 

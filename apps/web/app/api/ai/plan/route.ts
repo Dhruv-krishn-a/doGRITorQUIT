@@ -1,37 +1,29 @@
-//apps/web/app/api/ai/plan/route.ts
 import { NextResponse } from "next/server";
 import { getServerUser } from "@/lib/auth-server";
 import { ai } from "@domain";
 
-export const maxDuration = 60;
-
+export const maxDuration = 60; 
+export const dynamic = 'force-dynamic';
 
 function cleanAndParseJSON(text: string) {
+  if (!text) return null;
+  
   try {
     return JSON.parse(text);
   } catch {
-    const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-    if (jsonMatch && jsonMatch[1]) {
-      try {
-        return JSON.parse(jsonMatch[1]);
-      } catch {
-        // continue
-      }
-    }
-
-    const firstOpen = text.indexOf('{');
-    const lastClose = text.lastIndexOf('}');
+    // Remove Markdown wrappers (```json ... ```)
+    // ✅ FIX: Changed 'let' to 'const'
+    const cleanText = text.replace(/```(?:json)?|```/g, "").trim();
     
-    if (firstOpen !== -1 && lastClose !== -1) {
-      try {
-        const potentialJson = text.substring(firstOpen, lastClose + 1);
-        return JSON.parse(potentialJson);
-      } catch {
-        // continue
-      }
-    }
+    // Fallback: Try finding the outer braces
+    const firstOpen = cleanText.indexOf('{');
+    const lastClose = cleanText.lastIndexOf('}');
     
-    console.error("Failed to parse JSON. Raw text preview:", text.slice(0, 100));
+    if (firstOpen !== -1 && lastClose !== -1 && lastClose > firstOpen) {
+        try {
+            return JSON.parse(cleanText.substring(firstOpen, lastClose + 1));
+        } catch { /* ignore */ }
+    }
     return null;
   }
 }
@@ -43,6 +35,21 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
+    // 1. ROUTING CHECK: Which Key do we need?
+    if (body.isSyllabusMode) {
+        // Syllabus needs Groq
+        // eslint-disable-next-line turbo/no-undeclared-env-vars
+        if (!process.env.GROQ_API_KEY) {
+            return NextResponse.json({ error: "Server Config: Missing GROQ Key" }, { status: 500 });
+        }
+    } else {
+        // Details need OpenRouter (Mistral)
+        // eslint-disable-next-line turbo/no-undeclared-env-vars
+        if (!process.env.OPENROUTER_API_KEY) {
+            return NextResponse.json({ error: "Server Config: Missing OpenRouter Key" }, { status: 500 });
+        }
+    }
+
     const aiResponse = await ai.generateStructuredPlan(
         body.messages, 
         body.batchConfig, 
@@ -51,40 +58,34 @@ export async function POST(req: Request) {
         body.isRegenerateDay
     );
     
-    const rawText = aiResponse.text;
-    const parsed = cleanAndParseJSON(rawText);
+    if (!aiResponse || !aiResponse.text) {
+        throw new Error("Empty response from AI");
+    }
+
+    const parsed = cleanAndParseJSON(aiResponse.text);
 
     if (!parsed) {
-        return NextResponse.json({ error: "Failed to parse AI response" }, { status: 500 });
+        console.error("❌ [API] JSON Parse Failed. Raw:", aiResponse.text.slice(0, 100));
+        return NextResponse.json({ error: "AI response format error. Please try again." }, { status: 500 });
     }
 
     let resultData = null;
     let syllabusData = null;
 
-    if (body.isRegenerateModule) {
-        resultData = parsed.module || parsed; 
-        return NextResponse.json({ success: true, planData: resultData });
-    }
-    else if (body.isRegenerateDay) {
-        resultData = parsed.task || parsed;
-        return NextResponse.json({ success: true, planData: resultData });
-    }
-    else if (body.isSyllabusMode) {
-        syllabusData = parsed.syllabus || parsed;
-        return NextResponse.json({ success: true, syllabusData });
-    } else {
-        resultData = parsed.tasks || parsed.plans || parsed.schedule || (Array.isArray(parsed) ? parsed : []);
-    }
+    if (body.isRegenerateModule) resultData = parsed.module || parsed; 
+    else if (body.isRegenerateDay) resultData = parsed.task || parsed;
+    else if (body.isSyllabusMode) syllabusData = parsed.syllabus || parsed;
+    else resultData = parsed.tasks || parsed.plans || (Array.isArray(parsed) ? parsed : []);
 
     return NextResponse.json({ 
         success: true, 
-        message: "Generated", 
         planData: resultData,
         syllabusData: syllabusData
     });
 
   } catch (error) {
-    console.error("AI Route Error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error("❌ [API] Error:", error);
+    const msg = error instanceof Error ? error.message : "Internal Server Error";
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

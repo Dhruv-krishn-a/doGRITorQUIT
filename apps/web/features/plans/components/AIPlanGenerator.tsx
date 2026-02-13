@@ -1,3 +1,4 @@
+//apps/web/features/plans/components/AIPlanGenerator.tsx
 "use client";
 
 import React, { useRef, useEffect, useState } from "react";
@@ -68,6 +69,7 @@ export default function AIPlanGenerator({ isOpen: externalIsOpen, onClose: exter
       {!isControlled && (
         <button
             onClick={() => setInternalOpen(true)}
+            // ✅ FIX: Canonical class for gradient
             className="px-4 py-2 bg-linear-to-r from-indigo-600 to-purple-600 text-white rounded-lg flex items-center gap-2 hover:shadow-lg hover:shadow-indigo-500/20 transition-all active:scale-95 font-medium"
         >
             <Sparkles size={16} />
@@ -77,19 +79,19 @@ export default function AIPlanGenerator({ isOpen: externalIsOpen, onClose: exter
 
       <AnimatePresence>
         {open && (
-          // Fixed z-index and canonical class
+          // ✅ FIX: Canonical class for z-index
           <div className="fixed inset-0 z-9999 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-2 sm:p-4">
             
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              // Fixed max-width canonical class
+              // ✅ FIX: Canonical class for max-width (1400px -> max-w-350)
               className="bg-white w-full max-w-350 h-[95vh] sm:h-[90vh] rounded-2xl flex flex-col lg:flex-row overflow-hidden shadow-2xl shadow-indigo-500/10 border border-slate-200/60 ring-1 ring-slate-900/5"
             >
               
               {/* --- LEFT PANEL: Chat & Config --- */}
-              {/* Fixed width canonical classes */}
+              {/* ✅ FIX: Canonical classes for widths (400px -> w-100, 450px -> w-112.5) */}
               <div className="w-full lg:w-100 xl:w-112.5 flex-none flex flex-col border-b lg:border-b-0 lg:border-r border-slate-200 bg-slate-50/50 h-[45%] lg:h-full transition-all">
                 
                 {/* Header */}
@@ -112,7 +114,6 @@ export default function AIPlanGenerator({ isOpen: externalIsOpen, onClose: exter
                         >
                             <RefreshCw size={18} />
                         </button>
-                        {/* Close button visible on Mobile Header too */}
                         <button 
                             onClick={handleClose} 
                             className="lg:hidden p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-colors"
@@ -130,7 +131,6 @@ export default function AIPlanGenerator({ isOpen: externalIsOpen, onClose: exter
                                 <Sparkles className="w-6 h-6 text-indigo-400" />
                             </div>
                             <p className="text-sm font-medium text-slate-800">Start building your path.</p>
-                            {/* Fixed unescaped entities */}
                             <p className="text-xs text-slate-500 mt-1">Try: &quot;React Native in 30 days&quot;</p>
                         </div>
                     )}
@@ -171,7 +171,7 @@ export default function AIPlanGenerator({ isOpen: externalIsOpen, onClose: exter
                     <X size={20} />
                 </button>
 
-                {/* Mobile Handle / Divider */}
+                {/* Mobile Handle */}
                 <div className="lg:hidden w-full h-1 bg-slate-100 flex items-center justify-center cursor-row-resize">
                     <div className="w-10 h-1 bg-slate-300 rounded-full my-1"></div>
                 </div>
@@ -207,7 +207,7 @@ export default function AIPlanGenerator({ isOpen: externalIsOpen, onClose: exter
                                 planData={currentBlueprint}
                                 isSaving={isSaving}
                                 isLoading={loading} 
-                                onSave={(opts) => startPlan(opts)}
+                                onSave={(startDate) => startPlan(startDate)}
                                 onUpdateTask={updatePlanTask}
                                 onRegenerateDay={regenerateDay} 
                                 onDownloadICS={downloadICS}

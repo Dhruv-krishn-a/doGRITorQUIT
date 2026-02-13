@@ -2,7 +2,6 @@
 // Ensure this line uses the path to the file containing the named export
 export * as auth from "./auth/auth.service";
 
-// ... other exports
 export * as plans from "./plans/service";
 export * as billing from "./billing/entitlements"; 
 export * as payment from "./billing/service";

@@ -1,3 +1,4 @@
+//apps/web/app/api/plans/[id]/days/route.ts
 import { NextResponse } from "next/server";
 import { getServerUser } from "@/lib/auth-server";
 import { plans } from "@domain";

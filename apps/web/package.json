@@ -12,6 +12,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@google/genai": "^1.40.0",
     "@hello-pangea/dnd": "^18.0.1",
     "@planner/db": "*",
     "@planner/domain": "*",
@@ -24,6 +25,7 @@
     "@tailwindcss/postcss": "^4.1.17",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.26",
+    "groq-sdk": "^0.37.0",
     "lucide-react": "^0.560.0",
     "next": "^16.0.7",
     "openai": "^6.15.0",

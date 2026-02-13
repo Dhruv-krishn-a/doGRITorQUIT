@@ -5,7 +5,8 @@ import { getServerUser } from "@/lib/auth-server";
 import { prisma } from "@/lib/prisma";
 import { Priority, TaskStatus } from "@prisma/client";
 
-// Types for the Draft Plan
+// --- 1. Updated Types to match AI Output ---
+
 export type DraftTask = {
   id: string; // temp id
   day: number;
@@ -13,7 +14,13 @@ export type DraftTask = {
   description?: string;
   estimatedMinutes: number;
   priority: "High" | "Medium" | "Low";
-  subtasks: string[];
+  // ✅ FIX: Support both simple strings and object subtasks
+  subtasks: (string | { title: string })[];
+  // ✅ FIX: Add metadata for Resources & Outcomes
+  metadata?: {
+    outcome?: string;
+    resources?: Array<string | { title: string; url: string }>;
+  };
 };
 
 export type DraftPlan = {
@@ -27,35 +34,28 @@ export type DraftPlan = {
  * In production, replace this with Vercel AI SDK (streamText)
  */
 export async function generateDraftPlan(prompt: string, isPreview: boolean): Promise<DraftPlan> {
-  // Simulate network delay for "Streaming" feel
   await new Promise((resolve) => setTimeout(resolve, 1500));
 
-  const days = isPreview ? 2 : 7; // Trimmed vs Full
+  const days = isPreview ? 2 : 5; 
 
   const tasks: DraftTask[] = [];
   
-  // Generate mock data based on prompt
   for (let d = 1; d <= days; d++) {
     tasks.push({
       id: `temp-${d}-1`,
       day: d,
-      title: d === 1 ? "Setup & Fundamentals" : `Deep Dive Day ${d}`,
+      title: d === 1 ? "Setup & Fundamentals" : `Implementation Day ${d}`,
       description: `Generated based on: ${prompt}`,
       estimatedMinutes: 60,
       priority: d === 1 ? "High" : "Medium",
-      subtasks: ["Install prerequisites", "Read documentation", "Complete exercise 1"]
+      subtasks: ["Install prerequisites", "Read documentation", "Complete exercise"],
+      metadata: {
+        outcome: "Environment set up and verified.",
+        resources: [
+            { title: "Official Docs", url: "https://example.com" }
+        ]
+      }
     });
-    
-    if (d === 1) {
-       tasks.push({
-        id: `temp-${d}-2`,
-        day: d,
-        title: "Initial Practice Project",
-        estimatedMinutes: 45,
-        priority: "Medium",
-        subtasks: []
-       })
-    }
   }
 
   return {
@@ -68,38 +68,25 @@ export async function generateDraftPlan(prompt: string, isPreview: boolean): Pro
 /**
  * SAVE TO DATABASE
  */
-export async function saveAIPlan(draft: DraftPlan, options: { addToMyDay: boolean; autoSchedule: boolean }) {
+export async function saveAIPlan(draft: DraftPlan, startDateStr: string) {
   const user = await getServerUser();
   if (!user) throw new Error("Unauthorized");
 
-  // 1. Check Credits (Mock check)
-  // const usage = await prisma.aiUsage.findUnique({ where: { userId: user.id }});
-  // if (usage.count <= 0) throw new Error("Insufficient Credits");
+  // 1. Parse Start Date
+  const planStartDate = new Date(startDateStr);
 
-  // 2. Calculate Dates
-  const startDate = new Date();
-  
-  // 3. Create Plan Transaction
+  // 2. Create Plan Transaction
   const plan = await prisma.plan.create({
     data: {
       userId: user.id,
       title: draft.title,
       description: draft.description,
-      startDate: startDate,
+      startDate: planStartDate,
       tasks: {
         create: draft.tasks.map((t) => {
-          // Date Logic:
-          // If addToMyDay is TRUE and it's Day 1 -> Set date to TODAY
-          // If autoSchedule is TRUE -> Set date to Today + (Day - 1)
-          let taskDate: Date | null = null;
-          
-          if (t.day === 1 && options.addToMyDay) {
-            taskDate = new Date(); // Today
-          } else if (options.autoSchedule) {
-            const d = new Date();
-            d.setDate(d.getDate() + (t.day - 1));
-            taskDate = d;
-          }
+          // Date Logic: Plan Start Date + (Day Index - 1)
+          const taskDate = new Date(planStartDate);
+          taskDate.setDate(planStartDate.getDate() + (t.day - 1));
 
           return {
             userId: user.id,
@@ -109,17 +96,26 @@ export async function saveAIPlan(draft: DraftPlan, options: { addToMyDay: boolea
             priority: t.priority === "High" ? Priority.high : Priority.medium,
             status: TaskStatus.pending,
             date: taskDate,
+            
+            // ✅ FIX: Save Subtasks (handle string vs object)
             subtasks: {
-              create: t.subtasks.map(st => ({ title: st, completed: false }))
-            }
+              create: t.subtasks.map(st => ({ 
+                title: typeof st === 'string' ? st : st.title, 
+                completed: false 
+              }))
+            },
+
+            // ✅ FIX: Save Rich Metadata
+            metadata: t.metadata ? {
+                outcome: t.metadata.outcome,
+                resources: t.metadata.resources,
+                generatedBy: "AI_Architect_V2"
+            } : undefined
           };
         })
       }
     }
   });
-
-  // 4. Deduct Credit (Mock)
-  // await prisma.aiUsage.update(...)
 
   return plan;
 }
