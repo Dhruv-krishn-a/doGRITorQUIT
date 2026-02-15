@@ -1,0 +1,138 @@
+model User {
+  id        String   @id // Supabase Auth ID
+  email     String   @unique
+  role      UserRole @default(user)
+
+  tier      String   @default("Free Tier")
+
+  customAiLimit Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  profile            UserProfile?
+  stats              UserStats?
+  plans              Plan[]
+  tasks              Task[]
+  habits             Habit[]
+  habitLogs          HabitLog[]
+  dailyNotes         DailyNote[]
+  entries            Entry[]            @relation("UserEntries")
+  orders             Order[]
+  subscriptions      UserSubscription[]
+  legacySubscription Subscription?
+  aiUsage            AiUsage?
+  aiUsageLogs        AiUsageLog[]
+
+  studyPlaylists     StudyPlaylist[]
+  studyVideos        StudyVideo[]
+  studyResources     StudyResource[]
+
+  @@index([role])
+  @@index([tier]) 
+  @@map("users")
+}
+
+
+
+/**
+ * --------------------
+ * STUDY / FOCUS TUBE
+ * --------------------
+ */
+
+enum StudyStatus {
+  not_started
+  in_progress
+  completed
+  archived
+}
+
+enum ResourceType {
+  video
+  article
+  pdf
+  github
+  other
+}
+
+model StudyPlaylist {
+  id             String      @id @default(cuid())
+  userId         String
+  youtubeId      String      // External YouTube ID
+  title          String
+  description    String?     @db.Text
+  thumbnailUrl   String?
+  channelName    String?
+  channelId      String?
+  
+  // Stats
+  totalVideos    Int         @default(0)
+  completedVideos Int        @default(0)
+  
+  status         StudyStatus @default(in_progress)
+  
+  metadata       Json?       // Future-proof: store tags, difficulty, etc.
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  videos  StudyVideo[]
+
+  @@unique([userId, youtubeId]) // Prevent duplicate imports of same playlist
+  @@map("study_playlists")
+}
+
+model StudyVideo {
+  id             String      @id @default(cuid())
+  userId         String
+  playlistId     String?     // Nullable: Video can be standalone
+  youtubeId      String
+  title          String
+  description    String?     @db.Text
+  thumbnailUrl   String?
+  channelName    String?
+  
+  durationSec    Int         @default(0) // Official YouTube Duration
+  position       Int         @default(0) // Order in playlist
+  
+  // Tracking
+  status         StudyStatus @default(not_started)
+  progressSec    Int         @default(0) // "Where did I pause?"
+  timeSpentSec   Int         @default(0) // "How long did I actually study?"
+  
+  // User Notes
+  notes          Json?       // The BlockNote/Tiptap JSON content
+  
+  metadata       Json?       // Future-proof
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  playlist   StudyPlaylist? @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  resources  StudyResource[]
+
+  @@unique([userId, youtubeId, playlistId]) // Unique video per playlist context
+  @@index([userId, status])
+  @@map("study_videos")
+}
+
+model StudyResource {
+  id          String       @id @default(cuid())
+  videoId     String
+  userId      String
+  
+  title       String
+  url         String
+  type        ResourceType @default(other)
+  isCompleted Boolean      @default(false)
+  
+  createdAt   DateTime     @default(now())
+  
+  user    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video   StudyVideo @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@index([videoId])
+  @@map("study_resources")
+}
