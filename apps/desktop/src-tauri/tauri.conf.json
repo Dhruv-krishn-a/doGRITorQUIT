@@ -1,20 +1,21 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "desktop",
-  "version": "0.1.0",
-  "identifier": "doGritorQuit",
+  "productName": "Planner Desktop",
+  "version": "1.0.0",
+  "identifier": "com.planner.desktop",
   "build": {
-    "beforeDevCommand": "npm run dev",
-    "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "npm run build",
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": "pnpm build",
     "frontendDist": "../dist"
   },
   "app": {
     "windows": [
       {
-        "title": "desktop",
-        "width": 800,
-        "height": 600
+        "title": "Planner Desktop",
+        "width": 1200,
+        "height": 800,
+        "label": "main"
       }
     ],
     "security": {
@@ -23,7 +24,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["appimage", "deb"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -31,5 +32,15 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
-  }
+  },
+  "permissions": [
+    "core:default",
+    "opener:default",
+    "notification:default",
+    "notification:allow-show",
+    "core:window:allow-hide",
+    "core:window:allow-show",
+    "core:window:allow-set-focus",
+    "core:app:allow-exit"
+  ]
 }

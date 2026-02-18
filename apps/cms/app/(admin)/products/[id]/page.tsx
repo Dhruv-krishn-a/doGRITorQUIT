@@ -153,6 +153,8 @@ export default async function ProductDetailPage({ params }: Props) {
               {[
                 { key: "ACCESS_PLANS", desc: "Unlock Plans Page" }, 
                 { key: "ACCESS_TASKS", desc: "Unlock Tasks Page" },
+                { key: "ACCESS_HABITS", desc: "Unlock Habits/Checklist" },
+                { key: "ACCESS_STUDY", desc: "Unlock Upgrade OS (Study)" },
                 { key: "ACCESS_ANALYTICS", desc: "Unlock Analytics" },
                 { key: "AI_GEN_LIMIT", desc: "Monthly AI credits" },
                 { key: "MAX_PLANS", desc: "Limit number of plans" },

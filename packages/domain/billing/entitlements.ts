@@ -110,6 +110,7 @@ export async function getPagePermissions(userId: string) {
     canViewPlans: check("ACCESS_PLANS"),
     canViewTasks: check("ACCESS_TASKS"),
     canViewChecklist: check("ACCESS_HABITS"),
+    canViewStudy: check("ACCESS_STUDY"), 
     canViewAnalytics: check("ACCESS_ANALYTICS"),
   };
 }

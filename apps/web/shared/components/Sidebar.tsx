@@ -16,7 +16,8 @@ import {
   ListTodo,
   BarChart3,
   CreditCard,
-  Settings
+  Settings,
+  Brain
 } from "lucide-react";
 
 // --- Types ---
@@ -25,6 +26,7 @@ export interface SidebarPermissions {
   canViewPlans: boolean;
   canViewTasks: boolean;
   canViewChecklist: boolean;
+  canViewStudy: boolean;
   canViewAnalytics: boolean;
   canViewSubscription: boolean;
 }
@@ -35,6 +37,7 @@ const ICONS_MAP: Record<string, React.ReactNode> = {
   "/dashboard/plans": <CalendarDays size={20} />,
   "/dashboard/tasks": <ListTodo size={20} />,
   "/dashboard/checklist": <CheckSquare size={20} />,
+  "/dashboard/study": <Brain size={20} />,
   "/dashboard/analytics": <BarChart3 size={20} />,
   "/dashboard/subscriptions": <CreditCard size={20} />,
   "/dashboard/settings": <Settings size={20} />,
@@ -45,6 +48,7 @@ const PATH_TO_PERM: Record<string, keyof SidebarPermissions> = {
   "/dashboard/plans": "canViewPlans",
   "/dashboard/tasks": "canViewTasks",
   "/dashboard/checklist": "canViewChecklist",
+  "/dashboard/study": "canViewStudy",
   "/dashboard/analytics": "canViewAnalytics",
   "/dashboard/subscriptions": "canViewSubscription",
 };

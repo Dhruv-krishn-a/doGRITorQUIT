@@ -134,22 +134,46 @@ importers:
 
   apps/desktop:
     dependencies:
+      '@supabase/supabase-js':
+        specifier: ^2.97.0
+        version: 2.97.0
       '@tauri-apps/api':
         specifier: ^2
         version: 2.9.1
       '@tauri-apps/plugin-opener':
         specifier: ^2
         version: 2.5.3
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
+      framer-motion:
+        specifier: ^12.34.2
+        version: 12.34.2(react-dom@19.0.0)(react@19.0.0)
+      lucide-react:
+        specifier: ^0.574.0
+        version: 0.574.0(react@19.0.0)
       react:
         specifier: 19.0.0
         version: 19.0.0
       react-dom:
         specifier: 19.0.0
         version: 19.0.0(react@19.0.0)
+      sonner:
+        specifier: ^2.0.7
+        version: 2.0.7(react-dom@19.0.0)(react@19.0.0)
+      tailwind-merge:
+        specifier: ^3.4.0
+        version: 3.4.0
     devDependencies:
       '@tauri-apps/cli':
         specifier: ^2
         version: 2.9.6
+      '@types/node':
+        specifier: ^25.2.3
+        version: 25.2.3
       '@types/react':
         specifier: ^19.0.8
         version: 19.2.8
@@ -159,12 +183,21 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^4.6.0
         version: 4.7.0(vite@7.3.1)
+      autoprefixer:
+        specifier: ^10.4.24
+        version: 10.4.24(postcss@8.5.6)
+      postcss:
+        specifier: ^8.5.6
+        version: 8.5.6
+      tailwindcss:
+        specifier: ^4.2.0
+        version: 4.2.0
       typescript:
         specifier: ~5.8.3
         version: 5.8.3
       vite:
         specifier: ^7.0.4
-        version: 7.3.1
+        version: 7.3.1(@types/node@25.2.3)
 
   apps/mobile:
     dependencies:
@@ -4238,6 +4271,13 @@ packages:
       tslib: 2.8.1
     dev: false
 
+  /@supabase/auth-js@2.97.0:
+    resolution: {integrity: sha512-2Og/1lqp+AIavr8qS2X04aSl8RBY06y4LrtIAGxat06XoXYiDxKNQMQzWDAKm1EyZFZVRNH48DO5YvIZ7la5fQ==}
+    engines: {node: '>=20.0.0'}
+    dependencies:
+      tslib: 2.8.1
+    dev: false
+
   /@supabase/auth-ui-react@0.4.7(@supabase/supabase-js@2.90.1):
     resolution: {integrity: sha512-Lp4FQGFh7BMX1Y/BFaUKidbryL7eskj1fl6Lby7BeHrTctbdvDbCMjVKS8wZ2rxuI8FtPS2iU900fSb70FHknQ==}
     peerDependencies:
@@ -4266,6 +4306,13 @@ packages:
       tslib: 2.8.1
     dev: false
 
+  /@supabase/functions-js@2.97.0:
+    resolution: {integrity: sha512-fSaA0ZeBUS9hMgpGZt5shIZvfs3Mvx2ZdajQT4kv/whubqDBAp3GU5W8iIXy21MRvKmO2NpAj8/Q6y+ZkZyF/w==}
+    engines: {node: '>=20.0.0'}
+    dependencies:
+      tslib: 2.8.1
+    dev: false
+
   /@supabase/postgrest-js@2.90.1:
     resolution: {integrity: sha512-jh6vqzaYzoFn3raaC0hcFt9h+Bt+uxNRBSdc7PfToQeRGk7PDPoweHsbdiPWREtDVTGKfu+PyPW9e2jbK+BCgQ==}
     engines: {node: '>=20.0.0'}
@@ -4273,8 +4320,28 @@ packages:
       tslib: 2.8.1
     dev: false
 
+  /@supabase/postgrest-js@2.97.0:
+    resolution: {integrity: sha512-g4Ps0eaxZZurvfv/KGoo2XPZNpyNtjth9aW8eho9LZWM0bUuBtxPZw3ZQ6ERSpEGogshR+XNgwlSPIwcuHCNww==}
+    engines: {node: '>=20.0.0'}
+    dependencies:
+      tslib: 2.8.1
+    dev: false
+
   /@supabase/realtime-js@2.90.1:
     resolution: {integrity: sha512-PWbnEMkcQRuor8jhObp4+Snufkq8C6fBp+MchVp2qBPY1NXk/c3Iv3YyiFYVzo0Dzuw4nAlT4+ahuPggy4r32w==}
+    engines: {node: '>=20.0.0'}
+    dependencies:
+      '@types/phoenix': 1.6.7
+      '@types/ws': 8.18.1
+      tslib: 2.8.1
+      ws: 8.19.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
+
+  /@supabase/realtime-js@2.97.0:
+    resolution: {integrity: sha512-37Jw0NLaFP0CZd7qCan97D1zWutPrTSpgWxAw6Yok59JZoxp4IIKMrPeftJ3LZHmf+ILQOPy3i0pRDHM9FY36Q==}
     engines: {node: '>=20.0.0'}
     dependencies:
       '@types/phoenix': 1.6.7
@@ -4303,6 +4370,14 @@ packages:
       tslib: 2.8.1
     dev: false
 
+  /@supabase/storage-js@2.97.0:
+    resolution: {integrity: sha512-9f6NniSBfuMxOWKwEFb+RjJzkfMdJUwv9oHuFJKfe/5VJR8cd90qw68m6Hn0ImGtwG37TUO+QHtoOechxRJ1Yg==}
+    engines: {node: '>=20.0.0'}
+    dependencies:
+      iceberg-js: 0.8.1
+      tslib: 2.8.1
+    dev: false
+
   /@supabase/supabase-js@2.90.1:
     resolution: {integrity: sha512-U8KaKGLUgTIFHtwEW1dgw1gK7XrdpvvYo7nzzqPx721GqPe8WZbAiLh/hmyKLGBYQ/mmQNr20vU9tWSDZpii3w==}
     engines: {node: '>=20.0.0'}
@@ -4312,6 +4387,20 @@ packages:
       '@supabase/postgrest-js': 2.90.1
       '@supabase/realtime-js': 2.90.1
       '@supabase/storage-js': 2.90.1
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
+
+  /@supabase/supabase-js@2.97.0:
+    resolution: {integrity: sha512-kTD91rZNO4LvRUHv4x3/4hNmsEd2ofkYhuba2VMUPRVef1RCmnHtm7rIws38Fg0yQnOSZOplQzafn0GSiy6GVg==}
+    engines: {node: '>=20.0.0'}
+    dependencies:
+      '@supabase/auth-js': 2.97.0
+      '@supabase/functions-js': 2.97.0
+      '@supabase/postgrest-js': 2.97.0
+      '@supabase/realtime-js': 2.97.0
+      '@supabase/storage-js': 2.97.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -5154,6 +5243,12 @@ packages:
     dependencies:
       undici-types: 6.21.0
 
+  /@types/node@25.2.3:
+    resolution: {integrity: sha512-m0jEgYlYz+mDJZ2+F4v8D1AyQb+QzsNqRuI7xg1VQX/KlKS0qT9r1Mo16yo5F/MtifXFgaofIFsdFMox2SxIbQ==}
+    dependencies:
+      undici-types: 7.16.0
+    dev: true
+
   /@types/pg@8.16.0:
     resolution: {integrity: sha512-RmhMd/wD+CF8Dfo+cVIy3RR5cl8CyfXQ0tGgW6XBL8L4LM/UTEbNXYRbLwU6w+CgrKBNbrQWt4FUtTfaU5jSYQ==}
     dependencies:
@@ -5539,7 +5634,7 @@ packages:
       '@rolldown/pluginutils': 1.0.0-beta.27
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-      vite: 7.3.1
+      vite: 7.3.1(@types/node@25.2.3)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -5864,6 +5959,21 @@ packages:
     dependencies:
       browserslist: 4.28.1
       caniuse-lite: 1.0.30001765
+      fraction.js: 5.3.4
+      picocolors: 1.1.1
+      postcss: 8.5.6
+      postcss-value-parser: 4.2.0
+    dev: true
+
+  /autoprefixer@10.4.24(postcss@8.5.6):
+    resolution: {integrity: sha512-uHZg7N9ULTVbutaIsDRoUkoS8/h3bdsmVJYZ5l3wv8Cp/6UIIoRDm90hZ+BwxUj/hGBEzLxdHNSKuFpn8WOyZw==}
+    engines: {node: ^10 || ^12 || >=14}
+    hasBin: true
+    peerDependencies:
+      postcss: ^8.1.0
+    dependencies:
+      browserslist: 4.28.1
+      caniuse-lite: 1.0.30001770
       fraction.js: 5.3.4
       picocolors: 1.1.1
       postcss: 8.5.6
@@ -6300,6 +6410,10 @@ packages:
 
   /caniuse-lite@1.0.30001765:
     resolution: {integrity: sha512-LWcNtSyZrakjECqmpP4qdg0MMGdN368D7X8XvvAqOcqMv0RxnlqVKZl2V6/mBR68oYMxOZPLw/gO7DuisMHUvQ==}
+
+  /caniuse-lite@1.0.30001770:
+    resolution: {integrity: sha512-x/2CLQ1jHENRbHg5PSId2sXq1CIO1CISvwWAj027ltMVG2UNgW+w9oH2+HzgEIRFembL8bUlXtfbBHR1fCg2xw==}
+    dev: true
 
   /castable-video@1.1.11:
     resolution: {integrity: sha512-LCRTK6oe7SB1SiUQFzZCo6D6gcEzijqBTVIuj3smKpQdesXM18QTbCVqWgh9MfOeQgTx/i9ji5jGcdqNPeWg2g==}
@@ -8244,6 +8358,27 @@ packages:
       tslib: 2.8.1
     dev: false
 
+  /framer-motion@12.34.2(react-dom@19.0.0)(react@19.0.0):
+    resolution: {integrity: sha512-CcnYTzbRybm1/OE8QLXfXI8gR1cx5T4dF3D2kn5IyqsGNeLAKl2iFHb2BzFyXBGqESntDt6rPYl4Jhrb7tdB8g==}
+    peerDependencies:
+      '@emotion/is-prop-valid': '*'
+      react: 19.0.0
+      react-dom: 19.0.0
+    peerDependenciesMeta:
+      '@emotion/is-prop-valid':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+    dependencies:
+      motion-dom: 12.34.2
+      motion-utils: 12.29.2
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+      tslib: 2.8.1
+    dev: false
+
   /freeport-async@2.0.0:
     resolution: {integrity: sha512-K7od3Uw45AJg00XUmy15+Hae2hOcgKcmN3/EF6Y7i01O0gaqiRx8sUSpsb9+BRNL8RPBrhzPsVfy8q9ADlJuWQ==}
     engines: {node: '>=8'}
@@ -9710,6 +9845,14 @@ packages:
       react: 19.0.0
     dev: false
 
+  /lucide-react@0.574.0(react@19.0.0):
+    resolution: {integrity: sha512-dJ8xb5juiZVIbdSn3HTyHsjjIwUwZ4FNwV0RtYDScOyySOeie1oXZTymST6YPJ4Qwt3Po8g4quhYl4OxtACiuQ==}
+    peerDependencies:
+      react: 19.0.0
+    dependencies:
+      react: 19.0.0
+    dev: false
+
   /magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
     dependencies:
@@ -10118,8 +10261,18 @@ packages:
       motion-utils: 12.24.10
     dev: false
 
+  /motion-dom@12.34.2:
+    resolution: {integrity: sha512-n7gknp7gHcW7DUcmet0JVPLVHmE3j9uWwDp5VbE3IkCNnW5qdu0mOhjNYzXMkrQjrgr+h6Db3EDM2QBhW2qNxQ==}
+    dependencies:
+      motion-utils: 12.29.2
+    dev: false
+
   /motion-utils@12.24.10:
     resolution: {integrity: sha512-x5TFgkCIP4pPsRLpKoI86jv/q8t8FQOiM/0E8QKBzfMozWHfkKap2gA1hOki+B5g3IsBNpxbUnfOum1+dgvYww==}
+    dev: false
+
+  /motion-utils@12.29.2:
+    resolution: {integrity: sha512-G3kc34H2cX2gI63RqU+cZq+zWRRPSsNIOjpdl9TN4AQwC4sgwYPl/Q/Obf/d53nOm569T0fYK+tcoSV50BWx8A==}
     dev: false
 
   /ms@2.0.0:
@@ -12644,6 +12797,10 @@ packages:
   /tailwindcss@4.1.18:
     resolution: {integrity: sha512-4+Z+0yiYyEtUVCScyfHCxOYP06L5Ne+JiHhY2IjR2KWMIWhJOYZKLSGZaP5HkZ8+bY0cxfzwDE5uOmzFXyIwxw==}
 
+  /tailwindcss@4.2.0:
+    resolution: {integrity: sha512-yYzTZ4++b7fNYxFfpnberEEKu43w44aqDMNM9MHMmcKuCH7lL8jJ4yJ7LGHv7rSwiqM0nkiobF9I6cLlpS2P7Q==}
+    dev: true
+
   /tapable@2.3.0:
     resolution: {integrity: sha512-g9ljZiwki/LfxmQADO3dEY1CbpmXT5Hm2fJ+QaGKwSXUylMybePR7/67YW7jOrrvjEgL1Fmz5kzyAjWVWLlucg==}
     engines: {node: '>=6'}
@@ -12976,6 +13133,10 @@ packages:
   /undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
+  /undici-types@7.16.0:
+    resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
+    dev: true
+
   /undici@6.23.0:
     resolution: {integrity: sha512-VfQPToRA5FZs/qJxLIinmU59u0r7LXqoJkCzinq3ckNJp3vKEh7jTWN589YQ5+aoAC/TGRLyJLCPKcLQbM8r9g==}
     engines: {node: '>=18.17'}
@@ -13158,7 +13319,7 @@ packages:
       '@vimeo/player': 2.29.0
     dev: false
 
-  /vite@7.3.1:
+  /vite@7.3.1(@types/node@25.2.3):
     resolution: {integrity: sha512-w+N7Hifpc3gRjZ63vYBXA56dvvRlNWRczTdmCBBa+CotUzAPf5b7YMdMR/8CQoeYE5LX3W4wj6RYTgonm1b9DA==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
@@ -13198,6 +13359,7 @@ packages:
       yaml:
         optional: true
     dependencies:
+      '@types/node': 25.2.3
       esbuild: 0.27.2
       fdir: 6.5.0(picomatch@4.0.3)
       picomatch: 4.0.3

@@ -10,3 +10,5 @@ export * as habits from "./habits/service";
 export * as dashboard from "./dashboard/service";
 export * as cms from "./cms";
 export * as analytics from "./analytics/service";
+export * as study from "./study/service";
+export * as youtube from "./study/youtube";

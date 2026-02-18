@@ -18,8 +18,9 @@ export const siteNav: NavItem[] = [
   { id: "plans", label: "Plans", path: "/dashboard/plans", group: "dashboard", order: 2, visible: true },
   { id: "tasks", label: "Tasks", path: "/dashboard/tasks", group: "dashboard", order: 3, visible: true },
   { id: "checklist", label: "Daily Checklist", path: "/dashboard/daily-checklist", group: "dashboard", order: 4, visible: true },
-  { id: "analytics", label: "Analytics", path: "/dashboard/analytics", group: "dashboard", order: 5, visible: true },
-  { id: "subscription", label: "Subscription", path: "/dashboard/subscriptions", group: "dashboard", order: 6, visible: true },
+  { id: "upgrade-os", label: "Upgrade OS", path: "/dashboard/study", group: "dashboard", order: 5, visible: true },
+  { id: "analytics", label: "Analytics", path: "/dashboard/analytics", group: "dashboard", order: 6, visible: true },
+  { id: "subscription", label: "Subscription", path: "/dashboard/subscriptions", group: "dashboard", order: 7, visible: true },
 
 
   // footer links

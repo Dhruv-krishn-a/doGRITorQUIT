@@ -1,4 +1,3 @@
-// packages/domain/study/youtube.ts
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 const BASE_URL = 'https://www.googleapis.com/youtube/v3';
 
@@ -22,23 +21,41 @@ export interface YTPlaylistDetails {
 
 export const YouTubeClient = {
   async getVideoDetails(videoId: string): Promise<YTVideoDetails | null> {
+    const details = await this.getVideosDetails([videoId]);
+    return details[0] || null;
+  },
+
+  async getVideosDetails(videoIds: string[]): Promise<YTVideoDetails[]> {
     if (!YOUTUBE_API_KEY) throw new Error("Missing YOUTUBE_API_KEY");
+    if (videoIds.length === 0) return [];
 
-    const res = await fetch(
-      `${BASE_URL}/videos?part=snippet,contentDetails&id=${videoId}&key=${YOUTUBE_API_KEY}`
-    );
-    const data = await res.json();
-    if (!data.items?.length) return null;
+    // Batch requests in chunks of 50
+    const chunks = [];
+    for (let i = 0; i < videoIds.length; i += 50) {
+      chunks.push(videoIds.slice(i, i + 50));
+    }
 
-    const item = data.items[0];
-    return {
-      id: item.id,
-      title: item.snippet.title,
-      description: item.snippet.description,
-      thumbnailUrl: item.snippet.thumbnails?.high?.url || item.snippet.thumbnails?.default?.url,
-      channelTitle: item.snippet.channelTitle,
-      duration: item.contentDetails.duration,
-    };
+    const allDetails: YTVideoDetails[] = [];
+
+    for (const chunk of chunks) {
+      const res = await fetch(
+        `${BASE_URL}/videos?part=snippet,contentDetails&id=${chunk.join(',')}&key=${YOUTUBE_API_KEY}`
+      );
+      const data = await res.json();
+      
+      if (data.items) {
+        const mapped = data.items.map((item: any) => ({
+          id: item.id,
+          title: item.snippet.title,
+          description: item.snippet.description,
+          thumbnailUrl: item.snippet.thumbnails?.high?.url || item.snippet.thumbnails?.default?.url,
+          channelTitle: item.snippet.channelTitle,
+          duration: item.contentDetails.duration,
+        }));
+        allDetails.push(...mapped);
+      }
+    }
+    return allDetails;
   },
 
   async getPlaylistDetails(playlistId: string): Promise<YTPlaylistDetails | null> {
@@ -67,7 +84,7 @@ export const YouTubeClient = {
     let videos: any[] = [];
     let nextPageToken = '';
     
-    // Fetch first page (max 50) 
+    // Fetch first page (max 50) - In v2, handle pagination loop
     const res = await fetch(
       `${BASE_URL}/playlistItems?part=snippet&maxResults=50&playlistId=${playlistId}&key=${YOUTUBE_API_KEY}`
     );
@@ -86,7 +103,6 @@ export const YouTubeClient = {
     return videos;
   },
   
-  // Helper to parse ISO Duration (PT15M33S) to Seconds
   parseDuration(duration: string): number {
     if(!duration) return 0;
     const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
