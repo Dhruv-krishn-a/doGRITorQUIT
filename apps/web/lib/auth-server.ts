@@ -1,9 +1,11 @@
 // apps/web/lib/auth-server.ts
 import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 
 export async function getServerUser() {
   const cookieStore = await cookies();
+  const headerList = await headers();
+  const authHeader = headerList.get("authorization");
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -27,6 +29,13 @@ export async function getServerUser() {
       },
     }
   );
+
+  // If there's an Authorization header, use it to set the session for the client
+  if (authHeader?.startsWith("Bearer ")) {
+    const token = authHeader.split(" ")[1];
+    const { data: { user } } = await supabase.auth.getUser(token);
+    if (user) return user;
+  }
 
   const {
     data: { user },

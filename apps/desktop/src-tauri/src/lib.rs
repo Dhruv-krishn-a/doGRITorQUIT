@@ -1,7 +1,7 @@
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{TrayIconBuilder, TrayIconEvent},
-    Runtime,
+    Manager,
 };
 use tauri_plugin_opener::init;
 

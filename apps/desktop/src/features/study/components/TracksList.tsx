@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { Plus, Youtube, Layers, Clock, Trash2, Loader2 } from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
+import { Plus, Layers, Clock, Loader2 } from 'lucide-react';
 import { api } from '../../../services/api';
 import { toast } from 'sonner';
 
