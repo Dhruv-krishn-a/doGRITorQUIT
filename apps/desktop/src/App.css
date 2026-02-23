@@ -1,72 +1,80 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@source "../../packages/study-ui-web/src";
+@source "../../packages/study-core/src";
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/* Global base reset and layout fixes */
+@layer base {
+  /* Prefer 100%/100% so flex children sizing behaves in a viewport-anchored app */
+  html, body, #root {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    overflow: hidden;           /* Prevent accidental body scroll / bleed */
+    background-color: #f8fafc;  /* bg-slate-50 */
+    color: #0f172a;             /* text-slate-900 */
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
   }
-  a:hover {
-    color: #747bff;
+
+  /* Ensure border-box so widths including borders work correctly */
+  *, *::before, *::after {
+    box-sizing: border-box;
   }
-  button {
-    background-color: #f9f9f9;
+
+  /* Ensure common tailwind utility classes used by layout have the intended effect */
+  .min-h-screen { min-height: 100vh; }
+  .h-screen { height: 100vh; }
+}
+
+/* Component-level layout fixes & separators */
+@layer components {
+  /* App wrapper helpers (use these where appropriate) */
+  .app-root {
+    height: 100%;
+    width: 100%;
+    min-height: 100%;
+    min-width: 0;   /* important for flex child shrink behavior */
+    overflow: hidden;
+  }
+
+  .app-sidebar {
+    z-index: 40; /* keep sidebar above main content separators */
+  }
+
+  .app-main {
+    z-index: 30;
+    min-width: 0; /* allow content to shrink in flex layouts */
+    overflow: hidden;
+  }
+
+  /* react-resizable-panels separators tend to visually appear like a thin page.
+     Make it subtle, increase hit area and ensure it sits above the main background. */
+  .react-resizable-panels__separator,
+  .panel-separator {
+    width: 6px;                  /* bigger hit area */
+    background: transparent;     /* no heavy color */
+    border-left: 1px solid #e9eef6; /* subtle divider line */
+    cursor: col-resize;
+    z-index: 35;
+    transition: background-color .12s ease, border-color .12s ease;
+  }
+  .react-resizable-panels__separator:hover,
+  .panel-separator:hover {
+    background: rgba(245, 115, 115, 0.04); /* faint rose tint on hover */
+    border-left-color: #fca5a5;
+  }
+
+  /* Off-canvas / inspector container guard — clip children inside panel */
+  .panel-inner {
+    position: relative;
+    overflow: hidden;
+    min-height: 0; /* very important to prevent overflow in flex columns */
+  }
+
+  /* If you have an overlay / drawer that uses portal, give it a safe z-index stack */
+  .app-portal {
+    z-index: 60;
   }
 }

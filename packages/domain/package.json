@@ -8,6 +8,9 @@
     ".": "./index.ts",
     "./*": "./*.ts"
   },
+  "scripts": {
+    "build": "tsc --noEmit"
+  },
   "dependencies": {
     "@planner/db": "workspace:*",
     "openai": "^4.20.1",

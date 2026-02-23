@@ -11,8 +11,8 @@
     "check-types": "turbo run check-types",
     "db:generate": "pnpm --filter @planner/db run generate",
     "postinstall": "pnpm run db:generate",
-    "build:web": "npx turbo run build --filter=web",
-    "build:cms": "npx turbo run build --filter=cms"
+    "build:web": "turbo run build --filter=web",
+    "build:cms": "turbo run build --filter=cms"
   },
   "pnpm": {
     "overrides": {

@@ -1,3 +1,4 @@
+//packages/domain/study/youtube.ts
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 const BASE_URL = 'https://www.googleapis.com/youtube/v3';
 

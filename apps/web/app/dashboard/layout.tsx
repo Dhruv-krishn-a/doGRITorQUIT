@@ -30,7 +30,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         {/* Scrollable Main Content */}
         <main className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
            
-           <div className="max-w-screen-2xl mx-auto p-4 md:p-8 min-h-[calc(100vh-100px)]">
+           <div className="w-full mx-auto p-4 md:p-8 lg:p-10 min-h-[calc(100vh-100px)]">
              {children}
            </div>
 

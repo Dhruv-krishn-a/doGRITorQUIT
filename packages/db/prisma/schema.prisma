@@ -95,6 +95,7 @@ model UserStats {
   completedTasks Int       @default(0)
   activeHabits   Int       @default(0)
   currentStreak  Int       @default(0)
+  neuralCredits  Int       @default(0)
   lastActiveAt   DateTime?
   user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -435,11 +436,9 @@ enum PlanStatus {
 
 
 
-/**
- * --------------------
- * UPGRADE OS (Skill Tracks)
- * --------------------
- */
+/// --------------------
+/// UPGRADE OS (Skill Tracks)
+/// --------------------
 
 enum TrackType {
   PLAYLIST
@@ -610,11 +609,9 @@ model WeeklyReflection {
   @@map("study_weekly_reflections")
 }
 
-/**
- * --------------------
- * STUDY / FOCUS TUBE
- * --------------------
- */
+/// --------------------
+/// STUDY / FOCUS TUBE
+/// --------------------
 
 enum StudyStatus {
   not_started

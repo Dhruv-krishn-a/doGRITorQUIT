@@ -8,8 +8,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ unitId:
 
   try {
     const { unitId } = await params;
-    const { minutesSpent, watchPercentage } = await req.json();
-    const unit = await StudyService.updateUnitProgress(user.id, unitId, { minutesSpent, watchPercentage });
+    const { secondsSpent, watchPercentage } = await req.json();
+    const unit = await StudyService.updateUnitProgress(user.id, unitId, { secondsSpent, watchPercentage });
     return NextResponse.json({ unit });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';

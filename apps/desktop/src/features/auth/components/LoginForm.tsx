@@ -1,3 +1,4 @@
+//apps/desktop/src/features/auth/components/LoginForm.tsx
 import { useState } from "react";
 import { supabase } from "../../../lib/supabase";
 import { Loader2, AlertCircle } from "lucide-react";

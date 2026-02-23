@@ -1,7 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // 1. Transpile internal packages
-  transpilePackages: ["@planner/domain", "@planner/db"],
+  // 1. Transpile internal packages (ADDED STUDY PACKAGES HERE)
+  transpilePackages: [
+    "@planner/domain", 
+    "@planner/db",
+    "@planner/study-ui-web", 
+    "@planner/study-core"
+  ],
 
   // 2. Mark specific heavyweight/node-only packages as external
   serverExternalPackages: ["openai", "node-fetch"],

@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "identifier": "com.planner.app",
   "build": {
-    "beforeDevCommand": "pnpm dev",
+    "beforeDevCommand": "pnpm dev:web",
     "devUrl": "http://localhost:1420",
     "beforeBuildCommand": "vite build",
     "frontendDist": "../dist"

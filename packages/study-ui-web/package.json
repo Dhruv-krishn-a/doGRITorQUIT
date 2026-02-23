@@ -1,0 +1,29 @@
+{
+  "name": "@planner/study-ui-web",
+  "version": "0.0.0",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@planner/study-core": "workspace:*",
+    "@hello-pangea/dnd": "^18.0.1",
+    "@tiptap/extension-placeholder": "^3.19.0",
+    "@tiptap/react": "^3.19.0",
+    "@tiptap/starter-kit": "^3.19.0",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.23.26",
+    "react-player": "^3.4.0",
+    "tailwind-merge": "^3.0.0",
+    "sonner": "^2.0.7"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "lucide-react": "^0.300.0",
+    "framer-motion": "^10.0.0"
+  }
+}

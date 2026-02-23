@@ -1,3 +1,4 @@
+//packages/domain/study/service.ts
 import { prisma } from '@planner/db';
 import { YouTubeClient } from './youtube';
 import { 
@@ -33,9 +34,19 @@ export const StudyService = {
     });
   },
 
-  async importPlaylist(userId: string, playlistUrl: string) {
+  async importPlaylist(userId: string, playlistUrl: string, targetDate?: string) {
     const playlistId = this.extractPlaylistId(playlistUrl);
     if (!playlistId) throw new Error("Invalid YouTube Playlist URL");
+
+    // Check if already imported
+    const existing = await prisma.track.findFirst({
+      where: { userId, link: playlistUrl }
+    });
+    
+    if (existing) {
+      // Automatically trigger a sync if it already exists
+      return this.syncPlaylist(userId, existing.id);
+    }
 
     const details = await YouTubeClient.getPlaylistDetails(playlistId);
     if (!details) throw new Error("Playlist not found");
@@ -74,7 +85,9 @@ export const StudyService = {
         type: 'PLAYLIST',
         title: details.title,
         description: details.description,
+        link: playlistUrl,
         status: 'ACTIVE',
+        targetDate: targetDate ? new Date(targetDate) : null,
         totalDurationMinutes: Math.ceil(totalDurationSeconds / 60),
         remainingMinutes: Math.ceil(totalDurationSeconds / 60),
         units: {
@@ -87,6 +100,58 @@ export const StudyService = {
       where: { id: track.id },
       include: { _count: { select: { units: true } } },
     });
+  },
+
+  async syncPlaylist(userId: string, trackId: string) {
+    const track = await prisma.track.findUnique({
+      where: { id: trackId, userId },
+      include: { units: true }
+    });
+    if (!track || !track.link) throw new Error("Track not found or not a playlist");
+
+    const playlistId = this.extractPlaylistId(track.link);
+    if (!playlistId) throw new Error("Invalid playlist link");
+
+    const playlistItems = await YouTubeClient.getPlaylistItems(playlistId);
+    
+    // Identify new videos
+    const existingVideoIds = new Set(track.units.map(u => (u.metadata as any)?.youtubeId).filter(Boolean));
+    const newItems = playlistItems.filter(item => !existingVideoIds.has(item.id));
+
+    if (newItems.length === 0) return { added: 0 };
+
+    const videoIds = newItems.map(v => v.id);
+    const videoDetails = await YouTubeClient.getVideosDetails(videoIds);
+    const detailsMap = new Map(videoDetails.map(d => [d.id, d]));
+
+    let addedDurationSeconds = 0;
+    const newUnitsData = newItems.map((v) => {
+      const detail = detailsMap.get(v.id);
+      const durationSec = detail ? YouTubeClient.parseDuration(detail.duration) : 0;
+      addedDurationSeconds += durationSec;
+
+      return {
+        trackId,
+        title: v.title,
+        description: v.description,
+        type: 'VIDEO' as UnitType,
+        orderIndex: v.position,
+        durationSeconds: durationSec,
+        durationMinutes: Math.ceil(durationSec / 60),
+        status: 'BACKLOG' as UnitStatus,
+        metadata: {
+          youtubeId: v.id,
+          thumbnailUrl: v.thumbnailUrl,
+          channelName: v.channelTitle,
+          originalDuration: detail?.duration
+        } as Prisma.InputJsonValue,
+      };
+    });
+
+    await prisma.unit.createMany({ data: newUnitsData });
+    await this.recalculateTrackStats(trackId);
+
+    return { added: newItems.length };
   },
 
   async commitTrack(userId: string, trackId: string, data: { dailyAllocationMinutes: number, targetDate?: string }) {
@@ -118,66 +183,100 @@ export const StudyService = {
     const modifier = energyLevel === 'LOW' ? 0.6 : energyLevel === 'HIGH' ? 1.5 : 1.0;
     let budgetMinutes = Math.floor(dailyAllocation * modifier);
 
+    // 1. Identify existing commitment in TODAY
+    const existingToday = await prisma.unit.findMany({
+      where: { trackId, status: 'TODAY' }
+    });
+    
+    // Calculate how much time is already "booked" by incomplete TODAY items
+    const existingCommitment = existingToday.reduce((sum, u) => sum + (u.durationMinutes || 10), 0);
+    
+    // If we already have enough on our plate, don't add more. Just return current state.
+    if (existingCommitment >= budgetMinutes) {
+      await this.recalculateTrackStats(trackId);
+      return { plannedUnitIds: existingToday.map(u => u.id), totalMinutes: existingCommitment };
+    }
+
+    // 2. Adjust budget: What's left to plan?
+    let remainingBudget = budgetMinutes - existingCommitment;
+
+    // 3. Find Candidates: Prioritize IN_PROGRESS (unfinished work), then THIS_WEEK, then BACKLOG
     const candidates = await prisma.unit.findMany({
       where: { 
         trackId, 
-        status: { in: ['THIS_WEEK', 'BACKLOG', 'TODAY'] } 
+        status: { in: ['IN_PROGRESS', 'THIS_WEEK', 'BACKLOG'] } 
       },
       orderBy: [
-        { status: 'desc' }, // TODAY first (to keep them), then THIS_WEEK, then BACKLOG
+        { status: 'desc' }, // IN_PROGRESS > THIS_WEEK > BACKLOG (based on enum order or custom logic if needed)
         { orderIndex: 'asc' }
       ]
     });
 
-    const plannedUnitIds: string[] = [];
+    // Custom sort to ensure strict priority: IN_PROGRESS -> THIS_WEEK -> BACKLOG
+    const sortedCandidates = candidates.sort((a, b) => {
+      const priority = { 'IN_PROGRESS': 3, 'THIS_WEEK': 2, 'BACKLOG': 1 };
+      const diff = (priority[a.status as keyof typeof priority] || 0) - (priority[b.status as keyof typeof priority] || 0);
+      if (diff !== 0) return -diff; // Higher priority first
+      return a.orderIndex - b.orderIndex;
+    });
+
+    const newPlannedIds: string[] = [];
     let plannedMinutes = 0;
 
-    for (const unit of candidates) {
-      if (plannedMinutes >= budgetMinutes) break;
-      const dur = unit.durationMinutes || 10;
-      plannedUnitIds.push(unit.id);
-      plannedMinutes += dur;
+    for (const unit of sortedCandidates) {
+      const duration = unit.durationMinutes || 10;
+      // Allow slightly going over if it's the first/only item being added
+      if (plannedMinutes + duration <= remainingBudget || (plannedMinutes === 0 && remainingBudget > 0)) {
+        newPlannedIds.push(unit.id);
+        plannedMinutes += duration;
+      }
     }
 
-    if (plannedUnitIds.length > 0) {
+    if (newPlannedIds.length > 0) {
       await prisma.unit.updateMany({
-        where: { trackId, status: 'TODAY' },
-        data: { status: 'THIS_WEEK' }
-      });
-
-      await prisma.unit.updateMany({
-        where: { id: { in: plannedUnitIds } },
+        where: { id: { in: newPlannedIds } },
         data: { status: 'TODAY' }
       });
     }
 
-    // Weekly rebalancing
-    const weeklyBudget = dailyAllocation * 7;
-    const backlogUnits = await prisma.unit.findMany({
-      where: { trackId, status: { in: ['BACKLOG', 'THIS_WEEK'] }, id: { notIn: plannedUnitIds } },
-      orderBy: { orderIndex: 'asc' },
-      take: 50 
+    // 4. Weekly Rebalancing (Pull from Backlog to This Week to maintain a buffer)
+    // We want ~7 days worth of content in the "Active" pipeline (Today + This Week)
+    const weeklyTarget = dailyAllocation * 7;
+    
+    // Count what is currently in THIS_WEEK + TODAY
+    const activePipelineUnits = await prisma.unit.findMany({
+      where: { trackId, status: { in: ['TODAY', 'THIS_WEEK'] } }
     });
+    const currentPipelineLoad = activePipelineUnits.reduce((acc, u) => acc + (u.durationMinutes || 0), 0);
+    
+    if (currentPipelineLoad < weeklyTarget) {
+      const needed = weeklyTarget - currentPipelineLoad;
+      const backlogToPull = await prisma.unit.findMany({
+        where: { trackId, status: 'BACKLOG' },
+        orderBy: { orderIndex: 'asc' },
+        take: 20 // Reasonable batch limit
+      });
 
-    let currentWeeklySum = 0;
-    const thisWeekIds: string[] = [];
-    for (const unit of backlogUnits) {
-      if (currentWeeklySum + (unit.durationMinutes || 0) <= weeklyBudget) {
-        thisWeekIds.push(unit.id);
-        currentWeeklySum += (unit.durationMinutes || 0);
-      } else {
-        break;
+      let pulled = 0;
+      const idsToPromote: string[] = [];
+      for (const unit of backlogToPull) {
+        if (pulled < needed) {
+          idsToPromote.push(unit.id);
+          pulled += (unit.durationMinutes || 0);
+        }
+      }
+
+      if (idsToPromote.length > 0) {
+        await prisma.unit.updateMany({
+          where: { id: { in: idsToPromote } },
+          data: { status: 'THIS_WEEK' }
+        });
       }
     }
 
-    if (thisWeekIds.length > 0) {
-      await prisma.unit.updateMany({
-        where: { id: { in: thisWeekIds } },
-        data: { status: 'THIS_WEEK' }
-      });
-    }
+    await this.recalculateTrackStats(trackId);
 
-    return { plannedUnitIds, totalMinutes: plannedMinutes };
+    return { plannedUnitIds: newPlannedIds, totalMinutes: plannedMinutes };
   },
 
   async getTrackSummary(userId: string, trackId: string) {
@@ -209,17 +308,35 @@ export const StudyService = {
     const remaining = track.remainingMinutes;
     const daysToFinish = avgMinsPerDay > 0 ? Math.ceil(remaining / avgMinsPerDay) : 0;
     const estCompletionDate = new Date();
+    estCompletionDate.setHours(0,0,0,0);
     estCompletionDate.setDate(estCompletionDate.getDate() + daysToFinish);
 
-    // Ahead/Behind Logic
-    const startDate = track.createdAt;
-    const daysSinceStart = Math.max(1, Math.floor((Date.now() - startDate.getTime()) / (24 * 60 * 60 * 1000)));
-    const expectedProgressMins = daysSinceStart * (track.dailyAllocationMinutes || 30);
-    const actualProgressMins = (track.totalDurationMinutes - track.remainingMinutes);
-    
-    const diffMins = actualProgressMins - expectedProgressMins;
-    const status = diffMins > 30 ? 'AHEAD' : diffMins < -30 ? 'BEHIND' : 'ON_TRACK';
-    const daysDiff = Math.abs(Math.floor(diffMins / (track.dailyAllocationMinutes || 30)));
+    // Ahead/Behind Logic (Corrected: Compare Expected Finish vs Planned Target)
+    let status: 'AHEAD' | 'BEHIND' | 'ON_TRACK' = 'ON_TRACK';
+    let daysDiff = 0;
+
+    if (track.targetDate) {
+      const plannedDate = new Date(track.targetDate);
+      plannedDate.setHours(0,0,0,0);
+      
+      const diffTime = plannedDate.getTime() - estCompletionDate.getTime();
+      daysDiff = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (daysDiff > 0) status = 'AHEAD';
+      else if (daysDiff < 0) {
+        status = 'BEHIND';
+        daysDiff = Math.abs(daysDiff);
+      }
+    } else {
+      // Legacy fallback if no target date
+      const startDate = track.createdAt;
+      const daysSinceStart = Math.max(1, Math.floor((Date.now() - startDate.getTime()) / (24 * 60 * 60 * 1000)));
+      const expectedProgressMins = daysSinceStart * (track.dailyAllocationMinutes || 30);
+      const actualProgressMins = (track.totalDurationMinutes - track.remainingMinutes);
+      const diffMins = actualProgressMins - expectedProgressMins;
+      status = diffMins > 30 ? 'AHEAD' : diffMins < -30 ? 'BEHIND' : 'ON_TRACK';
+      daysDiff = Math.abs(Math.floor(diffMins / (track.dailyAllocationMinutes || 30)));
+    }
 
     const todayUnits = track.units.filter(u => u.status === 'TODAY');
     const todayTargetMins = todayUnits.reduce((acc, u) => acc + (u.durationMinutes || 0), 0);
@@ -231,6 +348,9 @@ export const StudyService = {
     }, 0);
 
     const totalInvestmentMinutes = track.units.reduce((acc, u) => acc + (u.actualTimeSpentMinutes || 0), 0);
+
+    const weeklyVelocityMins = avgMinsPerDay * 7;
+    const averageWeeklyProgress = track.totalDurationMinutes > 0 ? (weeklyVelocityMins / track.totalDurationMinutes) * 100 : 0;
 
     return {
       track,
@@ -244,7 +364,8 @@ export const StudyService = {
         completedVideos: track.units.filter(u => u.status === 'DONE').length,
         totalVideos: track.units.length,
         masteredContentMinutes: Math.round(masteredContentMinutes),
-        totalInvestmentMinutes
+        totalInvestmentMinutes,
+        averageWeeklyProgress: parseFloat(averageWeeklyProgress.toFixed(1))
       }
     };
   },
@@ -316,6 +437,19 @@ export const StudyService = {
   async listTracks(userId: string) {
     return prisma.track.findMany({
       where: { userId },
+      include: {
+        units: {
+          select: { 
+            id: true, 
+            title: true, 
+            status: true, 
+            actualTimeSpentMinutes: true, 
+            watchPercentage: true,
+            durationMinutes: true 
+          },
+          orderBy: { orderIndex: 'asc' }
+        }
+      },
       orderBy: { updatedAt: 'desc' }
     });
   },
@@ -323,7 +457,17 @@ export const StudyService = {
   async getTrack(userId: string, trackId: string) {
     return prisma.track.findFirst({
       where: { id: trackId, userId },
-      include: { units: { orderBy: { orderIndex: 'asc' } } }
+      include: { 
+        units: { 
+          orderBy: { orderIndex: 'asc' },
+          include: {
+            sessions: {
+              orderBy: { startedAt: 'desc' },
+              take: 20
+            }
+          }
+        } 
+      }
     });
   },
 
@@ -408,6 +552,19 @@ export const StudyService = {
 
     const isFullyDone = data.watchPercentage >= 99;
 
+    // Create session for the final effort
+    if (data.minutesSpent > 0) {
+      await prisma.unitSession.create({
+        data: {
+          userId,
+          unitId,
+          startedAt: new Date(Date.now() - data.minutesSpent * 60000),
+          endedAt: new Date(),
+          watchedSeconds: data.minutesSpent * 60
+        }
+      });
+    }
+
     const updatedUnit = await prisma.unit.update({
       where: { id: unitId },
       data: {
@@ -416,7 +573,7 @@ export const StudyService = {
         difficultyRating: data.difficulty,
         takeaways: data.takeaways,
         lastCompletedAt: isFullyDone ? new Date() : unit.lastCompletedAt,
-        watchPercentage: data.watchPercentage,
+        watchPercentage: Math.max(unit.watchPercentage || 0, data.watchPercentage),
         actualTimeSpentMinutes: { increment: data.minutesSpent },
         lastWatchedAt: new Date()
       }
@@ -434,21 +591,35 @@ export const StudyService = {
     return updatedUnit;
   },
 
-  async updateUnitProgress(userId: string, unitId: string, data: { minutesSpent: number; watchPercentage: number }) {
+  async updateUnitProgress(userId: string, unitId: string, data: { secondsSpent: number; watchPercentage: number }) {
     const unit = await prisma.unit.findUnique({ where: { id: unitId }, include: { track: true } });
     if (!unit || unit.track.userId !== userId) throw new Error("Unit not found");
+
+    if (data.secondsSpent > 0) {
+      await prisma.unitSession.create({
+        data: {
+          userId,
+          unitId,
+          startedAt: new Date(Date.now() - data.secondsSpent * 1000),
+          endedAt: new Date(),
+          watchedSeconds: data.secondsSpent
+        }
+      });
+    }
+
+    const minutesSpent = Math.max(1, Math.round(data.secondsSpent / 60));
 
     const updatedUnit = await prisma.unit.update({
       where: { id: unitId },
       data: {
-        actualTimeSpentMinutes: { increment: data.minutesSpent },
-        watchPercentage: data.watchPercentage,
+        actualTimeSpentMinutes: { increment: minutesSpent },
+        watchPercentage: Math.max(unit.watchPercentage || 0, data.watchPercentage),
         status: data.watchPercentage >= 95 ? 'DONE' : 'IN_PROGRESS',
         lastWatchedAt: new Date()
       }
     });
 
-    await this.updateDailySession(userId, data.minutesSpent, 0, 0);
+    await this.updateDailySession(userId, minutesSpent, 0, 0);
     await this.recalculateTrackStats(unit.trackId);
     return updatedUnit;
   },
@@ -500,7 +671,7 @@ export const StudyService = {
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
 
-    const [activeTracks, sessions, todayUnits, dueRevisions, globalNextUnit] = await Promise.all([
+    const [activeTracks, sessions, todayUnits, dueRevisions, globalNextUnit, lastReflection] = await Promise.all([
       prisma.track.findMany({
         where: { userId, status: 'ACTIVE' },
         include: { units: { where: { status: 'TODAY' } } },
@@ -533,15 +704,19 @@ export const StudyService = {
           { orderIndex: 'asc' }
         ],
         include: { track: true }
+      }),
+      prisma.weeklyReflection.findFirst({
+        where: { userId },
+        orderBy: { weekStart: 'desc' }
       })
     ]);
 
     const plannedLoad = todayUnits.reduce((acc, u) => acc + this.calculateUnitWeight(u), 0);
     
-    const activeSessions = sessions.filter(s => s.cognitiveLoadScore > 0);
+    const activeSessionsCount = sessions.filter(s => s.cognitiveLoadScore > 0).length;
     let baselineCapacity = 3;
-    if (activeSessions.length >= 7) {
-      baselineCapacity = activeSessions.reduce((acc, s) => acc + s.cognitiveLoadScore, 0) / activeSessions.length;
+    if (activeSessionsCount >= 7) {
+      baselineCapacity = sessions.reduce((acc, s) => acc + s.cognitiveLoadScore, 0) / sessions.length;
     }
 
     const maxNeuralCapacity = baselineCapacity * 1.5;
@@ -555,8 +730,15 @@ export const StudyService = {
 
     const fatigueScore = this.calculateFatigueScore(sessions);
     let fatigueLevel: 'LOW' | 'MODERATE' | 'HIGH' = 'LOW';
-    if (fatigueScore > 6) fatigueLevel = 'HIGH';
-    else if (fatigueScore > 3) fatigueLevel = 'MODERATE';
+    let fatigueReason = "Optimal recovery detected.";
+    
+    if (fatigueScore > 6) {
+      fatigueLevel = 'HIGH';
+      fatigueReason = "Persistent high load without breaks.";
+    } else if (fatigueScore > 3) {
+      fatigueLevel = 'MODERATE';
+      fatigueReason = "Moderate strain accumulated.";
+    }
 
     const burnoutRisk = this.checkBurnoutRisk(sessions, fatigueLevel);
     const contextSwitchRisk = activeTracks.length > 4;
@@ -581,12 +763,42 @@ export const StudyService = {
       globalNextUnit,
       dailyLoadPercentage,
       maxNeuralCapacity,
+      lastReflectedAt: lastReflection?.createdAt || null,
+      loadBreakdown: {
+        plannedLoad: parseFloat(plannedLoad.toFixed(1)),
+        capacity: parseFloat(maxNeuralCapacity.toFixed(1)),
+        highEffortUnits: todayUnits.filter(u => u.estimatedEffort === 'HIGH' || (u.durationMinutes || 0) > 45).length,
+        contextSwitches: activeTracks.length
+      },
+      fatigueDetails: {
+        score: fatigueScore,
+        reason: fatigueReason,
+        isBurnoutRisk: burnoutRisk
+      },
       stats: {
         totalXP,
         currentLevel,
         nextLevelXP: 100 * Math.pow(currentLevel + 1, 2)
       }
     };
+  },
+
+  async saveWeeklyReflection(userId: string, data: { answers: any; moodScore: number; stressLevel: number }) {
+    const today = new Date();
+    const day = today.getDay();
+    const diff = today.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is sunday
+    const weekStart = new Date(today.setDate(diff));
+    weekStart.setHours(0, 0, 0, 0);
+
+    return prisma.weeklyReflection.create({
+      data: {
+        userId,
+        weekStart,
+        answers: data.answers,
+        moodScore: data.moodScore,
+        stressLevel: data.stressLevel
+      }
+    });
   },
 
   calculateFatigueScore(sessions: any[]): number {
