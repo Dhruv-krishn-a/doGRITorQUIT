@@ -4,12 +4,12 @@ import { getServerUser } from "@/lib/auth-server";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { trackId: string } }
+  { params }: { params: Promise<{ trackId: string }> }
 ) {
   const user = await getServerUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { trackId } = params;
+  const { trackId } = await params;
 
   try {
     const result = await study.StudyService.syncPlaylist(user.id, trackId);

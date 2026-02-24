@@ -335,9 +335,9 @@ export function StudyView() {
   const unit = activeTrack?.track?.units?.find((u) => u.id === unitId);
 
   // Progress Tracking Hook
-  const durationSeconds = typeof unit.metadata === 'string' 
+  const durationSeconds = typeof unit?.metadata === 'string' 
     ? (JSON.parse(unit.metadata)?.durationSeconds || 0)
-    : (unit.metadata as any)?.durationSeconds || 0;
+    : (unit?.metadata as any)?.durationSeconds || 0;
   const { percentage, onProgress } = useVideoProgress(durationSeconds);
 
   useEffect(() => {

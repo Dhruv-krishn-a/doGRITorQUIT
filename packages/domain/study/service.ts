@@ -9,7 +9,8 @@ import {
   Track,
   Unit,
   Effort,
-  EnergyLevel
+  EnergyLevel,
+  DailySession
 } from '@prisma/client';
 
 export const StudyService = {

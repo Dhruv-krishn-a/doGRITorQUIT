@@ -146,7 +146,7 @@ export function TrackHeader({ track, stats, currentEnergy, onEnergySelect, onOpt
             <MetricItem 
               icon={<Clock size={16} className="text-emerald-500" />}
               label="Remaining"
-              value={formatMins(track.remainingMinutes)}
+              value={formatMins(track.remainingMinutes || 0)}
             />
           </div>
         </motion.div>
