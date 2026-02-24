@@ -14,8 +14,9 @@ export async function POST(
   try {
     const result = await study.StudyService.syncPlaylist(user.id, trackId);
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Failed to sync track:", error);
-    return NextResponse.json({ error: error.message || "Failed to sync track" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Failed to sync track";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

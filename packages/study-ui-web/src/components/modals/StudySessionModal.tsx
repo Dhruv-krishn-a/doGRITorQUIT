@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { X, CheckCircle, Loader2, History, Timer, Plus, ChevronRight, Zap, Smile, Frown, Star, MessageSquare, Clock, Youtube, Activity } from 'lucide-react';
+import { X, CheckCircle, Loader2, History, Timer, Plus, ChevronRight, Zap, Smile, Frown, Star, MessageSquare, Clock, Youtube, Activity, Play, Pause } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStudy } from '@planner/study-core';
 import { toast } from 'sonner';
@@ -28,11 +28,11 @@ export function StudySessionModal() {
   const previousStudyMins = activeUnit?.actualTimeSpentMinutes || 0;
 
   useEffect(() => {
-    let interval: any;
+    let interval: NodeJS.Timeout;
     if (sessionMode === 'TIMER' && !isPaused && !showForm) {
       interval = setInterval(() => setElapsed(e => e + 1), 1000);
     }
-    return () => clearInterval(interval);
+    return () => clearInterval(interval!);
   }, [sessionMode, isPaused, showForm]);
 
   useEffect(() => {
@@ -84,7 +84,7 @@ export function StudySessionModal() {
       });
       toast.success('Progress saved');
       closeModal();
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error('Failed to save progress');
     } finally {
       setLoading(false);

@@ -5,7 +5,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Plan as BasePlan, Task as BaseTask, Subtask as BaseSubtask } from "@/types/plan";
 import Button from "../../../../shared/components/ui/Button"; 
-import { Clock, CheckCircle2, Plus, Trash2, Pencil, X, Save, Calendar, ChevronRight, Layout, BarChart3, AlertCircle } from "lucide-react";
+import { Clock, CheckCircle2, Plus, Trash2, Pencil, X, Save, ChevronRight, Layout, BarChart3, AlertCircle } from "lucide-react";
 
 // --- 1. Types (Unchanged) ---
 type PriorityType = "Low" | "Medium" | "High" | "Urgent" | "low" | "medium" | "high" | "urgent";
@@ -339,7 +339,7 @@ export default function PlanDetailClient({ initialPlan }: { initialPlan: Extende
            if(displayDates.includes(today)) setSelectedDate(today);
            else setSelectedDate(displayDates[0]);
       }
-  }, [displayDates]);
+  }, [displayDates, selectedDate]);
 
   // 4. Derived Progress for Header (New Visual, derived from existing data)
   const progressStats = useMemo(() => {
@@ -439,7 +439,6 @@ export default function PlanDetailClient({ initialPlan }: { initialPlan: Extende
                         const isToday = normalizeDate(new Date()) === dateKey;
                         const isPast = new Date(dateKey) < new Date(new Date().setHours(0,0,0,0));
                         const tasksCount = (tasksByDate[dateKey] || []).length;
-                        const hasTasks = tasksCount > 0;
                         const isUnscheduled = dateKey === "Unscheduled";
 
                         return (

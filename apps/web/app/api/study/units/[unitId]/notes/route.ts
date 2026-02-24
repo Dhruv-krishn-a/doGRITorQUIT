@@ -17,7 +17,8 @@ export async function POST(
       data: { notes }
     });
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error("Failed to save notes:", error);
     return NextResponse.json({ error: "Failed to save notes" }, { status: 500 });
   }
 }

@@ -13,7 +13,8 @@ export async function POST(
   try {
     const session = await study.StudyService.startUnitSession(user.id, unitId);
     return NextResponse.json({ sessionId: session.id, startedAt: session.startedAt });
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error("Failed to start session:", error);
     return NextResponse.json({ error: "Failed to start session" }, { status: 500 });
   }
 }

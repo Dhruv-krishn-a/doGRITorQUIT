@@ -13,6 +13,8 @@ export async function POST(req: NextRequest) {
     const result = await study.StudyService.planToday(user.id, trackId, energyLevel);
     return NextResponse.json(result);
   } catch (error) {
+    // Actually using the variable by logging it
+    console.error("[Study Plan API Error]:", error); 
     return NextResponse.json({ error: "Planning failed" }, { status: 500 });
   }
 }

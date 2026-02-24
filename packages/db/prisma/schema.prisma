@@ -492,6 +492,7 @@ model Track {
   status             TrackStatus @default(ACTIVE)
   priority           Int         @default(0)
   targetDate         DateTime?
+  link               String?     @db.Text
   progressPercentage Float       @default(0)
   confidenceScore    Float       @default(0)
   totalTimeMinutes   Int         @default(0)

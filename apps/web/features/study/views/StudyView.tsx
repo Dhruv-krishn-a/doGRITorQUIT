@@ -78,7 +78,9 @@ const VideoPanel = ({
       if (iframe && iframe.style) {
         iframe.style.pointerEvents = "auto";
       }
-    } catch {}
+    } catch (e) {
+      console.warn("Failed to adjust iframe style:", e);
+    }
   };
 
   return (
@@ -200,13 +202,11 @@ interface NotesPanelProps {
     modal: "CREATE" | "DELETE" | "COMMIT" | "SESSION" | "LOGS" | "REFLECTION" | null,
     unit?: Unit | null,
     mode?: "STUDY" | "TIMER" | "COMPLETE" | "LOGS",
-    data?: any
+    data?: unknown
   ) => void;
   logProgress: (unitId: string, data: { secondsSpent: number; watchPercentage: number }) => Promise<void>;
   seconds: number;
   lastLoggedSeconds: number;
-  setLastLoggedSeconds: (s: number) => void;
-  setIsPaused: (p: boolean) => void;
   watchPercentage: number;
 }
 
@@ -220,8 +220,6 @@ const NotesPanel = ({
   logProgress,
   seconds,
   lastLoggedSeconds,
-  setLastLoggedSeconds,
-  setIsPaused,
   watchPercentage
 }: NotesPanelProps) => {
   const router = useRouter();
@@ -337,7 +335,10 @@ export function StudyView() {
   const unit = activeTrack?.track?.units?.find((u) => u.id === unitId);
 
   // Progress Tracking Hook
-  const { percentage, onProgress } = useVideoProgress((unit as any)?.durationSeconds || 0);
+  const durationSeconds = typeof unit.metadata === 'string' 
+    ? (JSON.parse(unit.metadata)?.durationSeconds || 0)
+    : (unit.metadata as any)?.durationSeconds || 0;
+  const { percentage, onProgress } = useVideoProgress(durationSeconds);
 
   useEffect(() => {
     if (unit && ['BACKLOG', 'THIS_WEEK', 'TODAY'].includes(unit.status)) {
@@ -565,8 +566,6 @@ export function StudyView() {
                   logProgress={logProgress}
                   seconds={seconds}
                   lastLoggedSeconds={lastLoggedSeconds}
-                  setLastLoggedSeconds={setLastLoggedSeconds}
-                  setIsPaused={setIsPaused}
                   watchPercentage={percentage}
                 />
               </div>
@@ -608,8 +607,6 @@ export function StudyView() {
                   logProgress={logProgress}
                   seconds={seconds}
                   lastLoggedSeconds={lastLoggedSeconds}
-                  setLastLoggedSeconds={setLastLoggedSeconds}
-                  setIsPaused={setIsPaused}
                   watchPercentage={percentage}
                 />
               </div>
@@ -642,8 +639,6 @@ export function StudyView() {
                   logProgress={logProgress}
                   seconds={seconds}
                   lastLoggedSeconds={lastLoggedSeconds}
-                  setLastLoggedSeconds={setLastLoggedSeconds}
-                  setIsPaused={setIsPaused}
                   watchPercentage={percentage}
                 />
               </div>

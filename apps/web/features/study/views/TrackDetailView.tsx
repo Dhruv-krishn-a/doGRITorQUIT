@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Settings, Trash2, Share2, RefreshCw, Loader2, LayoutGrid, List } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useStudy, EnergyLevel, Unit, UnitStatus } from '@planner/study-core';
+import { toast } from 'sonner';
 import { 
   TrackHeader, 
   KanbanBoard,

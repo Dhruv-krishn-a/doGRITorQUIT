@@ -13,7 +13,8 @@ export async function GET(
   try {
     const data = await study.StudyService.getTrackSummary(user.id, trackId);
     return NextResponse.json(data);
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error("Failed to fetch track summary:", error);
     return NextResponse.json({ error: "Failed to fetch track summary" }, { status: 500 });
   }
 }
@@ -29,7 +30,8 @@ export async function DELETE(
   try {
     await study.StudyService.deleteTrack(user.id, trackId);
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error("Failed to delete track:", error);
     return NextResponse.json({ error: "Failed to delete track" }, { status: 500 });
   }
 }

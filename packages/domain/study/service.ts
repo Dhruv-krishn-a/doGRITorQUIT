@@ -641,7 +641,7 @@ export const StudyService = {
     }
   },
 
-  calculateUnitWeight(unit: any): number {
+  calculateUnitWeight(unit: Unit): number {
     let weight = 0;
     switch (unit.estimatedEffort) {
       case 'LOW': weight = 1; break;
@@ -801,7 +801,7 @@ export const StudyService = {
     });
   },
 
-  calculateFatigueScore(sessions: any[]): number {
+  calculateFatigueScore(sessions: DailySession[]): number {
     let score = 0;
     const last7Days = sessions.slice(0, 7);
     const missedDays = 7 - last7Days.length;
@@ -817,14 +817,14 @@ export const StudyService = {
     return score;
   },
 
-  checkBurnoutRisk(sessions: any[], fatigueLevel: string): boolean {
+  checkBurnoutRisk(sessions: DailySession[], fatigueLevel: string): boolean {
     if (fatigueLevel === 'HIGH') return true;
     const recentOverloads = sessions.slice(0, 10).filter(s => s.cognitiveLoadScore > 7).length;
     if (recentOverloads > 3) return true;
     return false;
   },
 
-  calculateStreak(sessions: any[]): number {
+  calculateStreak(sessions: DailySession[]): number {
     let streak = 0;
     const today = new Date();
     today.setHours(0, 0, 0, 0);

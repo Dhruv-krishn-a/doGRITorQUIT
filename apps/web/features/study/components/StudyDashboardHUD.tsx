@@ -61,7 +61,7 @@ export function StudyDashboardHUD({ data }: StudyDashboardHUDProps) {
           variants={item}
           className="lg:col-span-8 bg-white rounded-[3rem] p-6 md:p-10 shadow-2xl shadow-pink-100/40 relative overflow-hidden group border border-pink-50"
         >
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-linear-to-br from-pink-50 to-rose-50 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3 pointer-events-none transition-transform duration-1000 group-hover:scale-110 opacity-60" />
+          <div className="absolute top-0 right-0 w-125 h-125 bg-linear-to-br from-pink-50 to-rose-50 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3 pointer-events-none transition-transform duration-1000 group-hover:scale-110 opacity-60" />
           
           <div className="flex flex-col sm:flex-row justify-between items-start gap-6 mb-10 relative z-10">
             <div className="flex items-center gap-6 md:gap-8">
@@ -139,7 +139,7 @@ export function StudyDashboardHUD({ data }: StudyDashboardHUDProps) {
               </div>
            </div>
            <h4 className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] mb-2">Neural Capacity</h4>
-           <p className="text-[11px] text-slate-400 font-bold max-w-[200px] leading-relaxed wrap-break-word">
+           <p className="text-[11px] text-slate-400 font-bold max-w-50 leading-relaxed wrap-break-word">
              Optimized based on your 14-day velocity trajectory.
            </p>
         </motion.div>
@@ -202,7 +202,7 @@ export function StudyDashboardHUD({ data }: StudyDashboardHUDProps) {
 
         {/* Neural Decay (Review) */}
         <motion.div variants={item} className="lg:col-span-5 flex flex-col gap-8">
-           <div className="bg-white rounded-[3.5rem] border border-slate-100 p-8 md:p-10 shadow-xl shadow-slate-200/20 flex-1 flex flex-col relative overflow-hidden min-h-[300px] max-h-[450px]">
+           <div className="bg-white rounded-[3.5rem] border border-slate-100 p-8 md:p-10 shadow-xl shadow-slate-200/20 flex-1 flex flex-col relative overflow-hidden min-h-75 max-h-112.5">
               <div className="flex items-center justify-between mb-8 px-2 relative z-10 shrink-0">
                 <h3 className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-[0.4em] flex items-center gap-3">
                   <History size={18} className="text-indigo-500 shrink-0" />
@@ -226,7 +226,7 @@ export function StudyDashboardHUD({ data }: StudyDashboardHUDProps) {
                               <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest truncate w-full">
                                 {unit.track.title}
                               </span>
-                              <ArrowRight size={14} className="text-slate-300 group-hover:translate-x-1 transition-transform text-pink-400 group-hover:text-pink-500 shrink-0" />
+                              <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform text-pink-400 group-hover:text-pink-500 shrink-0" />
                             </div>
                             <p className="text-sm font-bold text-slate-700 line-clamp-1 group-hover:text-pink-600 transition-colors uppercase tracking-tight wrap-break-word">
                               {unit.title}

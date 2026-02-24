@@ -14,7 +14,8 @@ export async function POST(
   try {
     const unit = await study.StudyService.endUnitSession(user.id, sessionId, { watchedSeconds });
     return NextResponse.json({ unit });
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error("Failed to end session:", error);
     return NextResponse.json({ error: "Failed to end session" }, { status: 500 });
   }
 }

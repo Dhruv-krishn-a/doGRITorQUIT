@@ -16,7 +16,7 @@ export async function POST(
   try {
     const track = await study.StudyService.commitTrack(user.id, trackId, { dailyAllocationMinutes, targetDate });
     return NextResponse.json({ track });
-  } catch (error) {
+  } catch { 
     return NextResponse.json({ error: "Failed to commit track" }, { status: 500 });
   }
 }
