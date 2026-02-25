@@ -446,13 +446,13 @@ export const StudyService = {
     
     let remainingMinutes = 0;
     for (const u of units) {
-      if (u.status === 'DONE' || u.status === 'COMPLETED') continue;
+      if (u.status === 'DONE') continue;
       const watched = (u.totalWatchedSeconds || 0) / 60;
       const dur = u.durationMinutes || 0;
       remainingMinutes += Math.max(0, dur - watched);
     }
 
-    const completedUnits = units.filter(u => u.status === 'DONE' || u.status === 'COMPLETED');
+    const completedUnits = units.filter(u => u.status === 'DONE');
     const progress = units.length > 0 ? (completedUnits.length / units.length) * 100 : 0;
 
     // Dynamic Daily Allocation: If targetDate exists, recalculate allocation to meet it

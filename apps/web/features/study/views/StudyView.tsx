@@ -19,6 +19,7 @@ import {
   Loader2,
   Zap,
   Activity,
+  Target,
 } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useStudy, Unit } from "@planner/study-core";
@@ -40,6 +41,11 @@ interface VideoPanelProps {
   watchPercentage: number;
 }
 
+interface YouTubePlayer {
+  getCurrentTime: () => number;
+  getIframe: () => HTMLIFrameElement | null;
+}
+
 const VideoPanel = ({
   unit,
   youtubeId,
@@ -52,13 +58,13 @@ const VideoPanel = ({
   onProgress,
   watchPercentage
 }: VideoPanelProps) => {
-  const playerRef = React.useRef<any>(null);
+  const playerRef = React.useRef<YouTubePlayer | null>(null);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (!isPaused && playerRef.current) {
       interval = setInterval(() => {
-        const time = (playerRef.current as { getCurrentTime: () => number }).getCurrentTime();
+        const time = playerRef.current?.getCurrentTime();
         if (time) onProgress(time);
       }, 1000);
     }
@@ -72,9 +78,9 @@ const VideoPanel = ({
   };
 
   const onPlayerReady: YouTubeProps["onReady"] = (event) => {
-    playerRef.current = event.target;
+    playerRef.current = event.target as unknown as YouTubePlayer;
     try {
-      const iframe = event.target.getIframe ? event.target.getIframe() : null;
+      const iframe = playerRef.current?.getIframe ? playerRef.current.getIframe() : null;
       if (iframe && iframe.style) {
         iframe.style.pointerEvents = "auto";
       }

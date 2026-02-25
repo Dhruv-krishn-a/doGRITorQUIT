@@ -47,6 +47,7 @@ export interface Unit {
   todayGoalMinutes?: number;
   watchPercentage?: number;
   actualTimeSpentMinutes?: number;
+  totalWatchedSeconds?: number;
   metadata?: any;
   sessions?: {
     id: string;

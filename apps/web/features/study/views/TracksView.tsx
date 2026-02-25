@@ -248,7 +248,7 @@ export function TracksView() {
                              <>
                                <div className="w-px h-8 bg-rose-900/40" />
                                <div className="flex flex-col">
-                                  <span className="text-[8px] font-black text-amber-400/50 uppercase tracking-widest">Today's Goal</span>
+                                  <span className="text-[8px] font-black text-amber-400/50 uppercase tracking-widest">Today&apos;s Goal</span>
                                   <span className="text-[10px] font-black text-amber-400 uppercase">{dashboard.globalNextUnit.todayGoalMinutes}m</span>
                                </div>
                              </>
