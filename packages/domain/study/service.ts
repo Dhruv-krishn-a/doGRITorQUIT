@@ -97,14 +97,14 @@ export const StudyService = {
       },
     });
 
-    return prisma.track.findUnique({
+    return prisma.track.findFirst({
       where: { id: track.id },
       include: { _count: { select: { units: true } } },
     });
   },
 
   async syncPlaylist(userId: string, trackId: string) {
-    const track = await prisma.track.findUnique({
+    const track = await prisma.track.findFirst({
       where: { id: trackId, userId },
       include: { units: true }
     });
@@ -174,7 +174,7 @@ export const StudyService = {
   },
 
   async planToday(userId: string, trackId: string, energyLevel: EnergyLevel = 'MEDIUM') {
-    const track = await prisma.track.findUnique({
+    const track = await prisma.track.findFirst({
       where: { id: trackId, userId },
       include: { units: true }
     });
@@ -182,7 +182,13 @@ export const StudyService = {
 
     const dailyAllocation = track.dailyAllocationMinutes || 30;
     const modifier = energyLevel === 'LOW' ? 0.6 : energyLevel === 'HIGH' ? 1.5 : 1.0;
-    let budgetMinutes = Math.floor(dailyAllocation * modifier);
+    let totalBudget = Math.floor(dailyAllocation * modifier);
+
+    // 0. Reset all existing today goals for this track to start fresh
+    await prisma.unit.updateMany({
+      where: { trackId },
+      data: { todayGoalMinutes: null }
+    });
 
     // 1. Identify existing commitment in TODAY
     const existingToday = await prisma.unit.findMany({
@@ -190,61 +196,77 @@ export const StudyService = {
     });
     
     // Calculate how much time is already "booked" by incomplete TODAY items
-    const existingCommitment = existingToday.reduce((sum, u) => sum + (u.durationMinutes || 10), 0);
+    // For partially watched videos, we only count the remaining time
+    const existingCommitment = existingToday.reduce((sum, u) => {
+      const remaining = (u.durationMinutes || 0) - Math.floor((u.totalWatchedSeconds || 0) / 60);
+      return sum + Math.max(0, remaining);
+    }, 0);
     
-    // If we already have enough on our plate, don't add more. Just return current state.
-    if (existingCommitment >= budgetMinutes) {
+    // If we already have enough on our plate, don't add more.
+    if (existingCommitment >= totalBudget) {
       await this.recalculateTrackStats(trackId);
       return { plannedUnitIds: existingToday.map(u => u.id), totalMinutes: existingCommitment };
     }
 
     // 2. Adjust budget: What's left to plan?
-    let remainingBudget = budgetMinutes - existingCommitment;
+    let remainingBudget = totalBudget - existingCommitment;
 
     // 3. Find Candidates: Prioritize IN_PROGRESS (unfinished work), then THIS_WEEK, then BACKLOG
     const candidates = await prisma.unit.findMany({
       where: { 
         trackId, 
         status: { in: ['IN_PROGRESS', 'THIS_WEEK', 'BACKLOG'] } 
-      },
-      orderBy: [
-        { status: 'desc' }, // IN_PROGRESS > THIS_WEEK > BACKLOG (based on enum order or custom logic if needed)
-        { orderIndex: 'asc' }
-      ]
+      }
     });
 
     // Custom sort to ensure strict priority: IN_PROGRESS -> THIS_WEEK -> BACKLOG
     const sortedCandidates = candidates.sort((a, b) => {
       const priority = { 'IN_PROGRESS': 3, 'THIS_WEEK': 2, 'BACKLOG': 1 };
-      const diff = (priority[a.status as keyof typeof priority] || 0) - (priority[b.status as keyof typeof priority] || 0);
-      if (diff !== 0) return -diff; // Higher priority first
+      const aP = priority[a.status as keyof typeof priority] || 0;
+      const bP = priority[b.status as keyof typeof priority] || 0;
+      if (aP !== bP) return bP - aP;
       return a.orderIndex - b.orderIndex;
     });
 
-    const newPlannedIds: string[] = [];
-    let plannedMinutes = 0;
+    const unitsToUpdate: { id: string, status: UnitStatus, goal?: number }[] = [];
+    let addedMinutes = 0;
 
     for (const unit of sortedCandidates) {
-      const duration = unit.durationMinutes || 10;
-      // Allow slightly going over if it's the first/only item being added
-      if (plannedMinutes + duration <= remainingBudget || (plannedMinutes === 0 && remainingBudget > 0)) {
-        newPlannedIds.push(unit.id);
-        plannedMinutes += duration;
+      if (remainingBudget <= 0) break;
+
+      const totalDuration = unit.durationMinutes || 10;
+      const watchedMinutes = Math.floor((unit.totalWatchedSeconds || 0) / 60);
+      const remainingInUnit = Math.max(0, totalDuration - watchedMinutes);
+
+      if (remainingInUnit <= 0) continue;
+
+      if (remainingInUnit <= remainingBudget) {
+        // Can fit the whole remaining part of this unit
+        unitsToUpdate.push({ id: unit.id, status: 'TODAY', goal: totalDuration });
+        addedMinutes += remainingInUnit;
+        remainingBudget -= remainingInUnit;
+      } else {
+        // Partial fit: This unit is larger than the remaining budget
+        const partialGoal = watchedMinutes + remainingBudget;
+        unitsToUpdate.push({ id: unit.id, status: 'TODAY', goal: partialGoal });
+        addedMinutes += remainingBudget;
+        remainingBudget = 0; // Budget exhausted
       }
     }
 
-    if (newPlannedIds.length > 0) {
-      await prisma.unit.updateMany({
-        where: { id: { in: newPlannedIds } },
-        data: { status: 'TODAY' }
+    // Apply updates
+    for (const update of unitsToUpdate) {
+      await prisma.unit.update({
+        where: { id: update.id },
+        data: { 
+          status: update.status,
+          todayGoalMinutes: update.goal
+        }
       });
     }
 
-    // 4. Weekly Rebalancing (Pull from Backlog to This Week to maintain a buffer)
-    // We want ~7 days worth of content in the "Active" pipeline (Today + This Week)
+    // 4. Weekly Rebalancing (maintain buffer in THIS_WEEK)
     const weeklyTarget = dailyAllocation * 7;
-    
-    // Count what is currently in THIS_WEEK + TODAY
     const activePipelineUnits = await prisma.unit.findMany({
       where: { trackId, status: { in: ['TODAY', 'THIS_WEEK'] } }
     });
@@ -255,7 +277,7 @@ export const StudyService = {
       const backlogToPull = await prisma.unit.findMany({
         where: { trackId, status: 'BACKLOG' },
         orderBy: { orderIndex: 'asc' },
-        take: 20 // Reasonable batch limit
+        take: 30
       });
 
       let pulled = 0;
@@ -264,7 +286,7 @@ export const StudyService = {
         if (pulled < needed) {
           idsToPromote.push(unit.id);
           pulled += (unit.durationMinutes || 0);
-        }
+        } else break;
       }
 
       if (idsToPromote.length > 0) {
@@ -276,8 +298,7 @@ export const StudyService = {
     }
 
     await this.recalculateTrackStats(trackId);
-
-    return { plannedUnitIds: newPlannedIds, totalMinutes: plannedMinutes };
+    return { plannedUnitIds: unitsToUpdate.map(u => u.id), totalMinutes: addedMinutes + existingCommitment };
   },
 
   async getTrackSummary(userId: string, trackId: string) {
@@ -340,7 +361,15 @@ export const StudyService = {
     }
 
     const todayUnits = track.units.filter(u => u.status === 'TODAY');
-    const todayTargetMins = todayUnits.reduce((acc, u) => acc + (u.durationMinutes || 0), 0);
+    const todayTargetMins = todayUnits.reduce((acc, u) => {
+      if (u.todayGoalMinutes) {
+        // If there's a specific goal for today, use the delta from current watched
+        const currentWatchedMins = Math.floor((u.totalWatchedSeconds || 0) / 60);
+        const goalDelta = u.todayGoalMinutes - currentWatchedMins;
+        return acc + Math.max(0, goalDelta);
+      }
+      return acc + (u.durationMinutes || 0);
+    }, 0);
 
     const masteredContentMinutes = track.units.reduce((acc, u) => {
       const percent = u.watchPercentage || 0;
@@ -405,27 +434,49 @@ export const StudyService = {
     return updatedUnit;
   },
 
-  async recalculateTrackStats(trackId: string) {
-    const units = await prisma.unit.findMany({ where: { trackId } });
+  async recalculateTrackStats(trackId: string, userId?: string) {
+    const track = await prisma.track.findFirst({ 
+      where: { id: trackId, userId },
+      include: { units: true }
+    });
+    if (!track) return;
+
+    const units = track.units;
     const totalDuration = units.reduce((acc, u) => acc + (u.durationMinutes || 0), 0);
     
     let remainingMinutes = 0;
     for (const u of units) {
-      if (u.status === 'DONE') continue;
+      if (u.status === 'DONE' || u.status === 'COMPLETED') continue;
       const watched = (u.totalWatchedSeconds || 0) / 60;
       const dur = u.durationMinutes || 0;
       remainingMinutes += Math.max(0, dur - watched);
     }
 
-    const completedUnits = units.filter(u => u.status === 'DONE');
+    const completedUnits = units.filter(u => u.status === 'DONE' || u.status === 'COMPLETED');
     const progress = units.length > 0 ? (completedUnits.length / units.length) * 100 : 0;
+
+    // Dynamic Daily Allocation: If targetDate exists, recalculate allocation to meet it
+    let dailyAllocation = track.dailyAllocationMinutes;
+    if (track.targetDate) {
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const target = new Date(track.targetDate);
+      target.setHours(0,0,0,0);
+      
+      const diffTime = target.getTime() - today.getTime();
+      const diffDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+      
+      // Calculate how many minutes per day are needed to finish on time
+      dailyAllocation = Math.ceil(remainingMinutes / diffDays);
+    }
 
     await prisma.track.update({
       where: { id: trackId },
       data: {
         totalDurationMinutes: totalDuration,
         remainingMinutes: Math.ceil(remainingMinutes),
-        progressPercentage: progress
+        progressPercentage: progress,
+        dailyAllocationMinutes: dailyAllocation
       }
     });
   },
@@ -442,11 +493,15 @@ export const StudyService = {
         units: {
           select: { 
             id: true, 
+            trackId: true,
             title: true, 
             status: true, 
+            type: true,
+            orderIndex: true,
             actualTimeSpentMinutes: true, 
             watchPercentage: true,
-            durationMinutes: true 
+            durationMinutes: true,
+            todayGoalMinutes: true 
           },
           orderBy: { orderIndex: 'asc' }
         }
@@ -480,14 +535,21 @@ export const StudyService = {
   },
 
   async updateTrack(userId: string, trackId: string, updates: Partial<Prisma.TrackUpdateInput>) {
+    // First verify ownership
+    const track = await prisma.track.findFirst({ where: { id: trackId, userId } });
+    if (!track) throw new Error("Track not found");
+
     return prisma.track.update({
-      where: { id: trackId, userId },
+      where: { id: trackId },
       data: updates,
     });
   },
 
   async deleteTrack(userId: string, trackId: string) {
-    const units = await prisma.unit.findMany({ where: { trackId, track: { userId } } });
+    const track = await prisma.track.findFirst({ where: { id: trackId, userId } });
+    if (!track) throw new Error("Track not found");
+
+    const units = await prisma.unit.findMany({ where: { trackId } });
     const unitIds = units.map(u => u.id);
 
     if (unitIds.length > 0) {
@@ -495,7 +557,7 @@ export const StudyService = {
       await prisma.revisionSchedule.deleteMany({ where: { unitId: { in: unitIds } } });
     }
 
-    return prisma.track.delete({ where: { id: trackId, userId } });
+    return prisma.track.delete({ where: { id: trackId } });
   },
 
   /**
@@ -526,8 +588,11 @@ export const StudyService = {
   },
 
   async updateUnit(userId: string, unitId: string, updates: Partial<Prisma.UnitUpdateInput>) {
-    const unit = await prisma.unit.findUnique({ where: { id: unitId }, include: { track: true } });
-    if (!unit || unit.track.userId !== userId) throw new Error("Unit not found");
+    const unit = await prisma.unit.findFirst({ 
+      where: { id: unitId, track: { userId } }, 
+      include: { track: true } 
+    });
+    if (!unit) throw new Error("Unit not found");
 
     const updatedUnit = await prisma.unit.update({
       where: { id: unitId },
@@ -548,8 +613,11 @@ export const StudyService = {
     minutesSpent: number;
     watchPercentage: number;
   }) {
-    const unit = await prisma.unit.findUnique({ where: { id: unitId }, include: { track: true } });
-    if (!unit || unit.track.userId !== userId) throw new Error("Unit not found");
+    const unit = await prisma.unit.findFirst({ 
+      where: { id: unitId, track: { userId } }, 
+      include: { track: true } 
+    });
+    if (!unit) throw new Error("Unit not found");
 
     const isFullyDone = data.watchPercentage >= 99;
 
@@ -593,8 +661,11 @@ export const StudyService = {
   },
 
   async updateUnitProgress(userId: string, unitId: string, data: { secondsSpent: number; watchPercentage: number }) {
-    const unit = await prisma.unit.findUnique({ where: { id: unitId }, include: { track: true } });
-    if (!unit || unit.track.userId !== userId) throw new Error("Unit not found");
+    const unit = await prisma.unit.findFirst({ 
+      where: { id: unitId, track: { userId } }, 
+      include: { track: true } 
+    });
+    if (!unit) throw new Error("Unit not found");
 
     if (data.secondsSpent > 0) {
       await prisma.unitSession.create({

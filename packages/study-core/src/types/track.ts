@@ -44,6 +44,7 @@ export interface Unit {
   confidenceRating?: number;
   difficultyRating?: number;
   durationMinutes?: number;
+  todayGoalMinutes?: number;
   watchPercentage?: number;
   actualTimeSpentMinutes?: number;
   metadata?: any;

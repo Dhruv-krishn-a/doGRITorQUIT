@@ -31,15 +31,15 @@ export function KanbanBoard({ units, onAction, onDragEnd }: KanbanBoardProps) {
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="flex overflow-x-auto pb-10 gap-6 custom-scrollbar h-full items-start min-h-[600px]">
+      <div className="flex flex-col md:flex-row gap-3 items-start min-h-[600px] w-full pb-10 overflow-x-auto md:overflow-x-visible">
         {columnConfigs.map((col) => (
-          <div key={col.id} className="flex flex-col w-[320px] shrink-0 h-full">
-            <div className="flex items-center justify-between mb-6 px-4 shrink-0">
-              <div className="flex items-center gap-3">
-                <div className={`w-2.5 h-2.5 rounded-full ${col.dotColor} shadow-[0_0_10px_rgba(0,0,0,0.1)]`} />
-                <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.2em]">{col.label}</h3>
+          <div key={col.id} className="flex flex-col h-full w-full md:flex-1 min-w-[160px] md:min-w-0">
+            <div className="flex items-center justify-between mb-4 px-2 shrink-0">
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${col.dotColor} shadow-[0_0_8px_rgba(0,0,0,0.1)]`} />
+                <h3 className="text-[9px] font-black text-rose-100/70 uppercase tracking-widest truncate">{col.label}</h3>
               </div>
-              <span className="text-[10px] font-black text-slate-400 bg-white border border-slate-100 px-3 py-1 rounded-xl shadow-sm">
+              <span className="text-[8px] font-black text-rose-400/50 bg-white/5 border border-white/5 px-2 py-0.5 rounded-lg shadow-sm">
                 {(columns as any)[col.id].length}
               </span>
             </div>
@@ -49,11 +49,13 @@ export function KanbanBoard({ units, onAction, onDragEnd }: KanbanBoardProps) {
                 <div
                   ref={provided.innerRef}
                   {...provided.droppableProps}
-                  className={`flex-1 min-h-[400px] overflow-y-auto custom-scrollbar rounded-[2.5rem] p-3 transition-all duration-500 border border-transparent ${
-                    snapshot.isDraggingOver ? `${col.color} border-slate-200/50 shadow-inner` : 'bg-slate-50/40'
+                  className={`flex-1 min-h-[400px] rounded-3xl p-2 transition-all duration-500 border ${
+                    snapshot.isDraggingOver 
+                      ? 'bg-rose-500/5 border-rose-500/20 shadow-[inset_0_0_20px_rgba(244,63,94,0.05)]' 
+                      : 'bg-[#14030b]/40 border-white/5'
                   }`}
                 >
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {(columns as any)[col.id].map((unit: Unit, index: number) => (
                       <UnitCard 
                         key={unit.id} 

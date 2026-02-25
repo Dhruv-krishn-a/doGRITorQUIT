@@ -28,8 +28,10 @@ export function TrackDetailView() {
   const [energy, setEnergy] = useState<EnergyLevel>('MEDIUM');
   const [isSyncing, setIsSyncing] = useState(false);
   const [viewMode, setViewMode] = useState<'KANBAN' | 'LIST'>('KANBAN');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     if (trackId) {
       fetchTrack(trackId);
     }
@@ -91,44 +93,55 @@ export function TrackDetailView() {
     }
   };
 
+  if (!mounted) return null;
+
   if (loading && !activeTrack) return (
     <div className="flex items-center justify-center min-h-[60vh]">
       <div className="flex flex-col items-center gap-4">
-        <Loader2 className="w-8 h-8 text-rose-500 animate-spin" />
-        <div className="text-slate-500 font-bold uppercase tracking-widest text-xs">Loading course...</div>
+        <Loader2 className="w-8 h-8 text-rose-500 animate-spin drop-shadow-[0_0_10px_rgba(244,63,94,0.5)]" />
+        <div className="text-rose-300/50 font-bold uppercase tracking-widest text-xs">Loading Neural Vector...</div>
       </div>
     </div>
   );
 
   if (!activeTrack) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
-      <div className="text-slate-400 font-bold uppercase tracking-widest text-sm">Course not found.</div>
-      <button onClick={() => router.push('/dashboard/study')} className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest">Back to Dashboard</button>
+      <div className="text-rose-400/50 font-bold uppercase tracking-widest text-sm">Vector not found.</div>
+      <button 
+        onClick={() => router.push('/dashboard/study')} 
+        className="px-8 py-4 bg-linear-to-r from-rose-600 to-pink-600 text-white rounded-4xl font-black text-xs uppercase tracking-widest shadow-[0_0_15px_rgba(244,63,94,0.4)] hover:shadow-[0_0_25px_rgba(244,63,94,0.6)] border border-rose-400/50 transition-all active:scale-95"
+      >
+        Return to Command Center
+      </button>
     </div>
   );
 
   return (
-    <div className="flex-1 min-w-0 relative space-y-12 text-slate-900 pb-24 w-full px-4 md:px-8">
-      <div className="fixed top-0 right-0 w-96 h-96 bg-rose-50/50 rounded-full blur-[120px] -z-10 pointer-events-none opacity-50" />
+    // CHANGED: text-slate-900 replaced with text-rose-100 to inherit dark mode properly
+    <div className="flex-1 min-w-0 relative space-y-12 text-rose-100 pb-24 w-full px-4 md:px-8">
+      {/* CHANGED: Background ambient blur updated to rose pink */}
+      <div className="fixed top-0 right-0 w-96 h-96 bg-rose-500/10 rounded-full blur-[120px] -z-10 pointer-events-none opacity-50" />
       
       <header className="flex flex-col gap-10 w-full pt-10">
         <div className="flex flex-col md:flex-row md:items-center gap-8 w-full">
           <button 
             onClick={() => router.push('/dashboard/study')} 
-            className="p-5 bg-white border border-rose-100 rounded-3xl text-slate-400 hover:text-rose-600 hover:border-rose-200 transition-all shadow-sm active:scale-95 shrink-0 self-start"
+            // CHANGED: Restyled to match the dark cherry dashboard buttons
+            className="p-5 bg-[#14030b] border border-rose-900/50 rounded-3xl text-rose-300/50 hover:text-rose-400 hover:border-rose-500/50 hover:bg-[#1c0510] hover:shadow-[0_0_15px_rgba(244,63,94,0.2)] transition-all active:scale-95 shrink-0 self-start"
           >
             <ArrowLeft size={28} />
           </button>
           <div className="flex-1 min-w-0">
              <div className="flex items-center gap-4 mb-2">
-               <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight truncate">
+               {/* CHANGED: Title and badge restyled */}
+               <h1 className="text-4xl md:text-5xl font-black text-rose-50 tracking-tight truncate drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">
                  {activeTrack.track.title}
                </h1>
-               <span className="text-[10px] font-black bg-slate-900 text-white px-3 py-1 rounded-lg uppercase tracking-widest shrink-0">
+               <span className="text-[10px] font-black bg-rose-500/20 text-rose-400 border border-rose-500/30 shadow-[0_0_10px_rgba(244,63,94,0.2)] px-3 py-1 rounded-lg uppercase tracking-widest shrink-0">
                  {activeTrack.track.type === 'PLAYLIST' ? 'Course' : 'Manual'}
                </span>
              </div>
-             <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px] opacity-60">
+             <p className="text-rose-400/60 font-bold uppercase tracking-widest text-[10px]">
                {activeTrack.track.description || 'Active learning track.'}
              </p>
           </div>
@@ -137,18 +150,19 @@ export function TrackDetailView() {
               <button 
                 onClick={handleSync}
                 disabled={isSyncing}
-                className="flex items-center gap-2 px-6 py-4 bg-white border border-slate-100 rounded-3xl text-slate-600 hover:text-rose-600 font-black text-[10px] uppercase tracking-widest transition-all shadow-sm active:scale-95 disabled:opacity-50"
+                // CHANGED: Primary action buttons completely restyled
+                className="flex items-center gap-2 px-6 py-4 bg-[#14030b] border border-rose-900/50 rounded-3xl text-rose-200/80 hover:text-rose-100 hover:bg-[#1c0510] hover:border-rose-500/50 hover:shadow-[0_0_15px_rgba(244,63,94,0.2)] font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50"
               >
-                {isSyncing ? <Loader2 size={18} className="animate-spin" /> : <RefreshCw size={18} />}
+                {isSyncing ? <Loader2 size={18} className="animate-spin" /> : <RefreshCw size={18} className="text-rose-500" />}
                 {isSyncing ? 'Syncing...' : 'Sync Course'}
               </button>
             )}
-            <button className="p-5 bg-white border border-slate-100 rounded-3xl text-slate-400 hover:text-rose-600 transition-all shadow-sm"><Share2 size={24} /></button>
-            <button onClick={() => openModal('COMMIT')} className="p-5 bg-white border border-slate-100 rounded-3xl text-slate-400 hover:text-rose-600 transition-all shadow-sm"><Settings size={24} /></button>
+            <button className="p-5 bg-[#14030b] border border-rose-900/50 rounded-3xl text-rose-300/50 hover:text-rose-400 hover:bg-[#1c0510] hover:border-rose-500/50 hover:shadow-[0_0_15px_rgba(244,63,94,0.2)] transition-all active:scale-95"><Share2 size={24} /></button>
+            <button onClick={() => openModal('COMMIT')} className="p-5 bg-[#14030b] border border-rose-900/50 rounded-3xl text-rose-300/50 hover:text-rose-400 hover:bg-[#1c0510] hover:border-rose-500/50 hover:shadow-[0_0_15px_rgba(244,63,94,0.2)] transition-all active:scale-95"><Settings size={24} /></button>
             <button onClick={async () => {
               await fetchTrack(activeTrack.track.id);
               openModal('DELETE');
-            }} className="p-5 bg-white border border-rose-50 rounded-3xl text-rose-300 hover:text-rose-600 transition-all shadow-sm"><Trash2 size={24} /></button>
+            }} className="p-5 bg-[#14030b] border border-red-900/50 rounded-3xl text-red-400/60 hover:text-red-400 hover:bg-red-950/30 hover:border-red-500/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.2)] transition-all active:scale-95"><Trash2 size={24} /></button>
           </div>
         </div>
 
@@ -162,19 +176,21 @@ export function TrackDetailView() {
       </header>
 
       <div className="space-y-8">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-6">
+        {/* CHANGED: Border updated to dark mode rose-900/40 */}
+        <div className="flex items-center justify-between border-b border-rose-900/40 pb-6">
           <div className="flex items-center gap-4">
-            <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Lesson Board</h2>
-            <div className="flex bg-slate-100 p-1 rounded-xl">
+            <h2 className="text-xl font-black text-rose-50 uppercase tracking-tight drop-shadow-sm">Lesson Board</h2>
+            <div className="flex bg-[#14030b] border border-rose-900/50 p-1 rounded-xl shadow-inner">
               <button 
                 onClick={() => setViewMode('KANBAN')}
-                className={`p-2 rounded-lg transition-all ${viewMode === 'KANBAN' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                // CHANGED: View toggle buttons restyled
+                className={`p-2 rounded-lg transition-all ${viewMode === 'KANBAN' ? 'bg-linear-to-r from-rose-600 to-pink-600 text-white shadow-[0_0_10px_rgba(244,63,94,0.4)]' : 'text-rose-400/40 hover:text-rose-200'}`}
               >
                 <LayoutGrid size={18} />
               </button>
               <button 
                 onClick={() => setViewMode('LIST')}
-                className={`p-2 rounded-lg transition-all ${viewMode === 'LIST' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                className={`p-2 rounded-lg transition-all ${viewMode === 'LIST' ? 'bg-linear-to-r from-rose-600 to-pink-600 text-white shadow-[0_0_10px_rgba(244,63,94,0.4)]' : 'text-rose-400/40 hover:text-rose-200'}`}
               >
                 <List size={18} />
               </button>

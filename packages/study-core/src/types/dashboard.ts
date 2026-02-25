@@ -1,17 +1,14 @@
 // packages/study-core/src/types/dashboard.ts
 
+import { Unit } from './track';
+
 export type EnergyLevel = 'LOW' | 'MEDIUM' | 'HIGH';
 
 export interface DriftingTrack {
   title: string;
 }
 
-export interface UnitWithTrack {
-  id: string;
-  title: string;
-  description?: string | null;
-  type: string;
-  trackId: string;
+export interface UnitWithTrack extends Unit {
   track: { 
     title: string;
     id: string;

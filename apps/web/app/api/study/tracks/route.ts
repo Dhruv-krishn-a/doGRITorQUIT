@@ -10,6 +10,7 @@ export async function GET() {
     const tracks = await study.StudyService.listTracks(user.id);
     return NextResponse.json({ tracks });
   } catch (error: unknown) {
+    console.error("Tracks List API Error:", error);
     const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ error: message }, { status: 500 });
   }

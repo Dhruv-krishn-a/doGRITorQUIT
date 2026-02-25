@@ -58,7 +58,6 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const [isClient, setIsClient] = useState(false);
 
-  // ✅ FIX: Reverted to "dashboard" because the error confirms it IS a valid type in this file.
   const dashboardNav = siteNav
     .filter((n) => n.group === "dashboard" && n.visible)
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
@@ -96,7 +95,8 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
       animate={collapsed ? "collapsed" : "expanded"}
       variants={sidebarVariants}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="relative h-screen bg-slate-50/50 backdrop-blur-xl border-r border-slate-200/60 z-60 flex flex-col justify-between"
+      // CHANGED: Deep cherry/maroon background with a tinted border
+      className="relative h-screen bg-[#1c0510] border-r border-rose-900/40 z-60 flex flex-col justify-between"
     >
       {/* --- Header / Logo --- */}
       <div className="flex items-center justify-between p-5 mb-2">
@@ -106,13 +106,11 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
-              className="flex items-center gap-2 font-bold text-xl text-slate-800 tracking-tight"
+              className="flex items-center gap-2 font-semibold text-lg text-rose-50 tracking-tight"
             >
-              <span className="bg-linear-to-br from-indigo-500 to-purple-600 text-transparent bg-clip-text">
-                Planner
-              </span>
-              <span className="text-slate-400 text-xs font-normal border border-slate-200 px-1.5 py-0.5 rounded-full">
-                Beta
+              <span>Planner</span>
+              <span className="bg-rose-500/20 text-rose-400 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ml-1">
+                BETA
               </span>
             </motion.div>
           )}
@@ -121,7 +119,7 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
         {/* Collapse Toggle */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="p-1.5 rounded-xl hover:bg-white hover:shadow-sm text-slate-400 hover:text-indigo-600 transition-all border border-transparent hover:border-slate-100"
+          className="p-1.5 rounded-xl hover:bg-rose-500/10 text-rose-200/50 hover:text-rose-300 transition-all border border-transparent"
         >
           {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
         </button>
@@ -152,23 +150,15 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
                 className={classNames(
                   "relative flex items-center gap-3 px-3 py-3 rounded-2xl transition-all duration-300",
                   active
-                    ? "text-white shadow-lg shadow-indigo-500/20"
-                    : "text-slate-500 hover:bg-white hover:text-slate-900 hover:shadow-sm"
+                    // CHANGED: Much heavier neon pink borders/glows for the active state
+                    ? "text-rose-50 shadow-[0_0_20px_rgba(244,63,94,0.2)] border border-rose-500 bg-linear-to-r from-rose-500/20 to-rose-500/5"
+                    // CHANGED: Inactive states now use tinted pink-grays instead of pure grays
+                    : "text-rose-200/60 border border-transparent hover:bg-rose-500/10 hover:text-rose-100"
                 )}
               >
-                {/* Active Gradient Background */}
-                {active && (
-                  <motion.div
-                    layoutId="active-bg"
-                    className="absolute inset-0 bg-linear-to-r from-indigo-500 via-purple-500 to-purple-600 rounded-2xl"
-                    initial={false}
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  />
-                )}
-
-                {/* Content Layer (Above Background) */}
+                {/* Content Layer */}
                 <div className="relative z-10 flex items-center gap-3">
-                  <span className={classNames("transition-colors", active ? "text-white" : "group-hover:text-indigo-500")}>
+                  <span className={classNames("transition-colors", active ? "text-rose-400 drop-shadow-[0_0_10px_rgba(244,63,94,0.8)]" : "text-rose-300/50 group-hover:text-rose-300")}>
                     {Icon}
                   </span>
                   
@@ -190,15 +180,16 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
       </nav>
 
       {/* --- Footer / User / Version --- */}
-      <div className="p-4 border-t border-slate-100">
+      <div className="p-4 border-t border-rose-900/40">
          <div className={classNames("flex items-center gap-3", collapsed ? "justify-center" : "")}>
-            <div className="w-8 h-8 rounded-full bg-linear-to-br from-amber-200 to-orange-400 flex items-center justify-center text-amber-900 font-bold text-xs shadow-inner">
-               P
+            <div className="relative w-8 h-8 rounded-full bg-[#2a081a] border border-rose-500/30 flex items-center justify-center text-rose-200 font-medium text-sm shadow-md">
+               N
+               <div className="absolute bottom-0 right-0 w-2 h-2 bg-emerald-400 rounded-full border border-[#1c0510]"></div>
             </div>
             {!collapsed && (
                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-slate-700 truncate">Pro Plan</p>
-                  <p className="text-[10px] text-slate-400">v1.0.0</p>
+                  <p className="text-sm font-medium text-rose-100 truncate">Pro Plan</p>
+                  <p className="text-[10px] font-medium text-rose-300/50">v1.6.0</p>
                </div>
             )}
          </div>
@@ -211,21 +202,21 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
 
 function LockedItem({ icon, label, collapsed }: { icon: React.ReactNode, label: string, collapsed: boolean }) {
   return (
-    <div className="group relative flex items-center gap-3 px-3 py-3 rounded-2xl mx-1 my-1 cursor-not-allowed opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition-all">
-       <div className="absolute inset-0 bg-linear-to-r from-slate-100 to-transparent opacity-0 group-hover:opacity-100 rounded-2xl transition-opacity" />
+    <div className="group relative flex items-center gap-3 px-3 py-3 rounded-2xl mx-1 my-1 cursor-not-allowed opacity-50 transition-all">
+       <div className="absolute inset-0 bg-rose-500/5 opacity-0 group-hover:opacity-100 rounded-2xl transition-opacity" />
        
-       <div className="relative z-10 text-slate-400 group-hover:text-slate-600 flex items-center gap-3 w-full">
+       <div className="relative z-10 text-rose-200/40 group-hover:text-rose-200/60 flex items-center gap-3 w-full">
          {icon}
          {!collapsed && (
            <div className="flex-1 flex items-center justify-between">
              <span className="font-medium text-sm">{label}</span>
-             <Lock size={14} className="text-amber-500/80" />
+             <Lock size={14} className="text-rose-400/50" />
            </div>
          )}
        </div>
        
        {collapsed && (
-         <div className="absolute left-full ml-4 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50">
+         <div className="absolute left-full ml-4 px-2 py-1 bg-[#2a081a] border border-rose-500/20 text-rose-100 text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-xl">
             Locked
          </div>
        )}

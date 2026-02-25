@@ -81,10 +81,16 @@ export default function AuthPage({ view }: AuthPageProps) {
       }
     } catch (err: unknown) {
       console.error("Auth Logic Error:", err);
-      if (err instanceof TypeError && err.message === "Failed to fetch") {
-        setError("Network error. Please check your connection.");
+      const isNetworkError = err instanceof Error && (
+        err.message.includes("Failed to fetch") || 
+        err.message.includes("Load failed") ||
+        err.name === "AuthRetryableFetchError"
+      );
+
+      if (isNetworkError) {
+        setError("Network connection timed out or Supabase is unreachable. Please check your internet and try again.");
       } else {
-        setError(err instanceof Error ? err.message : "An error occurred");
+        setError(err instanceof Error ? err.message : "An error occurred during authentication");
       }
     } finally {
       setLoading(false);

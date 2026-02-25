@@ -535,6 +535,7 @@ model Unit {
   durationSeconds     Int?          @default(0)
   totalWatchedSeconds Int?          @default(0)
   watchPercentage     Float?        @default(0)
+  todayGoalMinutes    Int?          // Goal for today (if partial)
   lastWatchedAt       DateTime?
   notes               Json?         // TipTap JSON
 

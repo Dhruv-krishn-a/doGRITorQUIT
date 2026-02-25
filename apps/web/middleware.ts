@@ -26,11 +26,11 @@ export async function middleware(request: NextRequest) {
 
   // Quick cookie existence check (no network)
   // Supabase SSR sets a cookie like 'sb-access-token' / 'sb:token' depending on config.
-  // We look for any cookie that contains 'sb' and 'token' to be robust.
+  // We look for any cookie that contains 'sb-' and isn't empty to be robust.
   const cookiePairs = request.cookies.getAll().map(c => ({ name: c.name, value: c.value }));
   const hasSupabaseSession = cookiePairs.some(
     (c) =>
-      c.name.includes("sb") && (c.name.includes("token") || c.name.includes("session") || c.value)
+      c.name.includes("sb-") && c.value.length > 10
   );
 
   // Protect dashboard/admin routes: if no cookie, redirect to login

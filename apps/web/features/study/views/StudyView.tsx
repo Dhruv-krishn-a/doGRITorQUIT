@@ -58,7 +58,7 @@ const VideoPanel = ({
     let interval: NodeJS.Timeout;
     if (!isPaused && playerRef.current) {
       interval = setInterval(() => {
-        const time = playerRef.current.getCurrentTime();
+        const time = (playerRef.current as { getCurrentTime: () => number }).getCurrentTime();
         if (time) onProgress(time);
       }, 1000);
     }
@@ -317,7 +317,7 @@ export function StudyView() {
 
   // Timer State
   const [seconds, setSeconds] = useState(0);
-  const [lastLoggedSeconds, setLastLoggedSeconds] = useState(0);
+  const [lastLoggedSeconds] = useState(0);
   const [isPaused, setIsPaused] = useState(searchParams.get("autostart") !== "true");
 
   // Notes State
@@ -337,7 +337,7 @@ export function StudyView() {
   // Progress Tracking Hook
   const durationSeconds = typeof unit?.metadata === 'string' 
     ? (JSON.parse(unit.metadata)?.durationSeconds || 0)
-    : (unit?.metadata as any)?.durationSeconds || 0;
+    : (unit?.metadata as { durationSeconds?: number })?.durationSeconds || 0;
   const { percentage, onProgress } = useVideoProgress(durationSeconds);
 
   useEffect(() => {
@@ -422,6 +422,18 @@ export function StudyView() {
       </div>
 
       <div className="flex items-center gap-6">
+        {unit.todayGoalMinutes && (
+          <div className="flex items-center gap-3 bg-amber-50 px-4 py-2 rounded-2xl border border-amber-100 shadow-sm">
+            <Target size={16} className="text-amber-600" />
+            <div className="flex flex-col">
+              <span className="text-[8px] font-black text-amber-400 uppercase tracking-widest">Daily Target</span>
+              <span className="text-[10px] font-black text-amber-700 uppercase tracking-widest">
+                {Math.floor((unit.totalWatchedSeconds || 0) / 60)} / {unit.todayGoalMinutes}m
+              </span>
+            </div>
+          </div>
+        )}
+
         {dashboard?.fatigueDetails && (
           <div className="hidden lg:flex items-center gap-3 bg-white px-4 py-2 rounded-2xl border border-rose-100 shadow-sm">
             <Activity

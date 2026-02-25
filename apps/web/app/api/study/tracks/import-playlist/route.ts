@@ -11,8 +11,9 @@ export async function POST(req: NextRequest) {
   try {
     const track = await study.StudyService.importPlaylist(user.id, playlistUrl, targetDate);
     return NextResponse.json({ track });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Failed to import playlist:", error);
-    return NextResponse.json({ error: "Failed to import playlist" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Failed to import playlist";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

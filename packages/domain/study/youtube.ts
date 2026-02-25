@@ -42,6 +42,10 @@ export const YouTubeClient = {
       const res = await fetch(
         `${BASE_URL}/videos?part=snippet,contentDetails&id=${chunk.join(',')}&key=${YOUTUBE_API_KEY}`
       );
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(`YouTube API error (${res.status}): ${errorData.error?.message || res.statusText}`);
+      }
       const data = await res.json();
       
       if (data.items) {
@@ -65,6 +69,10 @@ export const YouTubeClient = {
     const res = await fetch(
       `${BASE_URL}/playlists?part=snippet&id=${playlistId}&key=${YOUTUBE_API_KEY}`
     );
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(`YouTube API error (${res.status}): ${errorData.error?.message || res.statusText}`);
+    }
     const data = await res.json();
     if (!data.items?.length) return null;
 
@@ -89,6 +97,10 @@ export const YouTubeClient = {
     const res = await fetch(
       `${BASE_URL}/playlistItems?part=snippet&maxResults=50&playlistId=${playlistId}&key=${YOUTUBE_API_KEY}`
     );
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(`YouTube API error (${res.status}): ${errorData.error?.message || res.statusText}`);
+    }
     const data = await res.json();
     
     if (data.items) {
