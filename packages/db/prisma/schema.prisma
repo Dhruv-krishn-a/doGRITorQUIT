@@ -503,6 +503,7 @@ model Track {
   remainingMinutes        Int       @default(0)
   dailyAllocationMinutes  Int?      // User commitment
   estimatedCompletionDate DateTime?
+  metadata                Json?     // For Project phases, settings, notes, etc.
 
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt

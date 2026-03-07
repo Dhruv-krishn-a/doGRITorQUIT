@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
     const track = await study.StudyService.createTrack(user.id, body);
     return NextResponse.json({ track });
   } catch (error: unknown) {
+    console.error("Track Creation Error:", error);
     const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ error: message }, { status: 500 });
   }

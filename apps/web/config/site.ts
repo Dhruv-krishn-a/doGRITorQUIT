@@ -16,7 +16,7 @@ export const siteNav: NavItem[] = [
   // dashboard area (sidebar)
   { id: "dashboard", label: "Dashboard", path: "/dashboard", group: "dashboard", order: 1, visible: true },
   { id: "plans", label: "Plans", path: "/dashboard/plans", group: "dashboard", order: 2, visible: true },
-  { id: "tasks", label: "Tasks", path: "/dashboard/tasks", group: "dashboard", order: 3, visible: true },
+  { id: "today", label: "Today", path: "/dashboard/today", group: "dashboard", order: 3, visible: true },
   { id: "checklist", label: "Daily Checklist", path: "/dashboard/daily-checklist", group: "dashboard", order: 4, visible: true },
   { id: "upgrade-os", label: "Upgrade OS", path: "/dashboard/study", group: "dashboard", order: 5, visible: true },
   { id: "analytics", label: "Analytics", path: "/dashboard/analytics", group: "dashboard", order: 6, visible: true },

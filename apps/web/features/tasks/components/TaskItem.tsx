@@ -3,16 +3,15 @@
 import React, { useState, useEffect } from "react";
 import { Task } from "@/types/plan";
 import { 
-  CheckCircle2, Clock, Trash2, Edit2, Play, Pause, Save 
+  CheckCircle2, Clock, Trash2, Edit2, Play, Pause, Save, Sparkles 
 } from "lucide-react";
 import TaskCompletionModal from "./TaskCompletionModal";
 
-// ✅ FIX 1: Extend the base Task type to include the missing property locally
+// ✅ Extended the base Task type to include the missing property locally
 type ExtendedTask = Task & { timeSpentMinutes?: number };
 
 interface TaskItemProps {
   task: ExtendedTask;
-  // ✅ FIX 2: Replaced 'any' with Partial<ExtendedTask> for type safety
   onUpdate: (taskId: string, updates: Partial<ExtendedTask>) => void;
   onDelete: (taskId: string) => void;
   onLogTime: (taskId: string, minutes: number) => void;
@@ -29,7 +28,6 @@ export default function TaskItem({ task, onUpdate, onDelete, onLogTime, onToggle
   const [sessionSeconds, setSessionSeconds] = useState(0);
 
   useEffect(() => {
-    // ✅ FIX 3: Proper type for setInterval return value
     let interval: NodeJS.Timeout;
     if (isTimerRunning) {
       interval = setInterval(() => setSessionSeconds(s => s + 1), 1000);
@@ -39,7 +37,6 @@ export default function TaskItem({ task, onUpdate, onDelete, onLogTime, onToggle
 
   const handleToggleTimer = () => {
     if (isTimerRunning) {
-      // Stop Timer -> Save immediately
       setIsTimerRunning(false);
       const minutes = Math.ceil(sessionSeconds / 60);
       if (minutes > 0) onLogTime(task.id, minutes);
@@ -51,22 +48,18 @@ export default function TaskItem({ task, onUpdate, onDelete, onLogTime, onToggle
 
   const handleCheckboxClick = () => {
     if (task.status === "Completed") {
-      // If unchecking, just do it directly
       onUpdate(task.id, { status: "Pending" });
     } else {
-      // If completing, open modal to confirm time
       setShowCompleteModal(true);
     }
   };
 
   const confirmCompletion = (finalMinutes: number) => {
-    // 1. If timer was running, stop it and add its time logic
     if (isTimerRunning) {
       setIsTimerRunning(false);
       setSessionSeconds(0);
     }
     
-    // 2. Add manual time logic
     const currentTotal = task.timeSpentMinutes || 0;
     const minutesToAdd = finalMinutes - currentTotal;
     
@@ -74,7 +67,6 @@ export default function TaskItem({ task, onUpdate, onDelete, onLogTime, onToggle
       onLogTime(task.id, minutesToAdd);
     }
 
-    // 3. Mark Complete
     onUpdate(task.id, { status: "Completed" });
     setShowCompleteModal(false);
   };
@@ -83,24 +75,23 @@ export default function TaskItem({ task, onUpdate, onDelete, onLogTime, onToggle
 
   return (
     <>
-      <div className={`group relative bg-white border rounded-xl transition-all duration-300 ${
-        isCompleted ? "opacity-60 bg-gray-50 border-gray-100" : "hover:shadow-md border-slate-200"
-      } ${isTimerRunning ? "ring-2 ring-blue-500 border-transparent shadow-lg" : ""}`}>
+      <div className={`group relative bg-[#14030b] border transition-all duration-300 rounded-2xl ${
+        isCompleted ? "opacity-50 border-rose-900/20" : "hover:border-rose-500/40 border-rose-900/40 shadow-lg shadow-black/40"
+      } ${isTimerRunning ? "ring-2 ring-rose-500 border-transparent" : ""}`}>
         
-        {/* Active Timer Indicator (Pulse) */}
+        {/* Active Timer Indicator */}
         {isTimerRunning && (
-          <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping" />
+          <div className="absolute -top-1 -right-1 w-3 h-3 bg-rose-500 rounded-full animate-ping" />
         )}
 
         <div className="p-4 flex items-start gap-4">
           {/* Checkbox */}
           <button 
             onClick={handleCheckboxClick}
-            // ✅ FIX 4: Updated to canonical tailwind class min-w-6
             className={`mt-1 min-w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
               isCompleted 
-                ? "bg-green-500 border-green-500 scale-100" 
-                : "border-slate-300 hover:border-green-500 hover:scale-110"
+                ? "bg-rose-500 border-rose-500 scale-100" 
+                : "border-rose-900/60 hover:border-rose-500 hover:scale-110"
             }`}
           >
             {isCompleted && <CheckCircle2 size={14} className="text-white" />}
@@ -112,78 +103,87 @@ export default function TaskItem({ task, onUpdate, onDelete, onLogTime, onToggle
               {isEditing ? (
                 <div className="flex gap-2 w-full">
                   <input 
-                    className="flex-1 border rounded px-2 py-1 text-sm font-medium"
+                    className="flex-1 bg-[#0a0105] border border-rose-900/40 rounded px-2 py-1 text-sm font-bold text-rose-50 focus:outline-none focus:border-rose-500"
                     value={editTitle} 
                     onChange={(e) => setEditTitle(e.target.value)} 
                     autoFocus
                   />
-                  <button onClick={() => { onUpdate(task.id, { title: editTitle }); setIsEditing(false); }} className="text-green-600"><Save size={16}/></button>
+                  <button onClick={() => { onUpdate(task.id, { title: editTitle }); setIsEditing(false); }} className="text-emerald-500 hover:text-emerald-400"><Save size={16}/></button>
                 </div>
               ) : (
-                <h3 className={`font-medium text-slate-800 leading-snug ${isCompleted ? "line-through text-slate-400" : ""}`}>
+                <h3 className={`text-[14px] font-black leading-snug tracking-tight ${isCompleted ? "line-through text-rose-500/40" : "text-rose-50"}`}>
                   {task.title}
                 </h3>
               )}
             </div>
 
-            {/* Time Badge / Timer */}
+            {/* Metadata Row */}
             <div className="flex items-center gap-3 mt-2">
               {isTimerRunning ? (
-                <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-xs font-mono font-bold animate-pulse">
-                  <Clock size={12} />
+                <div className="flex items-center gap-2 bg-rose-500/20 text-rose-400 px-2 py-0.5 rounded border border-rose-500/30 text-[10px] font-black uppercase tracking-widest animate-pulse shadow-[0_0_10px_rgba(244,63,94,0.2)]">
+                  <Clock size={10} />
                   {Math.floor(sessionSeconds / 60)}:{(sessionSeconds % 60).toString().padStart(2,'0')}
                 </div>
               ) : (
-                <div className="flex items-center gap-1.5 text-xs text-slate-500 bg-slate-50 px-2 py-1 rounded-md">
-                  <Clock size={12} />
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-rose-400/60 uppercase tracking-widest bg-[#1c0510] px-2 py-0.5 rounded border border-rose-900/40">
+                  <Clock size={10} />
                   <span>
-                    {Math.floor((task.timeSpentMinutes || 0) / 60)}h {(task.timeSpentMinutes || 0) % 60}m
+                    {Math.floor((task.timeSpentMinutes || 0) / 60)}H {(task.timeSpentMinutes || 0) % 60}M
                   </span>
                   {task.estimatedMinutes && (
-                    <span className="text-slate-300">/ {task.estimatedMinutes}m</span>
+                    <span className="text-rose-900/60">/ {task.estimatedMinutes}M</span>
                   )}
+                </div>
+              )}
+              {task.priority && !isCompleted && (
+                <div className={`text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-widest border ${
+                  task.priority === 'urgent' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
+                  task.priority === 'high' ? 'bg-orange-500/20 text-orange-400 border-orange-500/30' :
+                  'bg-rose-500/10 text-rose-400/60 border-rose-500/20'
+                }`}>
+                  {task.priority}
                 </div>
               )}
             </div>
 
             {/* Subtasks */}
             {task.subtasks && task.subtasks.length > 0 && (
-              <div className="mt-3 space-y-1 pl-1">
+              <div className="mt-3 space-y-1.5 pl-1">
                 {task.subtasks.map(st => (
                   <div key={st.id} 
-                    className="flex items-center gap-2 text-xs text-slate-600 hover:bg-slate-50 p-1 -ml-1 rounded cursor-pointer group/st"
+                    className="flex items-center gap-2 text-xs font-bold text-rose-200/50 hover:text-rose-200 transition-colors cursor-pointer group/st"
                     onClick={() => onToggleSubtask(st.id, !st.completed)}
                   >
-                    <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${st.completed ? "bg-slate-400 border-slate-400" : "border-slate-300"}`}>
-                      {st.completed && <CheckCircle2 size={10} className="text-white" />}
+                    <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center transition-all ${st.completed ? "bg-rose-500/40 border-rose-500/40" : "border-rose-900/60"}`}>
+                      {st.completed && <CheckCircle2 size={10} className="text-rose-50" />}
                     </div>
-                    <span className={st.completed ? "line-through opacity-50" : ""}>{st.title}</span>
+                    <span className={st.completed ? "line-through opacity-30" : ""}>{st.title}</span>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Action Buttons (Right Side) */}
-          <div className={`flex flex-col gap-1 ${isCompleted ? "invisible" : ""}`}>
+          {/* Action Buttons */}
+          <div className={`flex flex-col gap-1.5 ${isCompleted ? "invisible" : ""}`}>
             <button 
               onClick={handleToggleTimer}
-              className={`p-2 rounded-lg transition-all ${
+              className={`p-2.5 rounded-xl transition-all border ${
                 isTimerRunning 
-                  ? "bg-red-50 text-red-500 hover:bg-red-100" 
-                  : "bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-600"
+                  ? "bg-rose-500/20 text-rose-500 border-rose-500/40 shadow-[0_0_15px_rgba(244,63,94,0.2)]" 
+                  : "bg-[#1c0510] text-rose-400/40 hover:text-rose-400 border-rose-900/40 hover:border-rose-500/40"
               }`}
               title={isTimerRunning ? "Stop Timer" : "Start Timer"}
             >
-              {isTimerRunning ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
+              {isTimerRunning ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
             </button>
             
-            <button onClick={() => setIsEditing(true)} className="p-2 text-slate-300 hover:text-slate-600 hover:bg-slate-50 rounded-lg">
-              <Edit2 size={16} />
+            <button onClick={() => setIsEditing(true)} className="p-2.5 text-rose-400/30 hover:text-rose-400 hover:bg-[#1c0510] rounded-xl transition-all border border-transparent hover:border-rose-900/40">
+              <Edit2 size={14} />
             </button>
             
-            <button onClick={() => onDelete(task.id)} className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg">
-              <Trash2 size={16} />
+            <button onClick={() => onDelete(task.id)} className="p-2.5 text-rose-400/30 hover:text-red-400 hover:bg-red-950/20 rounded-xl transition-all border border-transparent hover:border-red-900/40">
+              <Trash2 size={14} />
             </button>
           </div>
         </div>

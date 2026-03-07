@@ -34,6 +34,21 @@ export const studyApi = {
   deleteTrack: (trackId: string) => 
     apiClient(`/api/study/tracks/${trackId}`, { method: 'DELETE' }),
 
+  updateTrack: (trackId: string, updates: any) =>
+    apiClient(`/api/study/tracks/${trackId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    }),
+
+  updateUnit: (unitId: string, updates: any) =>
+    apiClient(`/api/study/units/${unitId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    }),
+
+  deleteUnit: (unitId: string) =>
+    apiClient(`/api/study/units/${unitId}`, { method: 'DELETE' }),
+
   syncTrack: (trackId: string) =>
     apiClient<{ added: number }>(`/api/study/tracks/${trackId}/sync`, { method: 'POST' }),
   

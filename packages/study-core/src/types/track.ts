@@ -19,6 +19,8 @@ export interface Track {
   title: string;
   description: string | null;
   type: string;
+  status: string;
+  priority?: number;
   totalTimeMinutes: number;
   totalDurationMinutes: number;
   progressPercentage: number;
@@ -26,6 +28,7 @@ export interface Track {
   targetDate: string | Date | null;
   dailyAllocationMinutes: number | null;
   remainingMinutes?: number;
+  metadata?: any;
   units?: Unit[];
 }
 
@@ -59,5 +62,6 @@ export interface Unit {
 
 export interface TrackData {
   track: Track & { units: Unit[] };
+  recentSessions?: any[];
   stats: TrackStats;
 }

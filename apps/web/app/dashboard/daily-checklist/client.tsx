@@ -440,7 +440,7 @@ export default function ChecklistClientPage({
       {/* --- MAIN GRID CONTAINER --- */}
       <div className="bg-white border border-slate-200 rounded-4xl shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col">
         <div className="overflow-x-auto custom-scrollbar">
-          <div className="min-w-200">
+          <div className="min-w-[50rem]">
             
             {/* Grid Header */}
             <div 

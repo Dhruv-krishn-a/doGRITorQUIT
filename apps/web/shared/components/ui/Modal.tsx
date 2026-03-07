@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 type ModalProps = {
   isOpen: boolean;
@@ -27,47 +28,62 @@ export default function Modal({
   className = "",
   panelClassName = "",
 }: ModalProps) {
-  if (!isOpen) return null;
+  const [mounted, setMounted] = useState(false);
 
-  return (
+  useEffect(() => setMounted(true), []);
+
+  if (!isOpen || !mounted || typeof document === 'undefined') return null;
+
+  const target = document.getElementById('study-modal-root') || document.body;
+
+  const themedPanel =
+    panelClassName && panelClassName.trim().length > 0
+      ? panelClassName
+      : "bg-[#14030b] border border-rose-900/40 text-rose-100 shadow-[0_20px_80px_rgba(12,3,8,0.75)]";
+
+  const content = (
     <div
       // 1. Apply 'className' here to allow overriding z-index (e.g., !z-[9999])
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 ${className}`}
+      className={`fixed inset-0 z-[1200] flex items-center justify-center bg-[#0a0105]/90 backdrop-blur-xl p-4 ${className}`}
       role="dialog"
       aria-modal="true"
     >
       <div 
         // 2. Apply 'panelClassName' here to allow overriding width (e.g., max-w-4xl)
-        // Removed strict 'text-slate-600' from children wrapper to allow forms to handle their own colors
-        className={`bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] flex flex-col ${panelClassName}`}
+        // Defaulting to bg-white but allowing override
+        className={`rounded-2xl w-full max-w-xl p-6 md:p-8 max-h-[90vh] flex flex-col ${themedPanel}`}
       >
         <div className="flex items-start justify-between gap-4 shrink-0 mb-4">
-          {title && <h3 className="text-xl font-bold text-slate-800">{title}</h3>}
+          {title && (
+            <h3 className={`text-xl font-black tracking-tight ${themedPanel.includes('text-rose') ? '' : 'text-rose-50'}`}>
+              {title}
+            </h3>
+          )}
           <button 
             aria-label="close" 
             onClick={onClose} 
-            className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1 rounded-full transition-colors"
+            className="text-rose-300/60 hover:text-rose-200 hover:bg-rose-500/10 p-2 rounded-full transition-colors border border-transparent hover:border-rose-500/40"
           >
             ✕
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto min-h-0 text-slate-600">
+        <div className={`flex-1 overflow-y-auto min-h-0 space-y-4 ${themedPanel.includes('text-rose') ? '' : 'text-rose-100/70'}`}>
             {children}
         </div>
 
         {/* 3. Only render Footer if onConfirm is passed (avoids double buttons in your forms) */}
         {onConfirm && (
-          <div className="mt-6 flex justify-end gap-3 shrink-0 pt-4 border-t border-slate-100">
+          <div className="mt-6 flex justify-end gap-3 shrink-0 pt-4 border-t border-rose-900/40">
             <button
-              className="px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium transition-colors"
+              className="px-4 py-2 rounded-lg bg-[#1c0510] border border-rose-900/50 text-rose-300 hover:bg-[#2a081a] hover:border-rose-500/40 hover:text-rose-200 font-bold uppercase text-[10px] tracking-widest transition-colors"
               onClick={onClose}
             >
               {cancelLabel}
             </button>
             <button
               onClick={() => onConfirm && onConfirm()}
-              className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60 font-medium transition-colors shadow-sm shadow-indigo-200"
+              className="px-4 py-2 rounded-lg bg-linear-to-r from-rose-600 to-pink-600 text-white hover:from-rose-500 hover:to-pink-500 disabled:opacity-60 font-black uppercase text-[10px] tracking-widest transition-colors shadow-[0_10px_30px_rgba(244,63,94,0.35)]"
               disabled={confirmLoading}
             >
               {confirmLoading ? "Please wait…" : confirmLabel}
@@ -77,4 +93,6 @@ export default function Modal({
       </div>
     </div>
   );
+
+  return createPortal(content, target);
 }

@@ -1,6 +1,7 @@
 //packages/domain/study/service.ts
 import { prisma } from '@planner/db';
 import { YouTubeClient } from './youtube';
+import { assertTrackCreationAllowed } from '../billing/entitlements';
 import { 
   TrackType, 
   UnitType, 
@@ -22,20 +23,38 @@ export const StudyService = {
     title: string;
     description?: string;
     targetDate?: Date;
-    priority?: number;
+    priority?: number | string;
     dailyAllocationMinutes?: number;
     link?: string;
+    metadata?: any;
   }) {
+    await assertTrackCreationAllowed(userId, data.type as any);
+
+    const { metadata, priority, ...rest } = data;
+    
+    // Map string priority to integer if needed
+    let priorityValue = 0;
+    if (typeof priority === 'string') {
+      const pMap: Record<string, number> = { 'Low': 1, 'Medium': 2, 'High': 3, 'Critical': 4 };
+      priorityValue = pMap[priority] || 0;
+    } else {
+      priorityValue = priority || 0;
+    }
+
     return prisma.track.create({
       data: {
         userId,
-        ...data,
+        ...rest,
+        priority: priorityValue,
+        metadata: metadata || {},
         status: 'ACTIVE',
       },
     });
   },
 
   async importPlaylist(userId: string, playlistUrl: string, targetDate?: string) {
+    await assertTrackCreationAllowed(userId, 'PLAYLIST');
+
     const playlistId = this.extractPlaylistId(playlistUrl);
     if (!playlistId) throw new Error("Invalid YouTube Playlist URL");
 
@@ -321,6 +340,13 @@ export const StudyService = {
 
     if (!track) throw new Error("Track not found");
 
+    const recentSessions = await prisma.unitSession.findMany({
+      where: { userId, unit: { trackId } },
+      orderBy: { endedAt: 'desc' },
+      take: 10,
+      include: { unit: { select: { title: true, metadata: true } } }
+    });
+
     // Velocity Intelligence
     const sessions = track.user.dailySessions;
     const avgMinsPerDay = sessions.length > 0 
@@ -384,6 +410,7 @@ export const StudyService = {
 
     return {
       track,
+      recentSessions,
       stats: {
         avgMinsPerDay,
         estCompletionDate,
@@ -424,7 +451,7 @@ export const StudyService = {
         totalWatchedSeconds: newTotalWatched,
         watchPercentage: percentage,
         lastWatchedAt: new Date(),
-        status: percentage >= 95 ? 'IN_PROGRESS' : 'IN_PROGRESS'
+        status: percentage >= 95 ? 'DONE' : 'IN_PROGRESS'
       }
     });
 
@@ -604,6 +631,18 @@ export const StudyService = {
     }
 
     return updatedUnit;
+  },
+
+  async deleteUnit(unitId: string) {
+    const unit = await prisma.unit.findUnique({ where: { id: unitId } });
+    if (!unit) throw new Error("Unit not found");
+
+    await prisma.unitSession.deleteMany({ where: { unitId } });
+    await prisma.revisionSchedule.deleteMany({ where: { unitId } });
+
+    await prisma.unit.delete({ where: { id: unitId } });
+    await this.recalculateTrackStats(unit.trackId);
+    return true;
   },
 
   async completeUnit(userId: string, unitId: string, data: { 

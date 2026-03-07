@@ -219,72 +219,9 @@ function TaskForm({ initialData, onSubmit, onCancel, isCreating }: {
   );
 }
 
-// Visual Task Card - Matching the "Tasks" list in screenshot
-function TaskCard({ task, actions, onEdit }: { task: ExtendedTask, actions: PlanManagerActions, onEdit: () => void }) {
-  const isCompleted = task.status === "Completed";
-  
-  return (
-    <div className={`group relative bg-white border rounded-2xl p-6 transition-all duration-300 ${isCompleted ? "opacity-75 bg-slate-50/50 grayscale-[0.3]" : "shadow-sm border-slate-100 hover:shadow-lg hover:border-purple-200"}`}>
-        {/* Hover Actions */}
-        <div className="absolute right-4 top-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
-            <button onClick={onEdit} className="p-2 text-slate-400 hover:text-purple-600 rounded-full hover:bg-purple-50 transition-colors" title="Edit"><Pencil size={15} /></button>
-            <button onClick={() => actions.deleteTask(task.id)} className="p-2 text-slate-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors" title="Delete"><Trash2 size={15} /></button>
-        </div>
+import { TaskCard } from "../../../../features/plans/components/TaskCard";
 
-        {/* Task Header */}
-        <div className="flex items-start gap-4 mb-4">
-             {/* Checkbox (Visual only for parent task in this view, could trigger status) */}
-             <button className={`mt-1 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${isCompleted ? "bg-purple-600 border-purple-600" : "border-slate-300 hover:border-purple-400"}`}>
-                {isCompleted && <CheckCircle2 size={14} className="text-white" />}
-             </button>
-
-             <div className="flex-1 pr-16">
-                 <h4 className={`font-bold text-lg leading-snug mb-2 ${isCompleted ? "line-through text-slate-400" : "text-slate-800"}`}>{task.title}</h4>
-                 <div className="flex flex-wrap items-center gap-3">
-                     {task.priority && (
-                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md ${
-                            task.priority.toLowerCase() === 'high' || task.priority.toLowerCase() === 'urgent' 
-                            ? 'bg-red-50 text-red-600 border border-red-100' 
-                            : 'bg-purple-50 text-purple-600 border border-purple-100'
-                        }`}>
-                            {task.priority} Priority
-                        </span>
-                     )}
-                     <span className="flex items-center gap-1.5 text-xs font-medium text-slate-500 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
-                        <Clock size={12} /> {task.estimatedMinutes}m est.
-                     </span>
-                 </div>
-             </div>
-        </div>
-        
-        {task.description && <p className="text-sm text-slate-500 whitespace-pre-line mb-6 pl-10 border-l-2 border-slate-100 ml-3">{task.description}</p>}
-        
-        {/* Subtasks - Styled to look like the checklist in screenshot */}
-        {task.subtasks && task.subtasks.length > 0 && (
-            <div className="pl-10 space-y-3">
-                {task.subtasks.map(st => (
-                    <div key={st.id} className="flex items-center gap-3 group/st">
-                        <button onClick={() => actions.toggleSubtask(task.id, st.id, !st.completed)} className={`w-5 h-5 rounded border flex items-center justify-center transition-all shadow-sm ${st.completed ? "bg-purple-500 border-purple-500" : "bg-white border-slate-300 hover:border-purple-400"}`}>
-                            {st.completed && <CheckCircle2 size={12} className="text-white" />}
-                        </button>
-                        <span className={`flex-1 text-sm font-medium transition-colors ${st.completed ? "text-slate-400 line-through decoration-slate-300" : "text-slate-700"}`}>{st.title}</span>
-                        <button onClick={() => actions.deleteSubtask(st.id)} className="opacity-0 group-hover/st:opacity-100 text-slate-300 hover:text-red-500 p-1"><X size={12}/></button>
-                    </div>
-                ))}
-            </div>
-        )}
-
-        {/* Start Button Simulation */}
-        {!isCompleted && (
-            <div className="pl-10 mt-6">
-                <button className="flex items-center gap-2 bg-purple-600 text-white text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-full shadow-md hover:bg-purple-700 hover:shadow-lg transition-all active:scale-95">
-                   Start Task <ChevronRight size={12} />
-                </button>
-            </div>
-        )}
-    </div>
-  );
-}
+// Visual Task Card removed as it's now shared
 
 // --- 5. Main Component (Refactored Layout) ---
 
@@ -351,7 +288,7 @@ export default function PlanDetailClient({ initialPlan }: { initialPlan: Extende
       plan.tasks?.forEach(t => {
          if (t.subtasks && t.subtasks.length > 0) {
              if(t.subtasks.every(s => s.completed)) completedCount++;
-         } else if (t.status === 'Completed') {
+         } else if (t.status === 'completed' || t.status === 'Completed') {
              completedCount++;
          }
       });
@@ -367,7 +304,7 @@ export default function PlanDetailClient({ initialPlan }: { initialPlan: Extende
       
       {/* Loading Overlay */}
       {loadingAction && (
-        <div className="fixed inset-0 bg-white/60 z-[100] flex items-center justify-center backdrop-blur-sm">
+        <div className="fixed inset-0 bg-white/60 z-modal flex items-center justify-center backdrop-blur-sm">
             <div className="bg-white px-8 py-4 rounded-full shadow-2xl border border-purple-100 flex items-center gap-4 animate-in zoom-in-95">
                 <div className="w-5 h-5 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"/>
                 <span className="text-sm font-bold text-purple-900">{loadingAction}</span>
@@ -525,7 +462,7 @@ export default function PlanDetailClient({ initialPlan }: { initialPlan: Extende
                  <div className="flex items-center gap-2 mb-4">
                     <CheckCircle2 size={18} className="text-purple-600" />
                     <h3 className="text-lg font-bold text-slate-800">Tasks</h3>
-                    <span className="text-xs font-medium text-slate-400 ml-auto">{currentDayTasks.filter(t => t.status === "Completed").length}/{currentDayTasks.length} Completed</span>
+                    <span className="text-xs font-medium text-slate-400 ml-auto">{currentDayTasks.filter(t => t.status === "completed" || t.status === "Completed").length}/{currentDayTasks.length} Completed</span>
                  </div>
 
                  <div className="space-y-4">
@@ -533,7 +470,14 @@ export default function PlanDetailClient({ initialPlan }: { initialPlan: Extende
                         editingTaskId === task.id ? (
                             <TaskForm key={task.id} initialData={task} onSubmit={(data) => actions.updateTask(task.id, data)} onCancel={() => setEditingTaskId(null)} />
                         ) : (
-                            <TaskCard key={task.id} task={task} actions={actions} onEdit={() => setEditingTaskId(task.id)} />
+                            <TaskCard 
+                                key={task.id} 
+                                task={task} 
+                                onEdit={() => setEditingTaskId(task.id)} 
+                                onDelete={() => actions.deleteTask(task.id)}
+                                onComplete={() => actions.updateTask(task.id, { ...task, status: 'completed' } as any)}
+                                onToggleSubtask={(subtaskId, completed) => actions.toggleSubtask(task.id, subtaskId, completed)}
+                            />
                         )
                      )}
 

@@ -58,8 +58,13 @@ export default async function ProductsPage() {
                   <a href={`/products/${pId}`} className="block w-full text-center bg-slate-900 text-white text-xs font-bold py-2.5 rounded-lg hover:bg-slate-800">
                       Configure Features
                   </a>
-                  {pKey !== 'FREE' && (
+                  {pKey.toUpperCase() !== 'FREE' && pKey.toUpperCase() !== 'FREE TIER' && pPrice > 0 && (
                     <DeleteWithConfirm action={deleteProductAction.bind(null, pId)} className="w-full text-red-500 text-[10px] font-bold py-1" />
+                  )}
+                  {(pKey.toUpperCase() === 'FREE' || pKey.toUpperCase() === 'FREE TIER' || pPrice === 0) && (
+                    <div className="w-full text-slate-400 text-center text-[10px] font-bold py-1 italic">
+                      System Reserved Tier
+                    </div>
                   )}
               </div>
             </div>

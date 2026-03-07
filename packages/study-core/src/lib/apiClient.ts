@@ -17,9 +17,10 @@ export async function apiClient<T>(path: string, options: RequestInit = {}): Pro
 
   const response = await fetch(fullUrl, {
     ...options,
+    credentials: options.credentials || 'include',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': (window as any).SUPABASE_SESSION_TOKEN ? `Bearer ${(window as any).SUPABASE_SESSION_TOKEN}` : '',
+      'Authorization': typeof window !== 'undefined' && (window as any).SUPABASE_SESSION_TOKEN ? `Bearer ${(window as any).SUPABASE_SESSION_TOKEN}` : '',
       ...options.headers,
     },
   });

@@ -92,6 +92,15 @@ export async function createProductAction(formData: FormData) {
 export async function deleteProductAction(productId: string) {
   const admin = await getAdminUser();
   if (!admin) throw new Error("Unauthorized");
+
+  const product = await cms.getProductDetail(productId);
+  if (!product) return;
+
+  const key = String(product.key ?? "").toUpperCase();
+  if (key === 'FREE' || key === 'FREE TIER' || Number(product.price) === 0) {
+    throw new Error("System Reserved Tiers cannot be deleted.");
+  }
+
   await cms.deleteProduct(productId);
   revalidatePath("/products");
 }

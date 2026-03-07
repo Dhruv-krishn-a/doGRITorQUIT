@@ -12,7 +12,7 @@ interface StudyState {
   dashboard: DashboardData | null;
   activeTrack: TrackData | null;
   loading: boolean;
-  activeModal: 'CREATE' | 'DELETE' | 'COMMIT' | 'SESSION' | 'LOGS' | 'REFLECTION' | null;
+  activeModal: 'CREATE' | 'CREATE_PROJECT' | 'CREATE_COURSE' | 'IMPORT_YOUTUBE' | 'DELETE' | 'COMMIT' | 'SESSION' | 'LOGS' | 'REFLECTION' | null;
   activeUnit: Unit | null;
   sessionMode: 'STUDY' | 'TIMER' | 'COMPLETE' | 'LOGS';
   sessionData?: any;
@@ -29,6 +29,9 @@ interface StudyActions {
   logProgress: (unitId: string, data: { secondsSpent: number, watchPercentage: number }) => Promise<void>;
   saveWeeklyReflection: (data: any) => Promise<void>;
   deleteTrack: (trackId: string) => Promise<boolean>;
+  updateTrack: (trackId: string, updates: any) => Promise<void>;
+  updateUnit: (unitId: string, updates: any) => Promise<void>;
+  deleteUnit: (unitId: string) => Promise<boolean>;
   saveNotes: (unitId: string, notes: any) => Promise<void>;
   addUnit: (trackId: string, unit: any) => Promise<void>;
   
@@ -182,6 +185,38 @@ export function StudyProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateTrack = async (trackId: string, updates: any) => {
+    try {
+      await studyApi.updateTrack(trackId, updates);
+      await fetchTrack(trackId);
+      toast.success("Project updated");
+    } catch (err) {
+      toast.error("Failed to update project");
+    }
+  };
+
+  const updateUnit = async (unitId: string, updates: any) => {
+    try {
+      await studyApi.updateUnit(unitId, updates);
+      if (state.activeTrack) await fetchTrack(state.activeTrack.track.id);
+      toast.success("Task updated");
+    } catch (err) {
+      toast.error("Failed to update task");
+    }
+  };
+
+  const deleteUnit = async (unitId: string) => {
+    try {
+      await studyApi.deleteUnit(unitId);
+      if (state.activeTrack) await fetchTrack(state.activeTrack.track.id);
+      toast.success("Task deleted");
+      return true;
+    } catch (err) {
+      toast.error("Failed to delete task");
+      return false;
+    }
+  };
+
   const saveNotes = async (unitId: string, notes: any) => {
     try {
       // Direct fetch for now as it's highly specific
@@ -250,6 +285,9 @@ export function StudyProvider({ children }: { children: ReactNode }) {
     logProgress,
     saveWeeklyReflection,
     deleteTrack,
+    updateTrack,
+    updateUnit,
+    deleteUnit,
     saveNotes,
     addUnit,
     openModal,

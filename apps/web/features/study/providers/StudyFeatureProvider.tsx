@@ -12,7 +12,11 @@ export function StudyFeatureProvider({ children }: { children: React.ReactNode }
   return (
     <StudyProvider>
       <StudyUIProvider 
-        renderLink={(props) => <Link {...props} />}
+        renderLink={({ children, ...props }) => (
+          <Link {...props}>
+            {children}
+          </Link>
+        )}
         navigate={(to) => router.push(to)}
       >
         <StudyModalManager />

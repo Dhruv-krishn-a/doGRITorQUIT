@@ -149,15 +149,22 @@ export default async function ProductDetailPage({ params }: Props) {
           <div className="bg-slate-50 rounded-2xl border border-slate-200 p-6">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Recommended Keys</h3>
             <div className="flex flex-wrap gap-3">
-              {/* ✅ I HAVE ADDED ACCESS_PLANS HERE */}
+              {/* ✅ HIERARCHICAL AND LIMIT-BASED KEYS */}
               {[
                 { key: "ACCESS_PLANS", desc: "Unlock Plans Page" }, 
-                { key: "ACCESS_TASKS", desc: "Unlock Tasks Page" },
+                { key: "ACCESS_TODAY", desc: "Unlock Today Page" },
                 { key: "ACCESS_HABITS", desc: "Unlock Habits/Checklist" },
-                { key: "ACCESS_STUDY", desc: "Unlock Upgrade OS (Study)" },
+                { key: "ACCESS_STUDY", desc: "Unlock Upgrade OS (Main)" },
+                { key: "ACCESS_STUDY_YOUTUBE", desc: "Unlock YouTube Tracker" },
+                { key: "ACCESS_STUDY_COURSE", desc: "Unlock Course Tracker" },
+                { key: "ACCESS_STUDY_PROJECT", desc: "Unlock Project Tracker" },
                 { key: "ACCESS_ANALYTICS", desc: "Unlock Analytics" },
                 { key: "AI_GEN_LIMIT", desc: "Monthly AI credits" },
-                { key: "MAX_PLANS", desc: "Limit number of plans" },
+                { key: "MAX_PLANS", desc: "Limit total number of plans" },
+                { key: "MAX_PLAN_DAYS", desc: "Limit max days per plan" },
+                { key: "MAX_STUDY_YOUTUBE", desc: "Max YouTube playlists allowed" },
+                { key: "MAX_STUDY_COURSES", desc: "Max courses allowed" },
+                { key: "MAX_STUDY_PROJECTS", desc: "Max projects allowed" },
               ].map(f => (
                 <form key={f.key} action={createSystemFeature}>
                   <input type="hidden" name="key" value={f.key} />

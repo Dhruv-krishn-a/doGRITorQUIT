@@ -1,4 +1,3 @@
-// apps/web/shared/components/Header.tsx
 "use client";
 
 import React, { useEffect, useRef, useState, useMemo } from "react";
@@ -76,7 +75,6 @@ export default function Header({ nav }: Props) {
     };
   }, []);
 
-  // Body scroll lock
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = 'hidden';
@@ -101,12 +99,8 @@ export default function Header({ nav }: Props) {
       router.push("/login");
     } catch (error: unknown) {
       let errorMessage = "An unknown error occurred";
-      
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (typeof error === "string") {
-        errorMessage = error;
-      }
+      if (error instanceof Error) errorMessage = error.message;
+      else if (typeof error === "string") errorMessage = error;
 
       toast.showToast({ title: "Sign out error", message: errorMessage, type: "error" });
     } finally {
@@ -116,40 +110,51 @@ export default function Header({ nav }: Props) {
 
   const handleMobileLinkClick = () => setMobileMenuOpen(false);
 
+  const springConfig = { type: "spring" as const, stiffness: 300, damping: 25 };
+
   return (
     <>
       <motion.header 
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        // CHANGED: Deep cherry background with matching border
-        className="sticky top-0 z-50 w-full border-b border-rose-900/40 bg-[#1c0510]/80 backdrop-blur-xl transition-all duration-300"
+        transition={springConfig}
+        className="sticky top-0 z-1000 w-full bg-white/60 backdrop-blur-2xl border-b border-white shadow-[0_4px_30px_rgba(0,0,0,0.03)] transition-all duration-500 transform-gpu antialiased"
       >
-        <div className="w-full px-4 md:px-8 h-18 flex items-center justify-between">
+        <div className="w-full px-6 md:px-10 h-20 flex items-center justify-between">
           <div className="flex items-center gap-10">
-            <Link href="/" className="group flex items-center gap-2.5 select-none" onClick={() => setMobileMenuOpen(false)}>
-              <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-linear-to-br from-rose-600 to-fuchsia-600 text-white shadow-lg shadow-rose-500/25 group-hover:shadow-rose-500/50 group-hover:scale-105 transition-all duration-300">
-                <Sparkles size={18} className="absolute group-hover:rotate-12 transition-transform duration-300" />
+            {/* Logo area */}
+            <Link href="/" className="group flex items-center gap-3 select-none" onClick={() => setMobileMenuOpen(false)}>
+              <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-linear-to-br from-rose-500 to-fuchsia-500 text-white shadow-md shadow-rose-200 group-hover:shadow-lg group-hover:shadow-rose-300 group-hover:scale-105 transition-all duration-300">
+                <Sparkles size={20} className="absolute group-hover:rotate-12 transition-transform duration-300" />
               </div>
               <div className="flex flex-col leading-none">
-                <span className="font-black text-xl tracking-tight text-rose-50 group-hover:text-rose-400 transition-colors">DO GRIT</span>
-                <span className="text-[10px] font-black text-rose-500/50 tracking-widest uppercase group-hover:text-rose-500">OK QUIT</span>
+                <span className="font-black text-xl tracking-tighter text-slate-900 group-hover:text-rose-600 transition-colors">DO GRIT</span>
+                <span className="text-[9px] font-black text-slate-400 tracking-[0.2em] uppercase group-hover:text-rose-400 transition-colors">OK QUIT</span>
               </div>
             </Link>
-            <nav className="hidden md:flex items-center gap-1">
+
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center gap-2">
               {mainNav.map((item) => {
                 const isActive = pathname === item.path;
                 return (
                   <Link
                     key={item.id}
                     href={item.path}
-                    // CHANGED: Nav links styling matching the neon pink aesthetic
-                    className={`relative px-4 py-2 rounded-full text-[10px] uppercase tracking-widest font-black transition-all duration-200 border ${
+                    className={`relative px-5 py-2.5 rounded-xl text-[10px] uppercase tracking-widest font-black transition-all duration-300 overflow-hidden ${
                       isActive 
-                        ? "text-rose-100 bg-linear-to-r from-rose-500/20 to-rose-500/5 border-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.15)]" 
-                        : "border-transparent text-rose-200/60 hover:text-rose-100 hover:bg-rose-500/10"
+                        ? "text-rose-600 shadow-sm" 
+                        : "text-slate-400 hover:text-slate-800 hover:bg-slate-50"
                     }`}
                   >
-                    {item.label}
+                    {isActive && (
+                      <motion.div 
+                        layoutId="headerNav"
+                        className="absolute inset-0 bg-rose-50 border border-rose-100 rounded-xl -z-10"
+                        transition={springConfig}
+                      />
+                    )}
+                    <span className="relative z-10">{item.label}</span>
                   </Link>
                 );
               })}
@@ -162,65 +167,65 @@ export default function Header({ nav }: Props) {
                 <div className="relative" ref={ddRef}>
                   <button
                     onClick={() => setProfileOpen((s) => !s)}
-                    // CHANGED: Profile button hover/active states
-                    className={`flex items-center gap-3 pl-1.5 pr-3 py-1.5 rounded-full border transition-all duration-200 group focus:outline-none ${
+                    className={`flex items-center gap-3 pl-2 pr-4 py-2 rounded-2xl border transition-all duration-300 group focus:outline-none bg-white/50 shadow-sm hover:shadow-md ${
                       profileOpen 
-                        ? "bg-rose-500/10 border-rose-500/30 ring-4 ring-rose-500/10" 
-                        : "border-transparent hover:bg-rose-500/10 hover:border-rose-500/20"
+                        ? "border-rose-300 ring-4 ring-rose-50" 
+                        : "border-slate-100 hover:border-rose-200"
                     }`}
                   >
-                    <div className="rounded-full overflow-hidden border border-rose-500/20 group-hover:border-rose-500/50 transition-colors">
+                    <div className="rounded-full overflow-hidden border border-white shadow-sm group-hover:scale-105 transition-transform">
                        <Avatar email={userEmail} size={8} />
                     </div>
                     
                     <div className="flex flex-col items-start text-left">
-                        <span className="text-xs font-black text-rose-50 group-hover:text-rose-400 max-w-30 truncate leading-tight uppercase tracking-tighter">{userEmail.split('@')[0]}</span>
-                        <span className="text-[9px] text-rose-500/60 font-black uppercase tracking-widest leading-none">Pro Sync</span>
+                        <span className="text-xs font-black text-slate-800 group-hover:text-rose-600 max-w-32 truncate leading-tight uppercase tracking-tighter transition-colors">{userEmail.split('@')[0]}</span>
+                        <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest leading-none mt-0.5">Pro Sync</span>
                     </div>
-                    <ChevronDown size={12} className={`text-rose-300/50 transition-transform duration-200 ml-1 ${profileOpen ? "rotate-180 text-rose-400" : ""}`} />
+                    <ChevronDown size={14} className={`text-slate-400 transition-transform duration-300 ml-1 ${profileOpen ? "rotate-180 text-rose-500" : "group-hover:text-rose-400"}`} />
                   </button>
 
                   <AnimatePresence>
                     {profileOpen && (
                       <motion.div
-                        initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                        initial={{ opacity: 0, y: 15, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 8, scale: 0.96 }}
-                        transition={{ duration: 0.15, ease: "easeOut" }}
-                        // CHANGED: Dropdown container
-                        className="absolute right-0 mt-3 w-64 bg-[#1c0510] rounded-2xl shadow-[0_8px_32px_rgba(244,63,94,0.15)] border border-rose-500/20 overflow-hidden z-50 p-2 backdrop-blur-2xl"
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={springConfig}
+                        className="absolute right-0 mt-4 w-72 bg-white/90 backdrop-blur-3xl rounded-4xl shadow-[0_20px_60px_rgba(0,0,0,0.1)] border border-white overflow-hidden z-50 p-3"
                       >
-                        {/* CHANGED: Dropdown Header */}
-                        <div className="px-3 py-3 bg-[#2a081a] rounded-xl mb-2 border border-rose-500/20">
-                          <p className="text-[9px] font-black text-rose-500/60 uppercase tracking-[0.2em] mb-1">Authenticated Entity</p>
-                          <p className="text-xs font-bold text-rose-100 truncate">{userEmail}</p>
+                        <div className="px-4 py-4 bg-slate-50/80 rounded-3xl mb-3 border border-slate-100/50">
+                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Authenticated Entity</p>
+                          <p className="text-xs font-bold text-slate-800 truncate">{userEmail}</p>
                         </div>
-                        <div className="space-y-0.5">
-                            <DropdownItem href="/dashboard" icon={<LayoutDashboard size={14} />} label="Dashboard" onClick={() => setProfileOpen(false)} />
-                            <DropdownItem href="/profile" icon={<User size={14} />} label="Profile" onClick={() => setProfileOpen(false)} />
-                            <DropdownItem href="/settings/billing" icon={<CreditCard size={14} />} label="Billing" onClick={() => setProfileOpen(false)} />
-                            <DropdownItem href="/dashboard/settings" icon={<Settings size={14} />} label="Settings" onClick={() => setProfileOpen(false)} />
+                        <div className="space-y-1">
+                            <DropdownItem href="/dashboard" icon={<LayoutDashboard size={16} />} label="Dashboard" onClick={() => setProfileOpen(false)} />
+                            <DropdownItem href="/profile" icon={<User size={16} />} label="Profile" onClick={() => setProfileOpen(false)} />
+                            <DropdownItem href="/settings/billing" icon={<CreditCard size={16} />} label="Billing" onClick={() => setProfileOpen(false)} />
+                            <DropdownItem href="/dashboard/settings" icon={<Settings size={16} />} label="Settings" onClick={() => setProfileOpen(false)} />
                         </div>
-                        <div className="h-px bg-rose-900/40 my-2 mx-2" />
-                        <button onClick={() => { setProfileOpen(false); setShowLogoutModal(true); }} className="w-full flex items-center gap-3 px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-rose-400 rounded-xl hover:bg-rose-500/10 hover:text-rose-300 transition-colors text-left">
-                          <LogOut size={14} /> Disconnect
+                        <div className="h-px bg-slate-100 my-3 mx-2" />
+                        <button onClick={() => { setProfileOpen(false); setShowLogoutModal(true); }} className="w-full flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 rounded-xl hover:bg-rose-50 hover:text-rose-600 transition-colors text-left group">
+                          <LogOut size={16} className="group-hover:-translate-x-1 transition-transform" /> Disconnect
                         </button>
                       </motion.div>
                     )}
                   </AnimatePresence>
                 </div>
               ) : (
-                <div className="flex items-center gap-2">
-                   <Link href="/login" className="text-xs font-black text-rose-200/60 hover:text-rose-100 px-4 py-2.5 rounded-full hover:bg-rose-500/10 transition-all uppercase tracking-widest">Sign in</Link>
-                   <Link href="/signup" className="group flex items-center gap-2 px-5 py-2.5 rounded-full bg-rose-600 text-white text-xs font-black uppercase tracking-widest hover:bg-rose-500 hover:shadow-[0_0_20px_rgba(225,29,72,0.4)] transition-all transform active:scale-95">
-                     Initialize <ArrowRight size={14} className="opacity-70 group-hover:translate-x-1 transition-transform" />
+                <div className="flex items-center gap-3">
+                   <Link href="/login" className="text-[11px] font-black text-slate-500 hover:text-slate-900 px-5 py-3 rounded-full hover:bg-slate-50 transition-all uppercase tracking-widest">Sign in</Link>
+                   <Link href="/signup" className="group flex items-center gap-2 px-6 py-3 rounded-2xl bg-linear-to-r from-rose-500 to-pink-500 text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-md shadow-rose-200 hover:shadow-xl hover:shadow-rose-300 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden">
+                     <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-linear-to-r from-transparent via-white/30 to-transparent skew-x-12" />
+                     <span className="relative z-10">Initialize</span> 
+                     <ArrowRight size={14} className="relative z-10 group-hover:translate-x-1 transition-transform" />
                    </Link>
                 </div>
               )}
             </div>
-            {/* CHANGED: Mobile Menu Trigger */}
-            <button onClick={() => setMobileMenuOpen(true)} className="md:hidden p-2.5 text-rose-200/60 hover:text-rose-100 hover:bg-rose-500/10 rounded-xl transition-colors active:scale-95">
-               <Menu size={24} />
+            
+            {/* Mobile Menu Trigger */}
+            <button onClick={() => setMobileMenuOpen(true)} className="md:hidden p-2.5 text-slate-500 hover:text-rose-600 bg-white shadow-sm border border-slate-200 hover:border-rose-200 rounded-xl transition-all active:scale-95">
+               <Menu size={20} />
             </button>
           </div>
         </div>
@@ -230,32 +235,32 @@ export default function Header({ nav }: Props) {
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMobileMenuOpen(false)} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 md:hidden" />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMobileMenuOpen(false)} className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-1200 md:hidden" />
             <motion.div 
               initial={{ x: "100%" }} 
               animate={{ x: 0 }} 
               exit={{ x: "100%" }} 
               transition={{ type: "spring", damping: 25, stiffness: 200 }} 
-              // CHANGED: Mobile drawer completely overhauled from light to cherry dark
-              className="fixed inset-y-0 right-0 w-full max-w-sm bg-[#1c0510] border-l border-rose-900/40 shadow-2xl shadow-rose-900/20 z-50 md:hidden flex flex-col"
+              className="fixed inset-y-0 right-0 w-full max-w-sm bg-white/90 backdrop-blur-3xl border-l border-white shadow-[-20px_0_60px_rgba(0,0,0,0.1)] z-1300 md:hidden flex flex-col transform-gpu antialiased"
             >
-                <div className="flex items-center justify-between p-5 border-b border-rose-900/40">
-                    <span className="font-bold text-lg text-rose-50">Command Center</span>
-                    <button onClick={() => setMobileMenuOpen(false)} className="p-2 text-rose-300/50 hover:text-rose-100 hover:bg-rose-500/10 rounded-full transition-colors"><X size={24} /></button>
+                <div className="flex items-center justify-between p-6 border-b border-slate-100 shrink-0">
+                    <span className="font-black text-xl text-slate-900 tracking-tighter uppercase">Command Center</span>
+                    <button onClick={() => setMobileMenuOpen(false)} className="p-2.5 text-slate-400 bg-white border border-slate-200 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 rounded-xl shadow-sm transition-all"><X size={20} /></button>
                 </div>
-                <div className="flex-1 overflow-y-auto p-5 space-y-6 scrollbar-none">
+                
+                <div className="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-none">
                     {userEmail && (
-                        <div className="flex items-center gap-4 bg-[#2a081a] p-4 rounded-2xl border border-rose-500/20">
-                            <div className="border border-rose-500/30 rounded-full overflow-hidden">
+                        <div className="flex items-center gap-4 bg-slate-50 p-5 rounded-3xl border border-slate-200/60 shadow-inner">
+                            <div className="border-2 border-white shadow-sm rounded-full overflow-hidden shrink-0">
                               <Avatar email={userEmail} size={48} />
                             </div>
                             <div className="overflow-hidden">
-                                <p className="font-bold text-rose-100 truncate">{userEmail}</p>
-                                <p className="text-xs text-rose-400/60 font-medium uppercase tracking-widest mt-0.5">Pro Sync</p>
+                                <p className="font-black text-slate-800 tracking-tight truncate">{userEmail}</p>
+                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1">Pro Sync Active</p>
                             </div>
                         </div>
                     )}
-                    <nav className="space-y-2">
+                    <nav className="space-y-3">
                         {mainNav.map((item) => {
                            const isActive = pathname === item.path;
                            return (
@@ -263,10 +268,10 @@ export default function Header({ nav }: Props) {
                               key={item.id} 
                               href={item.path} 
                               onClick={handleMobileLinkClick} 
-                              className={`flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-bold tracking-wide uppercase transition-all ${
+                              className={`flex items-center gap-4 px-5 py-4 rounded-2xl text-xs font-black tracking-[0.2em] uppercase transition-all shadow-sm border ${
                                 isActive 
-                                  ? "bg-linear-to-r from-rose-500/20 to-rose-500/5 text-rose-300 border border-rose-500/30" 
-                                  : "text-rose-200/60 hover:bg-rose-500/10 hover:text-rose-100 border border-transparent"
+                                  ? "bg-rose-50 text-rose-600 border-rose-200" 
+                                  : "bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-800 border-slate-100"
                               }`}
                             >
                                 {item.label}
@@ -275,20 +280,21 @@ export default function Header({ nav }: Props) {
                         })}
                     </nav>
                 </div>
-                <div className="p-5 border-t border-rose-900/40 bg-[#14030b]">
+
+                <div className="p-6 border-t border-slate-100 bg-white/50 shrink-0">
                     {userEmail ? (
-                        <div className="grid grid-cols-2 gap-3">
-                             <Link href="/dashboard" onClick={handleMobileLinkClick} className="flex items-center justify-center gap-2 px-4 py-3 bg-[#2a081a] border border-rose-500/30 rounded-xl text-xs font-bold uppercase tracking-widest text-rose-100 hover:border-rose-500 hover:bg-rose-500/10 transition-all shadow-sm">
+                        <div className="grid grid-cols-2 gap-4">
+                             <Link href="/dashboard" onClick={handleMobileLinkClick} className="flex items-center justify-center gap-2 px-4 py-4 bg-white border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:border-slate-300 hover:bg-slate-50 transition-all shadow-sm">
                                <LayoutDashboard size={14} /> Dashboard
                              </Link>
-                             <button onClick={() => { setMobileMenuOpen(false); setShowLogoutModal(true); }} className="flex items-center justify-center gap-2 px-4 py-3 bg-[#2a081a] border border-rose-500/30 rounded-xl text-xs font-bold uppercase tracking-widest text-rose-400 hover:border-rose-500 hover:bg-rose-500/10 transition-all shadow-sm">
+                             <button onClick={() => { setMobileMenuOpen(false); setShowLogoutModal(true); }} className="flex items-center justify-center gap-2 px-4 py-4 bg-white border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest text-rose-500 hover:border-rose-200 hover:bg-rose-50 transition-all shadow-sm">
                                <LogOut size={14} /> Disconnect
                              </button>
                         </div>
                     ) : (
-                        <div className="flex flex-col gap-3">
-                            <Link href="/login" onClick={handleMobileLinkClick} className="w-full text-center px-4 py-3.5 rounded-xl bg-[#2a081a] border border-rose-500/30 text-rose-100 text-xs font-bold uppercase tracking-widest hover:bg-rose-500/10 transition-colors">Sign In</Link>
-                            <Link href="/signup" onClick={handleMobileLinkClick} className="w-full text-center px-4 py-3.5 rounded-xl bg-rose-600 text-white text-xs font-bold uppercase tracking-widest hover:bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.3)] transition-all">Initialize</Link>
+                        <div className="flex flex-col gap-4">
+                            <Link href="/login" onClick={handleMobileLinkClick} className="w-full text-center px-4 py-4 rounded-2xl bg-white border border-slate-200 text-slate-600 text-xs font-black uppercase tracking-[0.2em] hover:bg-slate-50 shadow-sm transition-all">Sign In</Link>
+                            <Link href="/signup" onClick={handleMobileLinkClick} className="w-full text-center px-4 py-4 rounded-2xl bg-linear-to-r from-rose-500 to-pink-500 text-white text-xs font-black uppercase tracking-[0.2em] hover:shadow-lg hover:shadow-rose-200 transition-all">Initialize</Link>
                         </div>
                     )}
                 </div>
@@ -298,18 +304,17 @@ export default function Header({ nav }: Props) {
       </AnimatePresence>
 
       <Modal isOpen={showLogoutModal} title="Terminate Session?" onClose={() => setShowLogoutModal(false)} onConfirm={async () => { await doSignOut(); }} confirmLabel="Disconnect" cancelLabel="Stay" confirmLoading={loggingOut}>
-        {/* CHANGED: Modal description text color */}
-        <p className="text-rose-200/60 text-sm">You are about to disconnect from the Neural Command Center. You will need to authenticate again to access your dashboard.</p>
+        <p className="text-slate-500 text-sm font-medium">You are about to disconnect from the Neural Command Center. You will need to authenticate again to access your dashboard.</p>
       </Modal>
     </>
   );
 }
 
-// CHANGED: DropdownItem completely overhauled from light to dark theme
+// Light theme dropdown item
 function DropdownItem({ href, icon, label, onClick }: { href: string; icon: React.ReactNode; label: string; onClick: () => void }) {
     return (
-        <Link href={href} onClick={onClick} className="flex items-center gap-3 px-3 py-2.5 text-xs font-bold uppercase tracking-widest text-rose-200/70 rounded-xl hover:bg-rose-500/10 hover:text-rose-100 transition-all">
-            <span className="text-rose-400/60">{icon}</span>
+        <Link href={href} onClick={onClick} className="flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 rounded-xl hover:bg-slate-50 hover:text-slate-900 transition-all group">
+            <span className="text-slate-400 group-hover:text-rose-500 transition-colors">{icon}</span>
             {label}
         </Link>
     );

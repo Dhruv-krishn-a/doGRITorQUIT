@@ -52,8 +52,8 @@ export async function fetchUserEntitlements(userId: string): Promise<UserEntitle
 
   if (!product) {
     // Fallback: Load the "FREE" plan configuration from DB
-    product = await prisma.product.findUnique({
-      where: { key: "FREE" },
+    product = await prisma.product.findFirst({
+      where: { key: { equals: "FREE", mode: 'insensitive' } },
       include: { productFeatures: { include: { feature: true } } }
     });
   }
@@ -67,7 +67,7 @@ export async function fetchUserEntitlements(userId: string): Promise<UserEntitle
     });
   }
 
-  const productKey = product?.key ? String(product.key) : "FREE";
+  const productKey = product?.key ? String(product.key).toUpperCase() : "FREE";
 
   return {
     userId,
@@ -104,13 +104,19 @@ export async function getPagePermissions(userId: string) {
     return true; 
   };
 
+  const hasStudyAccess = check("ACCESS_STUDY");
+
   return {
     canViewDashboard: true,
     canViewSubscription: true,
     canViewPlans: check("ACCESS_PLANS"),
-    canViewTasks: check("ACCESS_TASKS"),
+    canViewToday: check("ACCESS_TODAY"),
+    canViewTasks: check("ACCESS_TASKS") || check("ACCESS_TODAY"), // Backward compatibility
     canViewChecklist: check("ACCESS_HABITS"),
-    canViewStudy: check("ACCESS_STUDY"), 
+    canViewStudy: hasStudyAccess, 
+    canViewYouTube: hasStudyAccess && check("ACCESS_STUDY_YOUTUBE"),
+    canViewCourse: hasStudyAccess && check("ACCESS_STUDY_COURSE"),
+    canViewProject: hasStudyAccess && check("ACCESS_STUDY_PROJECT"),
     canViewAnalytics: check("ACCESS_ANALYTICS"),
   };
 }
@@ -127,7 +133,7 @@ export async function getActiveUserSubscription(userId: string) {
 
 export async function assertPlanCreationAllowed(userId: string) {
   const ent = await fetchUserEntitlements(userId);
-  const maxPlans = Number(ent.features['MAX_PLANS']?.value ?? 1);
+  const maxPlans = Number(ent.features['MAX_PLANS']?.value ?? (ent.productKey === 'FREE' ? 1 : 100));
 
   const currentCount = await prisma.plan.count({
     where: { userId, isArchived: false }
@@ -135,6 +141,27 @@ export async function assertPlanCreationAllowed(userId: string) {
 
   if (currentCount >= maxPlans) {
     throw new Error(`Plan limit reached (${maxPlans}). Please upgrade to create more.`);
+  }
+}
+
+export async function assertTrackCreationAllowed(userId: string, type: 'PLAYLIST' | 'COURSE' | 'PROJECT') {
+  const ent = await fetchUserEntitlements(userId);
+  
+  let limitKey = '';
+  let label = '';
+  
+  if (type === 'PLAYLIST') { limitKey = 'MAX_STUDY_YOUTUBE'; label = 'YouTube Playlists'; }
+  else if (type === 'COURSE') { limitKey = 'MAX_STUDY_COURSES'; label = 'Courses'; }
+  else if (type === 'PROJECT') { limitKey = 'MAX_STUDY_PROJECTS'; label = 'Projects'; }
+  
+  const limit = Number(ent.features[limitKey]?.value ?? (ent.productKey === 'FREE' ? 1 : 100));
+  
+  const currentCount = await prisma.track.count({
+    where: { userId, type }
+  });
+
+  if (currentCount >= limit) {
+    throw new Error(`${label} limit reached (${limit}). Please upgrade your plan.`);
   }
 }
 

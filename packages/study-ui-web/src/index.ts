@@ -1,25 +1,31 @@
 // packages/study-ui-web/src/index.ts
 
 // HUD Components
-export * from './components/hud/StudyLevelHUD';
-export * from './components/hud/LoadGauge';
-export * from './components/hud/StudyProtocolCard';
-export * from './components/hud/ReviewList';
-export * from './components/hud/StatsOverview';
+export * from './components/shared/hud/StudyLevelHUD';
+export * from './components/shared/hud/LoadGauge';
+export * from './components/shared/hud/StudyProtocolCard';
+export * from './components/shared/hud/ReviewList';
+export * from './components/shared/hud/StatsOverview';
 
 // Base Components
-export * from './components/TrackCard';
-export * from './components/TrackHeader';
-export * from './components/UnitCard';
-export * from './components/KanbanBoard';
-export * from './components/TrackHeaderSummary';
-export * from './components/EmptyTrackSetup';
+export * from './components/shared/TrackCard';
+export * from './components/shared/TrackHeader';
+export * from './components/shared/UnitCard';
+export * from './components/shared/KanbanBoard';
+export * from './components/shared/TrackHeaderSummary';
+export * from './components/shared/EmptyTrackSetup';
 
 // Modals
-export * from './components/modals/StudyModalManager';
+export * from './components/shared/modals/StudyModalManager';
 
 // Context
 export * from './context/StudyUIContext';
 
 // Hooks
 export * from './hooks/useVideoProgress';
+
+// Project Components
+export * from './components/project';
+
+// Today Components
+export * from './components/today';
