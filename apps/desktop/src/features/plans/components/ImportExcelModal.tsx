@@ -6,6 +6,7 @@ import Modal from "../../../components/ui/Modal";
 import { Button } from "../../../components/ui/Button";
 import * as XLSX from "xlsx";
 import { useAuth } from "../../auth/hooks/useAuth";
+import { API_BASE_URL } from "../../../config/env";
 
 type Props = {
   isOpen: boolean;
@@ -112,7 +113,7 @@ export default function ImportExcelModal({ isOpen, onClose, onImport }: Props) {
 
       if (tasks.length === 0) throw new Error("No valid tasks found in the file.");
 
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+      const baseUrl = API_BASE_URL;
       const res = await fetch(`${baseUrl}/api/plans/import-json`, {
         method: "POST",
         headers: { 

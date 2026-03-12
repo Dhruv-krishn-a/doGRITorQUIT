@@ -1,11 +1,12 @@
 import { Lock } from "lucide-react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { Link } from "react-router-dom";
+import { WEB_URL } from "../config/env";
 
 export function FeatureLocked({ title, description }: { title: string; description?: string }) {
   const handleUpgrade = async () => {
     try {
-      const baseUrl = import.meta.env.VITE_WEB_URL || 'http://localhost:3000';
+      const baseUrl = WEB_URL;
       await openUrl(`${baseUrl}/dashboard/subscriptions`);
     } catch (err) {
       console.error("Failed to open browser:", err);

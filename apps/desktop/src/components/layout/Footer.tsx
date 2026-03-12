@@ -6,9 +6,7 @@ import {
   Twitter, 
   Linkedin, 
   Heart,
-  Sparkles,
-  ArrowRight,
-  Terminal
+  Sparkles
 } from "lucide-react";
 
 export default function Footer({ nav }: { nav: NavItem[] }) {
@@ -22,117 +20,76 @@ export default function Footer({ nav }: { nav: NavItem[] }) {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="transform-gpu relative bg-[#fdfbfb] pt-20 pb-8 border-t border-rose-100 overflow-hidden font-sans text-slate-600 transform-gpu antialiased mt-auto">
-      
-      {/* Light Background Pattern (Dot Grid) */}
-      <div className="transform-gpu absolute inset-0 opacity-[0.03] pointer-events-none" 
-           style={{ backgroundImage: 'radial-gradient(rgba(0,0,0,1) 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
-      </div>
-
-      {/* Decorative Ethereal Blur Orbs */}
-      <div className="transform-gpu absolute top-0 right-1/4 w-125 h-125 bg-rose-200/40 rounded-full blur-[100px] -translate-y-1/2 pointer-events-none animate-pulse-slow" />
-      <div className="transform-gpu absolute bottom-0 left-0 w-100 h-100 bg-fuchsia-100/50 rounded-full blur-[80px] translate-y-1/4 -translate-x-1/4 pointer-events-none" />
-
-      <div className="transform-gpu max-w-7xl mx-auto px-6 md:px-10 relative z-10">
+    <footer className="relative bg-[#fdfbfb] pt-12 pb-6 border-t border-slate-100 overflow-hidden font-sans text-slate-600 antialiased mt-auto">
+      <div className="max-w-7xl mx-auto px-6 md:px-10 relative z-10">
         
-        <div className="transform-gpu grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-16">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-10">
           
-          {/* --- Brand Column (Span 4) --- */}
-          <div className="transform-gpu lg:col-span-4 space-y-6">
-             <Link to="/" className="transform-gpu flex items-center gap-3 select-none group w-fit">
-                <div className="transform-gpu relative flex items-center justify-center w-12 h-12 rounded-2xl bg-linear-to-br from-rose-500 to-fuchsia-500 text-white shadow-[0_8px_25px_rgba(244,63,94,0.3)] group-hover:shadow-[0_12px_30px_rgba(244,63,94,0.5)] group-hover:scale-105 transition-all duration-500">
-                  <Sparkles size={20} className="transform-gpu group-hover:rotate-12 transition-transform duration-500" />
+          {/* --- Brand --- */}
+          <div className="flex flex-col space-y-4">
+             <Link to="/" className="flex items-center gap-3 select-none group w-fit">
+                <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500 to-fuchsia-500 text-white shadow-sm group-hover:shadow-md transition-all duration-300">
+                  <Sparkles size={16} className="group-hover:rotate-12 transition-transform duration-500" />
                 </div>
-                <div className="transform-gpu flex flex-col leading-none">
-                  <span className="transform-gpu font-bold text-2xl tracking-tighter text-slate-900 group-hover:text-rose-600 transition-colors uppercase">DO GRIT</span>
-                  <span className="transform-gpu text-[10px] font-bold text-slate-400 tracking-[0.25em] uppercase mt-0.5 group-hover:text-rose-500 transition-colors">OK QUIT</span>
+                <div className="flex flex-col leading-none">
+                  <span className="font-bold text-xl tracking-tight text-slate-900 group-hover:text-rose-600 transition-colors uppercase">DO GRIT</span>
+                  <span className="text-[9px] font-bold text-slate-400 tracking-[0.2em] uppercase mt-0.5 group-hover:text-rose-500 transition-colors">OK QUIT</span>
                 </div>
              </Link>
-             
-             <p className="transform-gpu text-slate-500 text-sm leading-relaxed max-w-sm font-medium tracking-wide">
-               The operating system for developers who ship. Turn chaotic ideas into executed plans with AI-driven roadmaps.
+             <p className="text-slate-500 text-xs font-medium max-w-xs">
+               The operating system for developers who ship.
              </p>
-
-             <div className="transform-gpu flex items-center gap-3 pt-2">
-                <SocialIcon icon={<Twitter size={18} />} href="#" label="Twitter" />
-                <SocialIcon icon={<Github size={18} />} href="#" label="GitHub" />
-                <SocialIcon icon={<Linkedin size={18} />} href="#" label="LinkedIn" />
-             </div>
           </div>
 
-          {/* --- Product Links (Span 2) --- */}
-          <div className="transform-gpu lg:col-span-2 lg:col-start-7">
-            <h3 className="transform-gpu font-bold text-slate-900 mb-6 text-[11px] uppercase tracking-[0.2em] flex items-center gap-2">
-              Product
-            </h3>
-            <ul className="transform-gpu space-y-4">
-              {footerNav.length > 0 ? footerNav.map((item) => (
-                <FooterLink key={item.id} href={item.path} label={item.label} />
-              )) : (
-                <>
-                  <FooterLink href="/features" label="Features" />
-                  <FooterLink href="/pricing" label="Pricing" />
-                </>
-              )}
-            </ul>
-          </div>
+          {/* --- Navigation --- */}
+          <div className="flex gap-12 lg:gap-16">
+            <div>
+              <h3 className="font-bold text-slate-900 mb-4 text-[10px] uppercase tracking-widest">Product</h3>
+              <ul className="space-y-3">
+                {footerNav.length > 0 ? footerNav.map((item) => (
+                  <FooterLink key={item.id} href={item.path} label={item.label} />
+                )) : (
+                  <>
+                    <FooterLink href="/features" label="Features" />
+                    <FooterLink href="/pricing" label="Pricing" />
+                  </>
+                )}
+              </ul>
+            </div>
 
-          {/* --- Company Links (Span 2) --- */}
-          <div className="transform-gpu lg:col-span-2">
-            <h3 className="transform-gpu font-bold text-slate-900 mb-6 text-[11px] uppercase tracking-[0.2em] flex items-center gap-2">
-              Company
-            </h3>
-            <ul className="transform-gpu space-y-4">
-              <FooterLink href="/about" label="About" />
-              {/* Added Indigo badge instead of blue to match the rest of the light theme palette */}
-              <FooterLink href="/careers" label="Careers" badge="Hiring" badgeColor="indigo" />
-              <FooterLink href="/contact" label="Contact" />
-            </ul>
-          </div>
-
-          {/* --- Newsletter (Span 3) --- */}
-          <div className="transform-gpu lg:col-span-3">
-            <h3 className="transform-gpu font-bold text-slate-900 mb-6 text-[11px] uppercase tracking-[0.2em] flex items-center gap-2">
-              <Terminal size={14} className="transform-gpu text-rose-500" />
-              Neural Updates
-            </h3>
-            <form className="transform-gpu relative group max-w-xs" onSubmit={(e) => e.preventDefault()}>
-              <input 
-                type="email" 
-                placeholder="IDENTITY@CORE.SYS" 
-                className="transform-gpu w-full bg-white border border-slate-200 text-slate-800 text-xs font-bold rounded-[1.25rem] py-4 pl-5 pr-14 focus:outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-100/50 transition-all uppercase tracking-widest placeholder:text-slate-300 shadow-sm"
-              />
-              <button 
-                type="submit"
-                className="transform-gpu absolute right-2 top-2 bottom-2 px-3.5 bg-slate-900 text-white rounded-xl hover:bg-rose-500 hover:shadow-[0_4px_15px_rgba(244,63,94,0.3)] transition-all flex items-center justify-center active:scale-95"
-                aria-label="Subscribe"
-              >
-                <ArrowRight size={16} />
-              </button>
-            </form>
-            
-            <div className="transform-gpu mt-6 flex items-center gap-3 bg-white w-fit px-4 py-2 rounded-full border border-slate-100 shadow-sm">
-              <div className="transform-gpu relative flex h-2.5 w-2.5">
-                <span className="transform-gpu animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="transform-gpu relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 border border-white"></span>
-              </div>
-              <span className="transform-gpu text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">All systems operational</span>
+            <div>
+              <h3 className="font-bold text-slate-900 mb-4 text-[10px] uppercase tracking-widest">Company</h3>
+              <ul className="space-y-3">
+                <FooterLink href="/about" label="About" />
+                <FooterLink href="/careers" label="Careers" badge="Hiring" />
+                <FooterLink href="/contact" label="Contact" />
+              </ul>
             </div>
           </div>
         </div>
 
         {/* --- Bottom Bar --- */}
-        <div className="transform-gpu pt-8 border-t border-slate-200/80 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="transform-gpu text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] flex flex-wrap justify-center md:justify-start gap-8">
-            <span>© {currentYear} Do Grit Or Quit Inc.</span>
-            <Link to="/privacy" className="transform-gpu hover:text-slate-800 transition-colors">Privacy</Link>
-            <Link to="/terms" className="transform-gpu hover:text-slate-800 transition-colors">Terms</Link>
+        <div className="pt-6 border-t border-slate-200/80 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-6">
+            <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">© {currentYear} Do Grit Or Quit</span>
+            <div className="flex gap-4 text-[10px] font-bold uppercase tracking-widest">
+              <Link to="/privacy" className="text-slate-400 hover:text-slate-800 transition-colors">Privacy</Link>
+              <Link to="/terms" className="text-slate-400 hover:text-slate-800 transition-colors">Terms</Link>
+            </div>
           </div>
           
-          <div className="transform-gpu flex items-center gap-2.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-white px-5 py-3 rounded-full border border-slate-100 shadow-sm">
-             <span>Crafted with</span>
-             <Heart size={14} className="transform-gpu text-rose-500 fill-rose-500 animate-[pulse_2s_ease-in-out_infinite] drop-shadow-sm" />
-             <span>by Dhruv Krishna</span>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <SocialIcon icon={<Twitter size={14} />} href="#" label="Twitter" />
+              <SocialIcon icon={<Github size={14} />} href="#" label="GitHub" />
+              <SocialIcon icon={<Linkedin size={14} />} href="#" label="LinkedIn" />
+            </div>
+            
+            <div className="hidden md:flex items-center gap-2 text-[9px] font-bold text-slate-500 uppercase tracking-widest bg-white px-3 py-2 rounded-lg border border-slate-100 shadow-sm">
+               <span>Made with</span>
+               <Heart size={12} className="text-rose-500 fill-rose-500" />
+               <span>by Dhruv Krishna</span>
+            </div>
           </div>
         </div>
       </div>
@@ -147,28 +104,23 @@ function SocialIcon({ icon, href, label }: { icon: React.ReactNode, href: string
     <a 
       href={href} 
       aria-label={label}
-      className="transform-gpu w-11 h-11 flex items-center justify-center rounded-2xl bg-white text-slate-400 border border-slate-200 hover:border-rose-200 hover:text-rose-500 hover:bg-rose-50 hover:shadow-md transition-all duration-300 active:scale-95"
+      className="text-slate-400 hover:text-slate-800 transition-colors"
     >
       {icon}
     </a>
   );
 }
 
-function FooterLink({ href, label, badge, badgeColor = "pink" }: { href: string, label: string, badge?: string, badgeColor?: "pink" | "indigo" }) {
-  
-  const badgeStyles = badgeColor === "indigo" 
-    ? "bg-indigo-50 text-indigo-600 border-indigo-100 shadow-sm"
-    : "bg-rose-50 text-rose-600 border-rose-100 shadow-sm";
-
+function FooterLink({ href, label, badge }: { href: string, label: string, badge?: string }) {
   return (
     <li>
       <Link 
         to={href} 
-        className="transform-gpu group flex items-center gap-3 text-slate-500 hover:text-slate-900 text-xs font-bold uppercase tracking-widest transition-all duration-300 w-fit"
+        className="group flex items-center gap-2 text-slate-500 hover:text-slate-900 text-[11px] font-bold uppercase tracking-wider transition-colors w-fit"
       >
-        <span className="transform-gpu group-hover:translate-x-1 transition-transform duration-300">{label}</span>
+        <span>{label}</span>
         {badge && (
-          <span className={`px-2.5 py-1 rounded-md text-[9px] font-bold uppercase tracking-[0.2em] border ${badgeStyles}`}>
+          <span className="px-1.5 py-0.5 rounded-md text-[8px] font-bold uppercase tracking-widest border bg-rose-50 text-rose-600 border-rose-100">
             {badge}
           </span>
         )}

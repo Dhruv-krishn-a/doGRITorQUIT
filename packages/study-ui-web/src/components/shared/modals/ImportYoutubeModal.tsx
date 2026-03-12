@@ -10,14 +10,13 @@ export function ImportYoutubeModal() {
   const { closeModal, fetchDashboard } = useStudy();
   const [loading, setLoading] = useState(false);
   const [playlistUrl, setPlaylistUrl] = useState('');
-  const [targetDate, setTargetDate] = useState('');
 
   const handleImportYouTube = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!playlistUrl) return;
     setLoading(true);
     try {
-      await studyApi.importPlaylist(playlistUrl, targetDate || undefined);
+      await studyApi.importPlaylist(playlistUrl, undefined);
       toast.success('YouTube Playlist imported successfully');
       fetchDashboard();
       closeModal();
@@ -90,18 +89,6 @@ export function ImportYoutubeModal() {
                   onChange={e => setPlaylistUrl(e.target.value)} 
                 />
               </div>
-              
-              <div className="transform-gpu space-y-2">
-                <label className="transform-gpu text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-2">
-                  Target Completion Date <span className="transform-gpu text-slate-300 font-bold">(Optional)</span>
-                </label>
-                <input 
-                  type="date" 
-                  className="transform-gpu w-full bg-white/80 border border-slate-200 rounded-[1.5rem] px-6 py-4 font-bold text-slate-800 focus:border-rose-400 focus:ring-4 focus:ring-rose-100/50 outline-none transition-all shadow-inner text-sm" 
-                  value={targetDate} 
-                  onChange={e => setTargetDate(e.target.value)} 
-                />
-              </div>
             </div>
 
             <div className="transform-gpu pt-2">
@@ -110,10 +97,12 @@ export function ImportYoutubeModal() {
                 whileTap={{ scale: 0.98 }}
                 disabled={loading || !playlistUrl} 
                 type="submit" 
-                className="transform-gpu w-full bg-gradient-to-r from-red-500 to-rose-600 text-white py-5 rounded-[1.5rem] font-bold text-xs uppercase tracking-[0.2em] shadow-[0_8px_20px_rgba(239,68,68,0.3)] hover:shadow-[0_12px_25px_rgba(239,68,68,0.4)] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:grayscale relative overflow-hidden group/btn"
+                className="transform-gpu w-full bg-slate-900 text-white py-5 rounded-[1.5rem] font-bold text-xs uppercase tracking-[0.2em] shadow-[0_8px_20px_rgba(15,23,42,0.3)] hover:shadow-[0_12px_25px_rgba(15,23,42,0.4)] hover:bg-rose-600 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none relative overflow-hidden group/btn"
               >
                 {/* CSS Shimmer/Glass Reflection Effect */}
-                <div className="transform-gpu absolute inset-0 -translate-x-full group-hover/btn:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12" />
+                {!loading && playlistUrl && (
+                  <div className="transform-gpu absolute inset-0 -translate-x-full group-hover/btn:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12" />
+                )}
                 
                 {loading ? <Loader2 className="transform-gpu animate-spin relative z-10" size={18} /> : <Youtube size={18} className="transform-gpu relative z-10 group-hover/btn:scale-110 transition-transform" />}
                 <span className="transform-gpu relative z-10 pt-0.5">{loading ? 'Processing Vector...' : 'Initialize Import'}</span>

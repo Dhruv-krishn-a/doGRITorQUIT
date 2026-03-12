@@ -2,13 +2,14 @@ import React, { useEffect } from 'react';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { CreditCard, ArrowRight } from 'lucide-react';
 import { useAuth } from '../features/auth/hooks/useAuth';
+import { WEB_URL } from '../config/env';
 
 export default function SubscriptionsPage() {
   const { session } = useAuth();
   
   const handleOpenWeb = async () => {
     try {
-      const baseUrl = import.meta.env.VITE_WEB_URL || 'http://localhost:3000';
+      const baseUrl = WEB_URL;
       await openUrl(`${baseUrl}/dashboard/subscriptions`);
     } catch (err) {
       console.error("Failed to open browser:", err);

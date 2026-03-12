@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { invoke } from '@tauri-apps/api/core';
+import { API_BASE_URL } from '../../../config/env';
 
 export function useEntitlements() {
   const { user, session } = useAuth();
@@ -17,10 +18,7 @@ export function useEntitlements() {
     async function fetchEntitlementsData() {
       try {
         setLoading(true);
-        // Ensure we point to the production Vercel API if in production build
-        const isDev = import.meta.env.DEV;
-        const defaultUrl = isDev ? 'http://localhost:3000' : 'https://dhruv-planner.vercel.app';
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || defaultUrl;
+        const baseUrl = API_BASE_URL;
         
         // Check if running inside Tauri context
         const isTauri = '__TAURI_INTERNALS__' in window;
@@ -50,7 +48,16 @@ export function useEntitlements() {
         console.error("Entitlements Fetch Error:", err);
         setError(err.toString());
         // Fallback to basic plan on network error to prevent total lock
-        setEntitlements((prev: any) => prev || { tier: 'Free', features: [] });
+        setEntitlements((prev: any) => prev || { 
+          tier: 'Free', 
+          features: {
+            ACCESS_PLANS: true,
+            ACCESS_HABITS: true,
+            ACCESS_STUDY: true,
+            MAX_PLANS: 1,
+            AI_GEN_LIMIT: 5
+          } 
+        });
       } finally {
         setLoading(false);
       }

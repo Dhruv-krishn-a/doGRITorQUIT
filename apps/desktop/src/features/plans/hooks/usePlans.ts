@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../auth/hooks/useAuth';
+import { API_BASE_URL } from '../../../config/env';
 
 export function usePlans() {
   const { user, session } = useAuth();
@@ -11,7 +12,7 @@ export function usePlans() {
     if (!user || !session) return;
     setLoading(true);
     try {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+      const baseUrl = API_BASE_URL;
       const res = await fetch(`${baseUrl}/api/plans`, {
         headers: {
           'Authorization': `Bearer ${session.access_token}`

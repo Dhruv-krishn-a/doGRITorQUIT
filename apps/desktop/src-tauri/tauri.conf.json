@@ -26,7 +26,9 @@
     "notification": null,
     "deep-link": {},
     "store": null,
-    "sql": [],
+    "sql": {
+      "preload": ["sqlite:planner.db"]
+    },
     "updater": {
       "endpoints": [
         "https://dogritorquit.in/api/update/{{target}}/{{current_version}}"
@@ -45,7 +47,7 @@
       "icons/icon.ico"
     ],
     "publisher": "Dogrit",
-    "category": "Office",
+    "category": "Productivity",
     "shortDescription": "Master your habits and study tracks.",
     "longDescription": "Dogrit Planner is an offline-first professional productivity suite."
   }

@@ -275,7 +275,7 @@ export function CommitmentModal() {
              <button 
                disabled={loading || !!analysis?.error || (mode === 'DATE' && !targetDate)}
                type="submit" 
-               className="transform-gpu w-full bg-slate-900 text-white py-6 rounded-[2rem] font-bold text-xs uppercase tracking-widest hover:bg-rose-600 shadow-xl shadow-slate-200 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:bg-slate-200 disabled:shadow-none"
+               className="transform-gpu w-full bg-slate-900 text-white py-6 rounded-[2rem] font-bold text-xs uppercase tracking-widest hover:bg-rose-600 shadow-xl shadow-slate-200 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
              >
                {loading ? <Loader2 className="transform-gpu animate-spin" size={20} /> : <Target size={20} />}
                {loading ? 'Saving Plan...' : 'Update Study Plan'}

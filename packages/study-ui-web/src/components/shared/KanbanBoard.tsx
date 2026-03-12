@@ -59,7 +59,7 @@ export function KanbanBoard({ units, onAction, onDragEnd }: KanbanBoardProps) {
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="transform-gpu flex flex-col md:flex-row gap-5 items-start w-full pb-10 overflow-x-auto md:overflow-x-visible snap-x custom-scrollbar">
+      <div className="transform-gpu flex flex-col md:flex-row gap-2 md:gap-3 items-start w-full pb-10 overflow-hidden">
         {columnConfigs.map((col) => {
           const allColUnits = (columns as any)[col.id] as Unit[];
           const totalPages = Math.ceil(allColUnits.length / ITEMS_PER_PAGE);
@@ -72,15 +72,15 @@ export function KanbanBoard({ units, onAction, onDragEnd }: KanbanBoardProps) {
           const visibleUnits = allColUnits.slice(safePage * ITEMS_PER_PAGE, (safePage + 1) * ITEMS_PER_PAGE);
 
           return (
-            <div key={col.id} className="transform-gpu flex flex-col h-full w-full md:flex-1 min-w-[280px] md:min-w-0 snap-center">
+            <div key={col.id} className="transform-gpu flex flex-col h-full w-full md:flex-1 min-w-0">
               
               {/* Column Header */}
-              <div className="transform-gpu flex items-center justify-between mb-4 px-2 shrink-0 group">
-                <div className="transform-gpu flex items-center gap-2.5">
-                  <div className={`w-2.5 h-2.5 rounded-full ${col.theme.dot} shadow-lg group-hover:animate-pulse transition-all duration-300`} />
+              <div className="transform-gpu flex items-center justify-between mb-2 px-2 shrink-0 group">
+                <div className="transform-gpu flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${col.theme.dot} shadow-md group-hover:animate-pulse transition-all duration-300`} />
                   <h3 className={`text-[10px] font-bold ${col.theme.text} uppercase tracking-widest truncate`}>{col.label}</h3>
                 </div>
-                <div className={`flex items-center justify-center min-w-[24px] h-[24px] px-1.5 rounded-lg border ${col.theme.border} bg-white/60 backdrop-blur-sm shadow-sm`}>
+                <div className={`flex items-center justify-center min-w-[20px] h-[20px] px-1.5 rounded-md border ${col.theme.border} bg-white/60 backdrop-blur-sm shadow-sm`}>
                   <span className={`text-[9px] font-bold ${col.theme.textMuted}`}>
                     {allColUnits.length}
                   </span>
@@ -93,7 +93,7 @@ export function KanbanBoard({ units, onAction, onDragEnd }: KanbanBoardProps) {
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className={`flex flex-col flex-1 min-h-[450px] rounded-[2.5rem] p-3 transition-all duration-500 border backdrop-blur-xl transform-gpu ${
+                    className={`flex flex-col flex-1 min-h-[300px] rounded-2xl p-2 transition-all duration-500 border backdrop-blur-xl transform-gpu ${
                       snapshot.isDraggingOver 
                         ? col.theme.dragBg 
                         : `${col.theme.bg} ${col.theme.border} shadow-sm`

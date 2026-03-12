@@ -1,17 +1,31 @@
 // apps/web/middleware.ts
 import { NextResponse, type NextRequest } from "next/server";
 
-/**
- * Lightweight middleware:
- * - Do NOT call Supabase or DB here (no network calls).
- * - Only check if a session cookie exists and protect pages that need auth.
- *
- * NOTE: replace 'sb-access-token' below if your Supabase cookie name differs.
- */
 const PUBLIC_FILE = /\.(.*)$/;
+
+const ALLOWED_ORIGINS = [
+  "http://localhost:1420",
+  "tauri://localhost",
+  "http://localhost",
+  "http://tauri.localhost",
+  "https://dogritorquit.in"
+];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const origin = request.headers.get("origin");
+
+  // Handle CORS preflight
+  if (request.method === "OPTIONS" && pathname.startsWith("/api/")) {
+    const response = new NextResponse(null, { status: 204 });
+    if (origin && ALLOWED_ORIGINS.includes(origin)) {
+      response.headers.set("Access-Control-Allow-Origin", origin);
+      response.headers.set("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+      response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Api-Version, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Date");
+      response.headers.set("Access-Control-Allow-Credentials", "true");
+    }
+    return response;
+  }
 
   // Let static files, images and _next be served without middleware checks
   if (
@@ -25,8 +39,6 @@ export async function middleware(request: NextRequest) {
   }
 
   // Quick cookie existence check (no network)
-  // Supabase SSR sets a cookie like 'sb-access-token' / 'sb:token' depending on config.
-  // We look for any cookie that contains 'sb-' and isn't empty to be robust.
   const cookiePairs = request.cookies.getAll().map(c => ({ name: c.name, value: c.value }));
   const hasSupabaseSession = cookiePairs.some(
     (c) =>
@@ -42,7 +54,15 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+
+  // Add CORS headers to API responses
+  if (pathname.startsWith("/api/") && origin && ALLOWED_ORIGINS.includes(origin)) {
+    response.headers.set("Access-Control-Allow-Origin", origin);
+    response.headers.set("Access-Control-Allow-Credentials", "true");
+  }
+
+  return response;
 }
 
 export const config = {

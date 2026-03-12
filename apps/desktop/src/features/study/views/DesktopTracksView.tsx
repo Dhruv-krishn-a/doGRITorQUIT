@@ -11,6 +11,7 @@ import ImportExcelModal from '../../plans/components/ImportExcelModal';
 import AIPlanGenerator from '../../plans/components/AIPlanGenerator';
 import { InitializeVectorModal } from '../components/InitializeVectorModal';
 import { useEntitlements } from '../../billing/hooks/useEntitlements';
+import { API_BASE_URL } from '../../../config/env';
 
 export function DesktopTracksView() {
   const navigate = useNavigate();
@@ -47,7 +48,7 @@ export function DesktopTracksView() {
   const handleDeletePlan = async (planId: string) => {
     if (!confirm("Are you sure you want to delete this plan?")) return;
     try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+        const baseUrl = API_BASE_URL;
         // Need session somehow, but we'll assume usePlans handles the refresh. Actually, this is handled via backend directly here.
         // I will just use fetch with credentials if needed, but since I don't have session directly here, I'll pass it if needed, or import supabase.
         // Actually, let's just emit delete via api since we're using secure api now. But I need the token.

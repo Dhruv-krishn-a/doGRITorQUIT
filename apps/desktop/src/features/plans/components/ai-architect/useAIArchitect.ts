@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { PlanBlueprintData, SyllabusData, SyllabusModule, TaskBlueprint } from "../../../../types/plan";
 import { generateICS, downloadFile } from "../../../../lib/ics-generator"; 
 import { useAuth } from "../../../auth/hooks/useAuth";
+import { API_BASE_URL } from "../../../../config/env";
 
 export type Message = {
   role: "user" | "assistant";
@@ -107,7 +108,7 @@ export const useAIArchitect = (setOpen: (open: boolean) => void) => {
   };
 
   const callAI = async (payload: Record<string, unknown>) => {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+    const baseUrl = API_BASE_URL;
     const res = await fetch(`${baseUrl}/api/ai/plan`, {
         method: "POST",
         headers: { 
@@ -357,7 +358,7 @@ export const useAIArchitect = (setOpen: (open: boolean) => void) => {
             }))
         };
 
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+        const baseUrl = API_BASE_URL;
         const res = await fetch(`${baseUrl}/api/plans/import-json`, {
             method: "POST",
             headers: { 

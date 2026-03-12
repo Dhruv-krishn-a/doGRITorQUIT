@@ -6,6 +6,7 @@ import { setAccessToken, setApiBaseUrl } from '@planner/study-core';
 import { setHabitsAccessToken, setHabitsApiBaseUrl } from '@planner/habits-core';
 import { setAccessToken as setDashboardAccessToken, setApiBaseUrl as setDashboardApiBaseUrl } from '@planner/dashboard-core';
 import { saveOfflineLease } from '../../../lib/db';
+import { API_BASE_URL } from '../../../config/env';
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -14,9 +15,7 @@ export function useAuth() {
 
   const fetchOfflineToken = useCallback(async (currentSession: Session) => {
     try {
-      const isDev = import.meta.env.DEV;
-      const defaultUrl = isDev ? 'http://localhost:3000' : 'https://dhruv-planner.vercel.app';
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || defaultUrl;
+      const baseUrl = API_BASE_URL;
 
       const res = await fetch(`${baseUrl}/api/auth/offline-token`, {
         headers: { 'Authorization': `Bearer ${currentSession.access_token}` }
@@ -32,9 +31,7 @@ export function useAuth() {
   }, []);
 
   useEffect(() => {
-    const isDev = import.meta.env.DEV;
-    const defaultUrl = isDev ? 'http://localhost:3000' : 'https://dhruv-planner.vercel.app';
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || defaultUrl;
+    const baseUrl = API_BASE_URL;
 
     setApiBaseUrl(baseUrl);
     setHabitsApiBaseUrl(baseUrl);

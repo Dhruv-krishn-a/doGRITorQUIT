@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../auth/hooks/useAuth';
+import { API_BASE_URL } from '../../../config/env';
 
 export function usePlanDetail(planId: string) {
   const { user, session } = useAuth();
@@ -11,7 +12,7 @@ export function usePlanDetail(planId: string) {
     if (!user || !session || !planId) return;
     setLoading(true);
     try {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+      const baseUrl = API_BASE_URL;
       const res = await fetch(`${baseUrl}/api/plans/${planId}`, {
         headers: {
           'Authorization': `Bearer ${session.access_token}`
@@ -40,7 +41,7 @@ export function usePlanDetail(planId: string) {
   // Actions
   const createTask = async (taskData: any) => {
       try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+        const baseUrl = API_BASE_URL;
         const res = await fetch(`${baseUrl}/api/tasks`, {
           method: 'POST',
           headers: {
@@ -69,7 +70,7 @@ export function usePlanDetail(planId: string) {
       const { subtasks, ...fields } = updates;
       
       try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+        const baseUrl = API_BASE_URL;
         const res = await fetch(`${baseUrl}/api/tasks/${taskId}`, {
           method: 'PATCH',
           headers: {
@@ -87,7 +88,7 @@ export function usePlanDetail(planId: string) {
 
   const deleteTask = async (taskId: string) => {
       try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+        const baseUrl = API_BASE_URL;
         const res = await fetch(`${baseUrl}/api/tasks/${taskId}`, {
           method: 'DELETE',
           headers: {
@@ -103,7 +104,7 @@ export function usePlanDetail(planId: string) {
 
   const toggleSubtask = async (subtaskId: string, completed: boolean) => {
       try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+        const baseUrl = API_BASE_URL;
         const res = await fetch(`${baseUrl}/api/subtasks/${subtaskId}`, {
           method: 'PATCH',
           headers: {
@@ -122,7 +123,7 @@ export function usePlanDetail(planId: string) {
     
   const deleteSubtask = async (subtaskId: string) => {
       try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+        const baseUrl = API_BASE_URL;
         const res = await fetch(`${baseUrl}/api/subtasks/${subtaskId}`, {
           method: 'DELETE',
           headers: {
@@ -138,7 +139,7 @@ export function usePlanDetail(planId: string) {
 
   const insertDay = async (date: string) => {
       try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+        const baseUrl = API_BASE_URL;
         const res = await fetch(`${baseUrl}/api/plans/${planId}/days`, {
           method: 'POST',
           headers: {
@@ -158,7 +159,7 @@ export function usePlanDetail(planId: string) {
        if (!confirm("Delete all tasks on this date?")) return;
        
        try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+        const baseUrl = API_BASE_URL;
         const res = await fetch(`${baseUrl}/api/plans/${planId}/days?date=${date}`, {
           method: 'DELETE',
           headers: {

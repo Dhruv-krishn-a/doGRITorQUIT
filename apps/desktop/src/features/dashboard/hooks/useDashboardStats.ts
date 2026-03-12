@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../auth/hooks/useAuth';
+import { API_BASE_URL } from '../../../config/env';
 
 export function useDashboardStats() {
   const { user, session } = useAuth();
@@ -16,7 +17,7 @@ export function useDashboardStats() {
     async function fetchStats() {
       try {
         setLoading(true);
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+        const baseUrl = API_BASE_URL;
         
         const res = await fetch(`${baseUrl}/api/dashboard`, {
           headers: {
