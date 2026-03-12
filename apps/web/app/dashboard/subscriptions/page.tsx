@@ -16,7 +16,7 @@ export default async function SubscriptionPage() {
   const [rawProducts, entitlements, usageStats, rawHistory] = await Promise.all([
     payment.getPublicPlans(),
     billing.fetchUserEntitlements(user.id), 
-    billing.getAIUsageStats(user.id),
+    billing.getUserUsageStats(user.id),
     payment.getUserOrders(user.id),
   ]);
 
@@ -88,9 +88,14 @@ export default async function SubscriptionPage() {
         : undefined,
     } : undefined,
     usage: {
-      aiGenerated: usageStats.used,
-      aiLimit: usageStats.limit === Infinity ? null : usageStats.limit, 
-      remaining: usageStats.remaining === Infinity ? null : usageStats.remaining
+      ai: {
+        used: usageStats.ai.used,
+        limit: usageStats.ai.limit === Infinity ? 999999 : usageStats.ai.limit,
+        remaining: usageStats.ai.remaining === Infinity ? 999999 : usageStats.ai.remaining
+      },
+      plans: usageStats.plans,
+      habits: usageStats.habits,
+      study: usageStats.study
     },
     history: history
   };

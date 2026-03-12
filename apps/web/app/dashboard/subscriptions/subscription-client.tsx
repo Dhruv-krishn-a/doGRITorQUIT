@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { 
   Loader2, Check, CreditCard, Zap, Calendar, History, 
   LayoutGrid, Download, AlertCircle, LucideIcon, 
-  ShieldCheck, X
+  ShieldCheck, X, Sparkles, Youtube, BookOpen, Hammer
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -73,9 +73,15 @@ export interface ActiveSubscription {
 }
 
 export interface UsageStats {
-  aiGenerated: number;
-  aiLimit: number | null;
-  remaining: number | null;
+  ai: { used: number; limit: number; remaining: number };
+  plans: { used: number; limit: number };
+  habits: { used: number; limit: number };
+  study: {
+    youtube: { used: number; limit: number };
+    courses: { used: number; limit: number };
+    projects: { used: number; limit: number };
+    videosPerPlaylist: { used: number; limit: number };
+  };
 }
 
 export interface PaymentRecord {
@@ -87,7 +93,7 @@ export interface PaymentRecord {
 
 export interface SubscriptionData {
   activeSubscription?: ActiveSubscription;
-  usage?: UsageStats;
+  usage: UsageStats;
   history?: PaymentRecord[];
 }
 
@@ -103,53 +109,88 @@ export interface SubscriptionClientProps {
 const StatCard = ({ icon: Icon, label, value, subtext, colorClass }: { 
   icon: LucideIcon; label: string; value: string | number; subtext?: string; colorClass: string 
 }) => (
-  <div className="transform-gpu bg-white border border-slate-200 rounded-2xl p-6 flex items-start gap-5 shadow-sm hover:shadow-md transition-all duration-300">
+  <div className="bg-white border border-slate-200 rounded-2xl p-6 flex items-start gap-5 shadow-sm hover:shadow-md transition-all duration-300">
     <div className={`p-3.5 rounded-xl ${colorClass} shrink-0`}>
       <Icon size={22} />
     </div>
     <div>
-      <p className="transform-gpu text-slate-500 text-xs font-bold uppercase tracking-wider mb-1.5">{label}</p>
-      <h3 className="transform-gpu text-2xl font-bold text-slate-900 tracking-tight">{value}</h3>
-      {subtext && <p className="transform-gpu text-slate-400 text-sm mt-1 font-medium">{subtext}</p>}
+      <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1.5">{label}</p>
+      <h3 className="text-2xl font-bold text-slate-900 tracking-tight">{value}</h3>
+      {subtext && <p className="text-slate-400 text-sm mt-1 font-medium">{subtext}</p>}
     </div>
   </div>
 );
 
-const UsageCard = ({ usage }: { usage: UsageStats }) => {
-  const limit = usage.aiLimit === null ? Infinity : usage.aiLimit;
-  const isUnlimited = limit === Infinity;
-  const percent = isUnlimited ? 0 : Math.min((usage.aiGenerated / limit) * 100, 100);
+const LimitRow = ({ label, used, limit, icon: Icon }: { label: string; used: number; limit: number; icon: any }) => {
+  // Robustly handle NaN or missing limits
+  const safeUsed = isNaN(used) ? 0 : used;
+  const safeLimit = isNaN(limit) || limit === 0 ? 1 : limit;
+  const isUnlimited = limit >= 999999;
+  
+  const percent = isUnlimited ? 0 : Math.min((safeUsed / safeLimit) * 100, 100);
   const isCritical = !isUnlimited && percent > 90;
 
   return (
-    <div className="transform-gpu bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300">
-      <div className="transform-gpu flex justify-between items-start mb-4">
-        <div>
-          <p className="transform-gpu text-slate-500 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5">
-            <Zap size={14} className="transform-gpu text-amber-500" /> AI Credits
-          </p>
-          <div className="transform-gpu flex items-baseline gap-1.5">
-            <span className="transform-gpu text-2xl font-bold text-slate-900">{usage.aiGenerated}</span>
-            <span className="transform-gpu text-slate-400 font-medium">/ {isUnlimited ? "∞" : limit}</span>
-          </div>
+    <div className="space-y-2">
+      <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
+        <div className="flex items-center gap-2 text-slate-500">
+          <Icon size={14} className="text-slate-400" />
+          {label}
         </div>
-        <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
-          isUnlimited ? 'bg-indigo-50 text-indigo-700 border-indigo-100' :
-          isCritical ? 'bg-red-50 text-red-600 border-red-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'
-        }`}>
-          {isUnlimited ? "Unlimited" : `${usage.remaining} Left`}
-        </span>
+        <div className="flex items-center gap-1">
+          <span className="text-slate-900">{String(safeUsed)}</span>
+          <span className="text-slate-300">/</span>
+          <span className="text-slate-400">{isUnlimited ? "∞" : String(limit)}</span>
+        </div>
       </div>
-      
-      <div className="transform-gpu w-full bg-slate-100 h-2.5 rounded-full overflow-hidden relative">
+      <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
         {isUnlimited ? (
-           <div className="transform-gpu absolute inset-0 bg-linear-to-r from-indigo-500/20 via-indigo-500/40 to-indigo-500/20 w-full animate-pulse" />
+          <div className="h-full w-full bg-linear-to-r from-indigo-500/10 via-indigo-500/30 to-indigo-500/10 animate-pulse" />
         ) : (
-          <div 
-            className={`h-full transition-all duration-700 ease-out rounded-full ${isCritical ? 'bg-red-500' : 'bg-indigo-600'}`} 
-            style={{ width: `${percent}%` }}
+          <motion.div 
+            initial={{ width: 0 }}
+            animate={{ width: `${percent}%` }}
+            transition={{ duration: 1, ease: "easeOut" }}
+            className={`h-full rounded-full ${isCritical ? 'bg-rose-500' : 'bg-indigo-600'}`} 
           />
         )}
+      </div>
+    </div>
+  );
+};
+
+const UsageCard = ({ usage }: { usage: UsageStats }) => {
+  return (
+    <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-2">
+           <Zap size={18} className="text-amber-500 fill-amber-500" />
+           <h3 className="text-xs font-bold text-slate-900 uppercase tracking-[0.2em]">Active Limits</h3>
+        </div>
+        <div className="px-3 py-1 bg-slate-50 border border-slate-100 rounded-full text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+           Live Usage
+        </div>
+      </div>
+      
+      <div className="space-y-7">
+        <LimitRow label="AI Credits" used={usage.ai.used} limit={usage.ai.limit} icon={Sparkles} />
+        <LimitRow label="Active Plans" used={usage.plans.used} limit={usage.plans.limit} icon={LayoutGrid} />
+        <LimitRow label="Habits" used={usage.habits.used} limit={usage.habits.limit} icon={Check} />
+        
+        <div className="pt-6 border-t border-slate-100">
+           <div className="flex items-center justify-between mb-5">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Study Tracks</p>
+              <div className="flex items-center gap-1.5 px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md border border-indigo-100">
+                 <Youtube size={10} />
+                 <span className="text-[9px] font-bold uppercase tracking-widest">{usage.study.videosPerPlaylist.limit} Videos/Playlist</span>
+              </div>
+           </div>
+           <div className="grid grid-cols-1 gap-5">
+              <LimitRow label="YouTube" used={usage.study.youtube.used} limit={usage.study.youtube.limit} icon={Youtube} />
+              <LimitRow label="Courses" used={usage.study.courses.used} limit={usage.study.courses.limit} icon={BookOpen} />
+              <LimitRow label="Projects" used={usage.study.projects.used} limit={usage.study.projects.limit} icon={Hammer} />
+           </div>
+        </div>
       </div>
     </div>
   );
@@ -231,7 +272,17 @@ export default function SubscriptionClientPage({ products, data }: SubscriptionC
   const [toast, setToast] = useState<{ msg: string, type: 'success' | 'error' } | null>(null);
 
   const activeSub = data?.activeSubscription;
-  const usage = data?.usage || { aiGenerated: 0, aiLimit: 5, remaining: 5 };
+  const usage = data?.usage || { 
+    ai: { used: 0, limit: 5, remaining: 5 },
+    plans: { used: 0, limit: 1 },
+    habits: { used: 0, limit: 3 },
+    study: {
+      youtube: { used: 0, limit: 1 },
+      courses: { used: 0, limit: 1 },
+      projects: { used: 0, limit: 1 },
+      videosPerPlaylist: { used: 0, limit: 10 }
+    }
+  };
   const history = data?.history || [];
   const currentPlanId = activeSub?.product?.id;
 

@@ -20,7 +20,7 @@ export function SubmitButton({ children, loadingText = "Saving...", icon, classN
     >
       {pending ? (
         <>
-          <Loader2 className="transform-gpu animate-spin" size={16} />
+          <Loader2 className="animate-spin" size={16} />
           {loadingText}
         </>
       ) : (

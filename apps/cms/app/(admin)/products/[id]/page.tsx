@@ -46,7 +46,7 @@ export default async function ProductDetailPage({ params }: Props) {
     {
       id: "core",
       title: "Core Access & Navigation",
-      icon: <ShieldCheck className="transform-gpu text-emerald-500" size={20} />,
+      icon: <ShieldCheck className="text-emerald-500" size={20} />,
       description: "Control visibility of main dashboard modules and navigation links.",
       keys: [
         { key: "ACCESS_PLANS", label: "Roadmaps Feature", icon: <Layout size={16}/>, description: "Unlocks AI-driven Roadmaps within the Study page, allowing users to generate and manage complex multi-day plans." },
@@ -60,7 +60,7 @@ export default async function ProductDetailPage({ params }: Props) {
     {
       id: "study",
       title: "Study & Upgrade OS",
-      icon: <BookOpen className="transform-gpu text-blue-500" size={20} />,
+      icon: <BookOpen className="text-blue-500" size={20} />,
       description: "Manage hierarchical access to Study tracks and specific content types.",
       keys: [
         { key: "ACCESS_STUDY", label: "Upgrade OS (Main)", icon: <Zap size={16}/>, description: "The master switch for the 'Upgrade OS' section. Required to access any study-related features." },
@@ -74,7 +74,7 @@ export default async function ProductDetailPage({ params }: Props) {
     {
       id: "limits",
       title: "Usage & AI Limits",
-      icon: <Database className="transform-gpu text-purple-500" size={20} />,
+      icon: <Database className="text-purple-500" size={20} />,
       description: "Set quantitative limits on resources and AI generation credits.",
       isNumeric: true,
       keys: [
@@ -95,32 +95,32 @@ export default async function ProductDetailPage({ params }: Props) {
   const otherFeatures = allFeatures.filter(f => !standardKeys.has(String(f.key)));
 
   return (
-    <div className="transform-gpu max-w-7xl mx-auto pb-20 px-4 md:px-0">
+    <div className="max-w-7xl mx-auto pb-20 px-4 md:px-0">
       
       {/* Header Area */}
-      <div className="transform-gpu mb-10 animate-in fade-in slide-in-from-top-4 duration-500">
-        <Link href="/products" className="transform-gpu group inline-flex items-center text-sm font-bold text-slate-400 hover:text-slate-900 mb-6 transition-all">
-          <ChevronLeft size={16} className="transform-gpu mr-1 group-hover:-translate-x-1 transition-transform" /> BACK TO PLANS
+      <div className="mb-10 animate-in fade-in slide-in-from-top-4 duration-500">
+        <Link href="/products" className="group inline-flex items-center text-sm font-bold text-slate-400 hover:text-slate-900 mb-6 transition-all">
+          <ChevronLeft size={16} className="mr-1 group-hover:-translate-x-1 transition-transform" /> BACK TO PLANS
         </Link>
         
-        <div className="transform-gpu flex flex-col md:flex-row justify-between items-start md:items-end gap-6 bg-white p-8 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden">
-          <div className="transform-gpu absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 bg-white p-8 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
           
-          <div className="transform-gpu relative z-10">
-            <div className="transform-gpu flex items-center gap-4 mb-3">
-               <div className="transform-gpu w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-white">
+          <div className="relative z-10">
+            <div className="flex items-center gap-4 mb-3">
+               <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-white">
                   <Settings2 size={24} />
                </div>
                <div>
-                  <h1 className="transform-gpu text-4xl font-bold text-slate-900 tracking-tight leading-none">
+                  <h1 className="text-4xl font-bold text-slate-900 tracking-tight leading-none">
                     {String(product.name)}
                   </h1>
-                  <div className="transform-gpu flex items-center gap-4 mt-2">
-                    <div className="transform-gpu flex items-center gap-2">
-                        <span className="transform-gpu bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-widest border border-slate-200">
+                  <div className="flex items-center gap-4 mt-2">
+                    <div className="flex items-center gap-2">
+                        <span className="bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-widest border border-slate-200">
                         {String(product.key)}
                         </span>
-                        <span className="transform-gpu text-slate-400 text-xs font-medium">Plan ID: {productId}</span>
+                        <span className="text-slate-400 text-xs font-medium">Plan ID: {productId}</span>
                     </div>
                     
                     <SidebarPreview 
@@ -133,65 +133,65 @@ export default async function ProductDetailPage({ params }: Props) {
             </div>
           </div>
 
-          <div className="transform-gpu relative z-10 text-left md:text-right bg-slate-50 md:bg-transparent p-4 md:p-0 rounded-2xl w-full md:w-auto border border-slate-100 md:border-none">
-            <div className="transform-gpu text-4xl font-bold text-slate-900 tracking-tighter leading-none mb-1">
+          <div className="relative z-10 text-left md:text-right bg-slate-50 md:bg-transparent p-4 md:p-0 rounded-2xl w-full md:w-auto border border-slate-100 md:border-none">
+            <div className="text-4xl font-bold text-slate-900 tracking-tighter leading-none mb-1">
               ₹{(Number(product.price) / 100).toLocaleString()}
             </div>
-            <div className="transform-gpu text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Monthly Subscription</div>
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Monthly Subscription</div>
           </div>
         </div>
       </div>
 
       {/* NEW: Edit Plan Marketing Details */}
-      <div className="transform-gpu mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-75">
-        <div className="transform-gpu bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
-          <div className="transform-gpu px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-            <div className="transform-gpu flex items-center gap-3">
-              <FileText className="transform-gpu text-rose-500" size={20} />
-              <h2 className="transform-gpu text-lg font-bold text-slate-900 tracking-tight uppercase">Plan Marketing Details</h2>
+      <div className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-75">
+        <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
+          <div className="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <FileText className="text-rose-500" size={20} />
+              <h2 className="text-lg font-bold text-slate-900 tracking-tight uppercase">Plan Marketing Details</h2>
             </div>
-            <p className="transform-gpu text-xs text-slate-400 font-bold uppercase tracking-widest">Controls how this plan appears on the web subscription page</p>
+            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Controls how this plan appears on the web subscription page</p>
           </div>
           
           <MarketingDetailsForm product={product} />
         </div>
       </div>
 
-      <div className="transform-gpu grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* Main Content: Categorized Settings */}
-        <div className="transform-gpu lg:col-span-8 space-y-6">
+        <div className="lg:col-span-8 space-y-6">
           
           {categories.map((cat) => (
-            <div key={cat.id} className="transform-gpu bg-white/60 backdrop-blur-xl rounded-[2.5rem] border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
-              <div className="transform-gpu px-8 py-6 border-b border-rose-100/50 bg-slate-50/30">
-                <div className="transform-gpu flex items-center gap-3 mb-1">
+            <div key={cat.id} className="bg-white/60 backdrop-blur-xl rounded-[2.5rem] border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
+              <div className="px-8 py-6 border-b border-rose-100/50 bg-slate-50/30">
+                <div className="flex items-center gap-3 mb-1">
                   {cat.icon}
-                  <h2 className="transform-gpu text-lg font-bold text-slate-900 tracking-tight uppercase">{cat.title}</h2>
+                  <h2 className="text-lg font-bold text-slate-900 tracking-tight uppercase">{cat.title}</h2>
                 </div>
-                <p className="transform-gpu text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed ml-8">{cat.description}</p>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed ml-8">{cat.description}</p>
               </div>
 
-              <div className="transform-gpu divide-y divide-rose-50/50">
+              <div className="divide-y divide-rose-50/50">
                 {cat.keys.map((k) => {
                   const activeFeature = activeFeatureMap.get(k.key);
                   const isEnabled = !!activeFeature;
                   const featureId = activeFeature ? String(activeFeature.feature.id) : allFeatures.find(f => f.key === k.key)?.id;
                   
                   return (
-                    <div key={k.key} className="transform-gpu px-4 md:px-8 py-6 flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0 group hover:bg-rose-50/30 transition-all">
-                      <div className="transform-gpu flex items-start md:items-center gap-4 md:gap-5">
+                    <div key={k.key} className="px-4 md:px-8 py-6 flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0 group hover:bg-rose-50/30 transition-all">
+                      <div className="flex items-start md:items-center gap-4 md:gap-5">
                         <div className={`w-12 h-12 shrink-0 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm border ${
                           isEnabled ? 'bg-white border-rose-100 text-rose-500 group-hover:scale-110 group-hover:rotate-3' : 'bg-slate-50 border-transparent text-slate-300'
                         }`}>
                           {k.icon}
                         </div>
-                        <div className="transform-gpu flex-1 pr-6">
-                          <div className="transform-gpu flex items-center gap-3 mb-1">
+                        <div className="flex-1 pr-6">
+                          <div className="flex items-center gap-3 mb-1">
                             <div className={`text-sm font-bold tracking-tight uppercase ${isEnabled ? 'text-slate-900' : 'text-slate-400'}`}>
                               {k.label}
                             </div>
-                            <div className="transform-gpu text-[8px] font-mono font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md uppercase tracking-tighter border border-slate-200">
+                            <div className="text-[8px] font-mono font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md uppercase tracking-tighter border border-slate-200">
                               {k.key}
                             </div>
                           </div>
@@ -201,20 +201,20 @@ export default async function ProductDetailPage({ params }: Props) {
                         </div>
                       </div>
 
-                      <div className="transform-gpu flex items-center justify-between md:justify-end gap-6 w-full md:w-auto mt-4 md:mt-0 pl-16 md:pl-0">
+                      <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto mt-4 md:mt-0 pl-16 md:pl-0">
                         {/* Numeric Value Input */}
                         {cat.isNumeric && isEnabled && (
-                          <form action={updateFeatureValue} className="transform-gpu flex items-center gap-3">
+                          <form action={updateFeatureValue} className="flex items-center gap-3">
                             <input type="hidden" name="productId" value={productId} />
                             <input type="hidden" name="featureId" value={String(activeFeature?.featureId)} />
-                            <div className="transform-gpu relative flex items-center">
+                            <div className="relative flex items-center">
                               <input 
                                 name="value" 
                                 type="number" 
                                 defaultValue={Number((activeFeature?.value as any)?.value ?? 0)} 
-                                className="transform-gpu w-24 bg-white border border-slate-200 focus:border-rose-300 focus:ring-4 focus:ring-rose-50 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-700 outline-none transition-all shadow-sm"
+                                className="w-24 bg-white border border-slate-200 focus:border-rose-300 focus:ring-4 focus:ring-rose-50 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-700 outline-none transition-all shadow-sm"
                               />
-                              <button className="transform-gpu ml-2 p-2.5 bg-slate-900 text-white rounded-xl hover:bg-rose-600 transition-all shadow-md active:scale-90">
+                              <button className="ml-2 p-2.5 bg-slate-900 text-white rounded-xl hover:bg-rose-600 transition-all shadow-md active:scale-90">
                                 <Save size={14} />
                               </button>
                             </div>
@@ -248,35 +248,35 @@ export default async function ProductDetailPage({ params }: Props) {
           ))}
 
           {/* Other/Custom Features Section */}
-          <div className="transform-gpu bg-white/60 backdrop-blur-xl rounded-[2.5rem] border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200">
-             <div className="transform-gpu px-8 py-6 border-b border-rose-100/50 bg-slate-50/30">
-                <div className="transform-gpu flex items-center justify-between">
-                   <div className="transform-gpu flex items-center gap-3">
-                      <Database className="transform-gpu text-rose-500" size={20} />
-                      <h2 className="transform-gpu text-lg font-bold text-slate-900 tracking-tight uppercase">Extended Features</h2>
+          <div className="bg-white/60 backdrop-blur-xl rounded-[2.5rem] border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200">
+             <div className="px-8 py-6 border-b border-rose-100/50 bg-slate-50/30">
+                <div className="flex items-center justify-between">
+                   <div className="flex items-center gap-3">
+                      <Database className="text-rose-500" size={20} />
+                      <h2 className="text-lg font-bold text-slate-900 tracking-tight uppercase">Extended Features</h2>
                    </div>
-                   <span className="transform-gpu text-[10px] font-bold text-slate-400 bg-white px-3 py-1 rounded-full border border-slate-200 uppercase tracking-widest">
+                   <span className="text-[10px] font-bold text-slate-400 bg-white px-3 py-1 rounded-full border border-slate-200 uppercase tracking-widest">
                       {otherFeatures.length} Active
                    </span>
                 </div>
              </div>
              
-             <div className="transform-gpu p-8">
+             <div className="p-8">
                 {otherFeatures.length === 0 ? (
-                  <div className="transform-gpu text-center py-10 opacity-40">
-                    <Database size={32} className="transform-gpu mx-auto mb-2 text-slate-300" />
-                    <p className="transform-gpu text-xs font-bold uppercase tracking-widest text-slate-400">No custom features found</p>
+                  <div className="text-center py-10 opacity-40">
+                    <Database size={32} className="mx-auto mb-2 text-slate-300" />
+                    <p className="text-xs font-bold uppercase tracking-widest text-slate-400">No custom features found</p>
                   </div>
                 ) : (
-                  <div className="transform-gpu grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {otherFeatures.map(f => {
                        const isEnabled = activeFeatureMap.has(String(f.key));
                        return (
                         <div key={String(f.id)} className={`p-5 rounded-[1.5rem] border transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0 group ${
                           isEnabled ? 'bg-slate-900 border-slate-900 text-white shadow-lg shadow-slate-200' : 'bg-white border-slate-100 text-slate-600 hover:border-rose-200'
                         }`}>
-                           <div className="transform-gpu min-w-0 pr-4 w-full">
-                             <div className="transform-gpu text-xs font-bold truncate tracking-tight uppercase">{String(f.key)}</div>
+                           <div className="min-w-0 pr-4 w-full">
+                             <div className="text-xs font-bold truncate tracking-tight uppercase">{String(f.key)}</div>
                              <div className={`text-[9px] font-bold truncate mt-1 uppercase tracking-widest ${isEnabled ? 'text-slate-400' : 'text-slate-400'}`}>
                                {String(f.description)}
                              </div>
@@ -300,48 +300,48 @@ export default async function ProductDetailPage({ params }: Props) {
         </div>
 
         {/* Sidebar: Global Actions */}
-        <div className="transform-gpu lg:col-span-4 space-y-8 sticky top-8">
+        <div className="lg:col-span-4 space-y-8 sticky top-8">
           
-          <div className="transform-gpu bg-slate-900 text-white rounded-[2.5rem] shadow-2xl p-8 relative overflow-hidden group">
-             <div className="transform-gpu absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-white/10 transition-all duration-700" />
+          <div className="bg-slate-900 text-white rounded-[2.5rem] shadow-2xl p-8 relative overflow-hidden group">
+             <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-white/10 transition-all duration-700" />
              
-             <h3 className="transform-gpu text-xl font-bold tracking-tight mb-2 relative z-10 flex items-center gap-2 uppercase">
-                <Sparkles size={20} className="transform-gpu text-rose-400" />
+             <h3 className="text-xl font-bold tracking-tight mb-2 relative z-10 flex items-center gap-2 uppercase">
+                <Sparkles size={20} className="text-rose-400" />
                 Tier Health
              </h3>
-             <p className="transform-gpu text-[10px] font-bold text-slate-400 mb-8 relative z-10 leading-relaxed uppercase tracking-[0.2em]">
+             <p className="text-[10px] font-bold text-slate-400 mb-8 relative z-10 leading-relaxed uppercase tracking-[0.2em]">
                 Configuration snapshot for this entity.
              </p>
 
-             <div className="transform-gpu space-y-4 relative z-10">
-                <div className="transform-gpu flex justify-between items-center p-5 bg-white/5 rounded-2xl border border-white/10 transition-all hover:bg-white/10 group/item">
-                   <span className="transform-gpu text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover/item:text-slate-200 transition-colors">Active Configs</span>
-                   <span className="transform-gpu text-2xl font-bold text-white">{activeFeatures.length}</span>
+             <div className="space-y-4 relative z-10">
+                <div className="flex justify-between items-center p-5 bg-white/5 rounded-2xl border border-white/10 transition-all hover:bg-white/10 group/item">
+                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover/item:text-slate-200 transition-colors">Active Configs</span>
+                   <span className="text-2xl font-bold text-white">{activeFeatures.length}</span>
                 </div>
-                <div className="transform-gpu flex justify-between items-center p-5 bg-white/5 rounded-2xl border border-white/10 transition-all hover:bg-white/10 group/item">
-                   <span className="transform-gpu text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover/item:text-slate-200 transition-colors">Access Gates</span>
-                   <span className="transform-gpu text-2xl font-bold text-rose-400">
+                <div className="flex justify-between items-center p-5 bg-white/5 rounded-2xl border border-white/10 transition-all hover:bg-white/10 group/item">
+                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover/item:text-slate-200 transition-colors">Access Gates</span>
+                   <span className="text-2xl font-bold text-rose-400">
                       {activeFeatures.filter(f => String(f.feature.key).startsWith("ACCESS_")).length}
                    </span>
                 </div>
-                <div className="transform-gpu flex justify-between items-center p-5 bg-white/5 rounded-2xl border border-white/10 transition-all hover:bg-white/10 group/item">
-                   <span className="transform-gpu text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover/item:text-slate-200 transition-colors">Usage Limits</span>
-                   <span className="transform-gpu text-2xl font-bold text-blue-400">
+                <div className="flex justify-between items-center p-5 bg-white/5 rounded-2xl border border-white/10 transition-all hover:bg-white/10 group/item">
+                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover/item:text-slate-200 transition-colors">Usage Limits</span>
+                   <span className="text-2xl font-bold text-blue-400">
                       {activeFeatures.filter(f => !String(f.feature.key).startsWith("ACCESS_")).length}
                    </span>
                 </div>
              </div>
 
-             <div className="transform-gpu mt-10 pt-8 border-t border-white/5">
-                <div className="transform-gpu text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em] text-center opacity-50">
+             <div className="mt-10 pt-8 border-t border-white/5">
+                <div className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em] text-center opacity-50">
                    CMS CORE ENGINE V3.0
                 </div>
              </div>
           </div>
 
-          <div className="transform-gpu bg-white/60 backdrop-blur-xl rounded-[2.5rem] border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8">
-             <h3 className="transform-gpu text-xs font-bold text-slate-900 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-                <Plus size={16} className="transform-gpu text-rose-500" />
+          <div className="bg-white/60 backdrop-blur-xl rounded-[2.5rem] border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8">
+             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                <Plus size={16} className="text-rose-500" />
                 Global Schema
              </h3>
              <CreateFeatureForm />

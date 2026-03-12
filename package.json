@@ -9,6 +9,7 @@
     "type-check": "tsc --noEmit",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
+    "cms:sync": "npx tsx scripts/sync-features.ts",
     "db:generate": "pnpm --filter @planner/db run generate",
     "postinstall": "pnpm run db:generate",
     "build:web": "turbo run build --filter=web",

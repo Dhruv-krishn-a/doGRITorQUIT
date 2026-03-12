@@ -358,6 +358,69 @@ export async function getAIUsageStats(userId: string) {
   };
 }
 
+export async function getUserUsageStats(userId: string) {
+  const ent = await fetchUserEntitlements(userId);
+  const aiStats = await getAIUsageStats(userId);
+
+  const [planCount, habitCount, trackCounts] = await Promise.all([
+    prisma.plan.count({ where: { userId, isArchived: false } }),
+    prisma.habit.count({ where: { userId, active: true } }),
+    prisma.track.groupBy({
+      by: ['type'],
+      where: { userId },
+      _count: true
+    })
+  ]);
+
+  const tracks = {
+    PLAYLIST: trackCounts.find(t => t.type === 'PLAYLIST')?._count ?? 0,
+    COURSE: trackCounts.find(t => t.type === 'COURSE')?._count ?? 0,
+    PROJECT: trackCounts.find(t => t.type === 'PROJECT')?._count ?? 0,
+  };
+
+  const getLimit = (key: PlanFeature, fallbackFree: number, fallbackPro: number) => {
+    const feat = ent.features[key];
+    if (feat !== undefined) {
+      // Handle both raw values and JSON objects { value: X } or { limit: X }
+      const val = typeof feat === 'object' ? (feat.value ?? feat.limit) : feat;
+      const num = Number(val);
+      return isNaN(num) ? (ent.productKey === 'FREE' ? fallbackFree : fallbackPro) : num;
+    }
+    // Hardcoded safety for FREE tier if not in DB
+    return ent.productKey === 'FREE' ? fallbackFree : fallbackPro;
+  };
+
+  return {
+    ai: aiStats,
+    plans: {
+      used: planCount,
+      limit: getLimit(PlanFeature.MAX_PLANS, 1, 100),
+    },
+    habits: {
+      used: habitCount,
+      limit: getLimit(PlanFeature.MAX_HABITS_TRACKED, 3, 50),
+    },
+    study: {
+      youtube: {
+        used: tracks.PLAYLIST,
+        limit: getLimit(PlanFeature.MAX_STUDY_YOUTUBE, 1, 50),
+      },
+      courses: {
+        used: tracks.COURSE,
+        limit: getLimit(PlanFeature.MAX_STUDY_COURSES, 1, 50),
+      },
+      projects: {
+        used: tracks.PROJECT,
+        limit: getLimit(PlanFeature.MAX_STUDY_PROJECTS, 1, 20),
+      },
+      videosPerPlaylist: {
+        used: 0, // Not tracked per-user globally, but show limit
+        limit: getLimit(PlanFeature.MAX_VIDEOS_PER_PLAYLIST, 10, 1000),
+      }
+    }
+  };
+}
+
 export async function canUseAIGenerationForUser(userId: string): Promise<boolean> {
   const stats = await getAIUsageStats(userId);
   if (stats.limit === Infinity) return true;
