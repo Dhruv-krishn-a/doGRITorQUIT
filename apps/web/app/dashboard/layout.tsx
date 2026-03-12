@@ -20,31 +20,31 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <StudyFeatureProvider>
-      <div className="flex h-screen bg-[#fdfbfb] text-slate-800 overflow-hidden font-sans selection:bg-rose-200 selection:text-rose-900">
+      <div className="transform-gpu flex h-screen bg-[#fdfbfb] text-slate-800 overflow-hidden font-sans selection:bg-rose-200 selection:text-rose-900">
         
         {/* The Sidebar (now automatically pushes content dynamically) */}
         <Sidebar permissions={permissions} />
 
         {/* ✅ FIX: Removed md:pl-[6.5rem]. The layout flexes naturally! */}
-        <div className="flex-1 flex flex-col min-w-0 relative w-full transition-all duration-300">
+        <div className="transform-gpu flex-1 flex flex-col min-w-0 relative w-full transition-all duration-300">
           
           {/* Glass Header */}
           <Header nav={siteNav} />
 
           {/* Scrollable Main Content */}
-          <main className="flex-1 overflow-y-auto custom-scrollbar relative z-0 flex flex-col">
+          <main className="transform-gpu flex-1 overflow-y-auto custom-scrollbar relative z-0 flex flex-col">
              
              {/* Global Ethereal Glow matching the new aesthetic */}
-             <div className="absolute top-0 left-1/2 w-[60vw] h-[60vw] max-w-200 max-h-200 bg-rose-100/50 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 pointer-events-none -z-10" />
+             <div className="transform-gpu absolute top-0 left-1/2 w-[60vw] h-[60vw] max-w-200 max-h-200 bg-rose-100/50 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 pointer-events-none -z-10" />
 
              {/* Content Wrapper */}
-             <div className="relative z-10 w-full mx-auto flex-1 flex flex-col min-h-[calc(100vh-80px)]">
+             <div className="transform-gpu relative z-10 w-full mx-auto flex-1 flex flex-col min-h-[calc(100vh-80px)] @container">
                
-               <div className="flex-1">
+               <div className="transform-gpu flex-1">
                  {children}
                </div>
 
-               <div className="mt-auto relative z-10">
+               <div className="transform-gpu mt-auto relative z-10">
                  <Footer nav={siteNav} />
                </div>
                

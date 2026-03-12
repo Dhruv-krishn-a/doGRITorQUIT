@@ -59,7 +59,7 @@ export function KanbanBoard({ units, onAction, onDragEnd }: KanbanBoardProps) {
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="flex flex-col md:flex-row gap-5 items-start w-full pb-10 overflow-x-auto md:overflow-x-visible snap-x custom-scrollbar">
+      <div className="transform-gpu flex flex-col md:flex-row gap-5 items-start w-full pb-10 overflow-x-auto md:overflow-x-visible snap-x custom-scrollbar">
         {columnConfigs.map((col) => {
           const allColUnits = (columns as any)[col.id] as Unit[];
           const totalPages = Math.ceil(allColUnits.length / ITEMS_PER_PAGE);
@@ -72,16 +72,16 @@ export function KanbanBoard({ units, onAction, onDragEnd }: KanbanBoardProps) {
           const visibleUnits = allColUnits.slice(safePage * ITEMS_PER_PAGE, (safePage + 1) * ITEMS_PER_PAGE);
 
           return (
-            <div key={col.id} className="flex flex-col h-full w-full md:flex-1 min-w-[280px] md:min-w-0 snap-center">
+            <div key={col.id} className="transform-gpu flex flex-col h-full w-full md:flex-1 min-w-[280px] md:min-w-0 snap-center">
               
               {/* Column Header */}
-              <div className="flex items-center justify-between mb-4 px-2 shrink-0 group">
-                <div className="flex items-center gap-2.5">
+              <div className="transform-gpu flex items-center justify-between mb-4 px-2 shrink-0 group">
+                <div className="transform-gpu flex items-center gap-2.5">
                   <div className={`w-2.5 h-2.5 rounded-full ${col.theme.dot} shadow-lg group-hover:animate-pulse transition-all duration-300`} />
-                  <h3 className={`text-[10px] font-black ${col.theme.text} uppercase tracking-widest truncate`}>{col.label}</h3>
+                  <h3 className={`text-[10px] font-bold ${col.theme.text} uppercase tracking-widest truncate`}>{col.label}</h3>
                 </div>
                 <div className={`flex items-center justify-center min-w-[24px] h-[24px] px-1.5 rounded-lg border ${col.theme.border} bg-white/60 backdrop-blur-sm shadow-sm`}>
-                  <span className={`text-[9px] font-black ${col.theme.textMuted}`}>
+                  <span className={`text-[9px] font-bold ${col.theme.textMuted}`}>
                     {allColUnits.length}
                   </span>
                 </div>
@@ -99,7 +99,7 @@ export function KanbanBoard({ units, onAction, onDragEnd }: KanbanBoardProps) {
                         : `${col.theme.bg} ${col.theme.border} shadow-sm`
                     }`}
                   >
-                    <div className="flex-1">
+                    <div className="transform-gpu flex-1">
                       <AnimatePresence mode="popLayout">
                         {visibleUnits.length > 0 ? (
                           visibleUnits.map((unit: Unit, index: number) => (
@@ -114,10 +114,10 @@ export function KanbanBoard({ units, onAction, onDragEnd }: KanbanBoardProps) {
                           /* Empty State Placeholder */
                           <motion.div 
                             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                            className="h-full min-h-[150px] flex flex-col items-center justify-center text-center p-4 border-2 border-dashed border-white/40 rounded-3xl mt-2"
+                            className="transform-gpu h-full min-h-[150px] flex flex-col items-center justify-center text-center p-4 border-2 border-dashed border-white/40 rounded-3xl mt-2"
                           >
                             <LayoutGrid size={24} className={`${col.theme.textMuted} mb-2 opacity-40`} />
-                            <span className={`text-[10px] font-black uppercase tracking-widest ${col.theme.textMuted} opacity-60`}>Drop Here</span>
+                            <span className={`text-[10px] font-bold uppercase tracking-widest ${col.theme.textMuted} opacity-60`}>Drop Here</span>
                           </motion.div>
                         )}
                       </AnimatePresence>
@@ -128,25 +128,25 @@ export function KanbanBoard({ units, onAction, onDragEnd }: KanbanBoardProps) {
                     {totalPages > 1 && (
                       <motion.div 
                         initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                        className="flex items-center justify-between mt-4 px-4 py-3 bg-white/80 border border-white rounded-2xl shadow-sm backdrop-blur-md"
+                        className="transform-gpu flex items-center justify-between mt-4 px-4 py-3 bg-white/80 border border-white rounded-2xl shadow-sm backdrop-blur-md"
                       >
                         <button 
                           onClick={() => handlePageChange(col.id, 'PREV', totalPages - 1)} 
                           disabled={safePage === 0}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-slate-400 transition-all active:scale-95"
+                          className="transform-gpu p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-slate-400 transition-all active:scale-95"
                         >
                           <ChevronLeft size={16} strokeWidth={3} />
                         </button>
                         
-                        <div className="flex items-center gap-1">
-                          <span className={`text-[9px] font-black uppercase tracking-widest ${col.theme.text}`}>{safePage + 1}</span>
-                          <span className={`text-[9px] font-black uppercase tracking-widest ${col.theme.textMuted}`}>/ {totalPages}</span>
+                        <div className="transform-gpu flex items-center gap-1">
+                          <span className={`text-[9px] font-bold uppercase tracking-widest ${col.theme.text}`}>{safePage + 1}</span>
+                          <span className={`text-[9px] font-bold uppercase tracking-widest ${col.theme.textMuted}`}>/ {totalPages}</span>
                         </div>
 
                         <button 
                           onClick={() => handlePageChange(col.id, 'NEXT', totalPages - 1)} 
                           disabled={safePage === totalPages - 1}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-slate-400 transition-all active:scale-95"
+                          className="transform-gpu p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-slate-400 transition-all active:scale-95"
                         >
                           <ChevronRight size={16} strokeWidth={3} />
                         </button>

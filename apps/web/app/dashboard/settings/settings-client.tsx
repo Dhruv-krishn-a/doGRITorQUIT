@@ -74,18 +74,18 @@ export default function SettingsClientPage({ user }: SettingsClientProps) {
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-6 md:p-10 space-y-10 font-sans text-slate-900 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="transform-gpu max-w-5xl mx-auto p-6 md:p-10 space-y-10 font-sans text-slate-900 animate-in fade-in slide-in-from-bottom-4 duration-500">
       
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-100 pb-8">
+      <div className="transform-gpu flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-100 pb-8">
         <div>
-           <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Settings</h1>
-           <p className="text-slate-500 mt-2 text-lg">Manage your personal preferences and plan.</p>
+           <h1 className="transform-gpu text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">Settings</h1>
+           <p className="transform-gpu text-slate-500 mt-2 text-lg">Manage your personal preferences and plan.</p>
         </div>
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex gap-1 p-1 bg-slate-100/50 rounded-xl w-fit">
+      <div className="transform-gpu flex gap-1 p-1 bg-slate-100/50 rounded-xl w-fit">
         <button
           onClick={() => setActiveTab("profile")}
           className={`px-6 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${
@@ -118,50 +118,50 @@ export default function SettingsClientPage({ user }: SettingsClientProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="grid lg:grid-cols-3 gap-8"
+            className="transform-gpu grid lg:grid-cols-3 gap-8"
           >
             {/* Left Column: General Info */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="transform-gpu lg:col-span-2 space-y-6">
                 
                 {/* Personal Info Card */}
-                <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="bg-indigo-50 p-2.5 rounded-xl text-indigo-600">
+                <div className="transform-gpu bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+                    <div className="transform-gpu flex items-center gap-3 mb-6">
+                        <div className="transform-gpu bg-indigo-50 p-2.5 rounded-xl text-indigo-600">
                             <User size={20} />
                         </div>
-                        <h2 className="text-lg font-bold text-slate-900">Personal Information</h2>
+                        <h2 className="transform-gpu text-lg font-bold text-slate-900">Personal Information</h2>
                     </div>
 
-                    <div className="space-y-6 max-w-lg">
+                    <div className="transform-gpu space-y-6 max-w-lg">
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Email Address</label>
-                            <div className="relative group">
-                                <MailIcon className="absolute left-3.5 top-3.5 text-slate-400" />
+                            <label className="transform-gpu block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Email Address</label>
+                            <div className="transform-gpu relative group">
+                                <MailIcon className="transform-gpu absolute left-3.5 top-3.5 text-slate-400" />
                                 <input
                                     disabled
                                     value={user.email}
-                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-500 font-medium cursor-not-allowed select-none"
+                                    className="transform-gpu w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-500 font-medium cursor-not-allowed select-none"
                                 />
-                                <div className="absolute right-3.5 top-3.5">
-                                    <Lock size={16} className="text-slate-400" />
+                                <div className="transform-gpu absolute right-3.5 top-3.5">
+                                    <Lock size={16} className="transform-gpu text-slate-400" />
                                 </div>
                             </div>
-                            <p className="text-xs text-slate-400 mt-2 ml-1">
+                            <p className="transform-gpu text-xs text-slate-400 mt-2 ml-1">
                                 Used for login and billing. Cannot be changed.
                             </p>
                         </div>
                         
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Display Name</label>
+                            <label className="transform-gpu block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Display Name</label>
                             <input
                                 value={nameInput}
                                 onChange={(e) => setNameInput(e.target.value)}
-                                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all font-medium text-slate-900 placeholder:text-slate-300"
+                                className="transform-gpu w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all font-medium text-slate-900 placeholder:text-slate-300"
                                 placeholder="e.g. Alex Maker"
                             />
                         </div>
 
-                        <div className="pt-2">
+                        <div className="transform-gpu pt-2">
                             <button 
                                 onClick={handleSaveProfile}
                                 disabled={savingProfile || savedProfileSuccess}
@@ -171,7 +171,7 @@ export default function SettingsClientPage({ user }: SettingsClientProps) {
                                         : "bg-slate-900 text-white hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20"
                                 }`}
                             >
-                                {savingProfile ? <Loader2 className="animate-spin" size={18} /> : 
+                                {savingProfile ? <Loader2 className="transform-gpu animate-spin" size={18} /> : 
                                 savedProfileSuccess ? <Check size={18} /> : null}
                                 {savingProfile ? "Saving..." : savedProfileSuccess ? "Saved Successfully" : "Save Changes"}
                             </button>
@@ -180,30 +180,30 @@ export default function SettingsClientPage({ user }: SettingsClientProps) {
                 </div>
 
                 {/* Password / Security Card */}
-                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div className="p-8 border-b border-slate-100">
-                         <div className="flex items-center gap-3 mb-2">
-                            <div className="bg-rose-50 p-2.5 rounded-xl text-rose-600">
+                <div className="transform-gpu bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="transform-gpu p-8 border-b border-slate-100">
+                         <div className="transform-gpu flex items-center gap-3 mb-2">
+                            <div className="transform-gpu bg-rose-50 p-2.5 rounded-xl text-rose-600">
                                 <Shield size={20} />
                             </div>
-                            <h2 className="text-lg font-bold text-slate-900">Security</h2>
+                            <h2 className="transform-gpu text-lg font-bold text-slate-900">Security</h2>
                         </div>
-                        <p className="text-slate-500 text-sm pl-13">Manage your password and authentication.</p>
+                        <p className="transform-gpu text-slate-500 text-sm pl-13">Manage your password and authentication.</p>
                     </div>
 
-                    <div className="p-8 bg-slate-50/50">
+                    <div className="transform-gpu p-8 bg-slate-50/50">
                         {!showPasswordForm ? (
-                            <div className="flex items-center justify-between">
+                            <div className="transform-gpu flex items-center justify-between">
                                 <div>
-                                    <h3 className="font-bold text-slate-800">Password</h3>
+                                    <h3 className="transform-gpu font-bold text-slate-800">Password</h3>
                                     {/* ✅ FIX: Universal text that works for everyone */}
-                                    <p className="text-sm text-slate-500 mt-1 max-w-sm leading-relaxed">
+                                    <p className="transform-gpu text-sm text-slate-500 mt-1 max-w-sm leading-relaxed">
                                         Update your password, or set a new one if you signed in via Google.
                                     </p>
                                 </div>
                                 <button 
                                     onClick={() => setShowPasswordForm(true)}
-                                    className="bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
+                                    className="transform-gpu bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
                                 >
                                     Manage Password
                                 </button>
@@ -213,14 +213,14 @@ export default function SettingsClientPage({ user }: SettingsClientProps) {
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: "auto" }}
                                 onSubmit={handleUpdatePassword}
-                                className="max-w-md space-y-4"
+                                className="transform-gpu max-w-md space-y-4"
                             >
-                                <div className="flex justify-between items-center mb-4">
-                                     <h3 className="font-bold text-slate-800">Update Password</h3>
+                                <div className="transform-gpu flex justify-between items-center mb-4">
+                                     <h3 className="transform-gpu font-bold text-slate-800">Update Password</h3>
                                      <button 
                                         type="button" 
                                         onClick={() => setShowPasswordForm(false)}
-                                        className="text-xs font-bold text-slate-400 hover:text-slate-600"
+                                        className="transform-gpu text-xs font-bold text-slate-400 hover:text-slate-600"
                                      >
                                         Cancel
                                      </button>
@@ -243,7 +243,7 @@ export default function SettingsClientPage({ user }: SettingsClientProps) {
                                         placeholder="New Password (min 6 chars)"
                                         value={newPassword}
                                         onChange={(e) => setNewPassword(e.target.value)}
-                                        className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-sm"
+                                        className="transform-gpu w-full p-3 bg-white border border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-sm"
                                     />
                                 </div>
                                 <div>
@@ -252,16 +252,16 @@ export default function SettingsClientPage({ user }: SettingsClientProps) {
                                         placeholder="Confirm New Password"
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
-                                        className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-sm"
+                                        className="transform-gpu w-full p-3 bg-white border border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-sm"
                                     />
                                 </div>
-                                <div className="flex justify-end pt-2">
+                                <div className="transform-gpu flex justify-end pt-2">
                                     <button
                                         type="submit"
                                         disabled={savingPass}
-                                        className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                                        className="transform-gpu bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2"
                                     >
-                                        {savingPass && <Loader2 className="animate-spin" size={14} />}
+                                        {savingPass && <Loader2 className="transform-gpu animate-spin" size={14} />}
                                         Save Password
                                     </button>
                                 </div>
@@ -272,16 +272,16 @@ export default function SettingsClientPage({ user }: SettingsClientProps) {
             </div>
 
             {/* Right Column: Sessions / Other info */}
-            <div className="space-y-6">
-                 <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-                    <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
-                        <Laptop size={18} className="text-slate-400" /> Active Session
+            <div className="transform-gpu space-y-6">
+                 <div className="transform-gpu bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                    <h3 className="transform-gpu font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <Laptop size={18} className="transform-gpu text-slate-400" /> Active Session
                     </h3>
-                    <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                        <div className="mt-1 w-2 h-2 rounded-full bg-emerald-500 shrink-0 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
+                    <div className="transform-gpu flex items-start gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                        <div className="transform-gpu mt-1 w-2 h-2 rounded-full bg-emerald-500 shrink-0 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
                         <div>
-                            <p className="text-sm font-bold text-slate-700">This Browser</p>
-                            <p className="text-xs text-slate-400 mt-0.5">Online now</p>
+                            <p className="transform-gpu text-sm font-bold text-slate-700">This Browser</p>
+                            <p className="transform-gpu text-xs text-slate-400 mt-0.5">Online now</p>
                         </div>
                     </div>
                  </div>
@@ -297,38 +297,38 @@ export default function SettingsClientPage({ user }: SettingsClientProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="space-y-8"
+            className="transform-gpu space-y-8"
           >
             {/* Current Plan Card */}
-            <div className="bg-linear-to-br from-slate-900 to-indigo-950 rounded-4xl p-8 md:p-10 text-white relative overflow-hidden shadow-2xl shadow-indigo-900/20 border border-indigo-500/20">
-              <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+            <div className="transform-gpu bg-linear-to-br from-slate-900 to-indigo-950 rounded-4xl p-8 md:p-10 text-white relative overflow-hidden shadow-2xl shadow-indigo-900/20 border border-indigo-500/20">
+              <div className="transform-gpu relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
                 <div>
-                    <div className="flex items-center gap-2 mb-3">
-                         <div className="text-indigo-200 text-xs font-bold uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full backdrop-blur-md border border-white/10">Current Plan</div>
+                    <div className="transform-gpu flex items-center gap-2 mb-3">
+                         <div className="transform-gpu text-indigo-200 text-xs font-bold uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full backdrop-blur-md border border-white/10">Current Plan</div>
                          {user.tier !== "FREE" && (
-                             <span className="bg-emerald-500 text-white text-[10px] px-2 py-1 rounded-full font-bold uppercase shadow-sm">Active</span>
+                             <span className="transform-gpu bg-emerald-500 text-white text-[10px] px-2 py-1 rounded-full font-bold uppercase shadow-sm">Active</span>
                          )}
                     </div>
-                    <div className="text-5xl font-black flex items-center gap-3 tracking-tighter">
+                    <div className="transform-gpu text-5xl font-bold flex items-center gap-3 tracking-tighter">
                       {user.tier}
                     </div>
-                    <p className="text-indigo-100/80 mt-4 max-w-md leading-relaxed text-base font-medium">
+                    <p className="transform-gpu text-indigo-100/80 mt-4 max-w-md leading-relaxed text-base font-medium">
                       {user.tier === "FREE" 
                         ? "Upgrade to Pro to unlock unlimited AI planning, advanced analytics, and team collaboration features." 
                         : "You have full access to all premium features including AI generation and team tools."}
                     </p>
                 </div>
                 
-                <div className="flex flex-col gap-3 w-full md:w-auto">
+                <div className="transform-gpu flex flex-col gap-3 w-full md:w-auto">
                     {user.tier === "FREE" ? (
                         <Link href="/dashboard/subscriptions">
-                            <button className="w-full md:w-auto bg-white text-indigo-950 px-8 py-3.5 rounded-xl font-bold hover:bg-indigo-50 transition-all shadow-lg shadow-white/10 flex items-center justify-center gap-2 group">
-                            Upgrade Now <ChevronRight size={18} className="group-hover:translate-x-0.5 transition-transform" />
+                            <button className="transform-gpu w-full md:w-auto bg-white text-indigo-950 px-8 py-3.5 rounded-xl font-bold hover:bg-indigo-50 transition-all shadow-lg shadow-white/10 flex items-center justify-center gap-2 group">
+                            Upgrade Now <ChevronRight size={18} className="transform-gpu group-hover:translate-x-0.5 transition-transform" />
                             </button>
                         </Link>
                     ) : (
                         <Link href="/dashboard/subscriptions">
-                            <button className="w-full md:w-auto bg-white/10 text-white border border-white/20 px-6 py-3 rounded-xl font-bold text-sm hover:bg-white/20 transition-all backdrop-blur-sm">
+                            <button className="transform-gpu w-full md:w-auto bg-white/10 text-white border border-white/20 px-6 py-3 rounded-xl font-bold text-sm hover:bg-white/20 transition-all backdrop-blur-sm">
                                 Manage Subscription
                             </button>
                         </Link>
@@ -337,23 +337,23 @@ export default function SettingsClientPage({ user }: SettingsClientProps) {
               </div>
               
               {/* Decorative Background */}
-              <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/3 opacity-10 blur-3xl w-96 h-96 bg-indigo-500 rounded-full pointer-events-none" />
-              <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 opacity-10 blur-3xl w-80 h-80 bg-rose-500 rounded-full pointer-events-none" />
+              <div className="transform-gpu absolute top-0 right-0 -translate-y-1/2 translate-x-1/3 opacity-10 blur-3xl w-96 h-96 bg-indigo-500 rounded-full pointer-events-none" />
+              <div className="transform-gpu absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 opacity-10 blur-3xl w-80 h-80 bg-rose-500 rounded-full pointer-events-none" />
             </div>
 
             {/* Invoices List */}
             <div>
-              <h3 className="text-lg font-bold text-slate-800 mb-5 flex items-center gap-2">
-                <Clock size={20} className="text-slate-400" /> Billing History
+              <h3 className="transform-gpu text-lg font-bold text-slate-800 mb-5 flex items-center gap-2">
+                <Clock size={20} className="transform-gpu text-slate-400" /> Billing History
               </h3>
-              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                <div className="p-16 text-center flex flex-col items-center gap-4">
-                    <div className="bg-slate-50 p-5 rounded-full text-slate-300 ring-8 ring-slate-50">
+              <div className="transform-gpu bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                <div className="transform-gpu p-16 text-center flex flex-col items-center gap-4">
+                    <div className="transform-gpu bg-slate-50 p-5 rounded-full text-slate-300 ring-8 ring-slate-50">
                          <Clock size={32} />
                     </div>
                     <div>
-                        <p className="text-slate-900 font-bold text-lg">No past invoices found</p>
-                        <p className="text-slate-500 text-sm mt-1">Once you subscribe, your receipts will appear here.</p>
+                        <p className="transform-gpu text-slate-900 font-bold text-lg">No past invoices found</p>
+                        <p className="transform-gpu text-slate-500 text-sm mt-1">Once you subscribe, your receipts will appear here.</p>
                     </div>
                 </div>
               </div>

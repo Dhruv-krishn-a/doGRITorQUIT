@@ -360,7 +360,7 @@ export const useAIArchitect = (setOpen: (open: boolean) => void) => {
         if (res.ok) { 
            const newPlan = await res.json();
            setOpen(false); 
-           router.push(`/dashboard/plans/${newPlan.id}`);
+           router.push(`/dashboard/study/plan/${newPlan.id}`);
            router.refresh();
         } else {
            throw new Error("Failed to save plan");

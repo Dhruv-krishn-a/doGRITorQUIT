@@ -11,6 +11,8 @@ export const metadata = {
   title: "Dashboard | CMS Admin",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
   const admin = await getAdminUser();
   if (!admin) redirect("/login");
@@ -23,14 +25,14 @@ export default async function DashboardPage() {
   const displayName = (admin as any).profile?.name || admin.email || "Admin";
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-800">Overview</h1>
-        <p className="text-slate-500 mt-1">Welcome back, {displayName}. Here is what's happening today.</p>
+    <div className="transform-gpu max-w-7xl mx-auto">
+      <div className="transform-gpu mb-8">
+        <h1 className="transform-gpu text-3xl font-bold text-slate-800">Overview</h1>
+        <p className="transform-gpu text-slate-500 mt-1">Welcome back, {displayName}. Here is what's happening today.</p>
       </div>
       
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="transform-gpu grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <KpiCard 
           title="Total Users" 
           value={stats.users} 
@@ -45,7 +47,7 @@ export default async function DashboardPage() {
         />
         <KpiCard 
           title="Active Subs" 
-          value={stats.activePlans} 
+          value={stats.activeSubscriptions} 
           icon={CreditCard} 
           color="emerald"
         />
@@ -58,26 +60,29 @@ export default async function DashboardPage() {
       </div>
 
       {/* Recent Sales Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-            <h2 className="text-lg font-bold text-slate-800">Recent Transactions</h2>
-            <Link href="/orders" className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
-              View All <ArrowRight size={16} />
+      <div className="transform-gpu bg-white/60 backdrop-blur-xl rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
+        <div className="transform-gpu px-8 py-6 border-b border-rose-100/50 flex justify-between items-center bg-slate-50/30">
+            <div className="transform-gpu flex items-center gap-3">
+              <ShoppingBag className="transform-gpu text-rose-500" size={20} />
+              <h2 className="transform-gpu text-lg font-bold text-slate-900 tracking-tight uppercase">Recent Transactions</h2>
+            </div>
+            <Link href="/orders" className="transform-gpu px-4 py-2 bg-white border border-slate-200 text-slate-600 hover:text-rose-500 hover:border-rose-200 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm flex items-center gap-2 group">
+              View All <ArrowRight size={14} className="transform-gpu group-hover:translate-x-1 transition-transform" />
             </Link>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-slate-50 border-b border-slate-200">
-              <tr className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                <th className="px-6 py-4">Order ID</th>
-                <th className="px-6 py-4">User</th>
-                <th className="px-6 py-4">Product</th>
-                <th className="px-6 py-4">Amount</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Date</th>
+        <div className="transform-gpu overflow-x-auto">
+          <table className="transform-gpu w-full text-left">
+            <thead>
+              <tr className="transform-gpu text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] bg-slate-50/50">
+                <th className="transform-gpu px-8 py-4">Order ID</th>
+                <th className="transform-gpu px-8 py-4">User</th>
+                <th className="transform-gpu px-8 py-4">Product</th>
+                <th className="transform-gpu px-8 py-4">Amount</th>
+                <th className="transform-gpu px-8 py-4">Status</th>
+                <th className="transform-gpu px-8 py-4">Date</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="transform-gpu divide-y divide-rose-50/50">
               {recentOrders.map(order => {
                 // ✅ FIX: Strict casting for strict TS mode
                 const orderId = String(order.id);
@@ -91,29 +96,32 @@ export default async function DashboardPage() {
                 const dateString = order.createdAt ? new Date(order.createdAt as any).toLocaleDateString() : "N/A";
 
                 return (
-                  <tr key={orderId} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-6 py-4 text-xs font-mono text-slate-400">
-                      {providerId.length > 8 ? providerId.slice(-8) : providerId}...
+                  <tr key={orderId} className="transform-gpu hover:bg-rose-50/30 transition-colors group">
+                    <td className="transform-gpu px-8 py-5 text-[10px] font-bold font-mono text-slate-400">
+                      #{providerId.length > 8 ? providerId.slice(-8) : providerId}
                     </td>
-                    <td className="px-6 py-4 text-sm font-medium text-slate-900">
-                      {userEmail}
+                    <td className="transform-gpu px-8 py-5">
+                      <div className="transform-gpu text-sm font-bold text-slate-800 uppercase tracking-tight">{userEmail.split('@')[0]}</div>
+                      <div className="transform-gpu text-[10px] text-slate-400 font-medium">{userEmail}</div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-600">
-                      {productName}
+                    <td className="transform-gpu px-8 py-5">
+                      <span className="transform-gpu px-2.5 py-1 bg-slate-100 text-slate-600 text-[9px] font-bold uppercase tracking-widest rounded-md border border-slate-200">
+                        {productName}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 text-sm font-mono text-slate-700 font-medium">
+                    <td className="transform-gpu px-8 py-5 text-sm font-bold text-slate-900 tracking-tighter">
                       ₹{(amount / 100).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold capitalize border ${
+                    <td className="transform-gpu px-8 py-5">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest border ${
                         status === 'paid' || status === 'captured' 
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-100' 
-                          : 'bg-amber-50 text-amber-700 border-amber-100'
+                          ? 'bg-emerald-50 text-emerald-600 border-emerald-100 shadow-sm shadow-emerald-100' 
+                          : 'bg-amber-50 text-amber-600 border-amber-100'
                       }`}>
                         {status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-500">
+                    <td className="transform-gpu px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                       {dateString}
                     </td>
                   </tr>
@@ -121,8 +129,11 @@ export default async function DashboardPage() {
               })}
               {recentOrders.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
-                    No transactions found.
+                  <td colSpan={6} className="transform-gpu px-8 py-16 text-center">
+                    <div className="transform-gpu flex flex-col items-center gap-2 opacity-40">
+                      <ShoppingBag size={32} />
+                      <p className="transform-gpu text-xs font-bold uppercase tracking-widest text-slate-400">No transactions found</p>
+                    </div>
                   </td>
                 </tr>
               )}
@@ -137,20 +148,31 @@ export default async function DashboardPage() {
 // Helper Component for consistency
 function KpiCard({ title, value, icon: Icon, color }: any) {
   const colors: any = {
-    blue: "bg-blue-50 text-blue-600 border-blue-100",
-    purple: "bg-purple-50 text-purple-600 border-purple-100",
-    emerald: "bg-emerald-50 text-emerald-600 border-emerald-100",
-    amber: "bg-amber-50 text-amber-600 border-amber-100",
+    blue: "from-blue-500/10 to-indigo-500/10 text-blue-600 border-blue-100",
+    purple: "from-purple-500/10 to-fuchsia-500/10 text-purple-600 border-purple-100",
+    emerald: "from-emerald-500/10 to-teal-500/10 text-emerald-600 border-emerald-100",
+    amber: "from-amber-500/10 to-orange-500/10 text-amber-600 border-amber-100",
+  };
+
+  const iconColors: any = {
+    blue: "bg-blue-500 text-white shadow-blue-200",
+    purple: "bg-purple-500 text-white shadow-purple-200",
+    emerald: "bg-emerald-500 text-white shadow-emerald-200",
+    amber: "bg-amber-500 text-white shadow-amber-200",
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-start justify-between group hover:shadow-md transition-all">
-      <div>
-        <div className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">{title}</div>
-        <div className="text-2xl font-bold text-slate-800">{value}</div>
-      </div>
-      <div className={`p-3 rounded-lg ${colors[color]} transition-colors`}>
-        <Icon size={24} />
+    <div className={`relative overflow-hidden bg-white/60 backdrop-blur-xl p-6 rounded-[2rem] border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] group hover:shadow-xl transition-all duration-500 hover:-translate-y-1`}>
+      <div className={`absolute inset-0 bg-linear-to-br ${colors[color]} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+      
+      <div className="transform-gpu relative z-10 flex items-start justify-between">
+        <div>
+          <div className="transform-gpu text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">{title}</div>
+          <div className="transform-gpu text-3xl font-bold text-slate-900 tracking-tighter">{value}</div>
+        </div>
+        <div className={`p-3.5 rounded-2xl ${iconColors[color]} shadow-lg transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3`}>
+          <Icon size={20} strokeWidth={2.5} />
+        </div>
       </div>
     </div>
   );

@@ -19,20 +19,20 @@ export default function CustomDrawerContent(props: any) {
   };
 
   return (
-    <View className="flex-1 bg-slate-50">
+    <View className="transform-gpu flex-1 bg-slate-50">
       {/* 1. User Profile Section (Top) */}
-      <View className="p-6 pt-16 bg-white border-b border-slate-200">
-        <View className="flex-row items-center gap-4">
-          <View className="h-12 w-12 bg-indigo-100 rounded-full items-center justify-center">
-            <Text className="text-indigo-600 font-bold text-xl">
+      <View className="transform-gpu p-6 pt-16 bg-white border-b border-slate-200">
+        <View className="transform-gpu flex-row items-center gap-4">
+          <View className="transform-gpu h-12 w-12 bg-indigo-100 rounded-full items-center justify-center">
+            <Text className="transform-gpu text-indigo-600 font-bold text-xl">
               {user?.email?.charAt(0).toUpperCase() ?? "U"}
             </Text>
           </View>
-          <View className="flex-1">
-            <Text className="font-bold text-slate-800 text-lg" numberOfLines={1}>
+          <View className="transform-gpu flex-1">
+            <Text className="transform-gpu font-bold text-slate-800 text-lg" numberOfLines={1}>
               {user?.email?.split('@')[0]}
             </Text>
-            <Text className="text-slate-500 text-xs">Free Plan</Text>
+            <Text className="transform-gpu text-slate-500 text-xs">Free Plan</Text>
           </View>
         </View>
       </View>
@@ -43,13 +43,13 @@ export default function CustomDrawerContent(props: any) {
       </DrawerContentScrollView>
 
       {/* 3. Logout Section (Bottom) */}
-      <View className="p-4 border-t border-slate-200 pb-8">
+      <View className="transform-gpu p-4 border-t border-slate-200 pb-8">
         <TouchableOpacity 
           onPress={handleLogout}
-          className="flex-row items-center gap-3 p-3 rounded-xl active:bg-red-50"
+          className="transform-gpu flex-row items-center gap-3 p-3 rounded-xl active:bg-red-50"
         >
-          <Ionicons name="log-out-outline" size={24} className="text-red-500" />
-          <Text className="text-red-500 font-medium ml-2">Log Out</Text>
+          <Ionicons name="log-out-outline" size={24} className="transform-gpu text-red-500" />
+          <Text className="transform-gpu text-red-500 font-medium ml-2">Log Out</Text>
         </TouchableOpacity>
       </View>
     </View>

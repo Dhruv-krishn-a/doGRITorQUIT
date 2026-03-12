@@ -59,7 +59,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     <ToastContext.Provider value={value}>
       {children}
       {/* Toast container */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 items-end">
+      <div className="transform-gpu fixed bottom-6 right-6 z-50 flex flex-col gap-3 items-end">
         {toasts.map((t) => (
           <div
             key={t.id}
@@ -69,12 +69,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               ${t.type === "error" ? "bg-red-50 border-red-200" : ""}
               ${t.type === "info" ? "bg-white border-slate-200" : ""}`}
           >
-            {t.title && <div className="font-semibold text-sm mb-1">{t.title}</div>}
-            <div className="text-sm text-slate-800">{t.message}</div>
-            <div className="flex justify-end mt-2">
+            {t.title && <div className="transform-gpu font-semibold text-sm mb-1">{t.title}</div>}
+            <div className="transform-gpu text-sm text-slate-800">{t.message}</div>
+            <div className="transform-gpu flex justify-end mt-2">
               <button
                 onClick={() => dismissToast(t.id)}
-                className="text-xs text-slate-500 hover:underline"
+                className="transform-gpu text-xs text-slate-500 hover:underline"
               >
                 Dismiss
               </button>

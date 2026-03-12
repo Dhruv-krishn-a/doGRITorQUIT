@@ -116,77 +116,77 @@ export default function TodayClientPage({ initialTasks, initialUnits }: TodayCli
   if (!mounted) return null;
 
   return (
-    <div className="relative w-full min-h-screen bg-[#0a0105] text-rose-100 selection:bg-rose-500/30 selection:text-white font-sans overflow-hidden">
+    <div className="transform-gpu relative w-full min-h-screen bg-[#0a0105] text-rose-100 selection:bg-rose-500/30 selection:text-white font-sans overflow-hidden">
         
         {/* Background Ambient Glow */}
-        <div className="absolute top-0 left-1/2 w-[50rem] h-[37.5rem] bg-rose-600/5 rounded-full blur-[150px] -translate-x-1/2 pointer-events-none" />
+        <div className="transform-gpu absolute top-0 left-1/2 w-[50rem] h-[37.5rem] bg-rose-600/5 rounded-full blur-[150px] -translate-x-1/2 pointer-events-none" />
 
-        <div className="relative z-10 w-full max-w-7xl mx-auto space-y-12 pt-6 pb-24 px-6 md:px-10 animate-in fade-in duration-1000">
+        <div className="transform-gpu relative z-10 w-full max-w-7xl mx-auto space-y-12 pt-6 pb-24 px-6 md:px-10 animate-in fade-in duration-1000">
           
           {/* Header Section */}
-          <header className="flex flex-col md:flex-row justify-between md:items-center gap-8 border-b border-rose-900/40 pb-8">
-            <div className="space-y-1">
-              <div className="flex items-center gap-3">
-                <h1 className="text-4xl font-black text-rose-50 tracking-tighter uppercase drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">Today</h1>
-                <span className="bg-rose-500/20 text-rose-400 text-[10px] font-black px-2 py-0.5 rounded border border-rose-500/30 shadow-[0_0_10px_rgba(244,63,94,0.2)] uppercase">Active Vector</span>
+          <header className="transform-gpu flex flex-col md:flex-row justify-between md:items-center gap-8 border-b border-rose-900/40 pb-8">
+            <div className="transform-gpu space-y-1">
+              <div className="transform-gpu flex items-center gap-3">
+                <h1 className="transform-gpu text-4xl font-bold text-rose-50 tracking-tighter uppercase drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">Today</h1>
+                <span className="transform-gpu bg-rose-500/20 text-rose-400 text-[10px] font-bold px-2 py-0.5 rounded border border-rose-500/30 shadow-[0_0_10px_rgba(244,63,94,0.2)] uppercase">Active Vector</span>
               </div>
-              <p className="text-rose-500/60 font-black uppercase tracking-[0.3em] text-[10px] flex items-center gap-2 mt-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse drop-shadow-[0_0_5px_rgba(244,63,94,0.8)]" />
+              <p className="transform-gpu text-rose-500/60 font-bold uppercase tracking-[0.3em] text-[10px] flex items-center gap-2 mt-1">
+                <span className="transform-gpu w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse drop-shadow-[0_0_5px_rgba(244,63,94,0.8)]" />
                 {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
             </div>
           </header>
 
           {/* Quote Card */}
-          <section className="relative group">
-            <div className="bg-[#14030b] border border-rose-900/40 p-8 rounded-[2.5rem] relative overflow-hidden group hover:border-rose-500/30 transition-colors shadow-black/40">
-              <div className="absolute top-0 right-0 p-8 opacity-5 text-rose-500 group-hover:scale-110 transition-transform duration-700 group-hover:opacity-10 pointer-events-none">
+          <section className="transform-gpu relative group">
+            <div className="transform-gpu bg-[#14030b] border border-rose-900/40 p-8 rounded-[2.5rem] relative overflow-hidden group hover:border-rose-500/30 transition-colors shadow-black/40">
+              <div className="transform-gpu absolute top-0 right-0 p-8 opacity-5 text-rose-500 group-hover:scale-110 transition-transform duration-700 group-hover:opacity-10 pointer-events-none">
                 <Quote size={120} />
               </div>
-              <div className="relative z-10 space-y-4">
-                <div className="flex items-center gap-2 text-rose-500/50 font-black text-[10px] uppercase tracking-[0.4em]">
+              <div className="transform-gpu relative z-10 space-y-4">
+                <div className="transform-gpu flex items-center gap-2 text-rose-500/50 font-bold text-[10px] uppercase tracking-[0.4em]">
                   <Sparkles size={12} /> Neural Inspiration
                 </div>
-                <h2 className="text-2xl md:text-3xl font-black text-rose-50 leading-tight italic drop-shadow-[0_0_10px_rgba(255,255,255,0.05)]">
+                <h2 className="transform-gpu text-2xl md:text-3xl font-bold text-rose-50 leading-tight italic drop-shadow-[0_0_10px_rgba(255,255,255,0.05)]">
                   &quot;{quote}&quot;
                 </h2>
               </div>
             </div>
           </section>
 
-          <div className="flex flex-col gap-12">
+          <div className="transform-gpu flex flex-col gap-12">
             
             {/* Unified Today List */}
-            <div className="space-y-8">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-1 h-6 bg-rose-500 rounded-full shadow-[0_0_8px_rgba(244,63,94,0.6)]" />
-                  <h2 className="text-xl font-black text-rose-50 uppercase tracking-tighter">Unified Focus Vector</h2>
+            <div className="transform-gpu space-y-8">
+              <div className="transform-gpu flex items-center justify-between">
+                <div className="transform-gpu flex items-center gap-3">
+                  <div className="transform-gpu w-1 h-6 bg-rose-500 rounded-full shadow-[0_0_8px_rgba(244,63,94,0.6)]" />
+                  <h2 className="transform-gpu text-xl font-bold text-rose-50 uppercase tracking-tighter">Unified Focus Vector</h2>
                 </div>
-                <span className="text-[10px] font-black text-rose-500/40 uppercase tracking-widest">{tasks.length + units.length} Items</span>
+                <span className="transform-gpu text-[10px] font-bold text-rose-500/40 uppercase tracking-widest">{tasks.length + units.length} Items</span>
               </div>
 
-              <div className="space-y-4">
+              <div className="transform-gpu space-y-4">
                 {tasks.length === 0 && units.length === 0 ? (
-                  <div className="bg-[#14030b] border border-dashed border-rose-900/40 rounded-[2rem] p-12 text-center">
-                    <CheckCircle2 className="mx-auto text-rose-500/20 mb-4" size={48} />
-                    <p className="text-rose-500/40 font-black uppercase tracking-widest text-xs">All clear for today</p>
+                  <div className="transform-gpu bg-[#14030b] border border-dashed border-rose-900/40 rounded-[2rem] p-12 text-center">
+                    <CheckCircle2 className="transform-gpu mx-auto text-rose-500/20 mb-4" size={48} />
+                    <p className="transform-gpu text-rose-500/40 font-bold uppercase tracking-widest text-xs">All clear for today</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="transform-gpu grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {/* Render Plan Tasks */}
                     {tasks.map(task => (
-                      <div key={task.id} className="bg-[#14030b] border border-rose-900/40 rounded-2xl p-6 hover:border-rose-500/30 transition-all shadow-black/40 flex flex-col justify-between group">
+                      <div key={task.id} className="transform-gpu bg-[#14030b] border border-rose-900/40 rounded-2xl p-6 hover:border-rose-500/30 transition-all shadow-black/40 flex flex-col justify-between group">
                          <div>
-                            <div className="flex items-center gap-2 text-rose-400/50 mb-4">
-                               <CheckCircle2 size={14} className="text-rose-500" />
-                               <span className="text-[8px] font-black uppercase tracking-widest">Plan Task</span>
+                            <div className="transform-gpu flex items-center gap-2 text-rose-400/50 mb-4">
+                               <CheckCircle2 size={14} className="transform-gpu text-rose-500" />
+                               <span className="transform-gpu text-[8px] font-bold uppercase tracking-widest">Plan Task</span>
                             </div>
-                            <h3 className="text-sm font-black text-rose-50 leading-snug mb-2 group-hover:text-white transition-colors">{task.title}</h3>
-                            {task.description && <p className="text-[10px] text-rose-200/50 line-clamp-2">{task.description}</p>}
+                            <h3 className="transform-gpu text-sm font-bold text-rose-50 leading-snug mb-2 group-hover:text-white transition-colors">{task.title}</h3>
+                            {task.description && <p className="transform-gpu text-[10px] text-rose-200/50 line-clamp-2">{task.description}</p>}
                          </div>
-                         <div className="flex items-center justify-between mt-6">
-                            <span className="text-[10px] font-black text-rose-500/60 uppercase tracking-widest px-2 py-1 bg-[#1c0510] rounded border border-rose-900/50">Pending</span>
+                         <div className="transform-gpu flex items-center justify-between mt-6">
+                            <span className="transform-gpu text-[10px] font-bold text-rose-500/60 uppercase tracking-widest px-2 py-1 bg-[#1c0510] rounded border border-rose-900/50">Pending</span>
                             <button 
                               onClick={() => {
                                  // Simple logic to quick complete or log
@@ -196,7 +196,7 @@ export default function TodayClientPage({ initialTasks, initialUnits }: TodayCli
                                     handleUpdate(task.id, { status: "Completed" });
                                  }
                               }}
-                              className="px-5 py-2.5 bg-rose-600/10 text-rose-400 border border-rose-500/30 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-600 hover:text-white transition-all active:scale-95"
+                              className="transform-gpu px-5 py-2.5 bg-rose-600/10 text-rose-400 border border-rose-500/30 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-rose-600 hover:text-white transition-all active:scale-95"
                             >
                               Action
                             </button>
@@ -211,20 +211,20 @@ export default function TodayClientPage({ initialTasks, initialUnits }: TodayCli
                         <div key={unit.id} className={`bg-[#14030b] border ${isCourse ? 'border-fuchsia-900/40 hover:border-fuchsia-500/30' : 'border-emerald-900/40 hover:border-emerald-500/30'} rounded-2xl p-6 transition-all shadow-black/40 flex flex-col justify-between group`}>
                            <div>
                               <div className={`flex items-center gap-2 mb-4 ${isCourse ? 'text-fuchsia-400/50' : 'text-emerald-400/50'}`}>
-                                 {isCourse ? <BookOpen size={14} className="text-fuchsia-500" /> : <Briefcase size={14} className="text-emerald-500" />}
-                                 <span className="text-[8px] font-black uppercase tracking-widest">{isCourse ? 'Course Module' : 'Project Phase'}</span>
-                                 <span className="text-[8px] font-black uppercase tracking-widest opacity-50 truncate max-w-[100px] ml-auto">{unit.trackTitle}</span>
+                                 {isCourse ? <BookOpen size={14} className="transform-gpu text-fuchsia-500" /> : <Briefcase size={14} className="transform-gpu text-emerald-500" />}
+                                 <span className="transform-gpu text-[8px] font-bold uppercase tracking-widest">{isCourse ? 'Course Module' : 'Project Phase'}</span>
+                                 <span className="transform-gpu text-[8px] font-bold uppercase tracking-widest opacity-50 truncate max-w-[100px] ml-auto">{unit.trackTitle}</span>
                               </div>
-                              <h3 className="text-sm font-black text-rose-50 leading-snug mb-2 group-hover:text-white transition-colors">{unit.title}</h3>
-                              {unit.description && <p className="text-[10px] text-rose-200/50 line-clamp-2">{unit.description}</p>}
+                              <h3 className="transform-gpu text-sm font-bold text-rose-50 leading-snug mb-2 group-hover:text-white transition-colors">{unit.title}</h3>
+                              {unit.description && <p className="transform-gpu text-[10px] text-rose-200/50 line-clamp-2">{unit.description}</p>}
                            </div>
-                           <div className="flex items-center justify-between mt-6">
-                              <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 bg-[#1c0510] rounded border ${isCourse ? 'text-fuchsia-500/60 border-fuchsia-900/50' : 'text-emerald-500/60 border-emerald-900/50'}`}>
+                           <div className="transform-gpu flex items-center justify-between mt-6">
+                              <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 bg-[#1c0510] rounded border ${isCourse ? 'text-fuchsia-500/60 border-fuchsia-900/50' : 'text-emerald-500/60 border-emerald-900/50'}`}>
                                  {unit.durationMinutes ? `${unit.durationMinutes}m` : 'Action required'}
                               </span>
                               <button 
                                 onClick={() => handleUnitAction('SESSION', unit)}
-                                className={`px-5 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all border active:scale-95 ${isCourse ? 'bg-fuchsia-600/10 text-fuchsia-400 border-fuchsia-500/30 hover:bg-fuchsia-600 hover:text-white' : 'bg-emerald-600/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-600 hover:text-white'}`}
+                                className={`px-5 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all border active:scale-95 ${isCourse ? 'bg-fuchsia-600/10 text-fuchsia-400 border-fuchsia-500/30 hover:bg-fuchsia-600 hover:text-white' : 'bg-emerald-600/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-600 hover:text-white'}`}
                               >
                                 {isCourse ? 'Study' : 'Execute'}
                               </button>

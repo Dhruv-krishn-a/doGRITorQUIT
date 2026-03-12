@@ -1,11 +1,20 @@
 // packages/study-core/src/context/StudyContext.tsx
 "use client";
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
 import { studyApi } from '../apis/studyApi';
 import { Track, TrackData, Unit, UnitStatus } from '../types/track';
 import { DashboardData } from '../types/dashboard';
 import { toast } from 'sonner';
+
+export interface OfflineStorage {
+  getTracks: () => Promise<Track[]>;
+  getTrack: (id: string) => Promise<TrackData | null>;
+  saveTrack: (track: TrackData) => Promise<void>;
+  saveTracks: (tracks: Track[]) => Promise<void>;
+  queueAction: (action: string, payload: any) => Promise<void>;
+  isOffline: () => boolean;
+}
 
 interface StudyState {
   tracks: Track[];
@@ -16,6 +25,8 @@ interface StudyState {
   activeUnit: Unit | null;
   sessionMode: 'STUDY' | 'TIMER' | 'COMPLETE' | 'LOGS';
   sessionData?: any;
+  seconds: number;
+  isTimerRunning: boolean;
 }
 
 interface StudyActions {
@@ -34,8 +45,8 @@ interface StudyActions {
   deleteUnit: (unitId: string) => Promise<boolean>;
   saveNotes: (unitId: string, notes: any) => Promise<void>;
   addUnit: (trackId: string, unit: any) => Promise<void>;
-  
-  // Modal controls
+  setSeconds: (action: number | ((s: number) => number)) => void;
+  setIsTimerRunning: (isRunning: boolean) => void;
   openModal: (modal: StudyState['activeModal'], unit?: Unit | null, mode?: StudyState['sessionMode'], data?: any) => void;
   closeModal: () => void;
   setTracks: React.Dispatch<React.SetStateAction<Track[]>>;
@@ -43,48 +54,137 @@ interface StudyActions {
 
 const StudyContext = createContext<(StudyState & StudyActions) | undefined>(undefined);
 
-export function StudyProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<StudyState>({
-    tracks: [],
-    dashboard: null,
-    activeTrack: null,
-    loading: false,
-    activeModal: null,
-    activeUnit: null,
-    sessionMode: 'STUDY'
+export function StudyProvider({ children, offlineStorage }: { children: ReactNode, offlineStorage?: OfflineStorage }) {
+  const [state, setState] = useState<StudyState>(() => {
+    let initialSeconds = 0;
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('study.timerSeconds');
+      if (saved) initialSeconds = parseInt(saved, 10);
+    }
+
+    return {
+      tracks: [],
+      dashboard: null,
+      activeTrack: null,
+      loading: false,
+      activeModal: null,
+      activeUnit: null,
+      sessionMode: 'STUDY',
+      seconds: initialSeconds,
+      isTimerRunning: false
+    };
   });
 
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (state.isTimerRunning) {
+      interval = setInterval(() => {
+        setState(s => {
+          const nextSeconds = s.seconds + 1;
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('study.timerSeconds', nextSeconds.toString());
+          }
+          return { ...s, seconds: nextSeconds };
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [state.isTimerRunning]);
+
   const fetchDashboard = useCallback(async () => {
+    // 1. Try to load from local storage first for instant UI
+    if (offlineStorage) {
+      try {
+        const localTracks = await offlineStorage.getTracks();
+        if (localTracks && localTracks.length > 0) {
+          setState(s => ({ ...s, tracks: localTracks }));
+        }
+      } catch (e) {
+        console.warn("Offline cache read error:", e);
+      }
+    }
+
     setState(s => ({ ...s, loading: true }));
     try {
+      if (offlineStorage?.isOffline()) {
+        const localTracks = await offlineStorage.getTracks();
+        setState(s => ({ ...s, tracks: localTracks, loading: false }));
+        return;
+      }
+
       const [tracksRes, dashRes] = await Promise.all([
         studyApi.getTracks(),
         studyApi.getStudyDashboard()
       ]);
+      
       setState(s => ({ 
         ...s, 
         tracks: tracksRes.tracks || [], 
         dashboard: dashRes,
         loading: false 
       }));
+
+      // Cache for offline (Write-through)
+      if (offlineStorage && tracksRes.tracks) {
+        offlineStorage.saveTracks(tracksRes.tracks).catch(console.error);
+      }
     } catch (err) {
-      toast.error('Failed to load dashboard');
-      setState(s => ({ ...s, loading: false }));
+      console.error("Dashboard fetch error:", err);
+      // Don't show toast if we have local data
+      setState(s => {
+        if (s.tracks.length === 0) {
+           toast.error('Failed to load dashboard');
+        }
+        return { ...s, loading: false };
+      });
     }
-  }, []);
+  }, [offlineStorage]);
 
   const fetchTrack = useCallback(async (trackId: string) => {
+    // 1. Instant load from local cache
+    if (offlineStorage) {
+      try {
+        const local = await offlineStorage.getTrack(trackId);
+        if (local) {
+          setState(s => ({ ...s, activeTrack: local }));
+        }
+      } catch (e) {
+        console.warn("Offline cache track read error:", e);
+      }
+    }
+
     setState(s => ({ ...s, loading: true }));
     try {
+      if (offlineStorage?.isOffline()) {
+        const local = await offlineStorage.getTrack(trackId);
+        if (local) {
+          setState(s => ({ ...s, activeTrack: local, loading: false }));
+          return;
+        }
+      }
+
       const result = await studyApi.getTrack(trackId);
       setState(s => ({ ...s, activeTrack: result, loading: false }));
+      
+      if (offlineStorage) {
+        offlineStorage.saveTrack(result).catch(console.error);
+      }
     } catch (err) {
-      toast.error('Failed to load track');
-      setState(s => ({ ...s, loading: false }));
+      console.error("Track fetch error:", err);
+      setState(s => {
+        if (!s.activeTrack) {
+          toast.error('Failed to load track');
+        }
+        return { ...s, loading: false };
+      });
     }
-  }, []);
+  }, [offlineStorage]);
 
   const syncTrack = async (trackId: string) => {
+    if (offlineStorage?.isOffline()) {
+      toast.error("Cannot sync with YouTube while offline");
+      return;
+    }
     setState(s => ({ ...s, loading: true }));
     try {
       const result = await studyApi.syncTrack(trackId);
@@ -98,27 +198,6 @@ export function StudyProvider({ children }: { children: ReactNode }) {
       toast.error('Failed to update track');
     } finally {
       setState(s => ({ ...s, loading: false }));
-    }
-  };
-
-  const commitTrack = async (trackId: string, minutes: number, targetDate?: string) => {
-    try {
-      await studyApi.commitTrack(trackId, minutes, targetDate);
-      await fetchTrack(trackId);
-      toast.success("Daily goal updated");
-    } catch (err) {
-      toast.error('Failed to save goal');
-    }
-  };
-
-  const planToday = async (trackId: string, energyLevel: string) => {
-    try {
-      await studyApi.planToday(trackId, energyLevel);
-      await fetchTrack(trackId);
-      await fetchDashboard();
-      toast.success("Schedule updated");
-    } catch (err) {
-      toast.error('Failed to update schedule');
     }
   };
 
@@ -139,33 +218,26 @@ export function StudyProvider({ children }: { children: ReactNode }) {
     }));
 
     try {
+      if (offlineStorage?.isOffline()) {
+        await offlineStorage.queueAction('MOVE_UNIT', { unitId, toStatus, newIndex });
+        toast.success("Action queued (offline)");
+        return;
+      }
       await studyApi.moveUnit(unitId, toStatus, newIndex);
-      await fetchDashboard(); // Sync global timeline
     } catch (err) {
       toast.error('Failed to move item');
       if (state.activeTrack) await fetchTrack(state.activeTrack.track.id);
     }
   };
 
-  const completeUnit = async (unitId: string, completionData: any) => {
-    try {
-      await studyApi.completeUnit(unitId, completionData);
-      if (state.activeTrack) await fetchTrack(state.activeTrack.track.id);
-      await fetchDashboard();
-      toast.success("Progress saved");
-    } catch (err) {
-      toast.error("Failed to complete lesson");
-    }
-  };
-
-  // FIXED: Changed 'minutesSpent' to 'secondsSpent' to match the interface
   const logProgress = async (unitId: string, data: { secondsSpent: number, watchPercentage: number }) => {
     try {
-      await fetch(`/api/study/units/${unitId}/progress`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
+      if (offlineStorage?.isOffline()) {
+        await offlineStorage.queueAction('LOG_PROGRESS', { unitId, ...data });
+        toast.success("Progress saved locally");
+        return;
+      }
+      await studyApi.logProgress(unitId, data);
       if (state.activeTrack) await fetchTrack(state.activeTrack.track.id);
       toast.success("Progress tracked");
     } catch (err) {
@@ -173,126 +245,108 @@ export function StudyProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const deleteTrack = async (trackId: string) => {
-    try {
-      await studyApi.deleteTrack(trackId);
-      setState(s => ({ ...s, tracks: s.tracks.filter(t => t.id !== trackId) }));
-      toast.success("Track deleted");
-      return true;
-    } catch (err) {
-      toast.error("Failed to delete track");
-      return false;
-    }
-  };
-
-  const updateTrack = async (trackId: string, updates: any) => {
-    try {
-      await studyApi.updateTrack(trackId, updates);
-      await fetchTrack(trackId);
-      toast.success("Project updated");
-    } catch (err) {
-      toast.error("Failed to update project");
-    }
-  };
-
-  const updateUnit = async (unitId: string, updates: any) => {
-    try {
-      await studyApi.updateUnit(unitId, updates);
-      if (state.activeTrack) await fetchTrack(state.activeTrack.track.id);
-      toast.success("Task updated");
-    } catch (err) {
-      toast.error("Failed to update task");
-    }
-  };
-
-  const deleteUnit = async (unitId: string) => {
-    try {
-      await studyApi.deleteUnit(unitId);
-      if (state.activeTrack) await fetchTrack(state.activeTrack.track.id);
-      toast.success("Task deleted");
-      return true;
-    } catch (err) {
-      toast.error("Failed to delete task");
-      return false;
-    }
-  };
-
-  const saveNotes = async (unitId: string, notes: any) => {
-    try {
-      // Direct fetch for now as it's highly specific
-      await fetch(`/api/study/units/${unitId}/notes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notes })
-      });
-      toast.success("Notes saved");
-    } catch (err) {
-      toast.error("Failed to save notes");
-    }
-  };
-
-  const saveWeeklyReflection = async (data: any) => {
-    try {
-      await fetch('/api/study/reflection', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      await fetchDashboard();
-      toast.success("Reflection saved");
-    } catch (err) {
-      toast.error("Failed to save reflection");
-    }
-  };
-
-  const addUnit = async (trackId: string, unit: any) => {
-    try {
-      await fetch('/api/study/units', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ trackId, ...unit })
-      });
-      await fetchTrack(trackId);
-      toast.success("Lesson added");
-    } catch (err) {
-      toast.error("Failed to add lesson");
-    }
-  };
-
-  const openModal = useCallback((modal: StudyState['activeModal'], unit: Unit | null = null, mode: StudyState['sessionMode'] = 'STUDY', data: any = null) => {
-    setState(s => ({ ...s, activeModal: modal, activeUnit: unit, sessionMode: mode, sessionData: data }));
-  }, []);
-
-  const closeModal = useCallback(() => {
-    setState(s => ({ ...s, activeModal: null, activeUnit: null }));
-  }, []);
-
-  const setTracks = (action: any) => {
-     setState(s => {
-        const nextTracks = typeof action === 'function' ? action(s.tracks) : action;
-        return { ...s, tracks: nextTracks };
-     });
-  };
+  // ... (Remaining methods follow same pattern: check offline -> queue -> else call api)
 
   const actions: StudyActions = {
-    fetchDashboard,
-    fetchTrack,
-    syncTrack,
-    commitTrack,
-    planToday,
-    moveUnit,
-    completeUnit,
-    logProgress,
-    saveWeeklyReflection,
-    deleteTrack,
-    updateTrack,
-    updateUnit,
-    deleteUnit,
-    saveNotes,
-    addUnit,
-    openModal,
-    closeModal,
-    setTracks: setTracks as any
+    fetchDashboard, fetchTrack, syncTrack, moveUnit, logProgress,
+    commitTrack: async (trackId, minutes, targetDate) => {
+        if (offlineStorage?.isOffline()) {
+            await offlineStorage.queueAction('COMMIT_TRACK', { trackId, minutes, targetDate });
+            return;
+        }
+        await studyApi.commitTrack(trackId, minutes, targetDate);
+        await fetchTrack(trackId);
+    },
+    planToday: async (trackId, energyLevel) => {
+        if (offlineStorage?.isOffline()) {
+            toast.error("Planning requires AI which is unavailable offline");
+            return;
+        }
+        await studyApi.planToday(trackId, energyLevel);
+        await fetchTrack(trackId);
+    },
+    completeUnit: async (unitId, completionData) => {
+        if (offlineStorage?.isOffline()) {
+            await offlineStorage.queueAction('COMPLETE_UNIT', { unitId, completionData });
+            return;
+        }
+        await studyApi.completeUnit(unitId, completionData);
+        if (state.activeTrack) await fetchTrack(state.activeTrack.track.id);
+    },
+    saveWeeklyReflection: async (data) => {
+        if (offlineStorage?.isOffline()) {
+            await offlineStorage.queueAction('SAVE_REFLECTION', data);
+            return;
+        }
+        await studyApi.saveWeeklyReflection(data);
+    },
+    deleteTrack: async (trackId) => {
+        if (offlineStorage?.isOffline()) {
+            toast.error("Delete restricted while offline");
+            return false;
+        }
+        await studyApi.deleteTrack(trackId);
+        setState(s => ({ ...s, tracks: s.tracks.filter(t => t.id !== trackId) }));
+        return true;
+    },
+    updateTrack: async (trackId, updates) => {
+        if (offlineStorage?.isOffline()) {
+            await offlineStorage.queueAction('UPDATE_TRACK', { trackId, updates });
+            return;
+        }
+        await studyApi.updateTrack(trackId, updates);
+        await fetchTrack(trackId);
+    },
+    updateUnit: async (unitId, updates) => {
+        if (offlineStorage?.isOffline()) {
+            await offlineStorage.queueAction('UPDATE_UNIT', { unitId, updates });
+            return;
+        }
+        await studyApi.updateUnit(unitId, updates);
+        if (state.activeTrack) await fetchTrack(state.activeTrack.track.id);
+    },
+    deleteUnit: async (unitId) => {
+        if (offlineStorage?.isOffline()) {
+            toast.error("Delete restricted while offline");
+            return false;
+        }
+        await studyApi.deleteUnit(unitId);
+        if (state.activeTrack) await fetchTrack(state.activeTrack.track.id);
+        return true;
+    },
+    saveNotes: async (unitId, notes) => {
+        if (offlineStorage?.isOffline()) {
+            await offlineStorage.queueAction('SAVE_NOTES', { unitId, notes });
+            return;
+        }
+        await studyApi.saveNotes(unitId, notes);
+    },
+    addUnit: async (trackId, unit) => {
+        if (offlineStorage?.isOffline()) {
+            await offlineStorage.queueAction('ADD_UNIT', { trackId, unit });
+            return;
+        }
+        await studyApi.addUnit(trackId, unit);
+        await fetchTrack(trackId);
+    },
+    setSeconds: (action) => {
+        setState(s => {
+          const nextSeconds = typeof action === 'function' ? action(s.seconds) : action;
+          if (typeof window !== 'undefined') localStorage.setItem('study.timerSeconds', nextSeconds.toString());
+          return { ...s, seconds: nextSeconds };
+        });
+    },
+    setIsTimerRunning: (isRunning) => setState(s => ({ ...s, isTimerRunning: isRunning })),
+    openModal: (modal, unit = null, mode = 'STUDY', data = null) => {
+        setState(s => ({ ...s, activeModal: modal, activeUnit: unit, sessionMode: mode, sessionData: data }));
+    },
+    closeModal: () => setState(s => ({ ...s, activeModal: null, activeUnit: null })),
+    setTracks: (action: any) => {
+        setState(s => {
+           const nextTracks = typeof action === 'function' ? action(s.tracks) : action;
+           return { ...s, tracks: nextTracks };
+        });
+    }
   };
 
   return (

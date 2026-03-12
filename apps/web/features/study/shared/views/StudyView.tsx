@@ -91,13 +91,13 @@ const VideoPanel = ({
   };
 
   return (
-    <div className="flex flex-col bg-white rounded-[2.5rem] overflow-hidden border border-rose-100/50 shadow-xl relative h-full">
-      <div className="aspect-video w-full bg-black relative z-0">
+    <div className="transform-gpu flex flex-col bg-white rounded-[2.5rem] overflow-hidden border border-rose-100/50 shadow-xl relative h-full">
+      <div className="transform-gpu aspect-video w-full bg-black relative z-0">
         {youtubeId && hasMounted ? (
-          <div className="absolute inset-0 z-10 pointer-events-auto">
+          <div className="transform-gpu absolute inset-0 z-10 pointer-events-auto">
             <YouTube
               videoId={youtubeId}
-              className="w-full h-full"
+              className="transform-gpu w-full h-full"
               opts={{
                 width: "100%",
                 height: "100%",
@@ -113,10 +113,10 @@ const VideoPanel = ({
             />
           </div>
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-white/20">
-            <div className="text-center p-8">
-              <VideoOff size={48} className="mx-auto mb-6 opacity-20" />
-              <p className="font-black uppercase tracking-[0.3em] text-[10px] mb-8">
+          <div className="transform-gpu absolute inset-0 flex items-center justify-center text-white/20">
+            <div className="transform-gpu text-center p-8">
+              <VideoOff size={48} className="transform-gpu mx-auto mb-6 opacity-20" />
+              <p className="transform-gpu font-bold uppercase tracking-[0.3em] text-[10px] mb-8">
                 Video stream unavailable
               </p>
               {unit?.metadata?.youtubeId && (
@@ -124,7 +124,7 @@ const VideoPanel = ({
                   href={`https://youtube.com/watch?v=${unit.metadata.youtubeId}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-3 bg-rose-600 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-rose-700 transition-all shadow-lg shadow-rose-900/40"
+                  className="transform-gpu inline-flex items-center gap-3 bg-rose-600 text-white px-8 py-4 rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:bg-rose-700 transition-all shadow-lg shadow-rose-900/40"
                 >
                   <Youtube size={16} /> Open Study Source
                 </a>
@@ -134,48 +134,48 @@ const VideoPanel = ({
         )}
       </div>
 
-      <div className="p-8 flex-1 flex flex-col justify-between">
+      <div className="transform-gpu p-8 flex-1 flex flex-col justify-between">
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <span className="bg-rose-600 text-white text-[8px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
+          <div className="transform-gpu flex items-center justify-between mb-4">
+            <div className="transform-gpu flex items-center gap-3">
+              <span className="transform-gpu bg-rose-600 text-white text-[8px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
                 Lesson Active
               </span>
-              <span className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">
+              <span className="transform-gpu text-slate-500 text-[10px] font-bold uppercase tracking-widest">
                 {unit?.durationMinutes}m duration
               </span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div className="transform-gpu flex items-center gap-2">
+              <div className="transform-gpu w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                 <motion.div 
                   initial={{ width: 0 }}
                   animate={{ width: `${watchPercentage}%` }}
-                  className="h-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]"
+                  className="transform-gpu h-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]"
                 />
               </div>
-              <span className="text-[10px] font-black text-rose-500 font-mono w-8 text-right">
+              <span className="transform-gpu text-[10px] font-bold text-rose-500 font-mono w-8 text-right">
                 {Math.round(watchPercentage)}%
               </span>
             </div>
           </div>
-          <h1 className="text-xl md:text-2xl font-bold text-slate-900 mb-4 line-clamp-2">
+          <h1 className="transform-gpu text-xl md:text-2xl font-bold text-slate-900 mb-4 line-clamp-2">
             {unit?.title}
           </h1>
         </div>
 
-        <div className="bg-rose-50/50 border border-rose-100/50 rounded-3xl p-6 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-rose-500/10 flex items-center justify-center text-rose-500">
+        <div className="transform-gpu bg-rose-50/50 border border-rose-100/50 rounded-3xl p-6 flex items-center justify-between">
+          <div className="transform-gpu flex items-center gap-4">
+            <div className="transform-gpu w-12 h-12 rounded-2xl bg-rose-500/10 flex items-center justify-center text-rose-500">
               <TimerIcon size={24} />
             </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">
+              <p className="transform-gpu text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">
                 Study Timer
               </p>
-              <p className="text-2xl font-black text-slate-800 font-mono">{formatTime(seconds)}</p>
+              <p className="transform-gpu text-2xl font-bold text-slate-800 font-mono">{formatTime(seconds)}</p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="transform-gpu flex gap-2">
             <button
               onClick={() => setIsPaused(!isPaused)}
               title={isPaused ? "Resume study session" : "Pause study session"}
@@ -188,7 +188,7 @@ const VideoPanel = ({
             <button
               onClick={() => setSeconds(0)}
               title="Reset session timer"
-              className="p-4 bg-white border border-slate-200 text-slate-400 rounded-2xl hover:text-slate-900 hover:border-slate-300 hover:shadow-sm transition-all active:scale-95"
+              className="transform-gpu p-4 bg-white border border-slate-200 text-slate-400 rounded-2xl hover:text-slate-900 hover:border-slate-300 hover:shadow-sm transition-all active:scale-95"
             >
               <RotateCcw size={20} />
             </button>
@@ -249,35 +249,35 @@ const NotesPanel = ({
   };
 
   return (
-    <div className="h-full flex flex-col bg-white rounded-[2.5rem] border border-rose-100 shadow-xl overflow-hidden">
-      <header className="p-8 border-b border-rose-50 flex justify-between items-center shrink-0">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-rose-50 text-rose-500 rounded-2xl">
+    <div className="transform-gpu h-full flex flex-col bg-white rounded-[2.5rem] border border-rose-100 shadow-xl overflow-hidden">
+      <header className="transform-gpu p-8 border-b border-rose-50 flex justify-between items-center shrink-0">
+        <div className="transform-gpu flex items-center gap-4">
+          <div className="transform-gpu p-3 bg-rose-50 text-rose-500 rounded-2xl">
             <Brain size={20} />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-slate-800 tracking-tight">Study Notes</h2>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Auto-saving notes</p>
+            <h2 className="transform-gpu text-lg font-bold text-slate-800 tracking-tight">Study Notes</h2>
+            <p className="transform-gpu text-[10px] font-bold text-slate-400 uppercase tracking-widest">Auto-saving notes</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="transform-gpu flex items-center gap-2">
           <button
             onClick={handleSaveNotes}
             disabled={isSaving}
             title="Save your current notes"
-            className="p-4 bg-slate-900 text-white rounded-2xl hover:bg-rose-600 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50"
+            className="transform-gpu p-4 bg-slate-900 text-white rounded-2xl hover:bg-rose-600 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50"
           >
-            {isSaving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-            <span className="hidden sm:inline text-[9px] font-black uppercase tracking-widest">Save Notes</span>
+            {isSaving ? <Loader2 className="transform-gpu animate-spin" size={18} /> : <Save size={18} />}
+            <span className="transform-gpu hidden sm:inline text-[9px] font-bold uppercase tracking-widest">Save Notes</span>
           </button>
 
           <button
             onClick={handleEndTimer}
             title="Stop timer, save time, and go back to track"
-            className="p-4 bg-rose-600 text-white rounded-2xl hover:bg-rose-700 transition-all active:scale-95 flex items-center gap-2 shadow-lg shadow-rose-200"
+            className="transform-gpu p-4 bg-rose-600 text-white rounded-2xl hover:bg-rose-700 transition-all active:scale-95 flex items-center gap-2 shadow-lg shadow-rose-200"
           >
             <TimerIcon size={18} />
-            <span className="hidden sm:inline text-[9px] font-black uppercase tracking-widest">End Session</span>
+            <span className="transform-gpu hidden sm:inline text-[9px] font-bold uppercase tracking-widest">End Session</span>
           </button>
 
           <button
@@ -289,16 +289,16 @@ const NotesPanel = ({
               });
             }}
             title="Finish this lesson completely"
-            className="p-4 bg-white text-rose-600 border-2 border-rose-100 rounded-2xl hover:bg-rose-50 transition-all active:scale-95 flex items-center gap-2"
+            className="transform-gpu p-4 bg-white text-rose-600 border-2 border-rose-100 rounded-2xl hover:bg-rose-50 transition-all active:scale-95 flex items-center gap-2"
           >
             <CheckCircle size={18} />
-            <span className="hidden sm:inline text-[9px] font-black uppercase tracking-widest">Done</span>
+            <span className="transform-gpu hidden sm:inline text-[9px] font-bold uppercase tracking-widest">Done</span>
           </button>
         </div>
       </header>
-      <div className="flex-1 p-8">
+      <div className="transform-gpu flex-1 p-8">
         <textarea
-          className="w-full h-full bg-slate-50/50 rounded-4xl p-10 font-medium text-slate-700 text-lg focus:outline-none focus:ring-4 focus:ring-rose-50/50 transition-all resize-none border-none placeholder:text-slate-300"
+          className="transform-gpu w-full h-full bg-slate-50/50 rounded-4xl p-10 font-medium text-slate-700 text-lg focus:outline-none focus:ring-4 focus:ring-rose-50/50 transition-all resize-none border-none placeholder:text-slate-300"
           placeholder="Document your insights here..."
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
@@ -395,14 +395,14 @@ export function StudyView() {
 
   if (!unit)
     return (
-      <div className="p-20 text-center text-rose-400 font-black animate-pulse uppercase tracking-widest">
+      <div className="transform-gpu p-20 text-center text-rose-400 font-bold animate-pulse uppercase tracking-widest">
         Opening Study Environment...
       </div>
     );
 
   const globalHeader = (
-    <header className="flex justify-between items-center shrink-0 h-16 px-4 md:px-0">
-      <div className="flex items-center gap-6">
+    <header className="transform-gpu flex justify-between items-center shrink-0 h-16 px-4 md:px-0">
+      <div className="transform-gpu flex items-center gap-6">
         <button
           onClick={async () => {
             const sessionSeconds = seconds - lastLoggedSeconds;
@@ -416,25 +416,25 @@ export function StudyView() {
             router.push(window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')));
           }}
           title="Save session and return to course"
-          className="p-4 bg-white border border-rose-100 rounded-2xl text-slate-400 hover:text-rose-600 hover:border-rose-300 transition-all shadow-sm active:scale-95"
+          className="transform-gpu p-4 bg-white border border-rose-100 rounded-2xl text-slate-400 hover:text-rose-600 hover:border-rose-300 transition-all shadow-sm active:scale-95"
         >
           <ArrowLeft size={20} />
         </button>
-        <div className="hidden md:block">
-          <p className="text-[10px] font-black uppercase tracking-widest text-rose-400 mb-0.5">
+        <div className="transform-gpu hidden md:block">
+          <p className="transform-gpu text-[10px] font-bold uppercase tracking-widest text-rose-400 mb-0.5">
             {activeTrack?.track?.title}
           </p>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight truncate max-w-sm">{unit.title}</h2>
+          <h2 className="transform-gpu text-xl font-bold text-slate-900 tracking-tight truncate max-w-sm">{unit.title}</h2>
         </div>
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="transform-gpu flex items-center gap-6">
         {unit.todayGoalMinutes && (
-          <div className="flex items-center gap-3 bg-amber-50 px-4 py-2 rounded-2xl border border-amber-100 shadow-sm">
-            <Target size={16} className="text-amber-600" />
-            <div className="flex flex-col">
-              <span className="text-[8px] font-black text-amber-400 uppercase tracking-widest">Daily Target</span>
-              <span className="text-[10px] font-black text-amber-700 uppercase tracking-widest">
+          <div className="transform-gpu flex items-center gap-3 bg-amber-50 px-4 py-2 rounded-2xl border border-amber-100 shadow-sm">
+            <Target size={16} className="transform-gpu text-amber-600" />
+            <div className="transform-gpu flex flex-col">
+              <span className="transform-gpu text-[8px] font-bold text-amber-400 uppercase tracking-widest">Daily Target</span>
+              <span className="transform-gpu text-[10px] font-bold text-amber-700 uppercase tracking-widest">
                 {Math.floor((unit.totalWatchedSeconds || 0) / 60)} / {unit.todayGoalMinutes}m
               </span>
             </div>
@@ -442,15 +442,15 @@ export function StudyView() {
         )}
 
         {dashboard?.fatigueDetails && (
-          <div className="hidden lg:flex items-center gap-3 bg-white px-4 py-2 rounded-2xl border border-rose-100 shadow-sm">
+          <div className="transform-gpu hidden lg:flex items-center gap-3 bg-white px-4 py-2 rounded-2xl border border-rose-100 shadow-sm">
             <Activity
               size={16}
               className={dashboard.fatigueDetails.score > 5 ? "text-rose-500 animate-pulse" : "text-emerald-500"}
             />
-            <div className="flex flex-col">
-              <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">System Health</span>
+            <div className="transform-gpu flex flex-col">
+              <span className="transform-gpu text-[8px] font-bold text-slate-400 uppercase tracking-widest">System Health</span>
               <span
-                className={`text-[10px] font-black uppercase tracking-widest ${
+                className={`text-[10px] font-bold uppercase tracking-widest ${
                   dashboard.fatigueDetails.score > 5 ? "text-rose-600" : "text-emerald-600"
                 }`}
               >
@@ -460,19 +460,19 @@ export function StudyView() {
           </div>
         )}
 
-        <div className="flex items-center gap-2">
+        <div className="transform-gpu flex items-center gap-2">
           {showDiscardConfirm ? (
-            <div className="flex items-center gap-3 bg-rose-50 px-4 py-2 rounded-2xl border border-rose-100 animate-in slide-in-from-right-4 duration-300">
-              <span className="text-[10px] font-black text-rose-600 uppercase tracking-widest">Discard session?</span>
+            <div className="transform-gpu flex items-center gap-3 bg-rose-50 px-4 py-2 rounded-2xl border border-rose-100 animate-in slide-in-from-right-4 duration-300">
+              <span className="transform-gpu text-[10px] font-bold text-rose-600 uppercase tracking-widest">Discard session?</span>
               <button 
                 onClick={() => router.push(window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')))}
-                className="text-[10px] font-black text-rose-600 hover:underline uppercase"
+                className="transform-gpu text-[10px] font-bold text-rose-600 hover:underline uppercase"
               >
                 Yes
               </button>
               <button 
                 onClick={() => setShowDiscardConfirm(false)}
-                className="text-[10px] font-black text-slate-400 hover:text-slate-600 uppercase"
+                className="transform-gpu text-[10px] font-bold text-slate-400 hover:text-slate-600 uppercase"
               >
                 No
               </button>
@@ -481,7 +481,7 @@ export function StudyView() {
             <button
               onClick={() => setShowDiscardConfirm(true)}
               title="Exit without saving session"
-              className="px-4 py-2 bg-white text-slate-400 border border-slate-100 rounded-2xl hover:text-rose-600 hover:bg-rose-50 transition-all text-[10px] font-black uppercase tracking-widest"
+              className="transform-gpu px-4 py-2 bg-white text-slate-400 border border-slate-100 rounded-2xl hover:text-rose-600 hover:bg-rose-50 transition-all text-[10px] font-bold uppercase tracking-widest"
             >
               Discard
             </button>
@@ -490,14 +490,14 @@ export function StudyView() {
           <button
             onClick={() => setIsDeepWork(true)}
             title="Hide all distractions for deep focus"
-            className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-2xl hover:bg-slate-800 transition-all shadow-lg active:scale-95"
+            className="transform-gpu flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-2xl hover:bg-slate-800 transition-all shadow-lg active:scale-95"
           >
-            <Zap size={16} className="text-amber-400" />
-            <span className="text-[10px] font-black uppercase tracking-widest">Deep Work</span>
+            <Zap size={16} className="transform-gpu text-amber-400" />
+            <span className="transform-gpu text-[10px] font-bold uppercase tracking-widest">Deep Work</span>
           </button>
         </div>
 
-        <div className="flex items-center gap-3 bg-white p-2 rounded-2xl border border-rose-100 shadow-sm">
+        <div className="transform-gpu flex items-center gap-3 bg-white p-2 rounded-2xl border border-rose-100 shadow-sm">
           <button
             onClick={() => setLayout("SPLIT")}
             title="Video and notes side-by-side"
@@ -519,11 +519,11 @@ export function StudyView() {
           >
             <Brain size={18} />
           </button>
-          <div className="w-px h-6 bg-rose-100 mx-1" />
+          <div className="transform-gpu w-px h-6 bg-rose-100 mx-1" />
           <button 
             onClick={() => setTranspose(!transpose)} 
             title="Swap side panels"
-            className="p-3 text-slate-400 hover:bg-rose-50 rounded-xl transition-all"
+            className="transform-gpu p-3 text-slate-400 hover:bg-rose-50 rounded-xl transition-all"
           >
             {transpose ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
           </button>
@@ -546,10 +546,10 @@ export function StudyView() {
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           onClick={() => setIsDeepWork(false)}
-          className="absolute top-6 right-6 z-[9999] flex items-center gap-3 px-6 py-3 bg-slate-900 hover:bg-slate-800 shadow-xl border border-slate-700 rounded-full text-white transition-all group"
+          className="transform-gpu absolute top-6 right-6 z-[9999] flex items-center gap-3 px-6 py-3 bg-slate-900 hover:bg-slate-800 shadow-xl border border-slate-700 rounded-full text-white transition-all group"
         >
-          <Zap size={16} className="text-amber-400 group-hover:text-amber-300" />
-          <span className="text-[10px] font-black uppercase tracking-widest">Exit Focus</span>
+          <Zap size={16} className="transform-gpu text-amber-400 group-hover:text-amber-300" />
+          <span className="transform-gpu text-[10px] font-bold uppercase tracking-widest">Exit Focus</span>
         </motion.button>
       )}
 
@@ -563,7 +563,7 @@ export function StudyView() {
               exit={{ opacity: 0, scale: 0.98 }}
               className={`w-full flex h-full gap-6 ${transpose ? "flex-row-reverse" : "flex-row"}`}
             >
-              <div className="w-[45%] h-full">
+              <div className="transform-gpu w-[45%] h-full">
                 <VideoPanel
                   unit={unit}
                   youtubeId={youtubeId}
@@ -577,7 +577,7 @@ export function StudyView() {
                   watchPercentage={percentage}
                 />
               </div>
-              <div className="flex-1 h-full">
+              <div className="transform-gpu flex-1 h-full">
                 <NotesPanel
                   unit={unit}
                   notes={notes}
@@ -602,8 +602,8 @@ export function StudyView() {
               exit={{ opacity: 0, scale: 0.98 }}
               className={`w-full flex h-full gap-6 ${transpose ? "flex-row-reverse" : "flex-row"}`}
             >
-              <div className="w-[25%] h-full flex flex-col gap-6">
-                <div className="flex-1">
+              <div className="transform-gpu w-[25%] h-full flex flex-col gap-6">
+                <div className="transform-gpu flex-1">
                   <VideoPanel
                     unit={unit}
                     youtubeId={youtubeId}
@@ -618,7 +618,7 @@ export function StudyView() {
                   />
                 </div>
               </div>
-              <div className="flex-1 h-full">
+              <div className="transform-gpu flex-1 h-full">
                 <NotesPanel
                   unit={unit}
                   notes={notes}
@@ -636,21 +636,21 @@ export function StudyView() {
           )}
 
           {layout === "FULL_NOTES" && (
-            <motion.div key="full_notes" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="w-full h-full flex gap-6">
-              <div className="w-20 flex flex-col gap-4">
+            <motion.div key="full_notes" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="transform-gpu w-full h-full flex gap-6">
+              <div className="transform-gpu w-20 flex flex-col gap-4">
                 <button
                   onClick={() => setIsPaused(!isPaused)}
                   className={`w-full aspect-square rounded-3xl flex items-center justify-center transition-all ${isPaused ? "bg-rose-600 text-white shadow-lg" : "bg-white text-slate-400 border border-slate-200 shadow-sm hover:text-slate-600 hover:border-slate-300"}`}
                 >
                   {isPaused ? <Play size={24} fill="currentColor" /> : <Pause size={24} fill="currentColor" />}
                 </button>
-                <div className="flex-1 bg-white border border-slate-200 shadow-sm rounded-3xl flex flex-col items-center justify-center gap-1 py-4">
-                  <span className="text-[8px] font-black text-slate-300 uppercase vertical-text tracking-widest mb-4">Timer</span>
-                  <span className="text-xl font-black text-rose-500 font-mono rotate-90">{Math.floor(seconds / 60).toString().padStart(2, "0")}</span>
-                  <span className="text-xl font-black text-slate-800 font-mono rotate-90">{(seconds % 60).toString().padStart(2, "0")}</span>
+                <div className="transform-gpu flex-1 bg-white border border-slate-200 shadow-sm rounded-3xl flex flex-col items-center justify-center gap-1 py-4">
+                  <span className="transform-gpu text-[8px] font-bold text-slate-300 uppercase vertical-text tracking-widest mb-4">Timer</span>
+                  <span className="transform-gpu text-xl font-bold text-rose-500 font-mono rotate-90">{Math.floor(seconds / 60).toString().padStart(2, "0")}</span>
+                  <span className="transform-gpu text-xl font-bold text-slate-800 font-mono rotate-90">{(seconds % 60).toString().padStart(2, "0")}</span>
                 </div>
               </div>
-              <div className="flex-1 h-full">
+              <div className="transform-gpu flex-1 h-full">
                 <NotesPanel
                   unit={unit}
                   notes={notes}

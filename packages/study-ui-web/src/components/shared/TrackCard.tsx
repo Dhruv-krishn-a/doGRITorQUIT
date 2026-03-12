@@ -148,85 +148,85 @@ export function TrackCard({ track, onDelete }: TrackCardProps) {
         <Trash2 size={16} strokeWidth={2.5} className={isDeleting ? 'animate-pulse' : ''} />
       </button>
       
-      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4 sm:mb-5 relative z-10 pr-8">
+      <div className="transform-gpu flex flex-wrap items-center gap-2 sm:gap-3 mb-4 sm:mb-5 relative z-10 pr-8">
         {/* UI Fix: Changed from rounded-lg to rounded-full for pill shape */}
-        <span className={`text-[8px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest border shadow-sm flex items-center gap-1.5 ${theme.badgeBg}`}>
+        <span className={`text-[8px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest border shadow-sm flex items-center gap-1.5 ${theme.badgeBg}`}>
           <theme.Icon size={10} /> {track.type.toLowerCase()}
         </span>
         
         {isProject && isAtRisk && (
-          <span className="text-[8px] font-black bg-red-50 text-red-600 px-3 py-1.5 rounded-full uppercase tracking-widest border border-red-200 shadow-sm flex items-center gap-1.5 animate-pulse">
+          <span className="transform-gpu text-[8px] font-bold bg-red-50 text-red-600 px-3 py-1.5 rounded-full uppercase tracking-widest border border-red-200 shadow-sm flex items-center gap-1.5 animate-pulse">
             <AlertTriangle size={10} /> At Risk
           </span>
         )}
 
         {!isProject && track.targetDate && (
-          <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
-            <Calendar size={10} className="text-slate-400"/> 
-            <span className="text-[7px] sm:text-[8px] font-black text-slate-500 uppercase tracking-widest">
+          <div className="transform-gpu flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
+            <Calendar size={10} className="transform-gpu text-slate-400"/> 
+            <span className="transform-gpu text-[7px] sm:text-[8px] font-bold text-slate-500 uppercase tracking-widest">
               Sync: {new Date(track.targetDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
             </span>
           </div>
         )}
       </div>
       
-      <h3 className={`text-lg sm:text-xl font-black text-slate-900 mb-5 sm:mb-6 leading-tight line-clamp-2 relative z-10 tracking-tighter uppercase transition-colors ${theme.titleHover}`}>
+      <h3 className={`text-lg sm:text-xl font-bold text-slate-900 mb-5 sm:mb-6 leading-tight line-clamp-2 relative z-10 tracking-tighter uppercase transition-colors ${theme.titleHover}`}>
         {track.title}
       </h3>
 
       {isProject && (
-        <div className="flex items-center justify-between mb-5 sm:mb-6 relative z-10 group-hover:-translate-y-1 transition-transform duration-500 gap-2">
-          <div className="flex flex-col min-w-0 flex-1">
-            <span className="text-[7px] sm:text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1 mb-1">
-              <Zap size={10} className="text-emerald-500 shrink-0" /> Phase
+        <div className="transform-gpu flex items-center justify-between mb-5 sm:mb-6 relative z-10 group-hover:-translate-y-1 transition-transform duration-500 gap-2">
+          <div className="transform-gpu flex flex-col min-w-0 flex-1">
+            <span className="transform-gpu text-[7px] sm:text-[8px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1 mb-1">
+              <Zap size={10} className="transform-gpu text-emerald-500 shrink-0" /> Phase
             </span>
-            <span className="text-xs sm:text-sm font-bold text-slate-700 truncate">{activePhase}</span>
+            <span className="transform-gpu text-xs sm:text-sm font-bold text-slate-700 truncate">{activePhase}</span>
           </div>
-          <div className="w-px h-8 bg-slate-200 shrink-0" />
-          <div className="flex flex-col text-right min-w-0 flex-1">
-            <span className="text-[7px] sm:text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center justify-end gap-1 mb-1">
-              <Target size={10} className="text-teal-500 shrink-0" /> Milestone
+          <div className="transform-gpu w-px h-8 bg-slate-200 shrink-0" />
+          <div className="transform-gpu flex flex-col text-right min-w-0 flex-1">
+            <span className="transform-gpu text-[7px] sm:text-[8px] font-bold text-slate-400 uppercase tracking-widest flex items-center justify-end gap-1 mb-1">
+              <Target size={10} className="transform-gpu text-teal-500 shrink-0" /> Milestone
             </span>
-            <span className="text-xs sm:text-sm font-bold text-slate-700 truncate">{nextMilestone}</span>
+            <span className="transform-gpu text-xs sm:text-sm font-bold text-slate-700 truncate">{nextMilestone}</span>
           </div>
         </div>
       )}
       
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8 relative z-10 group-hover:-translate-y-1 transition-transform duration-500 delay-75">
+      <div className="transform-gpu grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8 relative z-10 group-hover:-translate-y-1 transition-transform duration-500 delay-75">
         {/* UI Fix: Smoothed corners using rounded-3xl inside the main rounded-[2.5rem] card */}
         <div className={`bg-white/80 p-3 sm:p-4 rounded-3xl border border-slate-100 shadow-sm transition-colors duration-300 min-w-0 ${theme.statHover}`}>
-          <div className="flex items-center gap-1.5 sm:gap-2 text-slate-400 mb-1">
+          <div className="transform-gpu flex items-center gap-1.5 sm:gap-2 text-slate-400 mb-1">
             <theme.Stat1Icon size={12} className={`${theme.iconPrimary} shrink-0`} />
-            <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest truncate">{theme.label1}</span>
+            <span className="transform-gpu text-[7px] sm:text-[8px] font-bold uppercase tracking-widest truncate">{theme.label1}</span>
           </div>
-          <p className="text-base sm:text-xl font-black text-slate-800 tracking-tighter truncate">{formatMins(studyTimeMins)}</p>
+          <p className="transform-gpu text-base sm:text-xl font-bold text-slate-800 tracking-tighter truncate">{formatMins(studyTimeMins)}</p>
         </div>
         <div className={`bg-white/80 p-3 sm:p-4 rounded-3xl border border-slate-100 shadow-sm transition-colors duration-300 min-w-0 ${theme.statHover}`}>
-          <div className="flex items-center gap-1.5 sm:gap-2 text-slate-400 mb-1">
+          <div className="transform-gpu flex items-center gap-1.5 sm:gap-2 text-slate-400 mb-1">
             <theme.Stat2Icon size={12} className={`${theme.iconPrimary} shrink-0`} />
-            <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest truncate">{theme.label2}</span>
+            <span className="transform-gpu text-[7px] sm:text-[8px] font-bold uppercase tracking-widest truncate">{theme.label2}</span>
           </div>
-          <p className="text-base sm:text-xl font-black text-slate-800 tracking-tighter truncate">
+          <p className="transform-gpu text-base sm:text-xl font-bold text-slate-800 tracking-tighter truncate">
             {formatMins(isProject ? remainingMins : totalDuration)}
           </p>
         </div>
       </div>
 
-      <div className="mt-auto space-y-5 sm:space-y-6 relative z-10">
-        <div className="space-y-2.5 sm:space-y-3 group-hover:-translate-y-1 transition-transform duration-500 delay-150">
-          <div className="flex justify-between items-end">
-            <div className="flex items-center gap-1.5 text-slate-500">
+      <div className="transform-gpu mt-auto space-y-5 sm:space-y-6 relative z-10">
+        <div className="transform-gpu space-y-2.5 sm:space-y-3 group-hover:-translate-y-1 transition-transform duration-500 delay-150">
+          <div className="transform-gpu flex justify-between items-end">
+            <div className="transform-gpu flex items-center gap-1.5 text-slate-500">
               <Sparkles size={12} className={theme.iconPrimary} />
-              <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest">
+              <span className="transform-gpu text-[7px] sm:text-[8px] font-bold uppercase tracking-widest">
                 {isProject ? 'Completion' : isYouTube ? 'Progress' : 'Optimization'}
               </span>
             </div>
-            <div className="flex items-baseline gap-0.5">
-              <span className="text-lg sm:text-xl font-black text-slate-800 tracking-tighter leading-none">{Math.round(track.progressPercentage)}</span>
-              <span className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase">%</span>
+            <div className="transform-gpu flex items-baseline gap-0.5">
+              <span className="transform-gpu text-lg sm:text-xl font-bold text-slate-800 tracking-tighter leading-none">{Math.round(track.progressPercentage)}</span>
+              <span className="transform-gpu text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase">%</span>
             </div>
           </div>
-          <div className="h-2 bg-white rounded-full overflow-hidden p-0.5 border border-slate-200 shadow-inner">
+          <div className="transform-gpu h-2 bg-white rounded-full overflow-hidden p-0.5 border border-slate-200 shadow-inner">
             <motion.div 
               initial={{ width: 0 }}
               animate={{ width: `${track.progressPercentage}%` }}
@@ -238,11 +238,11 @@ export function TrackCard({ track, onDelete }: TrackCardProps) {
 
         {/* Bottom vector bar */}
         <div className={`relative w-full bg-slate-50/50 rounded-full border border-slate-200 flex items-center p-1 sm:p-1.5 overflow-hidden transition-all duration-300 group-hover:bg-rose-50 group-hover:border-rose-200`}>
-          <span className="relative z-10 pl-3 sm:pl-4 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-rose-600 transition-colors duration-300">
+          <span className="transform-gpu relative z-10 pl-3 sm:pl-4 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 group-hover:text-rose-600 transition-colors duration-300">
             Access Vector
           </span>
-          <div className="relative z-10 ml-auto w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full flex items-center justify-center text-slate-400 border border-slate-100 shadow-sm group-hover:bg-rose-500 group-hover:text-white group-hover:border-rose-500 transition-all duration-300">
-             <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+          <div className="transform-gpu relative z-10 ml-auto w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full flex items-center justify-center text-slate-400 border border-slate-100 shadow-sm group-hover:bg-rose-500 group-hover:text-white group-hover:border-rose-500 transition-all duration-300">
+             <ArrowRight size={14} className="transform-gpu group-hover:translate-x-0.5 transition-transform" />
           </div>
         </div>
       </div>

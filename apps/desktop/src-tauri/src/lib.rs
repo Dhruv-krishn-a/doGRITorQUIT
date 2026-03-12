@@ -16,12 +16,35 @@ fn notify(app: tauri::AppHandle, title: String, body: String) {
         .unwrap();
 }
 
+#[tauri::command]
+async fn fetch_entitlements(base_url: String, token: String) -> Result<serde_json::Value, String> {
+    let client = reqwest::Client::new();
+    let url = format!("{}/api/entitlements", base_url);
+    
+    let response = client
+        .get(&url)
+        .header("Authorization", format!("Bearer {}", token))
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+        
+    if !response.status().is_success() {
+        return Err(format!("API Error: {}", response.status()));
+    }
+    
+    let data: serde_json::Value = response.json().await.map_err(|e| e.to_string())?;
+    Ok(data)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(init())
         .plugin(tauri_plugin_notification::init())
-        .invoke_handler(tauri::generate_handler![notify])
+        .plugin(tauri_plugin_deep_link::init())
+        .plugin(tauri_plugin_store::Builder::default().build())
+        .plugin(tauri_plugin_sql::Builder::default().build())
+        .invoke_handler(tauri::generate_handler![notify, fetch_entitlements])
         .setup(|app| {
             let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
             let show_i = MenuItem::with_id(app, "show", "Show", true, None::<&str>)?;

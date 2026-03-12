@@ -13,7 +13,7 @@ export default function RoleSelect({ defaultValue, name }: Props) {
     <select
       name={name}
       defaultValue={defaultValue}
-      className="border border-slate-300 rounded text-sm px-2 py-1 cursor-pointer bg-white hover:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+      className="transform-gpu bg-white border border-slate-200 rounded-xl text-[10px] font-bold uppercase tracking-widest px-3 py-2 cursor-pointer hover:border-rose-300 focus:outline-none focus:ring-4 focus:ring-rose-50 transition-all shadow-sm"
       onChange={(e) => e.target.form?.requestSubmit()}
     >
       <option value="user">User</option>

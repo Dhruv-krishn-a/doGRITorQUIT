@@ -11,6 +11,12 @@ The `packages/` folder is the foundation of the project's monorepo architecture.
 - **`eslint-config/`**: Provides shared ESLint configurations for the project's applications and internal packages.
 - **`typescript-config/`**: Contains shared TypeScript configurations to maintain consistent build settings across the monorepo.
 - **`ui/`**: A library of reusable UI components and styling (Tailwind CSS) for the project's frontend applications.
+- **`habits-core/`**: Core logic and React contexts for the habit tracking and daily checklist features.
+- **`habits-ui-web/`**: Web-specific UI components for habits, including the daily checklist interface.
+- **`study-core/`**: Core logic for the study tracking, course management, and "Upgrade OS" features.
+- **`study-ui-web/`**: Web-specific UI components for the study dashboard and track views.
+- **`dashboard-core/`**: Shared logic for the main dashboard and analytics calculations.
+- **`dashboard-ui-web/`**: Web-specific UI components for the main dashboard layout and widgets.
 
 ## Interactions and Communication
 

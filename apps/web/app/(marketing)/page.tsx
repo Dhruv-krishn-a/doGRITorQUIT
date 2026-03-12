@@ -11,33 +11,33 @@ import FAQ from '../components/landing/FAQ';
 export default function Home() {
   return (
     <SmoothScroll>
-      <div className="font-sans text-slate-900 selection:bg-purple-200">
+      <div className="transform-gpu font-sans text-slate-900 selection:bg-purple-200">
         
         {/* Main Content Layer - Slides OVER the footer */}
         {/* Added bottom margin so you can scroll enough to reveal the footer */}
-        <main className="relative z-10 bg-white shadow-2xl shadow-slate-900/20 mb-125">
+        <main className="transform-gpu relative z-10 bg-white shadow-2xl shadow-slate-900/20 mb-125">
           
-          <div className="relative z-10 bg-[#FDF2F8]">
+          <div className="transform-gpu relative z-10 bg-[#FDF2F8]">
             <Hero />
           </div>
 
-          <div className="relative z-20 bg-white">
+          <div className="transform-gpu relative z-20 bg-white">
             <AppDemo />
           </div>
 
-          <div className="relative z-30 bg-white">
+          <div className="transform-gpu relative z-30 bg-white">
             <Features />
           </div>
 
-          <div className="relative z-40 bg-[#F8FAFC]">
+          <div className="transform-gpu relative z-40 bg-[#F8FAFC]">
             <Roadmap />
           </div>
 
-          <div className="relative z-50 bg-white">
+          <div className="transform-gpu relative z-50 bg-white">
             <Pricing />
           </div>
 
-          <div className="relative z-50 bg-[#F8FAFC]">
+          <div className="transform-gpu relative z-50 bg-[#F8FAFC]">
             <FAQ />
           </div>
           

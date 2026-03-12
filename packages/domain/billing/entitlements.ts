@@ -2,6 +2,45 @@ import { prisma } from "@planner/db";
 
 export type FeatureMap = Record<string, any>;
 
+/**
+ * ✅ Centralized Feature Keys
+ * Prevents "Magic String" bugs between CMS and Web
+ */
+export enum PlanFeature {
+  ACCESS_PLANS = "ACCESS_PLANS",
+  ACCESS_TODAY = "ACCESS_TODAY",
+  ACCESS_HABITS = "ACCESS_HABITS",
+  ACCESS_STUDY = "ACCESS_STUDY",
+  ACCESS_STUDY_YOUTUBE = "ACCESS_STUDY_YOUTUBE",
+  ACCESS_STUDY_COURSE = "ACCESS_STUDY_COURSE",
+  ACCESS_STUDY_PROJECT = "ACCESS_STUDY_PROJECT",
+  ACCESS_ANALYTICS = "ACCESS_ANALYTICS",
+  
+  // New Granular Toggles (C & D)
+  ACCESS_SPACED_REPETITION = "ACCESS_SPACED_REPETITION",
+  ACCESS_WEEKLY_REFLECTION = "ACCESS_WEEKLY_REFLECTION",
+  ACCESS_DAILY_JOURNAL = "ACCESS_DAILY_JOURNAL",
+  ACCESS_ADVANCED_ANALYTICS = "ACCESS_ADVANCED_ANALYTICS",
+  
+  AI_GEN_LIMIT = "AI_GEN_LIMIT",
+  MAX_PLANS = "MAX_PLANS",
+  MAX_PLAN_DAYS = "MAX_PLAN_DAYS",
+  MAX_STUDY_YOUTUBE = "MAX_STUDY_YOUTUBE",
+  MAX_STUDY_COURSES = "MAX_STUDY_COURSES",
+  MAX_STUDY_PROJECTS = "MAX_STUDY_PROJECTS",
+  
+  // New Limits (C & D)
+  MAX_VIDEOS_PER_PLAYLIST = "MAX_VIDEOS_PER_PLAYLIST",
+  MAX_HABITS_TRACKED = "MAX_HABITS_TRACKED",
+}
+
+export interface OfflineConfig {
+  enabled: boolean;
+  localDbAllowed: boolean;
+  maxDurationHours: number;
+  tokenExpiryHours: number;
+}
+
 export interface UserEntitlements {
   userId: string;
   tierFallback?: string;
@@ -11,6 +50,7 @@ export interface UserEntitlements {
     name: string;
   } | null;
   features: FeatureMap;
+  offlineConfig: OfflineConfig;
   productName: string;
   productKey: string;
   user: any;
@@ -43,6 +83,12 @@ export async function fetchUserEntitlements(userId: string): Promise<UserEntitle
       productName: "Free Tier",
       productKey: "FREE",
       features: {},
+      offlineConfig: {
+        enabled: false,
+        localDbAllowed: false,
+        maxDurationHours: 0,
+        tokenExpiryHours: 0
+      },
       user: null,
     };
   }
@@ -80,8 +126,86 @@ export async function fetchUserEntitlements(userId: string): Promise<UserEntitle
     productName: product?.name ? String(product.name) : "Free Tier",
     productKey,
     features,
+    offlineConfig: {
+      enabled: product?.offlineEnabled ?? false,
+      localDbAllowed: product?.localDbAllowed ?? false,
+      maxDurationHours: product?.offlineMaxDuration ?? 24,
+      tokenExpiryHours: product?.tokenExpiryDuration ?? 48
+    },
     user: user,
   };
+}
+
+import { createHmac } from "crypto";
+
+export async function generateOfflineToken(userId: string, deviceId: string) {
+  const entitlements = await fetchUserEntitlements(userId);
+  if (!entitlements.offlineConfig.enabled) {
+    throw new Error("OFFLINE_ACCESS_DISABLED");
+  }
+
+  const expiry = new Date();
+  expiry.setHours(expiry.getHours() + entitlements.offlineConfig.tokenExpiryHours);
+
+  const payload = {
+    uid: userId,
+    pid: entitlements.product?.id,
+    did: deviceId,
+    exp: expiry.getTime(),
+    dur: entitlements.offlineConfig.maxDurationHours,
+    db: entitlements.offlineConfig.localDbAllowed
+  };
+
+  const secret = process.env.OFFLINE_TOKEN_SECRET || "fallback-secret-for-dev";
+  const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
+  const body = Buffer.from(JSON.stringify(payload)).toString("base64url");
+  
+  const signature = createHmac("sha256", secret)
+    .update(`${header}.${body}`)
+    .digest("base64url");
+
+  return `${header}.${body}.${signature}`;
+}
+
+/**
+ * Server-side check for feature access.
+ * Throws an error if the user does not have access.
+ */
+export async function checkFeatureAccess(userId: string, feature: PlanFeature) {
+  const ent = await fetchUserEntitlements(userId);
+  const isFree = ent.productKey === 'FREE';
+  const feat = ent.features[feature];
+
+  let hasAccess = false;
+  
+  if (feat !== undefined) {
+    if (feat === true) hasAccess = true;
+    else if (typeof feat === 'object' && feat.enabled !== false) hasAccess = true;
+  } else {
+    // If missing from DB, Pro users get access by default, Free users don't
+    hasAccess = !isFree;
+  }
+
+  if (!hasAccess) {
+    throw new Error(`FEATURE_LOCKED: ${feature}`);
+  }
+
+  return ent;
+}
+
+/**
+ * Server-side check for numeric limits.
+ */
+export async function getFeatureLimit(userId: string, feature: PlanFeature, fallbackFree: number, fallbackPro: number): Promise<number> {
+  const ent = await fetchUserEntitlements(userId);
+  const feat = ent.features[feature];
+  
+  if (feat !== undefined) {
+    const val = typeof feat === 'object' ? (feat.value ?? feat.limit) : feat;
+    return Number(val);
+  }
+  
+  return ent.productKey === 'FREE' ? fallbackFree : fallbackPro;
 }
 
 export async function getPagePermissions(userId: string) {
@@ -104,20 +228,20 @@ export async function getPagePermissions(userId: string) {
     return true; 
   };
 
-  const hasStudyAccess = check("ACCESS_STUDY");
+  const hasStudyAccess = check(PlanFeature.ACCESS_STUDY);
 
   return {
     canViewDashboard: true,
     canViewSubscription: true,
-    canViewPlans: check("ACCESS_PLANS"),
-    canViewToday: check("ACCESS_TODAY"),
-    canViewTasks: check("ACCESS_TASKS") || check("ACCESS_TODAY"), // Backward compatibility
-    canViewChecklist: check("ACCESS_HABITS"),
+    canViewPlans: check(PlanFeature.ACCESS_PLANS),
+    canViewToday: check(PlanFeature.ACCESS_TODAY),
+    canViewTasks: check(PlanFeature.ACCESS_TODAY), // Tasks are part of Today view
+    canViewChecklist: check(PlanFeature.ACCESS_HABITS),
     canViewStudy: hasStudyAccess, 
-    canViewYouTube: hasStudyAccess && check("ACCESS_STUDY_YOUTUBE"),
-    canViewCourse: hasStudyAccess && check("ACCESS_STUDY_COURSE"),
-    canViewProject: hasStudyAccess && check("ACCESS_STUDY_PROJECT"),
-    canViewAnalytics: check("ACCESS_ANALYTICS"),
+    canViewYouTube: hasStudyAccess && check(PlanFeature.ACCESS_STUDY_YOUTUBE),
+    canViewCourse: hasStudyAccess && check(PlanFeature.ACCESS_STUDY_COURSE),
+    canViewProject: hasStudyAccess && check(PlanFeature.ACCESS_STUDY_PROJECT),
+    canViewAnalytics: check(PlanFeature.ACCESS_ANALYTICS),
   };
 }
 
@@ -133,7 +257,7 @@ export async function getActiveUserSubscription(userId: string) {
 
 export async function assertPlanCreationAllowed(userId: string) {
   const ent = await fetchUserEntitlements(userId);
-  const maxPlans = Number(ent.features['MAX_PLANS']?.value ?? (ent.productKey === 'FREE' ? 1 : 100));
+  const maxPlans = Number(ent.features[PlanFeature.MAX_PLANS]?.value ?? (ent.productKey === 'FREE' ? 1 : 100));
 
   const currentCount = await prisma.plan.count({
     where: { userId, isArchived: false }
@@ -147,12 +271,13 @@ export async function assertPlanCreationAllowed(userId: string) {
 export async function assertTrackCreationAllowed(userId: string, type: 'PLAYLIST' | 'COURSE' | 'PROJECT') {
   const ent = await fetchUserEntitlements(userId);
   
-  let limitKey = '';
+  let limitKey: PlanFeature;
   let label = '';
   
-  if (type === 'PLAYLIST') { limitKey = 'MAX_STUDY_YOUTUBE'; label = 'YouTube Playlists'; }
-  else if (type === 'COURSE') { limitKey = 'MAX_STUDY_COURSES'; label = 'Courses'; }
-  else if (type === 'PROJECT') { limitKey = 'MAX_STUDY_PROJECTS'; label = 'Projects'; }
+  if (type === 'PLAYLIST') { limitKey = PlanFeature.MAX_STUDY_YOUTUBE; label = 'YouTube Playlists'; }
+  else if (type === 'COURSE') { limitKey = PlanFeature.MAX_STUDY_COURSES; label = 'Courses'; }
+  else if (type === 'PROJECT') { limitKey = PlanFeature.MAX_STUDY_PROJECTS; label = 'Projects'; }
+  else { return; } // Should not happen
   
   const limit = Number(ent.features[limitKey]?.value ?? (ent.productKey === 'FREE' ? 1 : 100));
   
@@ -167,7 +292,7 @@ export async function assertTrackCreationAllowed(userId: string, type: 'PLAYLIST
 
 export async function getMaxPlanDaysForUser(userId: string): Promise<number> {
   const ent = await fetchUserEntitlements(userId);
-  const featureVal = ent.features['MAX_PLAN_DAYS'];
+  const featureVal = ent.features[PlanFeature.MAX_PLAN_DAYS];
   
   if (featureVal) {
     const val = typeof featureVal === 'object' ? featureVal.value : featureVal;
@@ -212,7 +337,7 @@ export async function getAIUsageStats(userId: string) {
   // 2. Check for Plan-Specific Limit (Database)
   // This value comes from the CMS (productFeatures table)
   let limit = 0; 
-  const limitFeature = ent.features['AI_GEN_LIMIT'];
+  const limitFeature = ent.features[PlanFeature.AI_GEN_LIMIT];
   
   if (limitFeature) {
      // Handle cases where value is stored as raw number OR as JSON object { value: 50 }
@@ -220,8 +345,6 @@ export async function getAIUsageStats(userId: string) {
      limit = Number(val);
   } else {
      // ✅ Fallback only if strictly missing from DB
-     // If you deleted the key from the Free plan, this will run.
-     // Defaulting to 5 as a safe 'starter' limit if nothing is configured.
      limit = 5; 
   }
 

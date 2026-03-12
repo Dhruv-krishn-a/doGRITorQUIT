@@ -40,14 +40,30 @@ This document outlines the changes made to the project structure, dependencies, 
   - Added missing `"types": "index.ts"` to `packages/api/package.json`.
   - Added `"exports"` fields to `@planner/study-core` and `@planner/study-ui-web` `package.json` files. This ensures robust module resolution for modern bundlers and Node.js.
 
-## Updated Summary of Modified Files
+## 6. Study Core Extraction & Consistency (Final Phase)
+- **StudyProvider Refactoring:**
+  - Refactored `StudyProvider` in `@planner/study-core` to use `studyApi` for all network calls (`logProgress`, `saveNotes`, `saveWeeklyReflection`, `addUnit`).
+  - **Reason:** To ensure a single source of truth for API interactions and improve maintainability by centralizing request logic.
+- **Monorepo-wide TypeScript Consistency:**
+  - Created missing `tsconfig.json` files for `@planner/api`, `@planner/domain`, and `@planner/config`.
+  - Added `@repo/typescript-config` as a `devDependency` to these packages and updated them to extend the base configuration.
+  - **Reason:** To fix build failures where `tsc` was incorrectly checking files outside the package scope (e.g. `apps/cms` or `apps/web`) due to lack of local configuration. This ensures that `turbo run build` can accurately perform type checking for each package in isolation.
+- **Data Migration Validation:**
+  - Verified the `backfill-study-to-tracks.ts` script via a dry-run, confirming successful migration logic from the old `StudyPlaylist` system to the new `Track`/`Unit` architecture.
+
+## Final Summary of Modified Files
 - `apps/cms/package.json`
 - `apps/desktop/package.json`
 - `apps/web/package.json`
 - `packages/api/package.json`
+- `packages/api/tsconfig.json`
 - `packages/config/package.json`
+- `packages/config/tsconfig.json`
 - `packages/domain/package.json`
+- `packages/domain/tsconfig.json`
 - `packages/study-core/package.json`
 - `packages/study-core/tsconfig.json`
+- `packages/study-core/src/context/StudyContext.tsx`
 - `packages/study-ui-web/package.json`
 - `packages/ui/package.json`
+- `changes.md`

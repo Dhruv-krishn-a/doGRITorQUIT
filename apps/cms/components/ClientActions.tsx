@@ -8,10 +8,12 @@ import { Trash2 } from "lucide-react"; // Assuming you have lucide-react, or use
 // --- DELETE BUTTON WITH MODAL ---
 export function DeleteWithConfirm({ 
   action, 
-  className 
+  className,
+  label = "Delete Tier"
 }: { 
   action: () => Promise<void>, 
-  className?: string 
+  className?: string,
+  label?: string
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -31,16 +33,16 @@ export function DeleteWithConfirm({
         className={className}
         type="button"
       >
-        {isPending ? "Deleting..." : "Delete Plan"}
+        {isPending ? "Terminating..." : label}
       </button>
 
       <ConfirmModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         onConfirm={handleConfirm}
-        title="Delete Subscription Plan?"
-        description="This action cannot be undone. This plan will be permanently removed from the system."
-        confirmText="Delete Plan"
+        title="Confirm Termination?"
+        description="This action cannot be undone. This tier will be permanently removed from the system."
+        confirmText="Confirm Delete"
         isDestructive={true}
         isLoading={isPending}
       />
@@ -59,9 +61,6 @@ export function ToggleWithConfirm({
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  // We optimistically toggle the UI while the modal is open if you prefer, 
-  // but for safety, we usually wait for confirmation.
-  
   const handleConfirm = () => {
     startTransition(async () => {
       await action();
@@ -69,8 +68,6 @@ export function ToggleWithConfirm({
     });
   };
 
-  // Only show confirmation when disabling a feature (often more destructive)
-  // OR show it for both. Let's do both for safety as requested.
   const handleClick = () => {
     setIsOpen(true);
   };
@@ -83,14 +80,14 @@ export function ToggleWithConfirm({
         onClick={handleClick}
         disabled={isPending}
         type="button"
-        className={`w-11 h-6 rounded-full transition-colors relative focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-          isEnabled ? "bg-green-500" : "bg-slate-300"
-        } ${isPending ? "opacity-50 cursor-wait" : ""}`}
+        className={`relative w-12 h-6 rounded-full transition-all duration-300 flex items-center px-1 ${
+          isEnabled ? "bg-slate-900" : "bg-slate-200"
+        } ${isPending ? "opacity-50 cursor-wait" : "active:scale-95"}`}
         aria-pressed={isEnabled}
       >
         <div
-          className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm transition-all transform ${
-            isEnabled ? "translate-x-6" : "translate-x-1"
+          className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-all duration-300 ${
+            isEnabled ? "translate-x-6" : "translate-x-0"
           }`}
         />
       </button>
@@ -99,10 +96,10 @@ export function ToggleWithConfirm({
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         onConfirm={handleConfirm}
-        title={`Confirm ${verb} Feature`}
-        description={`Are you sure you want to ${verb} this feature? This will immediately affect all users on this plan.`}
+        title={`Confirm Change`}
+        description={`Are you sure you want to ${verb} this feature? This will immediately affect all users on this tier.`}
         confirmText={isEnabled ? "Disable" : "Enable"}
-        isDestructive={isEnabled} // Disabling is usually "destructive"
+        isDestructive={isEnabled} 
         isLoading={isPending}
       />
     </>

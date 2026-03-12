@@ -66,28 +66,28 @@ export default function Roadmap() {
   }, []);
 
   return (
-    <section ref={containerRef} className="roadmap-section py-24 bg-[#F8FAFC] relative overflow-hidden">
+    <section ref={containerRef} className="transform-gpu roadmap-section py-24 bg-[#F8FAFC] relative overflow-hidden">
       {/* GSAP Strip Background Effect */}
-      <div className="absolute right-0 top-0 h-[200%] w-24 md:w-32 opacity-5 pointer-events-none select-none overflow-hidden">
-        <div className="gsap-strip flex flex-col text-8xl md:text-9xl font-black text-slate-900 leading-none">
+      <div className="transform-gpu absolute right-0 top-0 h-[200%] w-24 md:w-32 opacity-5 pointer-events-none select-none overflow-hidden">
+        <div className="transform-gpu gsap-strip flex flex-col text-8xl md:text-9xl font-bold text-slate-900 leading-none">
           {Array(20).fill('PLAN').map((txt, i) => (
-            <span key={i} className="my-4 block transform -rotate-90 origin-center whitespace-nowrap">{txt}</span>
+            <span key={i} className="transform-gpu my-4 block transform -rotate-90 origin-center whitespace-nowrap">{txt}</span>
           ))}
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 relative z-10">
-        <div className="text-center mb-20">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6">Built for scale</h2>
-          <p className="text-slate-500 max-w-2xl mx-auto text-lg">Our journey from MVP to Enterprise scale.</p>
+      <div className="transform-gpu max-w-5xl mx-auto px-6 relative z-10">
+        <div className="transform-gpu text-center mb-20">
+          <h2 className="transform-gpu text-4xl md:text-5xl font-extrabold text-slate-900 mb-6">Built for scale</h2>
+          <p className="transform-gpu text-slate-500 max-w-2xl mx-auto text-lg">Our journey from MVP to Enterprise scale.</p>
         </div>
 
         {/* Vertical Line Container */}
-        <div className="absolute left-8 md:left-1/2 top-48 bottom-20 w-1 bg-slate-200 rounded-full transform -translate-x-1/2 overflow-hidden">
-          <div className="roadmap-line-inner w-full h-full bg-linear-to-b from-purple-500 to-pink-500 origin-top"></div>
+        <div className="transform-gpu absolute left-8 md:left-1/2 top-48 bottom-20 w-1 bg-slate-200 rounded-full transform -translate-x-1/2 overflow-hidden">
+          <div className="transform-gpu roadmap-line-inner w-full h-full bg-linear-to-b from-purple-500 to-pink-500 origin-top"></div>
         </div>
 
-        <div className="space-y-24">
+        <div className="transform-gpu space-y-24">
           {[
             { label: 'Q1 2026', title: 'Core Foundations', desc: 'Refine AI planner, offline sync, and native mobile pairing.', icon: <BrainCircuit size={20} /> },
             { label: 'Q2 2026', title: 'Team Velocity', desc: 'Shared workspaces, team plans, and collaborative goal tracking.', icon: <Zap size={20} /> },
@@ -96,19 +96,19 @@ export default function Roadmap() {
             <div key={i} className={`roadmap-item relative flex items-center ${i % 2 === 0 ? 'md:flex-row-reverse' : ''}`}>
               
               {/* Content Side */}
-              <div className="flex-1 md:w-1/2 p-6 md:p-0">
+              <div className="transform-gpu flex-1 md:w-1/2 p-6 md:p-0">
                 <div className={`bg-white p-8 rounded-3xl shadow-lg border border-slate-100 relative ${i % 2 === 0 ? 'md:mr-12' : 'md:ml-12 md:text-right'} ml-12 md:ml-0`}>
                   <div className={`absolute top-8 ${i % 2 === 0 ? 'md:-right-3 -left-3' : 'md:-left-3 -left-3'} w-6 h-6 bg-purple-100 border-4 border-white rounded-full flex items-center justify-center z-10 shadow-sm`}>
-                    <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
+                    <div className="transform-gpu w-2 h-2 bg-purple-600 rounded-full"></div>
                   </div>
                   <div className={`text-xs font-bold text-purple-600 uppercase tracking-widest mb-2 ${i % 2 !== 0 ? 'md:flex-row-reverse' : ''}`}>{item.label}</div>
-                  <h3 className="text-2xl font-bold text-slate-800 mb-3">{item.title}</h3>
-                  <p className="text-slate-600 leading-relaxed">{item.desc}</p>
+                  <h3 className="transform-gpu text-2xl font-bold text-slate-800 mb-3">{item.title}</h3>
+                  <p className="transform-gpu text-slate-600 leading-relaxed">{item.desc}</p>
                 </div>
               </div>
 
               {/* Empty Side for layout balance */}
-              <div className="hidden md:block flex-1"></div>
+              <div className="transform-gpu hidden md:block flex-1"></div>
             </div>
           ))}
         </div>

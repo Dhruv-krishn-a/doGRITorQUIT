@@ -1,15 +1,9 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": ".",
-    "moduleResolution": "bundler",
-    "types": ["node"],
-    "skipLibCheck": true,
-    "paths": {
-      "@/*": ["./*"]
-    }
+    "rootDir": "."
   },
-  "include": ["."],
+  "include": ["index.ts", "siteNav.ts"],
   "exclude": ["node_modules", "dist"]
 }

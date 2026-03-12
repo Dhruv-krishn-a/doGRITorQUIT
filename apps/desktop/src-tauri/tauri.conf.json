@@ -1,36 +1,52 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "planner",
+  "productName": "Dogrit Planner",
   "version": "1.0.0",
-  "identifier": "com.planner.app",
+  "identifier": "in.dogritorquit.planner",
   "build": {
     "beforeDevCommand": "pnpm dev:web",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "vite build",
+    "beforeBuildCommand": "pnpm build",
     "frontendDist": "../dist"
   },
   "app": {
     "windows": [
       {
-        "title": "Planner Desktop",
+        "title": "Dogrit Planner",
         "width": 1200,
         "height": 800,
         "label": "main"
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; connect-src 'self' http://localhost:* https://*.supabase.co wss://*.supabase.co https://dogritorquit.in; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline';"
+    }
+  },
+  "plugins": {
+    "notification": null,
+    "deep-link": {},
+    "store": null,
+    "sql": [],
+    "updater": {
+      "endpoints": [
+        "https://dogritorquit.in/api/update/{{target}}/{{current_version}}"
+      ],
+      "pubkey": "CONTENT_OF_YOUR_PUBLIC_KEY_HERE"
     }
   },
   "bundle": {
     "active": true,
-    "targets": ["deb","appimage"],
+    "targets": ["deb", "appimage"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "publisher": "Dogrit",
+    "category": "Office",
+    "shortDescription": "Master your habits and study tracks.",
+    "longDescription": "Dogrit Planner is an offline-first professional productivity suite."
   }
 }

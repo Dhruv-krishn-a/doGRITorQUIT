@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerUser } from '@/lib/auth-server';
-import { study } from '@planner/domain';
+import { study, billing } from '@planner/domain';
+import { PlanFeature } from '@domain/billing/entitlements';
 
 export async function GET() {
   const user = await getServerUser();
@@ -22,6 +23,14 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
+    
+    // ✅ Granular Entitlement Checks
+    if (body.type === 'COURSE') {
+      await billing.checkFeatureAccess(user.id, PlanFeature.ACCESS_STUDY_COURSE);
+    } else if (body.type === 'PROJECT') {
+      await billing.checkFeatureAccess(user.id, PlanFeature.ACCESS_STUDY_PROJECT);
+    }
+
     // Validate targetDate if provided
     if (body.targetDate) {
       body.targetDate = new Date(body.targetDate);
@@ -32,6 +41,11 @@ export async function POST(req: NextRequest) {
   } catch (error: unknown) {
     console.error("Track Creation Error:", error);
     const message = error instanceof Error ? error.message : 'Unknown error';
+    
+    if (message.includes('FEATURE_LOCKED')) {
+      return NextResponse.json({ error: "This feature is locked for your current plan. Please upgrade." }, { status: 403 });
+    }
+
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

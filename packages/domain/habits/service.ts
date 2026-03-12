@@ -1,5 +1,6 @@
 // packages/domain/habits/service.ts
 import { prisma } from "@planner/db";
+import { getFeatureLimit, checkFeatureAccess, PlanFeature } from "../billing/entitlements";
 
 /**
  * Get Habits and Logs for a specific date range
@@ -33,6 +34,14 @@ export async function getHabitData(userId: string, startDate: Date, endDate: Dat
  * Create a new Habit
  */
 export async function createHabit(userId: string, data: { title: string; icon?: string; color?: string }) {
+  // ✅ Enforce limit
+  const limit = await getFeatureLimit(userId, PlanFeature.MAX_HABITS_TRACKED, 3, 100);
+  const count = await prisma.habit.count({ where: { userId, active: true } });
+  
+  if (count >= limit) {
+    throw new Error(`Habit limit reached (${limit}). Please upgrade your plan.`);
+  }
+
   // Find the last order to append to the end
   const last = await prisma.habit.findFirst({
     where: { userId },
@@ -95,6 +104,9 @@ export async function toggleHabitLog(userId: string, habitId: string, date: Date
  * Save/Update Daily Note
  */
 export async function upsertDailyNote(userId: string, date: Date, content: string) {
+  // ✅ Check feature access
+  await checkFeatureAccess(userId, PlanFeature.ACCESS_DAILY_JOURNAL);
+
   const normalizedDate = new Date(date);
   normalizedDate.setHours(0, 0, 0, 0);
 

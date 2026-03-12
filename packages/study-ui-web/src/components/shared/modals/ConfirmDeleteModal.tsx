@@ -29,45 +29,45 @@ export function ConfirmDeleteModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-[1200] flex items-center justify-center p-4">
+    <div className="transform-gpu fixed inset-0 z-[1200] flex items-center justify-center p-4">
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={closeModal}
-        className="absolute inset-0 bg-[#0a0105]/90 backdrop-blur-2xl"
+        className="transform-gpu absolute inset-0 bg-slate-900/30 backdrop-blur-sm"
       />
       
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
-        className="relative w-full max-w-md bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-slate-100"
+        className="transform-gpu relative w-full max-w-md bg-white/80 backdrop-blur-2xl rounded-[3rem] shadow-[0_20px_60px_rgba(0,0,0,0.15)] overflow-hidden border border-white transform-gpu antialiased"
       >
-        <div className="p-8 md:p-10 flex flex-col items-center text-center">
-          <div className="w-20 h-20 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mb-6 shadow-inner">
+        <div className="transform-gpu p-8 md:p-10 flex flex-col items-center text-center">
+          <div className="transform-gpu w-20 h-20 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mb-6 shadow-inner">
             <AlertCircle size={40} strokeWidth={2.5} />
           </div>
 
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-3">Delete this track?</h2>
-          <p className="text-slate-500 font-medium leading-relaxed text-sm mb-8">
-            You are about to delete <span className="text-slate-900 font-bold">"{activeTrack.track.title}"</span>. 
+          <h2 className="transform-gpu text-2xl font-bold text-slate-900 tracking-tight mb-3">Delete this track?</h2>
+          <p className="transform-gpu text-slate-500 font-medium leading-relaxed text-sm mb-8">
+            You are about to delete <span className="transform-gpu text-slate-900 font-bold">"{activeTrack.track.title}"</span>. 
             All your progress and lessons for this course will be lost forever.
           </p>
 
-          <div className="flex flex-col w-full gap-3">
+          <div className="transform-gpu flex flex-col w-full gap-3">
             <button 
               disabled={loading}
               onClick={handleDelete}
-              className="w-full bg-rose-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-rose-700 shadow-lg shadow-rose-200 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              className="transform-gpu w-full bg-rose-600 text-white py-4 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-rose-700 shadow-lg shadow-rose-200 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              {loading ? <Loader2 className="animate-spin" size={18} /> : <Trash2 size={18} />}
+              {loading ? <Loader2 className="transform-gpu animate-spin" size={18} /> : <Trash2 size={18} />}
               {loading ? 'Deleting...' : 'Yes, Delete Track'}
             </button>
             <button 
               type="button" 
               onClick={closeModal} 
-              className="w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all"
+              className="transform-gpu w-full py-4 rounded-2xl font-bold text-xs uppercase tracking-widest text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all"
             >
               Cancel
             </button>

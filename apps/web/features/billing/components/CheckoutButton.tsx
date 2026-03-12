@@ -152,13 +152,13 @@ export default function CheckoutButton({ productKey, label = 'Buy' }: CheckoutBu
   return (
     <div>
       <button
-        className="px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50 hover:bg-green-700 transition-colors"
+        className="transform-gpu px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50 hover:bg-green-700 transition-colors"
         onClick={openCheckout}
         disabled={loading}
       >
         {loading ? 'Processing...' : label}
       </button>
-      {message && <div className="mt-2 text-sm text-gray-700 font-medium animate-pulse">{message}</div>}
+      {message && <div className="transform-gpu mt-2 text-sm text-gray-700 font-medium animate-pulse">{message}</div>}
     </div>
   );
 }

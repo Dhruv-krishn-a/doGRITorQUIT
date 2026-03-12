@@ -28,7 +28,8 @@ export default async function SubscriptionPage() {
     key: string; 
     price: number; 
     currency: string; 
-    description?: string | null 
+    description?: string | null;
+    featuresList?: any;
   }) => ({
     id: p.id,
     name: p.name,
@@ -36,6 +37,7 @@ export default async function SubscriptionPage() {
     price: p.price,
     currency: p.currency,
     description: p.description || "",
+    featuresList: Array.isArray(p.featuresList) ? (p.featuresList as string[]) : [],
   }));
 
   // 4. Transform History

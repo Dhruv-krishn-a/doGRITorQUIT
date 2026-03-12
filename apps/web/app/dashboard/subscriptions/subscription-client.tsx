@@ -62,6 +62,7 @@ export interface Product {
   price: number;
   description: string;
   currency: string;
+  featuresList?: string[];
 }
 
 export interface ActiveSubscription {
@@ -102,14 +103,14 @@ export interface SubscriptionClientProps {
 const StatCard = ({ icon: Icon, label, value, subtext, colorClass }: { 
   icon: LucideIcon; label: string; value: string | number; subtext?: string; colorClass: string 
 }) => (
-  <div className="bg-white border border-slate-200 rounded-2xl p-6 flex items-start gap-5 shadow-sm hover:shadow-md transition-all duration-300">
+  <div className="transform-gpu bg-white border border-slate-200 rounded-2xl p-6 flex items-start gap-5 shadow-sm hover:shadow-md transition-all duration-300">
     <div className={`p-3.5 rounded-xl ${colorClass} shrink-0`}>
       <Icon size={22} />
     </div>
     <div>
-      <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1.5">{label}</p>
-      <h3 className="text-2xl font-bold text-slate-900 tracking-tight">{value}</h3>
-      {subtext && <p className="text-slate-400 text-sm mt-1 font-medium">{subtext}</p>}
+      <p className="transform-gpu text-slate-500 text-xs font-bold uppercase tracking-wider mb-1.5">{label}</p>
+      <h3 className="transform-gpu text-2xl font-bold text-slate-900 tracking-tight">{value}</h3>
+      {subtext && <p className="transform-gpu text-slate-400 text-sm mt-1 font-medium">{subtext}</p>}
     </div>
   </div>
 );
@@ -121,15 +122,15 @@ const UsageCard = ({ usage }: { usage: UsageStats }) => {
   const isCritical = !isUnlimited && percent > 90;
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300">
-      <div className="flex justify-between items-start mb-4">
+    <div className="transform-gpu bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300">
+      <div className="transform-gpu flex justify-between items-start mb-4">
         <div>
-          <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5">
-            <Zap size={14} className="text-amber-500" /> AI Credits
+          <p className="transform-gpu text-slate-500 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5">
+            <Zap size={14} className="transform-gpu text-amber-500" /> AI Credits
           </p>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl font-bold text-slate-900">{usage.aiGenerated}</span>
-            <span className="text-slate-400 font-medium">/ {isUnlimited ? "∞" : limit}</span>
+          <div className="transform-gpu flex items-baseline gap-1.5">
+            <span className="transform-gpu text-2xl font-bold text-slate-900">{usage.aiGenerated}</span>
+            <span className="transform-gpu text-slate-400 font-medium">/ {isUnlimited ? "∞" : limit}</span>
           </div>
         </div>
         <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
@@ -140,9 +141,9 @@ const UsageCard = ({ usage }: { usage: UsageStats }) => {
         </span>
       </div>
       
-      <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden relative">
+      <div className="transform-gpu w-full bg-slate-100 h-2.5 rounded-full overflow-hidden relative">
         {isUnlimited ? (
-           <div className="absolute inset-0 bg-linear-to-r from-indigo-500/20 via-indigo-500/40 to-indigo-500/20 w-full animate-pulse" />
+           <div className="transform-gpu absolute inset-0 bg-linear-to-r from-indigo-500/20 via-indigo-500/40 to-indigo-500/20 w-full animate-pulse" />
         ) : (
           <div 
             className={`h-full transition-all duration-700 ease-out rounded-full ${isCritical ? 'bg-red-500' : 'bg-indigo-600'}`} 
@@ -168,19 +169,19 @@ const PlanCard = ({
         : 'bg-white border border-slate-200 hover:border-slate-300 hover:shadow-xl hover:-translate-y-1'
     }`}>
       {isActive && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-lg flex items-center gap-1">
+        <div className="transform-gpu absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-lg flex items-center gap-1">
           <ShieldCheck size={12} /> Active Plan
         </div>
       )}
 
-      <div className="mb-6">
+      <div className="transform-gpu mb-6">
         <h3 className={`text-lg font-bold ${isActive ? 'text-white' : 'text-slate-900'}`}>{product.name}</h3>
         <p className={`text-sm mt-1 ${isActive ? 'text-slate-400' : 'text-slate-500'}`}>
           {product.description || "Unlock higher limits and premium features."}
         </p>
       </div>
 
-      <div className="mb-8 flex items-baseline gap-1">
+      <div className="transform-gpu mb-8 flex items-baseline gap-1">
         <span className={`text-4xl font-extrabold ${isActive ? 'text-white' : 'text-slate-900'}`}>
           ₹{(product.price / 100).toLocaleString()}
         </span>
@@ -189,9 +190,12 @@ const PlanCard = ({
 
       <div className={`w-full h-px mb-8 ${isActive ? 'bg-slate-800' : 'bg-slate-100'}`} />
 
-      <ul className="space-y-4 mb-8 flex-1">
-        {["Higher AI Limits", "Priority Support", "Advanced Analytics"].map((feat, i) => (
-          <li key={i} className="flex items-center gap-3 text-sm">
+      <ul className="transform-gpu space-y-4 mb-8 flex-1">
+        {(product.featuresList && product.featuresList.length > 0 
+          ? product.featuresList 
+          : ["Standard Features", "Email Support"]
+        ).map((feat, i) => (
+          <li key={i} className="transform-gpu flex items-center gap-3 text-sm">
             <div className={`p-0.5 rounded-full ${isActive ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
               <Check size={14} strokeWidth={3} />
             </div>
@@ -209,7 +213,7 @@ const PlanCard = ({
             : 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-900/10 active:scale-95'
         }`}
       >
-        {isActive ? "Current Plan" : isBuying ? <Loader2 className="animate-spin" /> : "Upgrade Now"}
+        {isActive ? "Current Plan" : isBuying ? <Loader2 className="transform-gpu animate-spin" /> : "Upgrade Now"}
       </button>
     </div>
   );
@@ -298,16 +302,16 @@ export default function SubscriptionClientPage({ products, data }: SubscriptionC
   }
 
   return (
-    <div className="max-w-6xl mx-auto py-10 px-4 sm:px-6 space-y-12 pb-24">
+    <div className="transform-gpu max-w-6xl mx-auto py-10 px-4 sm:px-6 space-y-12 pb-24">
       
       {/* --- Header & Stats Grid --- */}
-      <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
+      <div className="transform-gpu space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
         <div>
-            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Subscription & Limits</h1>
-            <p className="text-slate-500 mt-2 text-lg">Manage your plan, track usage, and view billing history.</p>
+            <h1 className="transform-gpu text-3xl font-bold text-slate-900 tracking-tight">Subscription & Limits</h1>
+            <p className="transform-gpu text-slate-500 mt-2 text-lg">Manage your plan, track usage, and view billing history.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="transform-gpu grid grid-cols-1 md:grid-cols-3 gap-6">
           <StatCard 
             icon={CreditCard}
             label="Current Plan"
@@ -327,8 +331,8 @@ export default function SubscriptionClientPage({ products, data }: SubscriptionC
       </div>
 
       {/* --- Tabs Navigation --- */}
-      <div className="border-b border-slate-200">
-        <div className="flex gap-8">
+      <div className="transform-gpu border-b border-slate-200">
+        <div className="transform-gpu flex gap-8">
           {[
             { id: "plans", label: "Available Plans", icon: LayoutGrid },
             { id: "history", label: "Payment History", icon: History }
@@ -348,7 +352,7 @@ export default function SubscriptionClientPage({ products, data }: SubscriptionC
                 {isActive && (
                   <motion.div 
                     layoutId="activeTab"
-                    className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-full" 
+                    className="transform-gpu absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-full" 
                   />
                 )}
               </button>
@@ -358,9 +362,9 @@ export default function SubscriptionClientPage({ products, data }: SubscriptionC
       </div>
 
       {/* --- Content Area --- */}
-      <div className="min-h-96">
+      <div className="transform-gpu min-h-96">
         {activeTab === "plans" && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="transform-gpu grid grid-cols-1 md:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {products.map((p) => (
               <PlanCard 
                 key={p.id} 
@@ -374,27 +378,27 @@ export default function SubscriptionClientPage({ products, data }: SubscriptionC
         )}
 
         {activeTab === "history" && (
-          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="transform-gpu bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
             {history.length > 0 ? (
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 border-b border-slate-200">
+              <table className="transform-gpu w-full text-left text-sm">
+                <thead className="transform-gpu bg-slate-50 border-b border-slate-200">
                   <tr>
-                    <th className="px-6 py-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Date</th>
-                    <th className="px-6 py-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Amount</th>
-                    <th className="px-6 py-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Status</th>
-                    <th className="px-6 py-4 font-bold text-slate-500 uppercase tracking-wider text-xs text-right">Invoice</th>
+                    <th className="transform-gpu px-6 py-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Date</th>
+                    <th className="transform-gpu px-6 py-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Amount</th>
+                    <th className="transform-gpu px-6 py-4 font-bold text-slate-500 uppercase tracking-wider text-xs">Status</th>
+                    <th className="transform-gpu px-6 py-4 font-bold text-slate-500 uppercase tracking-wider text-xs text-right">Invoice</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="transform-gpu divide-y divide-slate-100">
                   {history.map((record) => (
-                    <tr key={record.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4 text-slate-900 font-medium">
+                    <tr key={record.id} className="transform-gpu hover:bg-slate-50 transition-colors">
+                      <td className="transform-gpu px-6 py-4 text-slate-900 font-medium">
                         {record.formattedDate}
                       </td>
-                      <td className="px-6 py-4 text-slate-600 font-mono">
+                      <td className="transform-gpu px-6 py-4 text-slate-600 font-mono">
                         ₹{(record.amount / 100).toLocaleString()}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="transform-gpu px-6 py-4">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold capitalize border ${
                           record.status === 'paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
                           record.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-red-50 text-red-700 border-red-100'
@@ -402,8 +406,8 @@ export default function SubscriptionClientPage({ products, data }: SubscriptionC
                           {record.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-right">
-                         <button className="text-slate-400 hover:text-blue-600 transition-colors">
+                      <td className="transform-gpu px-6 py-4 text-right">
+                         <button className="transform-gpu text-slate-400 hover:text-blue-600 transition-colors">
                            <Download size={16} />
                          </button>
                       </td>
@@ -412,8 +416,8 @@ export default function SubscriptionClientPage({ products, data }: SubscriptionC
                 </tbody>
               </table>
             ) : (
-              <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-                <History size={48} strokeWidth={1} className="mb-4 opacity-50" />
+              <div className="transform-gpu flex flex-col items-center justify-center py-20 text-slate-400">
+                <History size={48} strokeWidth={1} className="transform-gpu mb-4 opacity-50" />
                 <p>No payment history found.</p>
               </div>
             )}
@@ -427,8 +431,8 @@ export default function SubscriptionClientPage({ products, data }: SubscriptionC
             toast.type === 'success' ? 'bg-slate-900 text-white' : 'bg-red-500 text-white'
         }`}>
             {toast.type === 'success' ? <Check size={20} /> : <AlertCircle size={20} />}
-            <p className="font-medium text-sm">{toast.msg}</p>
-            <button onClick={() => setToast(null)} className="ml-2 hover:opacity-75"><X size={16} /></button>
+            <p className="transform-gpu font-medium text-sm">{toast.msg}</p>
+            <button onClick={() => setToast(null)} className="transform-gpu ml-2 hover:opacity-75"><X size={16} /></button>
         </div>
       )}
       

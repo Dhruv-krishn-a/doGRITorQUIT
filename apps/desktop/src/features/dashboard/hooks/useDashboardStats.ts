@@ -8,7 +8,10 @@ export function useDashboardStats() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user || !session) return;
+    if (!user || !session) {
+      setLoading(false);
+      return;
+    }
 
     async function fetchStats() {
       try {
@@ -17,7 +20,7 @@ export function useDashboardStats() {
         
         const res = await fetch(`${baseUrl}/api/dashboard`, {
           headers: {
-            'Authorization': `Bearer ${session.access_token}`
+            'Authorization': `Bearer ${session?.access_token || ""}`
           }
         });
 
@@ -34,7 +37,7 @@ export function useDashboardStats() {
         // Transform API data to match UI expectations if needed
         const enrichedData = {
             user: {
-                firstName: user.user_metadata?.full_name?.split(' ')[0] || user.email?.split('@')[0] || 'User',
+                firstName: user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'User',
                 level: 1,
                 xp: 0,
                 nextLevelXp: 100

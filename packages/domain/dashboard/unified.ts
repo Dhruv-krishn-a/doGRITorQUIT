@@ -10,6 +10,7 @@ export async function getUnifiedToday(userId: string) {
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
 
+  // OPTIMIZATION: Fetch in parallel but select only what's needed.
   const [tasks, units, studyDashboard, dailySession, weekData, habits] = await Promise.all([
     prisma.task.findMany({
       where: {
@@ -19,7 +20,9 @@ export async function getUnifiedToday(userId: string) {
           { date: { lt: today }, status: { notIn: [TaskStatus.completed, TaskStatus.archived] } }
         ]
       },
-      include: { plan: { select: { title: true } } },
+      select: {
+        id: true, title: true, estimatedMinutes: true, status: true, priority: true, date: true, plan: { select: { title: true } }
+      },
       orderBy: [{ date: 'asc' }, { priority: 'desc' }]
     }),
     prisma.unit.findMany({
@@ -27,15 +30,19 @@ export async function getUnifiedToday(userId: string) {
         track: { userId },
         status: { in: [UnitStatus.TODAY, UnitStatus.IN_PROGRESS] }
       },
-      include: { track: { select: { id: true, title: true, type: true, metadata: true } } },
+      select: {
+        id: true, title: true, type: true, durationMinutes: true, watchPercentage: true, status: true, metadata: true, orderIndex: true, track: { select: { id: true, title: true, type: true } }
+      },
       orderBy: { orderIndex: 'asc' }
     }),
     StudyService.getDashboard(userId),
-    prisma.dailySession.findFirst({ where: { userId, date: today } }),
+    prisma.dailySession.findFirst({ where: { userId, date: today }, select: { id: true, date: true } }),
     getUnifiedWeek(userId),
     prisma.habit.findMany({
       where: { userId, active: true },
-      include: { logs: { where: { date: today } } },
+      select: {
+        id: true, title: true, icon: true, color: true, logs: { where: { date: today }, select: { id: true } }
+      },
       orderBy: { order: 'asc' }
     })
   ]);

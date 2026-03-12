@@ -119,7 +119,7 @@ export default function CheckoutPage() {
   }, [orderId, startPayment]); // ✅ dependency array is now correct
 
   return (
-    <div className="h-[80vh] flex flex-col items-center justify-center text-center">
+    <div className="transform-gpu h-[80vh] flex flex-col items-center justify-center text-center">
       <Script 
         src="https://checkout.razorpay.com/v1/checkout.js" 
         onLoad={() => { 
@@ -130,9 +130,9 @@ export default function CheckoutPage() {
       
       {loading && (
         <>
-          <Loader2 className="animate-spin text-blue-600 mb-4" size={48} />
-          <h2 className="text-xl font-bold text-slate-800">Initializing Secure Checkout...</h2>
-          <p className="text-slate-500 mt-2">Please do not close this window.</p>
+          <Loader2 className="transform-gpu animate-spin text-blue-600 mb-4" size={48} />
+          <h2 className="transform-gpu text-xl font-bold text-slate-800">Initializing Secure Checkout...</h2>
+          <p className="transform-gpu text-slate-500 mt-2">Please do not close this window.</p>
         </>
       )}
     </div>

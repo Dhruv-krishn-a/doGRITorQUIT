@@ -12,6 +12,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ reflection });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
+    
+    if (message.includes('FEATURE_LOCKED')) {
+      return NextResponse.json({ error: "Weekly Reflections are locked on your current plan." }, { status: 403 });
+    }
+
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

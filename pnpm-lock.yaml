@@ -115,6 +115,9 @@ importers:
       react-dom:
         specifier: 19.0.0
         version: 19.0.0(react@19.0.0)
+      sonner:
+        specifier: ^2.0.7
+        version: 2.0.7(react-dom@19.0.0)(react@19.0.0)
     devDependencies:
       '@tailwindcss/postcss':
         specifier: ^4.1.18
@@ -137,9 +140,21 @@ importers:
       '@hello-pangea/dnd':
         specifier: ^18.0.1
         version: 18.0.1(@types/react@19.2.8)(react-dom@19.0.0)(react@19.0.0)
+      '@planner/dashboard-core':
+        specifier: workspace:*
+        version: link:../../packages/dashboard-core
+      '@planner/dashboard-ui-web':
+        specifier: workspace:*
+        version: link:../../packages/dashboard-ui-web
       '@planner/domain':
         specifier: workspace:^
         version: link:../../packages/domain
+      '@planner/habits-core':
+        specifier: workspace:*
+        version: link:../../packages/habits-core
+      '@planner/habits-ui-web':
+        specifier: workspace:*
+        version: link:../../packages/habits-ui-web
       '@planner/study-core':
         specifier: workspace:*
         version: link:../../packages/study-core
@@ -155,9 +170,21 @@ importers:
       '@tauri-apps/api':
         specifier: ^2.1.1
         version: 2.1.1
+      '@tauri-apps/plugin-deep-link':
+        specifier: ^2.4.7
+        version: 2.4.7
+      '@tauri-apps/plugin-notification':
+        specifier: ^2.3.3
+        version: 2.3.3
       '@tauri-apps/plugin-opener':
         specifier: ^2.2.5
         version: 2.2.5
+      '@tauri-apps/plugin-sql':
+        specifier: ^2.3.2
+        version: 2.3.2
+      '@tauri-apps/plugin-store':
+        specifier: ^2.4.2
+        version: 2.4.2
       '@tiptap/extension-placeholder':
         specifier: ^3.19.0
         version: 3.19.0(@tiptap/extensions@3.19.0)
@@ -331,12 +358,24 @@ importers:
       '@hello-pangea/dnd':
         specifier: ^18.0.1
         version: 18.0.1(@types/react@19.2.8)(react-dom@19.0.0)(react@19.0.0)
+      '@planner/dashboard-core':
+        specifier: workspace:*
+        version: link:../../packages/dashboard-core
+      '@planner/dashboard-ui-web':
+        specifier: workspace:*
+        version: link:../../packages/dashboard-ui-web
       '@planner/db':
         specifier: workspace:*
         version: link:../../packages/db
       '@planner/domain':
         specifier: workspace:*
         version: link:../../packages/domain
+      '@planner/habits-core':
+        specifier: workspace:*
+        version: link:../../packages/habits-core
+      '@planner/habits-ui-web':
+        specifier: workspace:*
+        version: link:../../packages/habits-ui-web
       '@planner/study-core':
         specifier: workspace:*
         version: link:../../packages/study-core
@@ -455,12 +494,71 @@ importers:
       zod:
         specifier: ^4.3.5
         version: 4.3.5
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:^
+        version: link:../typescript-config
 
   packages/config:
     devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:^
+        version: link:../typescript-config
       typescript:
         specifier: ^5.0.0
         version: 5.9.2
+
+  packages/dashboard-core:
+    dependencies:
+      lucide-react:
+        specifier: ^0.300.0
+        version: 0.300.0(react@19.0.0)
+      react:
+        specifier: 19.0.0
+        version: 19.0.0
+      sonner:
+        specifier: ^2.0.7
+        version: 2.0.7(react-dom@19.0.0)(react@19.0.0)
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      typescript:
+        specifier: 5.9.2
+        version: 5.9.2
+
+  packages/dashboard-ui-web:
+    dependencies:
+      '@hello-pangea/dnd':
+        specifier: ^18.0.1
+        version: 18.0.1(@types/react@19.2.8)(react-dom@19.0.0)(react@19.0.0)
+      '@planner/dashboard-core':
+        specifier: workspace:*
+        version: link:../dashboard-core
+      '@planner/habits-ui-web':
+        specifier: workspace:*
+        version: link:../habits-ui-web
+      '@planner/study-ui-web':
+        specifier: workspace:*
+        version: link:../study-ui-web
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      framer-motion:
+        specifier: ^12.23.26
+        version: 12.34.2(react-dom@19.0.0)(react@19.0.0)
+      lucide-react:
+        specifier: ^0.300.0
+        version: 0.300.0(react@19.0.0)
+      react:
+        specifier: 19.0.0
+        version: 19.0.0
+      sonner:
+        specifier: ^2.0.7
+        version: 2.0.7(react-dom@19.0.0)(react@19.0.0)
+      tailwind-merge:
+        specifier: ^3.0.0
+        version: 3.4.0
 
   packages/db:
     dependencies:
@@ -490,6 +588,9 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0
     devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:^
+        version: link:../typescript-config
       '@types/node':
         specifier: ^20.0.0
         version: 20.19.30
@@ -538,6 +639,71 @@ importers:
       typescript-eslint:
         specifier: ^8.48.1
         version: 8.53.1(eslint@9.39.2)(typescript@5.9.2)
+
+  packages/habits-core:
+    dependencies:
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      framer-motion:
+        specifier: ^12.4.7
+        version: 12.34.2(react-dom@19.0.0)(react@19.0.0)
+      lucide-react:
+        specifier: ^0.477.0
+        version: 0.477.0(react@19.0.0)
+      react:
+        specifier: 19.0.0
+        version: 19.0.0
+      react-dom:
+        specifier: 19.0.0
+        version: 19.0.0(react@19.0.0)
+      sonner:
+        specifier: ^2.0.7
+        version: 2.0.7(react-dom@19.0.0)(react@19.0.0)
+      tailwind-merge:
+        specifier: ^3.0.2
+        version: 3.4.0
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      typescript:
+        specifier: 5.9.2
+        version: 5.9.2
+
+  packages/habits-ui-web:
+    dependencies:
+      '@planner/habits-core':
+        specifier: workspace:*
+        version: link:../habits-core
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      framer-motion:
+        specifier: ^12.4.7
+        version: 12.34.2(react-dom@19.0.0)(react@19.0.0)
+      lucide-react:
+        specifier: ^0.477.0
+        version: 0.477.0(react@19.0.0)
+      react:
+        specifier: 19.0.0
+        version: 19.0.0
+      react-dom:
+        specifier: 19.0.0
+        version: 19.0.0(react@19.0.0)
+      sonner:
+        specifier: ^2.0.7
+        version: 2.0.7(react-dom@19.0.0)(react@19.0.0)
+      tailwind-merge:
+        specifier: ^3.0.2
+        version: 3.4.0
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      typescript:
+        specifier: 5.9.2
+        version: 5.9.2
 
   packages/study-core:
     dependencies:
@@ -4906,6 +5072,10 @@ packages:
     resolution: {integrity: sha512-fzUfFFKo4lknXGJq8qrCidkUcKcH2UHhfaaCNt4GzgzGaW2iS26uFOg4tS3H4P8D6ZEeUxtiD5z0nwFF0UN30A==}
     dev: false
 
+  /@tauri-apps/api@2.10.1:
+    resolution: {integrity: sha512-hKL/jWf293UDSUN09rR69hrToyIXBb8CjGaWC7gfinvnQrBVvnLr08FeFi38gxtugAVyVcTa5/FD/Xnkb1siBw==}
+    dev: false
+
   /@tauri-apps/cli-darwin-arm64@2.1.0:
     resolution: {integrity: sha512-ESc6J6CE8hl1yKH2vJ+ALF+thq4Be+DM1mvmTyUCQObvezNCNhzfS6abIUd3ou4x5RGH51ouiANeT3wekU6dCw==}
     engines: {node: '>= 10'}
@@ -5013,10 +5183,34 @@ packages:
       '@tauri-apps/cli-win32-x64-msvc': 2.1.0
     dev: true
 
+  /@tauri-apps/plugin-deep-link@2.4.7:
+    resolution: {integrity: sha512-K0FQlLM6BoV7Ws2xfkh+Tnwi5VZVdkI4Vw/3AGLSf0Xvu2y86AMBzd9w/SpzKhw9ai2B6ES8di/OoGDCExkOzg==}
+    dependencies:
+      '@tauri-apps/api': 2.10.1
+    dev: false
+
+  /@tauri-apps/plugin-notification@2.3.3:
+    resolution: {integrity: sha512-Zw+ZH18RJb41G4NrfHgIuofJiymusqN+q8fGUIIV7vyCH+5sSn5coqRv/MWB9qETsUs97vmU045q7OyseCV3Qg==}
+    dependencies:
+      '@tauri-apps/api': 2.10.1
+    dev: false
+
   /@tauri-apps/plugin-opener@2.2.5:
     resolution: {integrity: sha512-hHsJ9RPWpZvZEPVFaL+d25gABMUMOf/A6ESXnvf/ii9guTukj58WXsAE/SOysXRIhej7kseRCxnOnIMpSCdUsQ==}
     dependencies:
       '@tauri-apps/api': 2.1.1
+    dev: false
+
+  /@tauri-apps/plugin-sql@2.3.2:
+    resolution: {integrity: sha512-4VDXhcKXVpyh5KKpnTGAn6q2DikPHH+TXGh9ZDQzULmG/JEz1RDvzQStgBJKddiukRbYEZ8CGIA2kskx+T+PpA==}
+    dependencies:
+      '@tauri-apps/api': 2.10.1
+    dev: false
+
+  /@tauri-apps/plugin-store@2.4.2:
+    resolution: {integrity: sha512-0ClHS50Oq9HEvLPhNzTNFxbWVOqoAp3dRvtewQBeqfIQ0z5m3JRnOISIn2ZVPCrQC0MyGyhTS9DWhHjpigQE7A==}
+    dependencies:
+      '@tauri-apps/api': 2.10.1
     dev: false
 
   /@tiptap/core@3.19.0(@tiptap/pm@3.19.0):
@@ -10120,6 +10314,14 @@ packages:
       react: 19.0.0
     dev: false
 
+  /lucide-react@0.477.0(react@19.0.0):
+    resolution: {integrity: sha512-yCf7aYxerFZAbd8jHJxjwe1j7jEMPptjnaOqdYeirFnEy85cNR3/L+o0I875CYFYya+eEVzZSbNuRk8BZPDpVw==}
+    peerDependencies:
+      react: 19.0.0
+    dependencies:
+      react: 19.0.0
+    dev: false
+
   /lucide-react@0.560.0(react@19.0.0):
     resolution: {integrity: sha512-NwKoUA/aBShsdL8WE5lukV2F/tjHzQRlonQs7fkNGI1sCT0Ay4a9Ap3ST2clUUkcY+9eQ0pBe2hybTQd2fmyDA==}
     peerDependencies:
@@ -10549,7 +10751,7 @@ packages:
   /motion-dom@12.27.1:
     resolution: {integrity: sha512-V/53DA2nBqKl9O2PMJleSUb/G0dsMMeZplZwgIQf5+X0bxIu7Q1cTv6DrjvTTGYRm3+7Y5wMlRZ1wT61boU/bQ==}
     dependencies:
-      motion-utils: 12.24.10
+      motion-utils: 12.29.2
     dev: false
 
   /motion-dom@12.34.2:

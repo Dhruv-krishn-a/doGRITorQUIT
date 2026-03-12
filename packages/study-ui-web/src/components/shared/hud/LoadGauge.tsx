@@ -58,11 +58,11 @@ export function LoadGauge({ loadPercentage, breakdown }: LoadGaugeProps) {
       whileHover={{ y: -6, scale: 1.01 }}
       transition={springConfig}
       onClick={() => setShowDetails(!showDetails)}
-      className="bg-white/60 backdrop-blur-xl rounded-[3rem] border border-white p-6 sm:p-8 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgba(236,72,153,0.1)] flex flex-col items-center justify-center text-center relative overflow-hidden group transition-all h-full min-h-[400px] md:min-h-[450px] cursor-pointer transform-gpu antialiased"
+      className="transform-gpu bg-white/60 backdrop-blur-xl rounded-[3rem] border border-white p-6 sm:p-8 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgba(236,72,153,0.1)] flex flex-col items-center justify-center text-center relative overflow-hidden group transition-all h-full min-h-[400px] md:min-h-[450px] cursor-pointer transform-gpu antialiased"
     >
       {/* Ethereal Moving Backgrounds */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-br from-pink-50/50 via-white to-rose-50/50 bg-[length:200%_200%] animate-gradient-xy transition-opacity duration-700 pointer-events-none -z-10" />
-      <div className="absolute top-0 right-0 w-48 h-48 bg-pink-200/30 rounded-full blur-[50px] -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+      <div className="transform-gpu absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-br from-pink-50/50 via-white to-rose-50/50 bg-[length:200%_200%] animate-gradient-xy transition-opacity duration-700 pointer-events-none -z-10" />
+      <div className="transform-gpu absolute top-0 right-0 w-48 h-48 bg-pink-200/30 rounded-full blur-[50px] -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
        <AnimatePresence mode="wait">
          {showDetails && breakdown ? (
@@ -72,47 +72,47 @@ export function LoadGauge({ loadPercentage, breakdown }: LoadGaugeProps) {
              initial="hidden"
              animate="visible"
              exit="exit"
-             className="absolute inset-0 z-20 p-6 sm:p-8 md:p-10 flex flex-col items-center justify-center w-full"
+             className="transform-gpu absolute inset-0 z-20 p-6 sm:p-8 md:p-10 flex flex-col items-center justify-center w-full"
            >
-             <motion.h4 variants={itemVariants} className="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
-               <Activity size={14} className="text-pink-500" />
+             <motion.h4 variants={itemVariants} className="transform-gpu text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
+               <Activity size={14} className="transform-gpu text-pink-500" />
                Study Capacity
              </motion.h4>
              
-             <div className="w-full space-y-3">
-               <motion.div variants={itemVariants} className="flex justify-between items-center bg-white/80 p-4 md:p-5 rounded-[1.5rem] border border-slate-100 shadow-sm group/item hover:border-pink-200 transition-colors duration-300">
-                 <div className="flex items-center gap-3">
-                   <div className="p-2.5 bg-rose-50 rounded-xl shadow-sm text-rose-500 group-hover/item:scale-110 transition-transform">
+             <div className="transform-gpu w-full space-y-3">
+               <motion.div variants={itemVariants} className="transform-gpu flex justify-between items-center bg-white/80 p-4 md:p-5 rounded-[1.5rem] border border-slate-100 shadow-sm group/item hover:border-pink-200 transition-colors duration-300">
+                 <div className="transform-gpu flex items-center gap-3">
+                   <div className="transform-gpu p-2.5 bg-rose-50 rounded-xl shadow-sm text-rose-500 group-hover/item:scale-110 transition-transform">
                     <Brain size={16} />
                    </div>
-                   <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover/item:text-slate-500 transition-colors">Total Workload</span>
+                   <span className="transform-gpu text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-slate-400 group-hover/item:text-slate-500 transition-colors">Total Workload</span>
                  </div>
-                 <span className="font-black text-slate-800 text-sm md:text-base">{breakdown.plannedLoad} / {breakdown.capacity}</span>
+                 <span className="transform-gpu font-bold text-slate-800 text-sm md:text-base">{breakdown.plannedLoad} / {breakdown.capacity}</span>
                </motion.div>
 
-               <motion.div variants={itemVariants} className="flex justify-between items-center bg-white/80 p-4 md:p-5 rounded-[1.5rem] border border-slate-100 shadow-sm group/item hover:border-amber-200 transition-colors duration-300">
-                 <div className="flex items-center gap-3">
-                   <div className="p-2.5 bg-amber-50 rounded-xl shadow-sm text-amber-500 group-hover/item:scale-110 group-hover/item:rotate-12 transition-transform">
+               <motion.div variants={itemVariants} className="transform-gpu flex justify-between items-center bg-white/80 p-4 md:p-5 rounded-[1.5rem] border border-slate-100 shadow-sm group/item hover:border-amber-200 transition-colors duration-300">
+                 <div className="transform-gpu flex items-center gap-3">
+                   <div className="transform-gpu p-2.5 bg-amber-50 rounded-xl shadow-sm text-amber-500 group-hover/item:scale-110 group-hover/item:rotate-12 transition-transform">
                     <Zap size={16} />
                    </div>
-                   <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover/item:text-slate-500 transition-colors">Difficult Tasks</span>
+                   <span className="transform-gpu text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-slate-400 group-hover/item:text-slate-500 transition-colors">Difficult Tasks</span>
                  </div>
-                 <span className="font-black text-slate-800 text-sm md:text-base">{breakdown.highEffortUnits} Items</span>
+                 <span className="transform-gpu font-bold text-slate-800 text-sm md:text-base">{breakdown.highEffortUnits} Items</span>
                </motion.div>
 
-               <motion.div variants={itemVariants} className="flex justify-between items-center bg-white/80 p-4 md:p-5 rounded-[1.5rem] border border-slate-100 shadow-sm group/item hover:border-indigo-200 transition-colors duration-300">
-                 <div className="flex items-center gap-3">
-                   <div className="p-2.5 bg-indigo-50 rounded-xl shadow-sm text-indigo-500 group-hover/item:scale-110 transition-transform">
+               <motion.div variants={itemVariants} className="transform-gpu flex justify-between items-center bg-white/80 p-4 md:p-5 rounded-[1.5rem] border border-slate-100 shadow-sm group/item hover:border-indigo-200 transition-colors duration-300">
+                 <div className="transform-gpu flex items-center gap-3">
+                   <div className="transform-gpu p-2.5 bg-indigo-50 rounded-xl shadow-sm text-indigo-500 group-hover/item:scale-110 transition-transform">
                     <Layers size={16} />
                    </div>
-                   <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover/item:text-slate-500 transition-colors">Active Vectors</span>
+                   <span className="transform-gpu text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-slate-400 group-hover/item:text-slate-500 transition-colors">Active Vectors</span>
                  </div>
-                 <span className="font-black text-slate-800 text-sm md:text-base">{breakdown.contextSwitches} Tracks</span>
+                 <span className="transform-gpu font-bold text-slate-800 text-sm md:text-base">{breakdown.contextSwitches} Tracks</span>
                </motion.div>
              </div>
 
-             <motion.div variants={itemVariants} className="mt-8 flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-[0.3em] text-slate-400 hover:text-pink-500 transition-colors group/hint">
-               <RefreshCw size={12} className="group-hover/hint:rotate-180 transition-transform duration-700" />
+             <motion.div variants={itemVariants} className="transform-gpu mt-8 flex items-center justify-center gap-2 text-[9px] font-bold uppercase tracking-[0.3em] text-slate-400 hover:text-pink-500 transition-colors group/hint">
+               <RefreshCw size={12} className="transform-gpu group-hover/hint:rotate-180 transition-transform duration-700" />
                Tap to reveal health
              </motion.div>
            </motion.div>
@@ -123,17 +123,17 @@ export function LoadGauge({ loadPercentage, breakdown }: LoadGaugeProps) {
              initial="hidden"
              animate="visible"
              exit="exit"
-             className="w-full h-full flex flex-col items-center justify-center p-4 relative z-10"
+             className="transform-gpu w-full h-full flex flex-col items-center justify-center p-4 relative z-10"
            >
-             <div className="absolute top-4 left-4 md:top-8 md:left-8 flex items-center gap-2.5">
+             <div className="transform-gpu absolute top-4 left-4 md:top-8 md:left-8 flex items-center gap-2.5">
                 <div className={`p-2 rounded-xl text-white shadow-md bg-gradient-to-br ${loadGradient}`}>
-                  <Activity size={14} className="animate-pulse" />
+                  <Activity size={14} className="transform-gpu animate-pulse" />
                 </div>
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Study Load</span>
+                <span className="transform-gpu text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">Study Load</span>
              </div>
              
-             <div className="relative w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 mb-8 transition-transform duration-700 group-hover:scale-105 shrink-0 group-hover:-rotate-3 mt-6">
-                <svg className="w-full h-full transform -rotate-90 origin-center drop-shadow-sm">
+             <div className="transform-gpu relative w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 mb-8 transition-transform duration-700 group-hover:scale-105 shrink-0 group-hover:-rotate-3 mt-6">
+                <svg className="transform-gpu w-full h-full transform -rotate-90 origin-center drop-shadow-sm">
                   {/* Background Track */}
                   <circle cx="50%" cy="50%" r="42%" stroke="#f1f5f9" strokeWidth="14" fill="transparent" />
                   
@@ -153,25 +153,25 @@ export function LoadGauge({ loadPercentage, breakdown }: LoadGaugeProps) {
                 </svg>
                 
                 {/* Center Content */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center pt-2">
-                   <div className="flex items-start gap-0.5 group-hover:scale-110 transition-transform duration-500">
-                     <span className={`text-6xl sm:text-7xl font-black tracking-tighter leading-none ${loadColorClass.split(' ')[0]}`}>{Math.round(loadPercentage)}</span>
-                     <span className={`text-xl font-black mt-1 ${loadColorClass.split(' ')[0]} opacity-80`}>%</span>
+                <div className="transform-gpu absolute inset-0 flex flex-col items-center justify-center pt-2">
+                   <div className="transform-gpu flex items-start gap-0.5 group-hover:scale-110 transition-transform duration-500">
+                     <span className={`text-6xl sm:text-7xl font-bold tracking-tighter leading-none ${loadColorClass.split(' ')[0]}`}>{Math.round(loadPercentage)}</span>
+                     <span className={`text-xl font-bold mt-1 ${loadColorClass.split(' ')[0]} opacity-80`}>%</span>
                    </div>
-                   <span className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mt-2 opacity-60">Status</span>
+                   <span className="transform-gpu text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-2 opacity-60">Status</span>
                 </div>
              </div>
              
-             <div className="space-y-3 mt-auto">
-               <h4 className="text-xs md:text-sm font-black text-slate-900 uppercase tracking-[0.2em] group-hover:text-pink-600 transition-colors">Daily Health</h4>
-               <p className="text-[9px] md:text-[10px] text-slate-500 font-bold max-w-[220px] leading-relaxed uppercase tracking-widest mx-auto">
+             <div className="transform-gpu space-y-3 mt-auto">
+               <h4 className="transform-gpu text-xs md:text-sm font-bold text-slate-900 uppercase tracking-[0.2em] group-hover:text-pink-600 transition-colors">Daily Health</h4>
+               <p className="transform-gpu text-[9px] md:text-[10px] text-slate-500 font-bold max-w-[220px] leading-relaxed uppercase tracking-widest mx-auto">
                  {isHighLoad ? 'You are pushing the limits of neural retention.' : 'You are studying at an optimal pace for your goals.'}
                </p>
              </div>
              
-             <div className="absolute bottom-4 right-4 md:bottom-8 md:right-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-               <div className="bg-slate-50 border border-slate-100 text-slate-400 p-2 rounded-full shadow-sm">
-                 <RefreshCw size={14} className="animate-spin-slow" />
+             <div className="transform-gpu absolute bottom-4 right-4 md:bottom-8 md:right-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+               <div className="transform-gpu bg-slate-50 border border-slate-100 text-slate-400 p-2 rounded-full shadow-sm">
+                 <RefreshCw size={14} className="transform-gpu animate-spin-slow" />
                </div>
              </div>
            </motion.div>

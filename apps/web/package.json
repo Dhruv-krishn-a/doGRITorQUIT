@@ -14,8 +14,12 @@
   "dependencies": {
     "@google/genai": "^1.40.0",
     "@hello-pangea/dnd": "^18.0.1",
+    "@planner/dashboard-core": "workspace:*",
+    "@planner/dashboard-ui-web": "workspace:*",
     "@planner/db": "workspace:*",
     "@planner/domain": "workspace:*",
+    "@planner/habits-core": "workspace:*",
+    "@planner/habits-ui-web": "workspace:*",
     "@planner/study-core": "workspace:*",
     "@planner/study-ui-web": "workspace:*",
     "@prisma/adapter-pg": "~5.22.0",

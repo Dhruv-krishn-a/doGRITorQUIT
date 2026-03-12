@@ -7,8 +7,8 @@
   "scripts": {
     "build": "tsc --noEmit"
   },
-  "dependencies": {},
   "devDependencies": {
+    "@repo/typescript-config": "workspace:^",
     "typescript": "^5.0.0"
   }
 }

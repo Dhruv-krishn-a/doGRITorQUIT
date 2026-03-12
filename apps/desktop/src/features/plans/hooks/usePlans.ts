@@ -1,34 +1,37 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../auth/hooks/useAuth';
-import { Plan } from '../components/PlanCard';
 
 export function usePlans() {
-  const { user } = useAuth();
-  const [plans, setPlans] = useState<Plan[]>([]);
+  const { user, session } = useAuth();
+  const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchPlans = useCallback(async () => {
-    if (!user) return;
+    if (!user || !session) return;
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('plans')
-        .select('*, tasks(id, estimatedMinutes, completed, status)')
-        .eq('userId', user.id)
-        .eq('isArchived', false)
-        .order('createdAt', { ascending: false });
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+      const res = await fetch(`${baseUrl}/api/plans`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
 
-      if (error) throw error;
-      setPlans(data as any[]);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `API Error: ${res.status}`);
+      }
+
+      const data = await res.json();
+      setPlans(data.plans || []);
     } catch (err: any) {
       console.error(err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, session]);
 
   useEffect(() => {
     fetchPlans();

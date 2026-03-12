@@ -31,12 +31,12 @@ export default function AdminNav() {
   ];
 
   return (
-    <aside className="w-64 bg-slate-900 text-white min-h-screen flex flex-col fixed left-0 top-0">
-      <div className="p-6 border-b border-slate-800">
-        <h2 className="text-xl font-bold">CMS Admin</h2>
+    <aside className="transform-gpu w-64 bg-slate-900 text-white min-h-screen flex flex-col fixed left-0 top-0">
+      <div className="transform-gpu p-6 border-b border-slate-800">
+        <h2 className="transform-gpu text-xl font-bold">CMS Admin</h2>
       </div>
       
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="transform-gpu flex-1 p-4 space-y-1">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -55,10 +55,10 @@ export default function AdminNav() {
         })}
       </nav>
 
-      <div className="p-4 border-t border-slate-800">
+      <div className="transform-gpu p-4 border-t border-slate-800">
         <button 
           onClick={handleLogout}
-          className="w-full text-left px-4 py-2 text-red-400 hover:bg-slate-800 rounded transition-colors"
+          className="transform-gpu w-full text-left px-4 py-2 text-red-400 hover:bg-slate-800 rounded transition-colors"
         >
           Logout
         </button>

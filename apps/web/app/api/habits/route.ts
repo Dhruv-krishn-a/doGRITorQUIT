@@ -21,7 +21,37 @@ export async function GET(req: Request) {
 
     const data = await habits.getHabitData(user.id, new Date(start), new Date(end));
     
-    return NextResponse.json(data);
+    // Flatten logs for HabitData interface
+    const flatLogs = data.habits.flatMap(h => 
+      (h.logs || []).map(l => ({
+        id: l.id,
+        habitId: h.id,
+        date: l.date.toISOString(),
+        completed: l.completed
+      }))
+    );
+
+    const formattedHabits = data.habits.map(h => ({
+      id: h.id,
+      title: h.title,
+      icon: h.icon,
+      color: h.color,
+      order: h.order,
+      active: h.active,
+      logs: [] // Clear nested logs as we use flatLogs
+    }));
+
+    const formattedNotes = data.notes.map(n => ({
+      id: n.id,
+      date: n.date.toISOString(),
+      content: n.content ?? ""
+    }));
+    
+    return NextResponse.json({
+      habits: formattedHabits,
+      logs: flatLogs,
+      notes: formattedNotes
+    });
   } catch (err) {
     console.error("GET Habits Error:", err);
     
@@ -47,6 +77,10 @@ export async function POST(req: Request) {
     console.error("POST Habit Error:", err);
     
     const message = err instanceof Error ? err.message : "Internal Server Error";
+    if (message.includes('Habit limit reached')) {
+      return NextResponse.json({ error: message }, { status: 403 });
+    }
+    
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -1,0 +1,67 @@
+name: "Release Dogrit Planner"
+
+on:
+  push:
+    tags:
+      - 'v*' # Triggers whenever you push a tag starting with 'v'
+
+jobs:
+  publish-tauri:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'macos-latest' # Build for Mac
+            args: '--target aarch64-apple-darwin'
+          - platform: 'macos-latest' # Build for Mac (Intel)
+            args: '--target x86_64-apple-darwin'
+          - platform: 'ubuntu-22.04' # Build for Linux (Ubuntu, Arch, etc)
+            args: ''
+          - platform: 'windows-latest' # Build for Windows
+            args: ''
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: install Linux dependencies
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: install dependencies
+        run: pnpm install
+
+      - name: build frontend
+        run: pnpm build
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PASSWORD: ${{ secrets.TAURI_SIGNING_PASSWORD }}
+        with:
+          tagName: v__VERSION__ # The action will replace this with version from tauri.conf.json
+          releaseName: "Dogrit Planner v__VERSION__"
+          releaseBody: "See the assets below to download the latest version of Dogrit Planner."
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
+          owner: YOUR_GITHUB_USERNAME
+          repo: dogrit-planner-releases

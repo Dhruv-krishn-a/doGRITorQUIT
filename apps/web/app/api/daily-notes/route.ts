@@ -20,6 +20,10 @@ export async function POST(req: Request) {
     console.error("Daily Note Error:", err);
     
     const message = err instanceof Error ? err.message : "Internal Server Error";
+    if (message.includes('FEATURE_LOCKED')) {
+      return NextResponse.json({ error: "Daily Journaling is locked on your current plan." }, { status: 403 });
+    }
+
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

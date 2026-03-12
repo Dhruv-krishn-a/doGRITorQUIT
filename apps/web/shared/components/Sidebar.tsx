@@ -37,7 +37,6 @@ export interface SidebarPermissions {
 
 const ICONS_MAP: Record<string, React.ReactNode> = {
   "/dashboard": <LayoutDashboard size={20} />,
-  "/dashboard/plans": <CalendarDays size={20} />,
   "/dashboard/today": <CalendarDays size={20} />,
   "/dashboard/daily-checklist": <CheckSquare size={20} />,
   "/dashboard/study": <Brain size={20} />,
@@ -48,7 +47,6 @@ const ICONS_MAP: Record<string, React.ReactNode> = {
 
 const PATH_TO_PERM: Record<string, keyof SidebarPermissions> = {
   "/dashboard": "canViewDashboard",
-  "/dashboard/plans": "canViewPlans",
   "/dashboard/today": "canViewToday",
   "/dashboard/daily-checklist": "canViewChecklist",
   "/dashboard/study": "canViewStudy",
@@ -100,25 +98,25 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
       animate={collapsed ? "collapsed" : "expanded"}
       variants={wrapperVariants}
       transition={springConfig}
-      className="h-screen py-4 px-4 hidden md:block shrink-0 z-1200"
+      className="transform-gpu h-screen py-4 px-4 hidden md:block shrink-0 z-1200"
     >
-      <aside className="relative h-full w-full bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_40px_rgba(0,0,0,0.06)] flex flex-col justify-between rounded-[2.5rem] overflow-hidden transform-gpu antialiased">
+      <aside className="transform-gpu relative h-full w-full bg-white/70 backdrop-blur-2xl border border-white/80 shadow-[0_8px_40px_rgba(0,0,0,0.06)] flex flex-col justify-between rounded-[2.5rem] overflow-hidden transform-gpu antialiased">
         {/* Soft Background Tinting inside Sidebar */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-linear-to-br from-rose-100/50 to-pink-100/50 rounded-full blur-[60px] pointer-events-none -z-10 -mr-20 -mt-20 opacity-60" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-linear-to-tr from-fuchsia-100/50 to-purple-100/50 rounded-full blur-[60px] pointer-events-none -z-10 -ml-20 -mb-20 opacity-60" />
+        <div className="transform-gpu absolute top-0 right-0 w-64 h-64 bg-linear-to-br from-rose-100/50 to-pink-100/50 rounded-full blur-[60px] pointer-events-none -z-10 -mr-20 -mt-20 opacity-60" />
+        <div className="transform-gpu absolute bottom-0 left-0 w-64 h-64 bg-linear-to-tr from-fuchsia-100/50 to-purple-100/50 rounded-full blur-[60px] pointer-events-none -z-10 -ml-20 -mb-20 opacity-60" />
 
         {/* --- Header / Logo --- */}
-        <div className="flex items-center justify-between p-6 mb-2 relative z-10 shrink-0">
+        <div className="transform-gpu flex items-center justify-between p-6 mb-2 relative z-10 shrink-0">
           <AnimatePresence mode="wait">
             {!collapsed && (
               <motion.div
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
-                className="flex items-center gap-2 font-black text-xl text-slate-900 tracking-tighter uppercase"
+                className="transform-gpu flex items-center gap-2 font-bold text-xl text-slate-900 tracking-tighter uppercase"
               >
                 <span>Planner</span>
-                <Sparkles size={14} className="text-rose-500 animate-pulse drop-shadow-sm" />
+                <Sparkles size={14} className="transform-gpu text-rose-500 animate-pulse drop-shadow-sm" />
               </motion.div>
             )}
           </AnimatePresence>
@@ -134,7 +132,7 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
         </div>
 
         {/* --- Navigation Items --- */}
-        <nav className="flex-1 px-4 space-y-2 overflow-y-auto overflow-x-hidden custom-scrollbar relative z-10 pb-4">
+        <nav className="transform-gpu flex-1 px-4 space-y-2 overflow-y-auto overflow-x-hidden custom-scrollbar relative z-10 pb-4">
           {dashboardNav.map((item) => {
             const active = pathname === item.path;
             const permKey = PATH_TO_PERM[item.path];
@@ -153,12 +151,12 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
             }
 
             return (
-              <Link key={item.id} href={item.path} className="block group relative outline-none">
+              <Link key={item.id} href={item.path} className="transform-gpu block group relative outline-none">
                 <div
                   className={classNames(
                     "relative flex items-center px-4 py-3.5 rounded-[1.25rem] transition-colors duration-300",
                     active
-                      ? "text-rose-600 font-black"
+                      ? "text-rose-600 font-bold"
                       : "text-slate-500 font-bold hover:text-slate-900"
                   )}
                 >
@@ -166,12 +164,12 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
                   {active && (
                     <motion.div
                       layoutId="activeSidebarIndicator"
-                      className="absolute inset-0 bg-linear-to-r from-rose-50 to-pink-50 border border-rose-100 rounded-[1.25rem] shadow-sm -z-10"
+                      className="transform-gpu absolute inset-0 bg-linear-to-r from-rose-50 to-pink-50 border border-rose-100 rounded-[1.25rem] shadow-sm -z-10"
                       transition={springConfig}
                     />
                   )}
 
-                  <div className="relative z-10 flex items-center gap-4 w-full">
+                  <div className="transform-gpu relative z-10 flex items-center gap-4 w-full">
                     <motion.span 
                       whileHover={{ scale: active ? 1 : 1.1, rotate: active ? 0 : 5 }}
                       className={classNames(
@@ -188,7 +186,7 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: -10 }}
-                          className="text-sm tracking-wide whitespace-nowrap flex-1"
+                          className="transform-gpu text-sm tracking-wide whitespace-nowrap flex-1"
                         >
                           {item.label}
                         </motion.span>
@@ -199,9 +197,9 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
 
                 {/* Tooltip for collapsed state */}
                 {collapsed && (
-                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 px-3 py-1.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-xl transition-opacity duration-300">
+                  <div className="transform-gpu absolute left-full top-1/2 -translate-y-1/2 ml-4 px-3 py-1.5 bg-slate-900 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-xl transition-opacity duration-300">
                     {item.label}
-                    <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-slate-900 rotate-45" />
+                    <div className="transform-gpu absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-slate-900 rotate-45" />
                   </div>
                 )}
               </Link>
@@ -210,16 +208,16 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
         </nav>
 
         {/* --- Footer / User / Version --- */}
-        <div className="p-6 mt-2 relative z-10 shrink-0">
+        <div className="transform-gpu p-6 mt-2 relative z-10 shrink-0">
            <div className={classNames(
              "flex items-center gap-4 p-2 rounded-3xl border border-transparent transition-all duration-300", 
              collapsed ? "justify-center" : "bg-white/50 border-white shadow-sm hover:shadow-md hover:bg-white"
            )}>
-              <div className="relative shrink-0">
-                <div className="w-10 h-10 rounded-full bg-linear-to-br from-rose-400 to-pink-500 flex items-center justify-center text-white font-black text-sm shadow-[0_4px_15px_rgba(244,63,94,0.4)] border-2 border-white">
+              <div className="transform-gpu relative shrink-0">
+                <div className="transform-gpu w-10 h-10 rounded-full bg-linear-to-br from-rose-400 to-pink-500 flex items-center justify-center text-white font-bold text-sm shadow-[0_4px_15px_rgba(244,63,94,0.4)] border-2 border-white">
                    N
                 </div>
-                <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white shadow-sm" title="Online"></div>
+                <div className="transform-gpu absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white shadow-sm" title="Online"></div>
               </div>
               
               <AnimatePresence mode="wait">
@@ -228,10 +226,10 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="flex-1 min-w-0"
+                    className="transform-gpu flex-1 min-w-0"
                   >
-                    <p className="text-xs font-black text-slate-900 tracking-tight truncate uppercase">Pro Plan Active</p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5 truncate">System v1.6.0</p>
+                    <p className="transform-gpu text-xs font-bold text-slate-900 tracking-tight truncate uppercase">Pro Plan Active</p>
+                    <p className="transform-gpu text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5 truncate">System v1.6.0</p>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -244,9 +242,9 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
 
 function LockedItem({ icon, label, collapsed }: { icon: React.ReactNode, label: string, collapsed: boolean }) {
   return (
-    <div className="group relative flex items-center px-4 py-3.5 rounded-[1.25rem] cursor-not-allowed transition-all duration-300 hover:bg-slate-50/50 border border-transparent hover:border-slate-100">
-       <div className="relative z-10 text-slate-300 group-hover:text-slate-400 flex items-center gap-4 w-full">
-         <span className="transition-transform duration-300 group-hover:scale-105">
+    <div className="transform-gpu group relative flex items-center px-4 py-3.5 rounded-[1.25rem] cursor-not-allowed transition-all duration-300 hover:bg-slate-50/50 border border-transparent hover:border-slate-100">
+       <div className="transform-gpu relative z-10 text-slate-300 group-hover:text-slate-400 flex items-center gap-4 w-full">
+         <span className="transform-gpu transition-transform duration-300 group-hover:scale-105">
            {icon}
          </span>
          
@@ -254,19 +252,19 @@ function LockedItem({ icon, label, collapsed }: { icon: React.ReactNode, label: 
            {!collapsed && (
              <motion.div 
                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-               className="flex-1 flex items-center justify-between"
+               className="transform-gpu flex-1 flex items-center justify-between"
              >
-               <span className="font-bold text-sm text-slate-400 tracking-wide">{label}</span>
-               <Lock size={14} className="text-slate-300" />
+               <span className="transform-gpu font-bold text-sm text-slate-400 tracking-wide">{label}</span>
+               <Lock size={14} className="transform-gpu text-slate-300" />
              </motion.div>
            )}
          </AnimatePresence>
        </div>
        
        {collapsed && (
-         <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 px-3 py-1.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-xl transition-opacity duration-300">
+         <div className="transform-gpu absolute left-full top-1/2 -translate-y-1/2 ml-4 px-3 py-1.5 bg-slate-900 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-xl transition-opacity duration-300">
             Locked
-            <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-slate-900 rotate-45" />
+            <div className="transform-gpu absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-slate-900 rotate-45" />
          </div>
        )}
     </div>

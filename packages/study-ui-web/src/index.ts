@@ -9,6 +9,7 @@ export * from './components/shared/hud/StatsOverview';
 
 // Base Components
 export * from './components/shared/TrackCard';
+export * from './components/shared/PlanCard';
 export * from './components/shared/TrackHeader';
 export * from './components/shared/UnitCard';
 export * from './components/shared/KanbanBoard';
@@ -26,6 +27,3 @@ export * from './hooks/useVideoProgress';
 
 // Project Components
 export * from './components/project';
-
-// Today Components
-export * from './components/today';

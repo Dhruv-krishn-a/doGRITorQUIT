@@ -12,7 +12,6 @@ const featureValueSchema = z.object({
   value: z.coerce.number(), 
 });
 
-// ✅ Renamed to match page import
 export async function updateFeatureValue(formData: FormData) {
   const admin = await getAdminUser();
   if (!admin) throw new Error("Unauthorized");
@@ -25,26 +24,32 @@ export async function updateFeatureValue(formData: FormData) {
 
   if (!parsed.success) return;
 
-  await cms.updateFeatureValue(parsed.data.productId, parsed.data.featureId, parsed.data.value);
+  await cms.updateFeatureValue(parsed.data.productId, parsed.data.featureId, parsed.data.value, admin.id);
   revalidatePath(`/products/${parsed.data.productId}`);
 }
 
-// ✅ Renamed to match page import
 export async function toggleProductFeature(formData: FormData) {
   const admin = await getAdminUser();
   if (!admin) throw new Error("Unauthorized");
 
   const productId = String(formData.get("productId"));
-  const featureId = String(formData.get("featureId"));
+  let featureId = formData.get("featureId") ? String(formData.get("featureId")) : null;
+  const key = formData.get("key") ? String(formData.get("key")) : null;
+  const description = formData.get("description") ? String(formData.get("description")) : "System feature";
+
+  if (!featureId && key) {
+    await cms.createFeature(key, description, admin.id);
+    const allFeatures = await cms.getAllFeatures();
+    const created = allFeatures.find(f => f.key === key);
+    if (created) featureId = String(created.id);
+  }
+
+  if (!featureId) throw new Error("Feature ID or Key required");
   
-  // Logic: If we are calling this, we want to Enable it. 
-  // If we wanted to remove it, we'd use removeProductFeature.
-  await cms.toggleProductFeature(productId, featureId, true);
-  
+  await cms.toggleProductFeature(productId, featureId, true, admin.id);
   revalidatePath(`/products/${productId}`);
 }
 
-// ✅ Added missing function
 export async function removeProductFeature(formData: FormData) {
   const admin = await getAdminUser();
   if (!admin) throw new Error("Unauthorized");
@@ -52,21 +57,26 @@ export async function removeProductFeature(formData: FormData) {
   const productId = String(formData.get("productId"));
   const featureId = String(formData.get("featureId"));
 
-  await cms.removeProductFeature(productId, featureId);
+  await cms.removeProductFeature(productId, featureId, admin.id);
   revalidatePath(`/products/${productId}`);
 }
 
 export async function createSystemFeature(formData: FormData) {
   const admin = await getAdminUser();
-  if (!admin) throw new Error("Unauthorized");
+  if (!admin) return { success: false, error: "Unauthorized" };
 
   const key = String(formData.get("key"));
   const description = String(formData.get("description"));
   
-  if (!key || !description) return;
+  if (!key || !description) return { success: false, error: "Missing required fields" };
   
-  await cms.createFeature(key, description);
-  revalidatePath("/products");
+  try {
+    await cms.createFeature(key, description, admin.id);
+    revalidatePath("/products");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Failed to create feature" };
+  }
 }
 
 export async function createProductAction(formData: FormData) {
@@ -84,9 +94,53 @@ export async function createProductAction(formData: FormData) {
     key,
     priceRupees: price,
     description: "",
-  });
+  }, admin.id);
 
   revalidatePath("/products");
+}
+
+export async function updateProductDetailsAction(formData: FormData) {
+  const admin = await getAdminUser();
+  if (!admin) return { success: false, error: "Unauthorized" };
+
+  const id = String(formData.get("id"));
+  const name = String(formData.get("name"));
+  const description = String(formData.get("description"));
+  const priceInput = formData.get("price");
+  const priceRupees = Number(priceInput);
+
+  if (isNaN(priceRupees) || priceRupees < 0) {
+    return { success: false, error: "Invalid price" };
+  }
+
+  const featuresListRaw = String(formData.get("featuresList") || "");
+  const featuresList = featuresListRaw
+    .split("\n")
+    .map(f => f.trim())
+    .filter(Boolean);
+
+  const offlineEnabled = formData.get("offlineEnabled") === "on" || formData.get("offlineEnabled") === "true";
+  const localDbAllowed = formData.get("localDbAllowed") === "on" || formData.get("localDbAllowed") === "true";
+  const offlineMaxDuration = Number(formData.get("offlineMaxDuration") || 24);
+  const tokenExpiryDuration = Number(formData.get("tokenExpiryDuration") || 48);
+
+  try {
+    await cms.updateProductDetails(id, {
+      name,
+      description,
+      priceRupees,
+      featuresList,
+      offlineEnabled,
+      localDbAllowed,
+      offlineMaxDuration,
+      tokenExpiryDuration
+    }, admin.id);
+
+    revalidatePath(`/products/${id}`);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Failed to update product details" };
+  }
 }
 
 export async function deleteProductAction(productId: string) {
@@ -101,6 +155,6 @@ export async function deleteProductAction(productId: string) {
     throw new Error("System Reserved Tiers cannot be deleted.");
   }
 
-  await cms.deleteProduct(productId);
+  await cms.deleteProduct(productId, admin.id);
   revalidatePath("/products");
 }

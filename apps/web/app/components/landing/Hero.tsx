@@ -110,59 +110,59 @@ export default function Hero() {
   }, []);
 
   return (
-    <section ref={containerRef} className="hero-section min-h-[92vh] flex flex-col items-center justify-center relative overflow-hidden bg-[#FDF2F8]">
+    <section ref={containerRef} className="transform-gpu hero-section min-h-[92vh] flex flex-col items-center justify-center relative overflow-hidden bg-[#FDF2F8]">
       
       {/* Background Ambience */}
-      <div className="hero-blob-1 absolute top-[-10%] left-[-10%] w-150 h-150 rounded-full blur-[120px] bg-purple-500/20 pointer-events-none mix-blend-multiply will-change-transform" />
-      <div className="hero-blob-2 absolute bottom-[-10%] right-[-10%] w-150 h-150 rounded-full blur-[120px] bg-pink-500/20 pointer-events-none mix-blend-multiply will-change-transform" />
+      <div className="transform-gpu hero-blob-1 absolute top-[-10%] left-[-10%] w-150 h-150 rounded-full blur-[120px] bg-purple-500/20 pointer-events-none mix-blend-multiply will-change-transform" />
+      <div className="transform-gpu hero-blob-2 absolute bottom-[-10%] right-[-10%] w-150 h-150 rounded-full blur-[120px] bg-pink-500/20 pointer-events-none mix-blend-multiply will-change-transform" />
 
       {/* Floating 3D Elements */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="floater absolute top-[20%] left-[15%] text-purple-300/60"><Zap size={32} /></div>
-        <div className="floater absolute top-[15%] right-[20%] text-blue-300/60"><Target size={40} /></div>
-        <div className="floater absolute bottom-[25%] left-[20%] text-pink-300/60"><Layers size={36} /></div>
+      <div className="transform-gpu absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="transform-gpu floater absolute top-[20%] left-[15%] text-purple-300/60"><Zap size={32} /></div>
+        <div className="transform-gpu floater absolute top-[15%] right-[20%] text-blue-300/60"><Target size={40} /></div>
+        <div className="transform-gpu floater absolute bottom-[25%] left-[20%] text-pink-300/60"><Layers size={36} /></div>
       </div>
 
-      <div className="z-10 text-center space-y-8 max-w-5xl px-6 relative">
+      <div className="transform-gpu z-10 text-center space-y-8 max-w-5xl px-6 relative">
         
         {/* Badge */}
-        <div className="hero-badge inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-purple-200/60 bg-white/60 text-purple-900 text-xs font-bold uppercase tracking-widest backdrop-blur-md shadow-sm">
-          <Sparkles size={12} className="text-purple-600 animate-pulse" /> 
+        <div className="transform-gpu hero-badge inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-purple-200/60 bg-white/60 text-purple-900 text-xs font-bold uppercase tracking-widest backdrop-blur-md shadow-sm">
+          <Sparkles size={12} className="transform-gpu text-purple-600 animate-pulse" /> 
           <span>v2.0 Now Live</span>
         </div>
 
         {/* Main Heading with Masking Containers */}
-        <h1 className="text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter text-slate-900 leading-[0.9] flex flex-col items-center">
+        <h1 className="transform-gpu text-6xl md:text-8xl lg:text-9xl font-bold tracking-tighter text-slate-900 leading-[0.9] flex flex-col items-center">
           {/* Mask Container 1 */}
-          <span className="block overflow-hidden pb-2">
-            <span className="hero-title-line block">ARCHITECT</span>
+          <span className="transform-gpu block overflow-hidden pb-2">
+            <span className="transform-gpu hero-title-line block">ARCHITECT</span>
           </span>
           {/* Mask Container 2 */}
-          <span className="block overflow-hidden pb-4">
-            <span className="hero-title-line block bg-linear-to-r from-purple-600 via-pink-500 to-purple-600 bg-size-[200%_auto] bg-clip-text text-transparent gradient-text">
+          <span className="transform-gpu block overflow-hidden pb-4">
+            <span className="transform-gpu hero-title-line block bg-linear-to-r from-purple-600 via-pink-500 to-purple-600 bg-size-[200%_auto] bg-clip-text text-transparent gradient-text">
               YOUR FUTURE
             </span>
           </span>
         </h1>
 
-        <p className="hero-desc text-lg md:text-xl text-slate-500 max-w-xl mx-auto font-medium leading-relaxed">
+        <p className="transform-gpu hero-desc text-lg md:text-xl text-slate-500 max-w-xl mx-auto font-medium leading-relaxed">
           The only workspace that uses AI to break down your massive goals into daily, bite-sized tasks.
         </p>
 
         {/* CTA Buttons */}
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div className="transform-gpu pt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link href="/dashboard" aria-label="Open Dashboard">
-            <button className="hero-btn group relative px-8 py-4 bg-slate-900 text-white rounded-full font-bold shadow-2xl shadow-purple-900/20 hover:shadow-purple-900/40 transition-all duration-300 hover:-translate-y-1 flex items-center gap-3 overflow-hidden">
-              <span className="relative z-10">Open Dashboard</span>
-              <ArrowRight size={18} className="relative z-10 group-hover:translate-x-1 transition-transform" />
+            <button className="transform-gpu hero-btn group relative px-8 py-4 bg-slate-900 text-white rounded-full font-bold shadow-2xl shadow-purple-900/20 hover:shadow-purple-900/40 transition-all duration-300 hover:-translate-y-1 flex items-center gap-3 overflow-hidden">
+              <span className="transform-gpu relative z-10">Open Dashboard</span>
+              <ArrowRight size={18} className="transform-gpu relative z-10 group-hover:translate-x-1 transition-transform" />
               {/* Shine Effect */}
-              <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-linear-to-r from-transparent via-white/10 to-transparent skew-x-12" />
+              <div className="transform-gpu absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-linear-to-r from-transparent via-white/10 to-transparent skew-x-12" />
             </button>
           </Link>
           
-          <button className="hero-btn px-8 py-4 text-slate-600 font-semibold hover:text-slate-900 transition-colors flex items-center gap-2 group">
+          <button className="transform-gpu hero-btn px-8 py-4 text-slate-600 font-semibold hover:text-slate-900 transition-colors flex items-center gap-2 group">
             Watch Demo 
-            <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center group-hover:border-purple-200 group-hover:text-purple-600 transition-colors shadow-sm">
+            <div className="transform-gpu w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center group-hover:border-purple-200 group-hover:text-purple-600 transition-colors shadow-sm">
               ▶
             </div>
           </button>

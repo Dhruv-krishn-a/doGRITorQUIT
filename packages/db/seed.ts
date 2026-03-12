@@ -12,9 +12,9 @@ async function main() {
   
   const featuresList = [
     // Access Gates (Boolean)
-    { key: 'ACCESS_TASKS', description: 'Create and manage tasks' },
+    { key: 'ACCESS_TODAY', description: 'Access unified Today dashboard' },
     { key: 'ACCESS_HABITS', description: 'Track daily habits' },
-    { key: 'ACCESS_JOURNAL', description: 'Write daily notes and journal entries' },
+    { key: 'ACCESS_DAILY_JOURNAL', description: 'Write daily notes and journal entries' },
     { key: 'ACCESS_ANALYTICS', description: 'View productivity statistics' },
     { key: 'THEME_CUSTOMIZATION', description: 'Dark/Light mode and custom colors' },
     
@@ -56,9 +56,9 @@ async function main() {
 
   // Configure Free Tier
   const freeConfig = [
-    { key: 'ACCESS_TASKS', value: { enabled: true } },
+    { key: 'ACCESS_TODAY', value: { enabled: true } },
     { key: 'ACCESS_HABITS', value: { enabled: true } },
-    { key: 'ACCESS_JOURNAL', value: { enabled: false } }, // Locked
+    { key: 'ACCESS_DAILY_JOURNAL', value: { enabled: false } }, // Locked
     { key: 'ACCESS_ANALYTICS', value: { enabled: false } }, // Locked
     { key: 'AI_GEN_LIMIT', value: 5 },  // 5 Credits
     { key: 'MAX_PLANS', value: 1 },     // 1 Plan only
@@ -88,9 +88,9 @@ async function main() {
 
   // Configure Pro Tier
   const proConfig = [
-    { key: 'ACCESS_TASKS', value: { enabled: true } },
+    { key: 'ACCESS_TODAY', value: { enabled: true } },
     { key: 'ACCESS_HABITS', value: { enabled: true } },
-    { key: 'ACCESS_JOURNAL', value: { enabled: true } },
+    { key: 'ACCESS_DAILY_JOURNAL', value: { enabled: true } },
     { key: 'ACCESS_ANALYTICS', value: { enabled: true } },
     { key: 'THEME_CUSTOMIZATION', value: { enabled: true } },
     { key: 'AI_GEN_LIMIT', value: 100 }, // 100 Credits

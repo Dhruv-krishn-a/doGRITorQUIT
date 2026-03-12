@@ -3,6 +3,21 @@ import { NextResponse } from "next/server";
 import { getServerUser } from "@/lib/auth-server";
 import { plans } from "@domain"; 
 
+export async function GET() {
+  try {
+    const user = await getServerUser();
+    
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userPlans = await plans.listPlansForUser(user.id);
+    return NextResponse.json({ plans: userPlans });
+  } catch (err) {
+    console.error("[GET /api/plans] ERROR:", err);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
 
 export async function POST(req: Request) {
   try {

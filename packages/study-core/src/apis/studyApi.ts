@@ -13,6 +13,9 @@ export const studyApi = {
   getTrack: (trackId: string) => 
     apiClient<TrackData>(`/api/study/tracks/${trackId}`),
   
+  getUnit: (unitId: string) => 
+    apiClient<any>(`/api/study/units/${unitId}`),
+
   createTrack: (data: { title: string; description?: string; type: string }) =>
     apiClient<Track>('/api/study/tracks', {
       method: 'POST',
@@ -68,5 +71,29 @@ export const studyApi = {
     apiClient(`/api/study/units/${unitId}/complete`, {
       method: 'POST',
       body: JSON.stringify(completionData),
+    }),
+
+  logProgress: (unitId: string, data: { secondsSpent: number, watchPercentage: number }) =>
+    apiClient(`/api/study/units/${unitId}/progress`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  saveNotes: (unitId: string, notes: any) =>
+    apiClient(`/api/study/units/${unitId}/notes`, {
+      method: 'POST',
+      body: JSON.stringify({ notes }),
+    }),
+
+  saveWeeklyReflection: (data: any) =>
+    apiClient('/api/study/reflection', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  addUnit: (trackId: string, unit: any) =>
+    apiClient('/api/study/units', {
+      method: 'POST',
+      body: JSON.stringify({ trackId, ...unit }),
     }),
 };

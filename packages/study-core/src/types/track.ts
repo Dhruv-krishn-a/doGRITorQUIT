@@ -30,6 +30,7 @@ export interface Track {
   remainingMinutes?: number;
   metadata?: any;
   units?: Unit[];
+  updatedAt?: string | Date;
 }
 
 export type UnitStatus = 'BACKLOG' | 'THIS_WEEK' | 'TODAY' | 'IN_PROGRESS' | 'DONE' | 'COMPLETED' | 'BLOCKED' | 'REVIEW';
@@ -52,6 +53,8 @@ export interface Unit {
   actualTimeSpentMinutes?: number;
   totalWatchedSeconds?: number;
   metadata?: any;
+  notes?: any;
+  updatedAt?: string | Date;
   sessions?: {
     id: string;
     startedAt: string | Date;

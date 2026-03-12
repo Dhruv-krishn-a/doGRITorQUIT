@@ -301,7 +301,15 @@ model Product {
   description     String?
   price           Int
   currency        String             @default("INR")
+  featuresList    Json?              // Array of strings for marketing features
   active          Boolean            @default(true)
+  
+  // Offline Access Config
+  offlineEnabled      Boolean        @default(false)
+  localDbAllowed      Boolean        @default(false)
+  offlineMaxDuration  Int            @default(24) // in hours
+  tokenExpiryDuration Int            @default(48) // in hours
+
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
   orders          Order[]
@@ -331,6 +339,22 @@ model ProductFeature {
 
   @@unique([productId, featureId])
   @@map("product_features")
+}
+
+model CmsAuditLog {
+  id          String   @id @default(cuid())
+  adminId     String
+  action      String
+  entityType  String   // e.g. "PRODUCT", "FEATURE", "USER"
+  entityId    String
+  oldValue    Json?
+  newValue    Json?
+  description String?
+  createdAt   DateTime @default(now())
+
+  @@index([adminId])
+  @@index([entityType, entityId])
+  @@map("cms_audit_logs")
 }
 
 model UserSubscription {

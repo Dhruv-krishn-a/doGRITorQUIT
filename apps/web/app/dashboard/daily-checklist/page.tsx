@@ -3,8 +3,9 @@ import { billing } from "@domain";
 import { getServerUser } from "@/lib/auth-server";
 import { redirect } from "next/navigation";
 import { FeatureLocked } from "@/shared/components/FeatureLocked";
-import ChecklistClientPage, { HabitType, LogType, NoteType } from "./client";
+import ChecklistClientPage from "./client";
 import { prisma } from "@/lib/prisma";
+import { HabitData, Habit, HabitLog, DailyNote } from "@planner/habits-core";
 
 export default async function DailyChecklistPage() {
   const user = await getServerUser();
@@ -17,26 +18,21 @@ export default async function DailyChecklistPage() {
     return <FeatureLocked title="Daily Checklist" description="Track your daily habits, mood, and health with our advanced tracker." />;
   }
 
-  // ✅ SERVER SIDE DATA FETCHING (No API calls)
+  // ✅ SERVER SIDE DATA FETCHING
   const initialData = await getChecklistDataForThisWeek(user.id);
 
-  // ✅ RENDER UI with data already present
   return (
     <ChecklistClientPage 
-      initialHabits={initialData.habits}
-      initialLogs={initialData.logs}
-      initialNotes={initialData.notes}
+      initialData={initialData}
       serverDate={new Date().toISOString()}
     />
   );
 }
 
-// Helper to mimic the logic you likely have in /api/habits
-async function getChecklistDataForThisWeek(userId: string) {
-  // 1. Calculate "This Week" on server
+async function getChecklistDataForThisWeek(userId: string): Promise<HabitData> {
   const now = new Date();
-  const day = now.getDay(); // 0 is Sunday
-  const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Adjust to Monday start
+  const day = now.getDay();
+  const diff = now.getDate() - day + (day === 0 ? -6 : 1);
   
   const start = new Date(now);
   start.setDate(diff);
@@ -47,7 +43,6 @@ async function getChecklistDataForThisWeek(userId: string) {
   end.setHours(23, 59, 59, 999);
 
   try {
-    // 2. Parallel Fetch directly from DB
     const [habits, notes] = await Promise.all([
       prisma.habit.findMany({
         where: { userId },
@@ -68,8 +63,7 @@ async function getChecklistDataForThisWeek(userId: string) {
       })
     ]);
 
-    // 3. Flatten logs for easier client consumption
-    const flatLogs: LogType[] = habits.flatMap(h => 
+    const flatLogs: HabitLog[] = habits.flatMap(h => 
       h.logs.map(l => ({
         id: l.id,
         habitId: h.id,
@@ -78,20 +72,20 @@ async function getChecklistDataForThisWeek(userId: string) {
       }))
     );
 
-    // 4. Format habits
-    const formattedHabits: HabitType[] = habits.map(h => ({
+    const formattedHabits: Habit[] = habits.map(h => ({
       id: h.id,
       title: h.title,
       icon: h.icon,
       color: h.color,
+      order: h.order,
+      active: h.active,
       logs: [] 
     }));
     
-    // ✅ FIX: Ensure content is a string (handle nulls from DB)
-    const formattedNotes: NoteType[] = notes.map(n => ({
+    const formattedNotes: DailyNote[] = notes.map(n => ({
         id: n.id,
         date: n.date.toISOString(),
-        content: n.content ?? "" // Fallback to empty string if null
+        content: n.content ?? ""
     }));
 
     return {

@@ -17,11 +17,11 @@ export default function PlanSelect({ currentProductId, products }: Props) {
     <select
       name="productId"
       defaultValue={currentProductId || "manual_free"}
-      className="border border-slate-300 rounded text-sm px-2 py-1 cursor-pointer bg-white max-w-35 truncate hover:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+      className="transform-gpu bg-white border border-slate-200 rounded-xl text-[10px] font-bold uppercase tracking-widest px-3 py-2 cursor-pointer max-w-40 truncate hover:border-rose-300 focus:outline-none focus:ring-4 focus:ring-rose-50 transition-all shadow-sm"
       onChange={(e) => e.target.form?.requestSubmit()}
     >
-      <option value="manual_free">No Active Plan</option>
-      <optgroup label="Available Plans">
+      <option value="manual_free">Free Tier</option>
+      <optgroup label="Available Tiers" className="transform-gpu font-bold">
         {products.map((p) => (
           <option key={p.id} value={p.id}>
             {p.name}

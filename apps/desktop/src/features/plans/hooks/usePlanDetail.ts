@@ -1,25 +1,29 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../auth/hooks/useAuth';
 
 export function usePlanDetail(planId: string) {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const [plan, setPlan] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchPlan = useCallback(async () => {
-    if (!user || !planId) return;
+    if (!user || !session || !planId) return;
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('plans')
-        .select('*, tasks(*, subtasks(*))')
-        .eq('id', planId)
-        .eq('userId', user.id)
-        .single();
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+      const res = await fetch(`${baseUrl}/api/plans/${planId}`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
 
-      if (error) throw error;
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `API Error: ${res.status}`);
+      }
+
+      const data = await res.json();
       setPlan(data);
     } catch (err: any) {
       console.error(err);
@@ -27,7 +31,7 @@ export function usePlanDetail(planId: string) {
     } finally {
       setLoading(false);
     }
-  }, [user, planId]);
+  }, [user, session, planId]);
 
   useEffect(() => {
     fetchPlan();
@@ -35,30 +39,28 @@ export function usePlanDetail(planId: string) {
 
   // Actions
   const createTask = async (taskData: any) => {
-      const { data: task, error } = await supabase.from('tasks').insert({
-          planId,
-          userId: user?.id,
-          title: taskData.title,
-          description: taskData.description,
-          estimatedMinutes: taskData.estimatedMinutes,
-          priority: taskData.priority,
-          date: taskData.date ? new Date(taskData.date).toISOString() : null,
-          status: 'pending',
-          completed: false
-      }).select().single();
-
-      if (error) throw error;
-
-      if (taskData.subtasks && taskData.subtasks.length > 0) {
-          const subtasksPayload = taskData.subtasks.map((st: string) => ({
-              taskId: task.id,
-              title: st,
-              completed: false
-          }));
-          const { error: stError } = await supabase.from('subtasks').insert(subtasksPayload);
-          if (stError) throw stError;
+      try {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+        const res = await fetch(`${baseUrl}/api/tasks`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session?.access_token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            planId,
+            title: taskData.title,
+            description: taskData.description,
+            estimatedMinutes: taskData.estimatedMinutes,
+            priority: taskData.priority,
+            date: taskData.date ? new Date(taskData.date).toISOString() : null,
+            subtasks: taskData.subtasks || []
+          })
+        });
+        if (!res.ok) throw new Error("Failed to create task");
+      } catch (error) {
+        console.error(error);
       }
-
       fetchPlan();
   };
 
@@ -66,47 +68,108 @@ export function usePlanDetail(planId: string) {
       // Filter out subtasks from updates if present, as they need separate handling
       const { subtasks, ...fields } = updates;
       
-      const { error } = await supabase.from('tasks').update(fields).eq('id', taskId);
-      if (error) throw error;
+      try {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+        const res = await fetch(`${baseUrl}/api/tasks/${taskId}`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${session?.access_token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(fields)
+        });
+        if (!res.ok) throw new Error("Failed to update task");
+      } catch (error) {
+        console.error(error);
+      }
       fetchPlan();
   };
 
   const deleteTask = async (taskId: string) => {
-      const { error } = await supabase.from('tasks').delete().eq('id', taskId);
-      if (error) throw error;
+      try {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+        const res = await fetch(`${baseUrl}/api/tasks/${taskId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${session?.access_token}`
+          }
+        });
+        if (!res.ok) throw new Error("Failed to delete task");
+      } catch (error) {
+        console.error(error);
+      }
       fetchPlan();
   };
 
   const toggleSubtask = async (subtaskId: string, completed: boolean) => {
-      const { error } = await supabase.from('subtasks').update({ completed }).eq('id', subtaskId);
-      if (error) throw error;
+      try {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+        const res = await fetch(`${baseUrl}/api/subtasks/${subtaskId}`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${session?.access_token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ completed })
+        });
+        if (!res.ok) throw new Error("Failed to update subtask");
+      } catch (error) {
+        console.error(error);
+      }
       // Optimistic update locally? For now fetch.
       fetchPlan(); 
   };
     
   const deleteSubtask = async (subtaskId: string) => {
-        const { error } = await supabase.from('subtasks').delete().eq('id', subtaskId);
-        if (error) throw error;
-        fetchPlan();
+      try {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+        const res = await fetch(`${baseUrl}/api/subtasks/${subtaskId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${session?.access_token}`
+          }
+        });
+        if (!res.ok) throw new Error("Failed to delete subtask");
+      } catch (error) {
+        console.error(error);
+      }
+      fetchPlan();
   };
 
   const insertDay = async (date: string) => {
-      alert("Shift Day is not yet supported in Desktop.");
+      try {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+        const res = await fetch(`${baseUrl}/api/plans/${planId}/days`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session?.access_token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ date })
+        });
+        if (!res.ok) throw new Error("Failed to insert day");
+        fetchPlan();
+      } catch (err) {
+        console.error(err);
+      }
   };
 
   const deleteDay = async (date: string) => {
        if (!confirm("Delete all tasks on this date?")) return;
        
-       const start = new Date(date); start.setHours(0,0,0,0);
-       const end = new Date(date); end.setHours(23,59,59,999);
-       
-       const { error } = await supabase.from('tasks').delete()
-        .eq('planId', planId)
-        .gte('date', start.toISOString())
-        .lte('date', end.toISOString());
-       
-       if (error) throw error;
-       fetchPlan();
+       try {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+        const res = await fetch(`${baseUrl}/api/plans/${planId}/days?date=${date}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${session?.access_token}`
+          }
+        });
+        if (!res.ok) throw new Error("Failed to delete day");
+        fetchPlan();
+       } catch (err) {
+         console.error(err);
+       }
   };
 
   return { plan, loading, error, actions: { createTask, updateTask, deleteTask, toggleSubtask, deleteSubtask, insertDay, deleteDay } };

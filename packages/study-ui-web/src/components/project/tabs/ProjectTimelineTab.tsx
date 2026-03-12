@@ -40,25 +40,25 @@ export function ProjectTimelineTab({ phases, units }: Pick<ProjectContextProps, 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="p-8 h-full flex flex-col"
+      className="transform-gpu p-8 h-full flex flex-col"
     >
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Waterfall Timeline</h2>
-        <div className="flex bg-white border border-slate-200 p-1.5 rounded-2xl shadow-sm gap-1">
-          <button className="px-5 py-2 rounded-xl text-slate-500 hover:bg-slate-50 text-[10px] font-black uppercase tracking-widest transition-colors">Phase</button>
-          <button className="px-5 py-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">Effort</button>
+      <div className="transform-gpu flex items-center justify-between mb-8">
+        <h2 className="transform-gpu text-2xl font-bold text-slate-900 uppercase tracking-tight">Waterfall Timeline</h2>
+        <div className="transform-gpu flex bg-white border border-slate-200 p-1.5 rounded-2xl shadow-sm gap-1">
+          <button className="transform-gpu px-5 py-2 rounded-xl text-slate-500 hover:bg-slate-50 text-[10px] font-bold uppercase tracking-widest transition-colors">Phase</button>
+          <button className="transform-gpu px-5 py-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl text-[10px] font-bold uppercase tracking-widest shadow-sm">Effort</button>
         </div>
       </div>
 
-      <div className="flex-1 bg-white border border-slate-200 shadow-sm rounded-[2.5rem] p-10 relative overflow-y-auto custom-scrollbar">
-         <div className="flex flex-col gap-8 pb-10">
+      <div className="transform-gpu flex-1 bg-white border border-slate-200 shadow-sm rounded-[2.5rem] p-10 relative overflow-y-auto custom-scrollbar">
+         <div className="transform-gpu flex flex-col gap-8 pb-10">
             {phaseTimelines.map((phase, i) => (
-              <div key={phase.name} className="flex items-center gap-10 group">
-                 <div className="w-32 shrink-0">
-                    <div className="text-[10px] font-black text-slate-700 uppercase tracking-widest truncate">{phase.name}</div>
-                    <div className="text-[8px] font-bold text-slate-400 uppercase">{phase.tasks} tasks • {phase.hours}h</div>
+              <div key={phase.name} className="transform-gpu flex items-center gap-10 group">
+                 <div className="transform-gpu w-32 shrink-0">
+                    <div className="transform-gpu text-[10px] font-bold text-slate-700 uppercase tracking-widest truncate">{phase.name}</div>
+                    <div className="transform-gpu text-[8px] font-bold text-slate-400 uppercase">{phase.tasks} tasks • {phase.hours}h</div>
                  </div>
-                 <div className="flex-1 h-10 bg-slate-100 rounded-2xl relative shadow-inner">
+                 <div className="transform-gpu flex-1 h-10 bg-slate-100 rounded-2xl relative shadow-inner">
                     <motion.div 
                       initial={{ width: 0, opacity: 0 }}
                       animate={{ width: `${Math.min(phase.width, 100 - phase.left)}%`, opacity: 1 }}
@@ -70,7 +70,7 @@ export function ProjectTimelineTab({ phases, units }: Pick<ProjectContextProps, 
                       }`}
                       style={{ left: `${phase.left}%` }}
                     >
-                       <span className="text-[8px] font-black uppercase whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                       <span className="transform-gpu text-[8px] font-bold uppercase whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                          {phase.isDone ? 'Completed' : 'Active Phase'}
                        </span>
                     </motion.div>
@@ -78,7 +78,7 @@ export function ProjectTimelineTab({ phases, units }: Pick<ProjectContextProps, 
               </div>
             ))}
             {phaseTimelines.length === 0 && (
-               <div className="text-center text-slate-400 text-sm font-bold pt-10">No phases to display. Add tasks to see the timeline.</div>
+               <div className="transform-gpu text-center text-slate-400 text-sm font-bold pt-10">No phases to display. Add tasks to see the timeline.</div>
             )}
          </div>
       </div>

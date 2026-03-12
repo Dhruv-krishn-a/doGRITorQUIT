@@ -76,62 +76,62 @@ export function TrackHeader({ track, stats, currentEnergy, onEnergySelect, onOpt
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="space-y-8 w-full max-w-full overflow-hidden transform-gpu antialiased font-sans"
+      className="transform-gpu space-y-8 w-full max-w-full overflow-hidden transform-gpu antialiased font-sans"
     >
       {/* Main Stats Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="transform-gpu grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* --- Card 1: Progress & Energy --- */}
         <motion.div 
           variants={itemVariants}
-          className="lg:col-span-2 bg-white/60 backdrop-blur-xl rounded-[3rem] p-8 md:p-10 border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col justify-between relative overflow-hidden group hover:shadow-xl hover:shadow-rose-100/50 transition-all duration-500"
+          className="transform-gpu lg:col-span-2 bg-white/60 backdrop-blur-xl rounded-[3rem] p-8 md:p-10 border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col justify-between relative overflow-hidden group hover:shadow-xl hover:shadow-rose-100/50 transition-all duration-500"
         >
           {/* Moving Hover Gradient Injection */}
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-br from-rose-50/50 via-white to-pink-50/50 bg-[length:200%_200%] animate-gradient-xy transition-opacity duration-700 pointer-events-none -z-10" />
+          <div className="transform-gpu absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-br from-rose-50/50 via-white to-pink-50/50 bg-[length:200%_200%] animate-gradient-xy transition-opacity duration-700 pointer-events-none -z-10" />
           
           {/* Subtle Corner Glow */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-rose-300/10 rounded-full blur-[80px] -mr-20 -mt-20 pointer-events-none transition-opacity duration-700 opacity-0 group-hover:opacity-100" />
+          <div className="transform-gpu absolute top-0 right-0 w-64 h-64 bg-rose-300/10 rounded-full blur-[80px] -mr-20 -mt-20 pointer-events-none transition-opacity duration-700 opacity-0 group-hover:opacity-100" />
           
-          <div className="flex flex-col md:flex-row justify-between items-start gap-10 relative z-10">
-            <div className="space-y-8 flex-1 w-full">
-              <div className="flex items-center gap-5">
+          <div className="transform-gpu flex flex-col md:flex-row justify-between items-start gap-10 relative z-10">
+            <div className="transform-gpu space-y-8 flex-1 w-full">
+              <div className="transform-gpu flex items-center gap-5">
                 <motion.div 
                   whileHover={{ rotate: 180, scale: 1.1 }}
                   transition={{ duration: 0.5 }}
-                  className="p-4 bg-gradient-to-br from-rose-500 to-pink-500 text-white rounded-2xl shadow-lg shadow-rose-200"
+                  className="transform-gpu p-4 bg-gradient-to-br from-rose-500 to-pink-500 text-white rounded-2xl shadow-lg shadow-rose-200"
                 >
                   <Sparkles size={24} />
                 </motion.div>
                 <div>
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Neural Progress</h3>
-                  <div className="flex items-baseline gap-3">
-                    <span className="text-5xl md:text-6xl font-black text-slate-800 tracking-tighter">{Math.round(track.progressPercentage)}%</span>
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{completedVideos} / {totalVideos} Lessons</span>
+                  <h3 className="transform-gpu text-[10px] font-bold uppercase tracking-[0.4em] text-slate-400">Neural Progress</h3>
+                  <div className="transform-gpu flex items-baseline gap-3">
+                    <span className="transform-gpu text-5xl md:text-6xl font-bold text-slate-800 tracking-tighter">{Math.round(track.progressPercentage)}%</span>
+                    <span className="transform-gpu text-[10px] font-bold text-slate-400 uppercase tracking-widest">{completedVideos} / {totalVideos} Lessons</span>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div className="h-2 w-full bg-white rounded-full overflow-hidden p-0.5 border border-slate-200 shadow-inner">
+              <div className="transform-gpu space-y-4">
+                <div className="transform-gpu h-2 w-full bg-white rounded-full overflow-hidden p-0.5 border border-slate-200 shadow-inner">
                   <motion.div 
                     initial={{ width: 0 }}
                     animate={{ width: `${track.progressPercentage}%` }}
                     transition={{ duration: 1.5, ease: "easeOut" }}
-                    className="h-full bg-gradient-to-r from-rose-400 to-pink-500 rounded-full relative shadow-[0_0_10px_rgba(244,63,94,0.4)]"
+                    className="transform-gpu h-full bg-gradient-to-r from-rose-400 to-pink-500 rounded-full relative shadow-[0_0_10px_rgba(244,63,94,0.4)]"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[shimmer_2s_infinite]" />
+                    <div className="transform-gpu absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[shimmer_2s_infinite]" />
                   </motion.div>
                 </div>
-                <p className="text-[10px] font-black text-rose-500 uppercase tracking-[0.3em] flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                <p className="transform-gpu text-[10px] font-bold text-rose-500 uppercase tracking-[0.3em] flex items-center gap-2">
+                  <span className="transform-gpu w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
                   {track.progressPercentage === 100 ? "Optimization Complete" : "Cognitive Upload in Progress"}
                 </p>
               </div>
             </div>
 
-            <div className="bg-white/80 p-6 rounded-[2rem] border border-slate-100 shadow-sm w-full md:w-auto">
-              <h3 className="text-[9px] font-black uppercase tracking-[0.4em] text-slate-400 mb-5 px-2 text-center md:text-left">Focus Protocol</h3>
-              <div className="flex flex-col gap-3 min-w-[220px]">
+            <div className="transform-gpu bg-white/80 p-6 rounded-[2rem] border border-slate-100 shadow-sm w-full md:w-auto">
+              <h3 className="transform-gpu text-[9px] font-bold uppercase tracking-[0.4em] text-slate-400 mb-5 px-2 text-center md:text-left">Focus Protocol</h3>
+              <div className="transform-gpu flex flex-col gap-3 min-w-[220px]">
                 {energyLevels.map((cfg) => {
                   const isActive = currentEnergy === cfg.level;
                   return (
@@ -141,7 +141,7 @@ export function TrackHeader({ track, stats, currentEnergy, onEnergySelect, onOpt
                       key={cfg.level}
                       onClick={() => onEnergySelect(cfg.level)}
                       title={cfg.tooltip}
-                      className={`flex items-center gap-3.5 p-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+                      className={`flex items-center gap-3.5 p-4 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 ${
                         isActive 
                           ? cfg.activeClass
                           : 'bg-white text-slate-500 border border-slate-200 hover:border-rose-300 hover:text-rose-500 hover:bg-rose-50/50 shadow-sm'
@@ -156,24 +156,24 @@ export function TrackHeader({ track, stats, currentEnergy, onEnergySelect, onOpt
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-12 pt-8 border-t border-slate-200/60 relative z-10">
+          <div className="transform-gpu grid grid-cols-2 md:grid-cols-4 gap-8 mt-12 pt-8 border-t border-slate-200/60 relative z-10">
             <MetricItem 
-              icon={<Youtube size={16} className="text-rose-500 drop-shadow-sm" />}
+              icon={<Youtube size={16} className="transform-gpu text-rose-500 drop-shadow-sm" />}
               label="Course Duration"
               value={formatMins(track.totalDurationMinutes)}
             />
             <MetricItem 
-              icon={<PlayCircleIcon size={16} className="text-emerald-500 drop-shadow-sm" />}
+              icon={<PlayCircleIcon size={16} className="transform-gpu text-emerald-500 drop-shadow-sm" />}
               label="Actual Watched"
               value={formatMins(watchTimeMins)}
             />
             <MetricItem 
-              icon={<Timer size={16} className="text-fuchsia-500 drop-shadow-sm" />}
+              icon={<Timer size={16} className="transform-gpu text-fuchsia-500 drop-shadow-sm" />}
               label="Study Effort"
               value={formatMins(studyTimeMins)}
             />
             <MetricItem 
-              icon={<Clock size={16} className="text-amber-500 drop-shadow-sm" />}
+              icon={<Clock size={16} className="transform-gpu text-amber-500 drop-shadow-sm" />}
               label="Remaining"
               value={formatMins(track.remainingMinutes || 0)}
             />
@@ -183,38 +183,38 @@ export function TrackHeader({ track, stats, currentEnergy, onEnergySelect, onOpt
         {/* --- Card 2: Timeline & Analytics --- */}
         <motion.div 
           variants={itemVariants}
-          className="bg-white/60 backdrop-blur-xl rounded-[3rem] p-8 md:p-10 flex flex-col justify-between relative overflow-hidden group border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-xl hover:shadow-rose-100/50 transition-all duration-500"
+          className="transform-gpu bg-white/60 backdrop-blur-xl rounded-[3rem] p-8 md:p-10 flex flex-col justify-between relative overflow-hidden group border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-xl hover:shadow-rose-100/50 transition-all duration-500"
         >
           {/* Moving Hover Gradient */}
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-br from-rose-50/50 via-white to-fuchsia-50/50 bg-[length:200%_200%] animate-gradient-xy transition-opacity duration-700 pointer-events-none -z-10" />
+          <div className="transform-gpu absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-br from-rose-50/50 via-white to-fuchsia-50/50 bg-[length:200%_200%] animate-gradient-xy transition-opacity duration-700 pointer-events-none -z-10" />
 
-          <div className="absolute top-0 right-0 p-8 opacity-[0.02] group-hover:scale-110 transition-transform duration-1000 text-rose-500 group-hover:opacity-[0.05] pointer-events-none">
+          <div className="transform-gpu absolute top-0 right-0 p-8 opacity-[0.02] group-hover:scale-110 transition-transform duration-1000 text-rose-500 group-hover:opacity-[0.05] pointer-events-none">
             <Target size={200} fill="currentColor" />
           </div>
 
-          <div className="relative z-10 space-y-8">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-rose-50 rounded-lg border border-rose-100 shadow-sm">
-                 <Target size={14} className="text-rose-500" />
+          <div className="transform-gpu relative z-10 space-y-8">
+            <div className="transform-gpu flex items-center gap-3">
+              <div className="transform-gpu p-2 bg-rose-50 rounded-lg border border-rose-100 shadow-sm">
+                 <Target size={14} className="transform-gpu text-rose-500" />
               </div>
-              <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Timeline Analysis</h3>
+              <h3 className="transform-gpu text-[10px] font-bold uppercase tracking-[0.4em] text-slate-400">Timeline Analysis</h3>
             </div>
 
-            <div className="space-y-5">
-              <div className="p-6 bg-white/80 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md hover:border-rose-200 transition-all duration-300">
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2">Expected Finish</p>
-                <p className="text-3xl font-black tracking-tighter uppercase text-slate-800">
+            <div className="transform-gpu space-y-5">
+              <div className="transform-gpu p-6 bg-white/80 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md hover:border-rose-200 transition-all duration-300">
+                <p className="transform-gpu text-[9px] font-bold text-slate-400 uppercase tracking-[0.3em] mb-2">Expected Finish</p>
+                <p className="transform-gpu text-3xl font-bold tracking-tighter uppercase text-slate-800">
                   {stats?.estCompletionDate ? new Date(stats.estCompletionDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '---'}
-                  <span className="text-[10px] text-slate-400 ml-2 font-black tracking-widest">{stats?.estCompletionDate ? new Date(stats.estCompletionDate).getFullYear() : ''}</span>
+                  <span className="transform-gpu text-[10px] text-slate-400 ml-2 font-bold tracking-widest">{stats?.estCompletionDate ? new Date(stats.estCompletionDate).getFullYear() : ''}</span>
                 </p>
-                <div className="flex items-center gap-2 mt-4">
+                <div className="transform-gpu flex items-center gap-2 mt-4">
                   <div className={`px-2 py-1 rounded-md border flex items-center gap-1.5 shadow-sm ${
                     isBehind ? 'bg-rose-50 border-rose-200 text-rose-600' : 
                     isAhead ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 
                     'bg-indigo-50 border-indigo-200 text-indigo-600'
                   }`}>
                     <div className={`w-1.5 h-1.5 rounded-full ${isBehind ? 'bg-rose-500 animate-pulse' : isAhead ? 'bg-emerald-500' : 'bg-indigo-500'}`} />
-                    <span className="text-[8px] font-black uppercase tracking-widest">
+                    <span className="transform-gpu text-[8px] font-bold uppercase tracking-widest">
                       {isBehind ? `${stats.daysDiff}D BEHIND` : isAhead ? `${stats.daysDiff}D AHEAD` : 'ON TARGET'}
                     </span>
                   </div>
@@ -222,33 +222,33 @@ export function TrackHeader({ track, stats, currentEnergy, onEnergySelect, onOpt
               </div>
 
             <div 
-              className="p-6 bg-white/80 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md hover:border-rose-300 hover:bg-rose-50/50 transition-all duration-300 group/target cursor-pointer relative overflow-hidden" 
+              className="transform-gpu p-6 bg-white/80 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md hover:border-rose-300 hover:bg-rose-50/50 transition-all duration-300 group/target cursor-pointer relative overflow-hidden" 
               onClick={() => openModal('COMMIT')}
             >
-                <div className="flex justify-between items-center mb-2">
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Initial Target</p>
-                  <div className="flex items-center gap-1.5 text-[9px] font-black text-rose-500 uppercase tracking-widest opacity-0 group-hover/target:opacity-100 transition-opacity translate-x-2 group-hover/target:translate-x-0 duration-300">
-                    <Settings size={12} className="animate-spin-slow" />
+                <div className="transform-gpu flex justify-between items-center mb-2">
+                  <p className="transform-gpu text-[9px] font-bold text-slate-400 uppercase tracking-[0.3em]">Initial Target</p>
+                  <div className="transform-gpu flex items-center gap-1.5 text-[9px] font-bold text-rose-500 uppercase tracking-widest opacity-0 group-hover/target:opacity-100 transition-opacity translate-x-2 group-hover/target:translate-x-0 duration-300">
+                    <Settings size={12} className="transform-gpu animate-spin-slow" />
                     <span>Re-Sync</span>
                   </div>
                 </div>
-                <p className="text-2xl font-black tracking-tighter uppercase text-slate-800">
+                <p className="transform-gpu text-2xl font-bold tracking-tighter uppercase text-slate-800">
                   {track.targetDate ? new Date(track.targetDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'SET TARGET DATE'}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="relative z-10 pt-8 mt-auto">
+          <div className="transform-gpu relative z-10 pt-8 mt-auto">
             <motion.button 
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={onOptimize}
-              className="w-full py-4 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] transition-all shadow-md shadow-rose-200 flex items-center justify-center gap-3 group/opt relative overflow-hidden"
+              className="transform-gpu w-full py-4 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-2xl font-bold text-[10px] uppercase tracking-[0.3em] transition-all shadow-md shadow-rose-200 flex items-center justify-center gap-3 group/opt relative overflow-hidden"
             >
-              <div className="absolute inset-0 -translate-x-full group-hover/opt:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12" />
-              <TrendingUp size={16} className="group-hover/opt:-translate-y-0.5 group-hover/opt:translate-x-0.5 transition-transform" />
-              <span className="pt-0.5 relative z-10">Update Neural Plan</span>
+              <div className="transform-gpu absolute inset-0 -translate-x-full group-hover/opt:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12" />
+              <TrendingUp size={16} className="transform-gpu group-hover/opt:-translate-y-0.5 group-hover/opt:translate-x-0.5 transition-transform" />
+              <span className="transform-gpu pt-0.5 relative z-10">Update Neural Plan</span>
             </motion.button>
           </div>
         </motion.div>
@@ -259,14 +259,14 @@ export function TrackHeader({ track, stats, currentEnergy, onEnergySelect, onOpt
 
 function MetricItem({ icon, label, value }: { icon: any, label: string, value: string }) {
   return (
-    <div className="space-y-2 group/metric cursor-default">
-      <div className="flex items-center gap-2">
-        <div className="group-hover/metric:scale-110 group-hover/metric:rotate-12 transition-transform duration-300">
+    <div className="transform-gpu space-y-2 group/metric cursor-default">
+      <div className="transform-gpu flex items-center gap-2">
+        <div className="transform-gpu group-hover/metric:scale-110 group-hover/metric:rotate-12 transition-transform duration-300">
           {icon}
         </div>
-        <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none group-hover/metric:text-slate-600 transition-colors">{label}</span>
+        <span className="transform-gpu text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] leading-none group-hover/metric:text-slate-600 transition-colors">{label}</span>
       </div>
-      <p className="text-2xl font-black text-slate-800 tracking-tighter uppercase">{value}</p>
+      <p className="transform-gpu text-2xl font-bold text-slate-800 tracking-tighter uppercase">{value}</p>
     </div>
   );
 }

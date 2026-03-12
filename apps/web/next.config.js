@@ -1,11 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // 1. Transpile internal packages (ADDED STUDY PACKAGES HERE)
+  // 1. Transpile internal packages (ADDED STUDY & HABITS PACKAGES HERE)
   transpilePackages: [
     "@planner/domain", 
     "@planner/db",
     "@planner/study-ui-web", 
-    "@planner/study-core"
+    "@planner/study-core",
+    "@planner/habits-ui-web",
+    "@planner/habits-core",
+    "@planner/dashboard-ui-web",
+    "@planner/dashboard-core",
+    "@repo/ui"
   ],
 
   // 2. Mark specific heavyweight/node-only packages as external

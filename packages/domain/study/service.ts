@@ -1,7 +1,7 @@
 //packages/domain/study/service.ts
 import { prisma } from '@planner/db';
 import { YouTubeClient } from './youtube';
-import { assertTrackCreationAllowed } from '../billing/entitlements';
+import { assertTrackCreationAllowed, getFeatureLimit, checkFeatureAccess, PlanFeature } from '../billing/entitlements';
 import { 
   TrackType, 
   UnitType, 
@@ -72,6 +72,13 @@ export const StudyService = {
     if (!details) throw new Error("Playlist not found");
 
     const playlistItems = await YouTubeClient.getPlaylistItems(playlistId);
+    
+    // ✅ Enforce Video Limit
+    const maxVideos = await getFeatureLimit(userId, PlanFeature.MAX_VIDEOS_PER_PLAYLIST, 50, 500);
+    if (playlistItems.length > maxVideos) {
+      throw new Error(`Playlist exceeds your plan's limit of ${maxVideos} videos. Please upgrade.`);
+    }
+
     const videoIds = playlistItems.map(v => v.id);
     const videoDetails = await YouTubeClient.getVideosDetails(videoIds);
     const detailsMap = new Map(videoDetails.map(d => [d.id, d]));
@@ -139,6 +146,12 @@ export const StudyService = {
     const newItems = playlistItems.filter(item => !existingVideoIds.has(item.id));
 
     if (newItems.length === 0) return { added: 0 };
+
+    // ✅ Enforce Video Limit for Sync
+    const maxVideos = await getFeatureLimit(userId, PlanFeature.MAX_VIDEOS_PER_PLAYLIST, 50, 500);
+    if (track.units.length + newItems.length > maxVideos) {
+      throw new Error(`Sync failed. The playlist would exceed your plan's limit of ${maxVideos} videos. Please upgrade.`);
+    }
 
     const videoIds = newItems.map(v => v.id);
     const videoDetails = await YouTubeClient.getVideosDetails(videoIds);
@@ -690,7 +703,7 @@ export const StudyService = {
     await this.recalculateTrackStats(unit.trackId);
     
     if (isFullyDone) {
-      await this.scheduleRevisions(unitId);
+      await this.scheduleRevisions(userId, unitId);
     }
     
     // Track study load regardless of completion
@@ -735,7 +748,14 @@ export const StudyService = {
     return updatedUnit;
   },
 
-  async scheduleRevisions(unitId: string) { 
+  async scheduleRevisions(userId: string, unitId: string) { 
+    try {
+      await checkFeatureAccess(userId, PlanFeature.ACCESS_SPACED_REPETITION);
+    } catch {
+      // If locked, simply don't schedule, fail gracefully
+      return;
+    }
+
     const intervals = [1, 3, 7];
     await prisma.revisionSchedule.createMany({
       data: intervals.map((d, i) => ({ unitId, nextRevisionAt: new Date(Date.now() + d*86400000), intervalLevel: i }))
@@ -895,6 +915,8 @@ export const StudyService = {
   },
 
   async saveWeeklyReflection(userId: string, data: { answers: any; moodScore: number; stressLevel: number }) {
+    await checkFeatureAccess(userId, PlanFeature.ACCESS_WEEKLY_REFLECTION);
+
     const today = new Date();
     const day = today.getDay();
     const diff = today.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is sunday

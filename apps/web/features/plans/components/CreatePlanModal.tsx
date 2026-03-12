@@ -95,17 +95,16 @@ export default function CreatePlanModal({
       isOpen={isOpen} 
       onClose={onClose} 
       title="Create New Plan"
-      className="z-9999!"
     >
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="transform-gpu space-y-5">
         
         {/* Title */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Plan Title <span className="text-red-500">*</span>
+          <label className="transform-gpu block text-sm font-medium text-slate-700 mb-1">
+            Plan Title <span className="transform-gpu text-red-500">*</span>
           </label>
           <input 
-            className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-hidden placeholder:text-slate-400"
+            className="transform-gpu w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-hidden placeholder:text-slate-400"
             value={title} 
             onChange={(e) => setTitle(e.target.value)} 
             placeholder="e.g. Q4 Marketing Strategy"
@@ -116,9 +115,9 @@ export default function CreatePlanModal({
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
+          <label className="transform-gpu block text-sm font-medium text-slate-700 mb-1">Description</label>
           <textarea 
-            className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-hidden resize-none placeholder:text-slate-400"
+            className="transform-gpu w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-hidden resize-none placeholder:text-slate-400"
             value={description} 
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
@@ -128,14 +127,14 @@ export default function CreatePlanModal({
         </div>
 
         {/* Dates */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="transform-gpu grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Start Date <span className="text-red-500">*</span>
+            <label className="transform-gpu block text-sm font-medium text-slate-700 mb-1">
+              Start Date <span className="transform-gpu text-red-500">*</span>
             </label>
             <input 
               type="date" 
-              className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-hidden text-slate-600"
+              className="transform-gpu w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-hidden text-slate-600"
               value={startDate} 
               onChange={(e) => setStartDate(e.target.value)} 
               required 
@@ -143,12 +142,12 @@ export default function CreatePlanModal({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              End Date <span className="text-red-500">*</span>
+            <label className="transform-gpu block text-sm font-medium text-slate-700 mb-1">
+              End Date <span className="transform-gpu text-red-500">*</span>
             </label>
             <input 
               type="date" 
-              className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-hidden text-slate-600"
+              className="transform-gpu w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-hidden text-slate-600"
               value={endDate} 
               onChange={(e) => setEndDate(e.target.value)} 
               required 
@@ -159,14 +158,14 @@ export default function CreatePlanModal({
 
         {/* Error Display */}
         {error && (
-            <div className="p-3 bg-red-50 text-red-700 text-sm rounded-lg flex items-start gap-2 animate-in fade-in slide-in-from-top-1">
-                <AlertCircle size={16} className="mt-0.5 shrink-0" />
+            <div className="transform-gpu p-3 bg-red-50 text-red-700 text-sm rounded-lg flex items-start gap-2 animate-in fade-in slide-in-from-top-1">
+                <AlertCircle size={16} className="transform-gpu mt-0.5 shrink-0" />
                 <span>{error}</span>
             </div>
         )}
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 pt-2">
+        <div className="transform-gpu flex justify-end gap-3 pt-2">
           <Button 
             type="button" 
             variant="ghost" 
@@ -179,7 +178,7 @@ export default function CreatePlanModal({
             type="submit" 
             variant="primary" 
             disabled={loading}
-            className="min-w-25"
+            className="transform-gpu min-w-25"
           >
             {loading ? "Creating..." : "Create Plan"}
           </Button>

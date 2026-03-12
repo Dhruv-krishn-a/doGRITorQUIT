@@ -13,18 +13,18 @@ export default async function DashboardHome() {
   const firstName = displayName.split(' ')[0];
 
   return (
-    <div className="space-y-8">
+    <div className="transform-gpu space-y-8">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div className="transform-gpu flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl md:text-4xl font-black text-slate-800 tracking-tight">
-            Hello, <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-600 to-violet-600">{firstName}</span> 👋
+          <h1 className="transform-gpu text-3xl md:text-4xl font-bold text-slate-800 tracking-tight">
+            Hello, <span className="transform-gpu text-transparent bg-clip-text bg-linear-to-r from-indigo-600 to-violet-600">{firstName}</span> 👋
           </h1>
-          <p className="text-slate-500 font-medium mt-2 text-lg">
+          <p className="transform-gpu text-slate-500 font-medium mt-2 text-lg">
             Let&apos;s make today productive.
           </p>
         </div>
-        <div className="text-sm font-medium text-slate-400 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm">
+        <div className="transform-gpu text-sm font-medium text-slate-400 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm">
            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
         </div>
       </div>
@@ -43,7 +43,7 @@ async function AsyncDashboardWrapper({ userId, firstName }: { userId: string, fi
 
   if (!dbData) {
     return (
-      <div className="p-6 rounded-3xl bg-rose-50 border border-rose-100 text-rose-600 text-center">
+      <div className="transform-gpu p-6 rounded-3xl bg-rose-50 border border-rose-100 text-rose-600 text-center">
         Unable to load dashboard data. Please try again later.
       </div>
     );

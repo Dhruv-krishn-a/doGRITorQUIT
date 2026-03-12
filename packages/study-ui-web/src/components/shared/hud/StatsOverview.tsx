@@ -48,7 +48,7 @@ export function StatsOverview({ streak, weeklyTimeMinutes }: StatsOverviewProps)
   const springConfig = { type: "spring" as const, stiffness: 300, damping: 25 };
 
   return (
-    <div className="grid grid-cols-2 gap-4 md:gap-6 w-full h-full transform-gpu antialiased">
+    <div className="transform-gpu grid grid-cols-2 gap-4 md:gap-6 w-full h-full transform-gpu antialiased">
       {stats.map((stat, idx) => {
         const Icon = stat.icon;
         return (
@@ -58,10 +58,10 @@ export function StatsOverview({ streak, weeklyTimeMinutes }: StatsOverviewProps)
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...springConfig, delay: idx * 0.1 }}
             whileHover={{ y: -6, scale: 1.02 }}
-            className="bg-white/60 backdrop-blur-xl p-6 md:p-8 rounded-[2.5rem] border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-xl hover:shadow-rose-100/50 flex flex-col items-center justify-center text-center gap-4 md:gap-5 group transition-all duration-500 relative overflow-hidden"
+            className="transform-gpu bg-white/60 backdrop-blur-xl p-6 md:p-8 rounded-[2.5rem] border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-xl hover:shadow-rose-100/50 flex flex-col items-center justify-center text-center gap-4 md:gap-5 group transition-all duration-500 relative overflow-hidden"
           >
             {/* Subtle Internal Shimmer Canvas */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent pointer-events-none -z-10" />
+            <div className="transform-gpu absolute inset-0 bg-gradient-to-br from-white/40 to-transparent pointer-events-none -z-10" />
             
             {/* Icon Container */}
             <div className={`p-3.5 md:p-4 rounded-[1.25rem] border shadow-sm transition-all duration-500 shrink-0 ${stat.baseColor} ${stat.hoverColor}`}>
@@ -70,11 +70,11 @@ export function StatsOverview({ streak, weeklyTimeMinutes }: StatsOverviewProps)
             </div>
             
             {/* Text Content */}
-            <div className="min-w-0">
-              <p className="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter leading-none mb-1.5 md:mb-2 truncate group-hover:text-slate-800 transition-colors">
+            <div className="transform-gpu min-w-0">
+              <p className="transform-gpu text-3xl md:text-4xl font-bold text-slate-900 tracking-tighter leading-none mb-1.5 md:mb-2 truncate group-hover:text-slate-800 transition-colors">
                 {stat.value}
               </p>
-              <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-[0.25em] truncate group-hover:text-slate-500 transition-colors">
+              <p className="transform-gpu text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-[0.25em] truncate group-hover:text-slate-500 transition-colors">
                 {stat.label}
               </p>
             </div>
