@@ -67,4 +67,11 @@ export interface TrackData {
   track: Track & { units: Unit[] };
   recentSessions?: any[];
   stats: TrackStats;
+  momentum?: {
+    score: number;
+    status: string;
+    activity: { date: string, seconds: number }[];
+    isDrifting: boolean;
+    nudge: { message: string, action: string, unitId: string } | null;
+  };
 }

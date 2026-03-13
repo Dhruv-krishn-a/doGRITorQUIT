@@ -181,13 +181,13 @@ export function YoutubeDetailView() {
     </div>
   );
 
-  const { track, stats } = activeTrack;
+  const { track, stats, momentum } = activeTrack;
 
   return (
     <div className="flex-1 min-w-0 relative text-slate-800 w-full rounded-tl-3xl overflow-x-hidden min-h-screen bg-slate-50/50">
       
       <div className="relative z-10 w-full px-4 md:px-8 pb-24 space-y-8">
-        <header className="flex flex-col gap-8 w-full pt-8 relative z-10">
+        <header className="flex flex-col gap-6 w-full pt-8 relative z-10">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 w-full">
             
             <div className="flex items-start md:items-center gap-4 flex-1 min-w-0">
@@ -198,7 +198,7 @@ export function YoutubeDetailView() {
                 <ArrowLeft size={20} />
               </button>
               
-              <div className="flex-1 min-w-0 space-y-1">
+              <div className="flex-1 min-w-0 space-y-2">
                  <div className="flex flex-wrap items-center gap-3">
                    <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight truncate">
                      {track.title}
@@ -207,15 +207,20 @@ export function YoutubeDetailView() {
                      YouTube Course
                    </span>
                  </div>
-                 <p className="text-slate-400 font-medium text-xs line-clamp-1">
-                   {track.description || 'Active learning track.'}
-                 </p>
+                 <div className="flex items-center gap-3">
+                   <div className="h-1.5 w-32 bg-slate-200 rounded-full overflow-hidden">
+                     <div style={{ width: `${track.progressPercentage}%` }} className="h-full bg-rose-500 rounded-full" />
+                   </div>
+                   <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest">
+                     {Math.round(track.progressPercentage)}% Complete
+                   </p>
+                 </div>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-3 shrink-0">
               
-              {/* Simple Timer */}
+              {/* Session Controls */}
               <div className="flex items-center gap-2 bg-white border border-slate-200 p-1.5 rounded-xl shadow-sm">
                  <div className="px-3">
                     <p className="text-[8px] font-bold uppercase text-slate-400 tracking-widest leading-none mb-1">Session</p>
@@ -225,37 +230,30 @@ export function YoutubeDetailView() {
                     <button 
                       onClick={() => setIsTimerRunning(!isTimerRunning)}
                       className={`p-2 rounded-lg transition-colors ${isTimerRunning ? 'bg-rose-500 text-white' : 'bg-slate-50 text-slate-500 hover:text-rose-500 hover:bg-rose-50'}`}
+                      title={isTimerRunning ? "Pause Session" : "Start Session"}
                     >
                       {isTimerRunning ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
                     </button>
-                    <button onClick={() => { setSeconds(0); setIsTimerRunning(false); }} className="p-2 bg-slate-50 text-slate-500 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors">
+                    <button onClick={() => { setSeconds(0); setIsTimerRunning(false); }} className="p-2 bg-slate-50 text-slate-500 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors" title="Reset Timer">
                       <RotateCcw size={16} />
                     </button>
                  </div>
               </div>
 
-              {/* Actions */}
-              <button 
-                onClick={handleSync} disabled={isSyncing}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-600 hover:text-rose-500 shadow-sm font-bold text-[10px] uppercase tracking-widest transition-colors disabled:opacity-50"
-              >
-                {isSyncing ? <Loader2 size={14} className="animate-spin text-rose-500" /> : <RefreshCw size={14} />}
-                {isSyncing ? 'Syncing' : 'Sync'}
-              </button>
-              <button onClick={async () => { await fetchTrack(track.id); openModal('DELETE'); }} className="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 shadow-sm transition-colors" title="Delete Course">
-                <Trash2 size={18} />
-              </button>
+              {/* Menu Actions */}
+              <div className="flex items-center gap-1.5 bg-white border border-slate-200 p-1.5 rounded-xl shadow-sm">
+                <button 
+                  onClick={handleSync} disabled={isSyncing}
+                  className="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors disabled:opacity-50"
+                  title="Sync Vectors"
+                >
+                  <RefreshCw size={16} className={isSyncing ? "animate-spin text-rose-500" : ""} />
+                </button>
+                <button onClick={async () => { await fetchTrack(track.id); openModal('DELETE'); }} className="p-2 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Delete Course">
+                  <Trash2 size={16} />
+                </button>
+              </div>
             </div>
-          </div>
-
-          <div>
-            <TrackHeader 
-              track={track as Track & { units: Unit[] }} 
-              stats={stats}
-              currentEnergy={energy}
-              onEnergySelect={(lvl) => setEnergy(lvl)}
-              onOptimize={() => planToday(track.id, energy)}
-            />
           </div>
         </header>
 
@@ -302,8 +300,24 @@ export function YoutubeDetailView() {
 
           <main className="pt-4">
             <AnimatePresence mode="wait">
+
               {activeTab === 'BOARD' && (
                 <motion.div key="board" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                  {momentum?.isDrifting && momentum?.nudge && (
+                    <div className="bg-rose-50 border border-rose-200 rounded-3xl p-6 mb-8 flex items-center justify-between shadow-sm">
+                      <div>
+                        <h3 className="text-rose-600 font-bold text-lg mb-1">{momentum.nudge.message}</h3>
+                        <p className="text-slate-600 font-medium">{momentum.nudge.action}</p>
+                      </div>
+                      <button 
+                        onClick={() => router.push(`/dashboard/study/youtube/${trackId}/${momentum.nudge?.unitId}`)}
+                        className="px-6 py-3 bg-rose-600 text-white font-bold rounded-xl text-xs uppercase tracking-widest hover:bg-rose-700 transition-colors shadow-lg shadow-rose-200"
+                      >
+                        Resume for 5 mins
+                      </button>
+                    </div>
+                  )}
+    
                   {viewMode === 'KANBAN' ? (
                     <KanbanBoard 
                       units={track.units} 
@@ -358,7 +372,48 @@ export function YoutubeDetailView() {
 
               {activeTab === 'ANALYTICS' && (
                 <motion.div key="analytics" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
+                  
+                  <div className="mb-8">
+                    <TrackHeader 
+                      track={track as Track & { units: Unit[] }} 
+                      stats={stats}
+                      currentEnergy={energy}
+                      onEnergySelect={(lvl) => setEnergy(lvl)}
+                      onOptimize={() => planToday(track.id, energy)}
+                    />
+                  </div>
+
+
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {/* Momentum Graph */}
+                    <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm col-span-full">
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2.5 bg-rose-50 text-rose-500 rounded-xl"><Activity size={18} /></div>
+                          <h3 className="text-sm font-bold uppercase tracking-widest text-slate-800">Study Momentum</h3>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-2xl font-bold text-rose-500">{momentum?.score || 0}%</span>
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-2">{momentum?.status || 'STEADY'}</span>
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center gap-2">
+                        {momentum?.activity?.map((day: any, idx: number) => {
+                          const minutes = Math.floor(day.seconds / 60);
+                          let colorClass = "bg-slate-100";
+                          if (minutes > 30) colorClass = "bg-rose-500";
+                          else if (minutes > 10) colorClass = "bg-rose-400";
+                          else if (minutes > 0) colorClass = "bg-rose-200";
+                          
+                          return (
+                            <div key={idx} className="flex flex-col items-center gap-2 flex-1">
+                              <div className={`w-full aspect-square rounded-md ${colorClass}`} title={`${day.date}: ${minutes} mins`} />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+    
                     {/* Time Remaining Card */}
                     <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
                       <div className="flex items-center gap-3 mb-4">

@@ -16,7 +16,7 @@ export const siteNav: NavItem[] = [
   { id: "dashboard", label: "Dashboard", path: "/", group: "dashboard", order: 1, visible: true },
   { id: "today", label: "Today", path: "/today", group: "dashboard", order: 2, visible: true },
   { id: "checklist", label: "Daily Checklist", path: "/daily-checklist", group: "dashboard", order: 3, visible: true },
-  { id: "upgrade-os", label: "Upgrade OS", path: "/study", group: "dashboard", order: 4, visible: true },
+  { id: "upgrade-os", label: "Upgrade Plan", path: "/study", group: "dashboard", order: 4, visible: true },
   { id: "analytics", label: "Analytics", path: "/analytics", group: "dashboard", order: 5, visible: true },
   { id: "subscriptions", label: "Subscriptions", path: "/subscriptions", group: "dashboard", order: 6, visible: true },
   { id: "settings", label: "Settings", path: "/settings", group: "dashboard", order: 7, visible: true },

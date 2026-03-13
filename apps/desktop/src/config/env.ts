@@ -3,7 +3,7 @@
 const isDev = import.meta.env.DEV;
 
 // Primary Production URL
-export const PRODUCTION_URL = 'https://dogritorquit.in';
+export const PRODUCTION_URL = 'https://www.dogritorquit.in';
 
 // API Base URL
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 

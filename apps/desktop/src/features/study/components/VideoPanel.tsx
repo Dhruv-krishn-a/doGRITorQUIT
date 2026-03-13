@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import YouTube, { YouTubeProps } from "react-youtube";
 
 interface VideoPanelProps {
+  playerRef: React.MutableRefObject<any>;
   unit: Unit | undefined;
   youtubeId: string | null;
   hasMounted: boolean;
@@ -15,9 +16,11 @@ interface VideoPanelProps {
   formatTime: (s: number) => string;
   onProgress: (time: number) => void;
   watchPercentage: number;
+  isDeepWork?: boolean;
 }
 
 export const VideoPanel = ({
+  playerRef,
   unit,
   youtubeId,
   hasMounted,
@@ -27,10 +30,10 @@ export const VideoPanel = ({
   setSeconds,
   formatTime,
   onProgress,
-  watchPercentage
+  watchPercentage,
+  isDeepWork
 }: VideoPanelProps) => {
-  const playerRef = React.useRef<any>(null);
-
+  
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (!isPaused && playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
@@ -67,7 +70,7 @@ export const VideoPanel = ({
   };
 
   return (
-    <div className="transform-gpu flex flex-col bg-slate-950 rounded-[2.5rem] overflow-hidden border border-rose-100/10 shadow-2xl relative h-full">
+    <div className={`flex flex-col bg-slate-950 overflow-hidden border shadow-2xl relative h-full ${isDeepWork ? "rounded-none border-none" : "rounded-[2.5rem] border-rose-100/10"}`}>
       <div className="transform-gpu aspect-video w-full bg-black relative z-0">
         {youtubeId && hasMounted ? (
           <div className="transform-gpu absolute inset-0 z-10 pointer-events-auto">

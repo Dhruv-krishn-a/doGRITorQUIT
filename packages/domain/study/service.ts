@@ -421,9 +421,70 @@ export const StudyService = {
     const weeklyVelocityMins = avgMinsPerDay * 7;
     const averageWeeklyProgress = track.totalDurationMinutes > 0 ? (weeklyVelocityMins / track.totalDurationMinutes) * 100 : 0;
 
+    // Momentum & Drift Engine
+    const now = new Date();
+    const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+    const trackSessions14d = await prisma.unitSession.findMany({
+      where: {
+        userId,
+        unit: { trackId },
+        startedAt: { gte: fourteenDaysAgo }
+      }
+    });
+
+    const dailyActivityMap = new Map<string, number>();
+    for (let i = 0; i < 14; i++) {
+        const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+        dailyActivityMap.set(d.toISOString().split('T')[0], 0);
+    }
+
+    trackSessions14d.forEach(s => {
+        const dateStr = s.startedAt.toISOString().split('T')[0];
+        if (dailyActivityMap.has(dateStr)) {
+            dailyActivityMap.set(dateStr, (dailyActivityMap.get(dateStr) || 0) + s.watchedSeconds);
+        }
+    });
+
+    const activeDaysCount = Array.from(dailyActivityMap.values()).filter(v => v > 0).length;
+    const momentumScore = Math.round((activeDaysCount / 14) * 100);
+    let momentumStatus = 'STEADY';
+    if (momentumScore >= 70) momentumStatus = 'BLAZING';
+    else if (momentumScore <= 30) momentumStatus = 'SLIPPING';
+    if (activeDaysCount === 0) momentumStatus = 'INACTIVE';
+
+    const last3Days = [0, 1, 2].map(i => {
+        const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+        return dailyActivityMap.get(d.toISOString().split('T')[0]) || 0;
+    });
+    const isDrifting = last3Days.every(v => v === 0);
+
+    let driftNudge = null;
+    if (isDrifting) {
+        const incompleteUnits = track.units.filter(u => u.status !== 'DONE');
+        if (incompleteUnits.length > 0) {
+            incompleteUnits.sort((a, b) => (a.durationMinutes || 999) - (b.durationMinutes || 999));
+            const easiest = incompleteUnits[0];
+            driftNudge = {
+                message: "It's been a few days! Momentum is built in small steps.",
+                action: `Start with something easy: ${easiest.title} (${easiest.durationMinutes || 5} mins)`,
+                unitId: easiest.id
+            };
+        }
+    }
+
     return {
       track,
       recentSessions,
+      momentum: {
+        score: momentumScore,
+        status: momentumStatus,
+        activity: Array.from(dailyActivityMap.entries()).map(([date, seconds]) => ({
+            date,
+            seconds
+        })).reverse(),
+        isDrifting,
+        nudge: driftNudge
+      },
       stats: {
         avgMinsPerDay,
         estCompletionDate,

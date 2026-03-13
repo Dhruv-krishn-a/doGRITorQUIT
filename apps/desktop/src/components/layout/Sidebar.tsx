@@ -137,77 +137,100 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
           </motion.button>
         </div>
 
-        <nav className="transform-gpu flex-1 px-4 space-y-2 overflow-y-auto overflow-x-hidden custom-scrollbar relative z-10 pb-4">
-          {dashboardNav.map((item) => {
-            const active = pathname === item.path || (pathname.startsWith(item.path) && item.path !== "/");
-            const permKey = PATH_TO_PERM[item.path];
-            const isAllowed = permissions && permKey ? permissions[permKey] : true;
-            const Icon = ICONS_MAP[item.path] || <LayoutDashboard size={20} />;
+        <nav className="transform-gpu flex-1 px-4 space-y-6 overflow-y-auto overflow-x-hidden custom-scrollbar relative z-10 pb-4 mt-2">
+          {(() => {
+            const plannerItems = dashboardNav.filter(i => ['dashboard', 'today', 'checklist', 'upgrade-os'].includes(i.id));
+            const insightItems = dashboardNav.filter(i => ['analytics'].includes(i.id));
+            const accountItems = dashboardNav.filter(i => ['subscriptions', 'settings'].includes(i.id));
 
-            if (!isAllowed) {
+            const renderGroup = (title: string, items: typeof dashboardNav) => {
+              if (items.length === 0) return null;
               return (
-                <LockedItem 
-                  key={item.id} 
-                  icon={Icon} 
-                  label={item.label} 
-                  collapsed={collapsed} 
-                />
+                <div className="space-y-1">
+                  {!collapsed && (
+                    <motion.div 
+                      initial={{ opacity: 0 }} 
+                      animate={{ opacity: 1 }} 
+                      className="px-4 mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400"
+                    >
+                      {title}
+                    </motion.div>
+                  )}
+                  {items.map((item) => {
+                    const active = pathname === item.path || (pathname.startsWith(item.path) && item.path !== "/");
+                    const permKey = PATH_TO_PERM[item.path];
+                    const isAllowed = permissions && permKey ? permissions[permKey] : true;
+                    const Icon = ICONS_MAP[item.path] || <LayoutDashboard size={20} />;
+
+                    if (!isAllowed) {
+                      return <LockedItem key={item.id} icon={Icon} label={item.label} collapsed={collapsed} />;
+                    }
+
+                    return (
+                      <Link key={item.id} to={item.path} className="transform-gpu block group relative outline-none">
+                        <div
+                          className={cn(
+                            "relative flex items-center px-4 py-3 rounded-[1.25rem] transition-colors duration-300",
+                            active
+                              ? "text-rose-600 font-bold"
+                              : "text-slate-500 font-medium hover:text-slate-900 hover:bg-slate-50/50"
+                          )}
+                        >
+                          {active && (
+                            <motion.div
+                              layoutId="activeSidebarIndicator"
+                              className="transform-gpu absolute inset-0 bg-rose-50 border border-rose-100 rounded-[1.25rem] shadow-sm -z-10"
+                              transition={springConfig}
+                            />
+                          )}
+
+                          <div className="transform-gpu relative z-10 flex items-center gap-4 w-full">
+                            <motion.span 
+                              whileHover={{ scale: active ? 1 : 1.1, rotate: active ? 0 : 5 }}
+                              className={cn(
+                                "transition-all duration-300", 
+                                active ? "text-rose-500 drop-shadow-[0_0_8px_rgba(244,63,94,0.4)]" : "text-slate-400 group-hover:text-slate-600"
+                              )}
+                            >
+                              {Icon}
+                            </motion.span>
+                            
+                            <AnimatePresence mode="wait">
+                              {!collapsed && (
+                                <motion.span
+                                  initial={{ opacity: 0, x: -10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  exit={{ opacity: 0, x: -10 }}
+                                  className="transform-gpu text-sm tracking-wide whitespace-nowrap flex-1"
+                                >
+                                  {item.label}
+                                </motion.span>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        </div>
+
+                        {collapsed && (
+                          <div className="transform-gpu absolute left-full top-1/2 -translate-y-1/2 ml-4 px-3 py-1.5 bg-slate-900 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-xl transition-opacity duration-300">
+                            {item.label}
+                            <div className="transform-gpu absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-slate-900 rotate-45" />
+                          </div>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
               );
-            }
+            };
 
             return (
-              <Link key={item.id} to={item.path} className="transform-gpu block group relative outline-none">
-                <div
-                  className={cn(
-                    "relative flex items-center px-4 py-3.5 rounded-[1.25rem] transition-colors duration-300",
-                    active
-                      ? "text-rose-600 font-bold"
-                      : "text-slate-500 font-bold hover:text-slate-900"
-                  )}
-                >
-                  {active && (
-                    <motion.div
-                      layoutId="activeSidebarIndicator"
-                      className="transform-gpu absolute inset-0 bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-100 rounded-[1.25rem] shadow-sm -z-10"
-                      transition={springConfig}
-                    />
-                  )}
-
-                  <div className="transform-gpu relative z-10 flex items-center gap-4 w-full">
-                    <motion.span 
-                      whileHover={{ scale: active ? 1 : 1.1, rotate: active ? 0 : 5 }}
-                      className={cn(
-                        "transition-all duration-300", 
-                        active ? "text-rose-500 drop-shadow-[0_0_8px_rgba(244,63,94,0.4)]" : "text-slate-400 group-hover:text-slate-600"
-                      )}
-                    >
-                      {Icon}
-                    </motion.span>
-                    
-                    <AnimatePresence mode="wait">
-                      {!collapsed && (
-                        <motion.span
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -10 }}
-                          className="transform-gpu text-sm tracking-wide whitespace-nowrap flex-1"
-                        >
-                          {item.label}
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </div>
-
-                {collapsed && (
-                  <div className="transform-gpu absolute left-full top-1/2 -translate-y-1/2 ml-4 px-3 py-1.5 bg-slate-900 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-xl transition-opacity duration-300">
-                    {item.label}
-                    <div className="transform-gpu absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-slate-900 rotate-45" />
-                  </div>
-                )}
-              </Link>
+              <>
+                {renderGroup("Planner", plannerItems)}
+                {renderGroup("Insights", insightItems)}
+                {renderGroup("Account", accountItems)}
+              </>
             );
-          })}
+          })()}
         </nav>
 
         <div className="transform-gpu p-6 mt-2 relative z-10 shrink-0">

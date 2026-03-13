@@ -13,6 +13,7 @@ import { NotesPanel } from "../components/NotesPanel";
 
 export function StudyView() {
   const { trackId, unitId } = useParams();
+  const playerRef = React.useRef<any>(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { activeTrack, fetchTrack, openModal, saveNotes, logProgress, dashboard, moveUnit } = useStudy();
@@ -31,8 +32,44 @@ export function StudyView() {
   const [isPaused, setIsPaused] = useState(searchParams.get("autostart") !== "true");
 
   // Notes State
-  const [notes, setNotes] = useState("");
+  const [freeformNotes, setFreeformNotes] = useState<string>("");
+  const [questions, setQuestions] = useState<any[]>([]);
+  const [currentTab, setCurrentTab] = useState<"NOTES" | "QUESTIONS">("NOTES");
   const [isSaving, setIsSaving] = useState(false);
+  const [videoWidth, setVideoWidth] = useState(50);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Auto-save debounced
+  useEffect(() => {
+    if (!unitId || !hasMounted) return;
+    const timer = setTimeout(() => {
+      saveNotes(unitId as string, JSON.stringify({ freeform: freeformNotes, questions })).catch(() => {});
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [freeformNotes, questions, unitId, saveNotes, hasMounted]);
+
+  const unit = activeTrack?.track?.units?.find((u) => u.id === unitId);
+
+  useEffect(() => {
+    if (unit?.notes) {
+      try {
+        const parsed = typeof unit.notes === 'string' ? JSON.parse(unit.notes) : unit.notes;
+        if (Array.isArray(parsed)) {
+          const qs = parsed.filter((n: any) => n.type === 'QUESTION');
+          const others = parsed.filter((n: any) => n.type !== 'QUESTION').map((n: any) => n.content).join('\n\n');
+          setQuestions(qs);
+          setFreeformNotes(others);
+        } else if (parsed && typeof parsed === 'object') {
+          setFreeformNotes(parsed.freeform || "");
+          setQuestions(parsed.questions || []);
+        }
+      } catch (e) {
+        if (typeof unit.notes === 'string') {
+          setFreeformNotes(unit.notes);
+        }
+      }
+    }
+  }, [unit?.notes]);
 
   useEffect(() => {
     setHasMounted(true);
@@ -41,8 +78,6 @@ export function StudyView() {
   useEffect(() => {
     if (trackId) fetchTrack(trackId as string);
   }, [trackId, fetchTrack]);
-
-  const unit = activeTrack?.track?.units?.find((u) => u.id === unitId);
 
   // Progress Tracking Hook
   const { percentage, onProgress } = useVideoProgress((unit as any)?.durationSeconds || 0);
@@ -83,7 +118,7 @@ export function StudyView() {
     if (!unitId || isSaving) return;
     setIsSaving(true);
     try {
-      await saveNotes(unitId as string, notes);
+      await saveNotes(unitId as string, JSON.stringify({ freeform: freeformNotes, questions }));
       toast.success("Notes saved");
     } catch {
       toast.error("Sync failed");
@@ -225,17 +260,7 @@ export function StudyView() {
         isDeepWork ? "bg-slate-950 p-0" : "bg-[#fff9fa] p-4 md:p-8 lg:p-10 gap-6"
       }`}
     >
-      {!isDeepWork ? globalHeader : (
-        <motion.button
-          initial={{ y: -50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          onClick={() => setIsDeepWork(false)}
-          className="transform-gpu absolute top-6 right-6 z-50 flex items-center gap-3 px-6 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 rounded-full text-white transition-all group"
-        >
-          <Zap size={16} className="transform-gpu text-amber-400 group-hover:text-amber-300" />
-          <span className="transform-gpu text-[10px] font-bold uppercase tracking-widest">Exit Focus</span>
-        </motion.button>
-      )}
+      {!isDeepWork && globalHeader}
 
       <main className={`flex-1 min-h-0 flex gap-6 relative transition-all duration-700 ${isDeepWork ? "scale-100" : ""}`}>
         <AnimatePresence mode="wait">
@@ -245,11 +270,13 @@ export function StudyView() {
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.98 }}
-              className={`w-full flex h-full gap-6 ${transpose ? "flex-row-reverse" : "flex-row"}`}
+              className={`w-full flex h-full gap-0 ${transpose ? "flex-row-reverse" : "flex-row"}`}
             >
-              <div className="transform-gpu w-[45%] h-full">
+              <div className="h-full shrink-0" style={{ width: `${transpose ? 100 - videoWidth : videoWidth}%` }}>
                 <VideoPanel
+                  playerRef={playerRef}
                   unit={unit}
+                  isDeepWork={isDeepWork}
                   youtubeId={youtubeId}
                   hasMounted={hasMounted}
                   isPaused={isPaused}
@@ -261,11 +288,48 @@ export function StudyView() {
                   watchPercentage={percentage}
                 />
               </div>
-              <div className="transform-gpu flex-1 h-full">
+
+              <div 
+                className={`w-2 h-full cursor-col-resize group flex items-center justify-center z-10 relative ${isDragging ? 'bg-rose-500/10' : 'hover:bg-slate-100'}`}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  setIsDragging(true);
+                  const startX = e.pageX;
+                  const startWidth = transpose ? 100 - videoWidth : videoWidth;
+                  
+                  const handleMouseMove = (moveEvent: MouseEvent) => {
+                    const deltaX = moveEvent.pageX - startX;
+                    const containerWidth = document.body.clientWidth;
+                    let deltaPercent = (deltaX / containerWidth) * 100;
+                    if (transpose) deltaPercent = -deltaPercent;
+                    const newWidth = Math.min(Math.max(startWidth + deltaPercent, 20), 80);
+                    setVideoWidth(transpose ? 100 - newWidth : newWidth);
+                  };
+                  
+                  const handleMouseUp = () => {
+                    setIsDragging(false);
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', handleMouseUp);
+                  };
+                  
+                  document.addEventListener('mousemove', handleMouseMove);
+                  document.addEventListener('mouseup', handleMouseUp);
+                }}
+              >
+                <div className={`w-1 h-12 rounded-full transition-colors ${isDragging ? 'bg-rose-500' : 'bg-slate-300 group-hover:bg-rose-400'}`} />
+              </div>
+
+              <div className="flex-1 h-full min-w-0">
                 <NotesPanel
+                  playerRef={playerRef}
+                  currentTab={currentTab}
+                  setCurrentTab={setCurrentTab}
+                  currentTime={seconds}
                   unit={unit}
-                  notes={notes}
-                  setNotes={setNotes}
+                  freeformNotes={freeformNotes}
+                  setFreeformNotes={setFreeformNotes}
+                  questions={questions}
+                  setQuestions={setQuestions}
                   handleSaveNotes={handleSaveNotes}
                   isSaving={isSaving}
                   openModal={openModal}
@@ -275,6 +339,8 @@ export function StudyView() {
                   setLastLoggedSeconds={setLastLoggedSeconds}
                   setIsPaused={setIsPaused}
                   watchPercentage={percentage}
+                  isDeepWork={isDeepWork}
+                  setIsDeepWork={setIsDeepWork}
                 />
               </div>
             </motion.div>
@@ -291,7 +357,9 @@ export function StudyView() {
               <div className="transform-gpu w-[25%] h-full flex flex-col gap-6">
                 <div className="transform-gpu flex-1">
                   <VideoPanel
+                    playerRef={playerRef}
                     unit={unit}
+                    isDeepWork={isDeepWork}
                     youtubeId={youtubeId}
                     hasMounted={hasMounted}
                     isPaused={isPaused}
@@ -306,10 +374,16 @@ export function StudyView() {
               </div>
               <div className="transform-gpu flex-1 h-full">
                 <NotesPanel
+                  playerRef={playerRef}
+                  currentTab={currentTab}
+                  setCurrentTab={setCurrentTab}
+                  currentTime={seconds}
                   unit={unit}
-                  notes={notes}
-                  setNotes={setNotes}
-                  handleSaveNotes={handleSaveNotes}
+                  freeformNotes={freeformNotes}
+                  setFreeformNotes={setFreeformNotes}
+                  questions={questions}
+                  setQuestions={setQuestions}
+                                    handleSaveNotes={handleSaveNotes}
                   isSaving={isSaving}
                   openModal={openModal}
                   logProgress={logProgress}
@@ -318,6 +392,8 @@ export function StudyView() {
                   setLastLoggedSeconds={setLastLoggedSeconds}
                   setIsPaused={setIsPaused}
                   watchPercentage={percentage}
+                  isDeepWork={isDeepWork}
+                  setIsDeepWork={setIsDeepWork}
                 />
               </div>
             </motion.div>
@@ -340,10 +416,16 @@ export function StudyView() {
               </div>
               <div className="transform-gpu flex-1 h-full">
                 <NotesPanel
+                  playerRef={playerRef}
+                  currentTab={currentTab}
+                  setCurrentTab={setCurrentTab}
+                  currentTime={seconds}
                   unit={unit}
-                  notes={notes}
-                  setNotes={setNotes}
-                  handleSaveNotes={handleSaveNotes}
+                  freeformNotes={freeformNotes}
+                  setFreeformNotes={setFreeformNotes}
+                  questions={questions}
+                  setQuestions={setQuestions}
+                                    handleSaveNotes={handleSaveNotes}
                   isSaving={isSaving}
                   openModal={openModal}
                   logProgress={logProgress}
@@ -352,6 +434,8 @@ export function StudyView() {
                   setLastLoggedSeconds={setLastLoggedSeconds}
                   setIsPaused={setIsPaused}
                   watchPercentage={percentage}
+                  isDeepWork={isDeepWork}
+                  setIsDeepWork={setIsDeepWork}
                 />
               </div>
             </motion.div>

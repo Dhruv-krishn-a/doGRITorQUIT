@@ -8,7 +8,8 @@ const ALLOWED_ORIGINS = [
   "tauri://localhost",
   "http://localhost",
   "http://tauri.localhost",
-  "https://dogritorquit.in"
+  "https://dogritorquit.in",
+  "https://www.dogritorquit.in"
 ];
 
 export async function middleware(request: NextRequest) {

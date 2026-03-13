@@ -1,10 +1,15 @@
-import React from "react";
-import { Brain, Save, Timer as TimerIcon, CheckCircle, Loader2, Play, MoreVertical, Zap } from "lucide-react";
-import { Unit } from "@planner/study-core";
-import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "sonner";
+import re
+import os
 
-interface NotesPanelProps {
+def update_desktop():
+    # 1. Update NotesPanel.tsx
+    np_path = 'apps/desktop/src/features/study/components/NotesPanel.tsx'
+    with open(np_path, 'r') as f:
+        np = f.read()
+
+    np = re.sub(
+        r'interface NotesPanelProps \{.*?\}',
+        '''interface NotesPanelProps {
   playerRef: React.MutableRefObject<any>;
   currentTab: "NOTES" | "QUESTIONS";
   setCurrentTab: (t: "NOTES" | "QUESTIONS") => void;
@@ -26,13 +31,14 @@ interface NotesPanelProps {
   seconds: number;
   lastLoggedSeconds: number;
   watchPercentage: number;
-  setLastLoggedSeconds: (s: number) => void;
-  setIsPaused: (p: boolean) => void;
-  isDeepWork?: boolean;
-  setIsDeepWork?: (d: boolean) => void;
-}
+}''',
+        np,
+        flags=re.DOTALL
+    )
 
-export const NotesPanel = ({
+    np = re.sub(
+        r'export const NotesPanel = \(\{.*?watchPercentage\n\}: NotesPanelProps\) => \{',
+        '''export const NotesPanel = ({
   playerRef,
   currentTab,
   setCurrentTab,
@@ -48,108 +54,13 @@ export const NotesPanel = ({
   logProgress,
   seconds,
   lastLoggedSeconds,
-  watchPercentage,
-  isDeepWork,
-  setIsDeepWork
-}: NotesPanelProps) => {
-  const navigate = useNavigate();
-  const { trackId } = useParams();
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  watchPercentage
+}: NotesPanelProps) => {''',
+        np,
+        flags=re.DOTALL
+    )
 
-  const handleEndTimer = async () => {
-    const sessionSeconds = seconds - lastLoggedSeconds;
-    if (sessionSeconds < 5) {
-      toast.error("Session too short to save");
-      return;
-    }
-    if (unit) {
-      await logProgress(unit.id, {
-        secondsSpent: sessionSeconds,
-        watchPercentage: watchPercentage,
-      });
-      toast.success("Study session saved");
-      navigate(`/study/${trackId}`);
-    }
-  };
-
-  return (
-    <div className={`h-full flex flex-col bg-white border shadow-xl overflow-hidden ${isDeepWork ? "rounded-none border-none" : "rounded-[2.5rem] border-rose-100"}`}>
-      <header className="transform-gpu p-8 border-b border-rose-50 flex justify-between items-center shrink-0 relative z-20">
-        <div className="transform-gpu flex items-center gap-4">
-          <div className="transform-gpu p-3 bg-rose-50 text-rose-500 rounded-2xl">
-            <Brain size={20} />
-          </div>
-          <div>
-            <h2 className="transform-gpu text-lg font-bold text-slate-800 tracking-tight">Study Notes</h2>
-            <p className="transform-gpu text-[10px] font-bold text-slate-400 uppercase tracking-widest">Auto-saving notes</p>
-          </div>
-        </div>
-        <div className="transform-gpu flex items-center gap-2 relative">
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            title="Menu"
-            className={`transform-gpu p-3 rounded-xl transition-all ${isMenuOpen ? 'bg-rose-600 text-white' : 'bg-slate-50 text-slate-400 hover:text-slate-700 hover:bg-slate-100'}`}
-          >
-            <MoreVertical size={18} />
-          </button>
-          
-          {isMenuOpen && (
-            <>
-              <div className="fixed inset-0 z-40" onClick={() => setIsMenuOpen(false)} />
-              <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-100 rounded-2xl shadow-xl z-50 overflow-hidden flex flex-col">
-                <button
-                  onClick={() => {
-                    handleSaveNotes();
-                    setIsMenuOpen(false);
-                  }}
-                  disabled={isSaving}
-                  className="flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 text-xs text-slate-700 font-bold uppercase tracking-widest transition-colors"
-                >
-                  {isSaving ? <Loader2 className="animate-spin" size={14} /> : <Save size={14} />}
-                  Save
-                </button>
-                <button
-                  onClick={() => {
-                    handleEndTimer();
-                    setIsMenuOpen(false);
-                  }}
-                  className="flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 text-xs text-slate-700 font-bold uppercase tracking-widest transition-colors"
-                >
-                  <TimerIcon size={14} />
-                  End Session
-                </button>
-                <button
-                  onClick={() => {
-                    const sessionSeconds = seconds - lastLoggedSeconds;
-                    openModal("SESSION", unit, "LOGS", { 
-                      minutesSpent: Math.max(1, Math.round(sessionSeconds / 60)),
-                      watchPercentage: Math.round(watchPercentage)
-                    });
-                    setIsMenuOpen(false);
-                  }}
-                  className="flex items-center gap-3 px-4 py-3 text-left hover:bg-rose-50 text-xs text-rose-600 font-bold uppercase tracking-widest transition-colors border-t border-slate-50"
-                >
-                  <CheckCircle size={14} />
-                  Complete
-                </button>
-                {isDeepWork && setIsDeepWork && (
-                  <button
-                    onClick={() => {
-                      setIsDeepWork(false);
-                      setIsMenuOpen(false);
-                    }}
-                    className="flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 text-xs text-slate-700 font-bold uppercase tracking-widest transition-colors border-t border-slate-50"
-                  >
-                    <Zap size={14} className="text-amber-500" />
-                    Exit Focus
-                  </button>
-                )}
-              </div>
-            </>
-          )}
-        </div>
-      </header>
-      <div className="transform-gpu flex-1 p-8 flex flex-col h-full overflow-hidden">
+    ui_replacement = '''<div className="transform-gpu flex-1 p-8 flex flex-col h-full overflow-hidden">
         <div className="transform-gpu flex gap-2 mb-4">
           {(['NOTES', 'QUESTIONS'] as const).map(tab => (
             <button
@@ -230,7 +141,70 @@ export const NotesPanel = ({
             </div>
           </>
         )}
-      </div>
-    </div>
-  );
-};
+      </div>'''
+
+    np = re.sub(
+        r'<div className="transform-gpu flex-1 p-8 flex flex-col h-full overflow-hidden">.*?</div>\s+</div>\s+\);\s+\};',
+        ui_replacement + '\n    </div>\n  );\n};',
+        np,
+        flags=re.DOTALL
+    )
+    with open(np_path, 'w') as f:
+        f.write(np)
+
+
+    # 2. Update StudyView.tsx
+    sv_path = 'apps/desktop/src/features/study/views/StudyView.tsx'
+    with open(sv_path, 'r') as f:
+        sv = f.read()
+
+    sv = sv.replace(
+        'const [notes, setNotes] = useState<any[]>([]);\n  const [currentCategory, setCurrentCategory] = useState<"CONCEPT" | "QUESTION" | "INSIGHT" | "REVISION">("CONCEPT");',
+        '''const [freeformNotes, setFreeformNotes] = useState<string>("");
+  const [questions, setQuestions] = useState<any[]>([]);
+  const [currentTab, setCurrentTab] = useState<"NOTES" | "QUESTIONS">("NOTES");'''
+    )
+
+    effect_replacement = '''useEffect(() => {
+    if (unit?.notes) {
+      try {
+        const parsed = typeof unit.notes === 'string' ? JSON.parse(unit.notes) : unit.notes;
+        if (Array.isArray(parsed)) {
+          const qs = parsed.filter(n => n.type === 'QUESTION');
+          const others = parsed.filter(n => n.type !== 'QUESTION').map(n => n.content).join('\\n\\n');
+          setQuestions(qs);
+          setFreeformNotes(others);
+        } else if (parsed && typeof parsed === 'object') {
+          setFreeformNotes(parsed.freeform || "");
+          setQuestions(parsed.questions || []);
+        }
+      } catch (e) {
+        if (typeof unit.notes === 'string') {
+          setFreeformNotes(unit.notes);
+        }
+      }
+    }
+  }, [unit?.notes]);'''
+
+    sv = re.sub(
+        r'useEffect\(\(\) => \{\s+if \(unit\?\.notes\) \{.*?^\s+\}, \[unit\?\.notes\]\);',
+        effect_replacement,
+        sv,
+        flags=re.MULTILINE | re.DOTALL
+    )
+
+    sv = sv.replace(
+        'await saveNotes(unitId as string, notes);',
+        'await saveNotes(unitId as string, { freeform: freeformNotes, questions });'
+    )
+
+    sv = sv.replace('notes={notes}', 'freeformNotes={freeformNotes}\n                  setFreeformNotes={setFreeformNotes}\n                  questions={questions}\n                  setQuestions={setQuestions}')
+    sv = sv.replace('setNotes={setNotes}\n', '')
+    sv = sv.replace('currentCategory={currentCategory}', 'currentTab={currentTab}')
+    sv = sv.replace('setCurrentCategory={setCurrentCategory}', 'setCurrentTab={setCurrentTab}')
+
+
+    with open(sv_path, 'w') as f:
+        f.write(sv)
+
+update_desktop()

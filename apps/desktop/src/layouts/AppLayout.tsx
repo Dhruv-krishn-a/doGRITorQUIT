@@ -43,13 +43,12 @@ export function AppLayout() {
                    <Outlet />
                  </div>
 
-                 <div className="transform-gpu mt-auto relative z-10">
-                   <Footer nav={siteNav} />
+                 <div className="mt-auto relative z-10 py-6 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest border-t border-slate-100">
+                   © {new Date().getFullYear()} Do Grit
                  </div>
-                 
-               </div>
-            </main>
-          </div>
+
+                 </div>
+                 </main>          </div>
         </div>
       </OfflineGuard>
     </StudyFeatureProvider>
