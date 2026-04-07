@@ -4,7 +4,10 @@ import { getServerUser } from "@/lib/auth-server";
 
 function isMissingPullSyncRpc(error: unknown) {
   const message = error instanceof Error ? error.message : String(error ?? "");
-  return message.includes("pull_changes") && message.includes("does not exist");
+  return (
+    (message.includes("pull_changes") && message.includes("does not exist")) ||
+    (message.includes("mobile_sync_deletions") && message.includes("does not exist"))
+  );
 }
 
 export async function POST(request: Request) {
