@@ -25,23 +25,7 @@ export async function GET(request: Request) {
       error: "access_denied",
       error_description: "Authentication failed or was cancelled."
     });
-    return new Response(
-      `<!DOCTYPE html>
-      <html>
-        <head>
-          <title>Redirecting...</title>
-          <meta http-equiv="refresh" content="0; url=${target}" />
-          <script>window.location.href = "${target}";</script>
-        </head>
-        <body>
-          <p>Redirecting to app... if nothing happens, <a href="${target}">click here</a>.</p>
-        </body>
-      </html>`,
-      {
-        status: 200,
-        headers: { "Content-Type": "text/html" },
-      }
-    );
+    return NextResponse.redirect(target, 302);
   }
 
   let token: string;
@@ -57,23 +41,7 @@ export async function GET(request: Request) {
       error: "native_token_sign_failed",
       error_description: "Failed to sign native token."
     });
-    return new Response(
-      `<!DOCTYPE html>
-      <html>
-        <head>
-          <title>Redirecting...</title>
-          <meta http-equiv="refresh" content="0; url=${target}" />
-          <script>window.location.href = "${target}";</script>
-        </head>
-        <body>
-          <p>Redirecting to app... if nothing happens, <a href="${target}">click here</a>.</p>
-        </body>
-      </html>`,
-      {
-        status: 200,
-        headers: { "Content-Type": "text/html" },
-      }
-    );
+    return NextResponse.redirect(target, 302);
   }
 
   const target = appendParams(redirectUri, {
@@ -82,21 +50,5 @@ export async function GET(request: Request) {
     expires_in: String(60 * 60 * 24 * 7),
   });
 
-  return new Response(
-    `<!DOCTYPE html>
-    <html>
-      <head>
-        <title>Redirecting...</title>
-        <meta http-equiv="refresh" content="0; url=${target}" />
-        <script>window.location.href = "${target}";</script>
-      </head>
-      <body>
-        <p>Redirecting to app... if nothing happens, <a href="${target}">click here</a>.</p>
-      </body>
-    </html>`,
-    {
-      status: 200,
-      headers: { "Content-Type": "text/html" },
-    }
-  );
+  return NextResponse.redirect(target, 302);
 }

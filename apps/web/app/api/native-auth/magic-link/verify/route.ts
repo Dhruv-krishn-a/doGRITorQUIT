@@ -12,27 +12,6 @@ function appendParams(uri: string, params: Record<string, string>) {
   return `${uri}${separator}${query}`;
 }
 
-function redirectHtml(target: string) {
-  return new Response(
-    `<!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="utf-8" />
-        <title>Redirecting...</title>
-        <meta http-equiv="refresh" content="0; url=${target}" />
-        <script>window.location.href = "${target}";</script>
-      </head>
-      <body>
-        <p>Redirecting to app... if nothing happens, <a href="${target}">click here</a>.</p>
-      </body>
-    </html>`,
-    {
-      status: 200,
-      headers: { "Content-Type": "text/html" },
-    }
-  );
-}
-
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const token = String(url.searchParams.get("token") ?? "").trim();
@@ -43,11 +22,12 @@ export async function GET(request: Request) {
   }
 
   const fail = (error: string, errorDescription: string) =>
-    redirectHtml(
+    NextResponse.redirect(
       appendParams(redirectUri, {
         error,
         error_description: errorDescription,
-      })
+      }),
+      302
     );
 
   try {
@@ -97,12 +77,13 @@ export async function GET(request: Request) {
       expiresIn
     );
 
-    return redirectHtml(
+    return NextResponse.redirect(
       appendParams(redirectUri, {
         native_token: nativeToken,
         token_type: "bearer",
         expires_in: String(expiresIn),
-      })
+      }),
+      302
     );
   } catch (error) {
     console.error("Native magic-link verification failed:", error);

@@ -15,9 +15,6 @@ function throwSyncError(payload: { error?: string; code?: string }, fallbackMess
 async function runWatermelonSync(): Promise<void> {
   await synchronize({
     database,
-    // Compatibility guard while server normalizes created/updated split
-    // for first-time sync payloads.
-    sendCreatedAsUpdated: true,
     pullChanges: async ({ lastPulledAt }) => {
       console.log(`[Sync] Pulling changes since ${lastPulledAt}`);
 
