@@ -1,4 +1,9 @@
-const allowedSchemes = ["gritorquit://"];
+const allowedSchemes = [
+  "gritorquit://",
+  "exp+mobile://",
+  "exp://",
+  "com.gritorquit.app://",
+];
 const allowedOrigins = [
   "http://localhost:3000",
   "https://www.dogritorquit.in",

@@ -180,7 +180,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const requestMagicLink = async (email: string) => {
-    const callbackUrl = Linking.createURL("auth/callback", { scheme: "gritorquit" });
+    const callbackUrl = Linking.createURL("auth/callback");
     const res = await fetch(`${getApiBaseUrl()}/api/native-auth/magic-link/request`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -209,7 +209,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithOAuth = async (provider: OAuthProvider) => {
     setLoading(true);
     try {
-      const callbackUrl = "gritorquit://auth/callback";
+      const callbackUrl = Linking.createURL("auth/callback");
       const startUrl = `${getApiBaseUrl()}/api/native-auth/start/${provider}?redirect_uri=${encodeURIComponent(callbackUrl)}`;
 
       const authResult = await WebBrowser.openAuthSessionAsync(startUrl, callbackUrl);
