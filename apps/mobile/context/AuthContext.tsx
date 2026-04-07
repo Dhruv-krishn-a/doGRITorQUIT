@@ -209,7 +209,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithOAuth = async (provider: OAuthProvider) => {
     setLoading(true);
     try {
-      const callbackUrl = Linking.createURL("auth/callback", { scheme: "gritorquit" });
+      const callbackUrl = "gritorquit://auth/callback";
       const startUrl = `${getApiBaseUrl()}/api/native-auth/start/${provider}?redirect_uri=${encodeURIComponent(callbackUrl)}`;
 
       const authResult = await WebBrowser.openAuthSessionAsync(startUrl, callbackUrl);
