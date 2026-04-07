@@ -16,7 +16,13 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   
   const { colors } = useTheme();
-  const { signInWithOAuth, signInWithPhone, verifyOtp, signInWithEmail: authSignInWithEmail } = useAuth();
+  const {
+    signInWithOAuth,
+    signInWithPhone,
+    verifyOtp,
+    signInWithEmail: authSignInWithEmail,
+    requestMagicLink,
+  } = useAuth();
   const router = useRouter();
 
   async function signInWithEmail() {
@@ -39,6 +45,23 @@ export default function Login() {
         friendlyMessage = "Legacy account detected. Use Forgot Password to set a new password.";
       }
       Alert.alert('Sign In Failed', friendlyMessage);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function signInWithMagicLink() {
+    if (!email) {
+      Alert.alert('Magic Link', 'Enter your email first.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await requestMagicLink(email);
+      Alert.alert('Check Email', 'Magic link sent. Open it on this device to continue in the app.');
+    } catch (err: any) {
+      Alert.alert('Magic Link Failed', err.message || 'Could not send magic link.');
     } finally {
       setLoading(false);
     }
@@ -178,6 +201,17 @@ export default function Login() {
                       <Ionicons name="arrow-forward" size={16} color={colors.primary} />
                     </>
                   )}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={signInWithMagicLink}
+                  disabled={loading}
+                  className="bg-[var(--bg-secondary)] py-4 rounded-2xl items-center border border-[var(--border-color)] mt-3"
+                  style={{ backgroundColor: colors.secondary, borderColor: colors.border }}
+                >
+                  <Text className="text-[10px] font-black text-[var(--text-primary)] uppercase tracking-widest">
+                    Email Me Magic Link
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => setAuthMode('phone')} className="mt-2 items-center">

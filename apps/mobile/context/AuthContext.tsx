@@ -24,6 +24,7 @@ type AuthContextType = {
   signOut: () => Promise<void>;
   signInWithOAuth: (provider: OAuthProvider) => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
+  requestMagicLink: (email: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string, name?: string) => Promise<void>;
   requestPasswordReset: (email: string) => Promise<void>;
   setPassword: (password: string) => Promise<void>;
@@ -46,6 +47,7 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
   signInWithOAuth: async () => {},
   signInWithEmail: async () => {},
+  requestMagicLink: async () => {},
   signUpWithEmail: async () => {},
   requestPasswordReset: async () => {},
   setPassword: async () => {},
@@ -161,7 +163,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signInWithEmail = async (email: string, password: string) => {
-    const res = await fetch(`${getApiBaseUrl()}/api/native-auth/login`, {
+    const res = await fetch(`${getApiBaseUrl()}/api/native-auth/credentials/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -174,9 +176,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const authPayload = payload as AuthResponse;
-    // Map 'token' from the backend into 'access_token'
-    const token = (authPayload as any).token || authPayload.access_token;
-    await applyToken(token, authPayload.expires_in);
+    await applyToken(authPayload.access_token, authPayload.expires_in);
+  };
+
+  const requestMagicLink = async (email: string) => {
+    const callbackUrl = Linking.createURL("auth/callback", { scheme: "gritorquit" });
+    const res = await fetch(`${getApiBaseUrl()}/api/native-auth/magic-link/request`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, redirectUri: callbackUrl }),
+    });
+
+    const payload = (await res.json()) as { error?: string; message?: string };
+    if (!res.ok) {
+      throw new Error(payload.error ?? payload.message ?? "Magic link sign-in is unavailable");
+    }
   };
 
   const signUpWithEmail = async (email: string, password: string, name?: string) => {
@@ -195,7 +209,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithOAuth = async (provider: OAuthProvider) => {
     setLoading(true);
     try {
-      const callbackUrl = Linking.createURL("auth/callback");
+      const callbackUrl = Linking.createURL("auth/callback", { scheme: "gritorquit" });
       const startUrl = `${getApiBaseUrl()}/api/native-auth/start/${provider}?redirect_uri=${encodeURIComponent(callbackUrl)}`;
 
       const authResult = await WebBrowser.openAuthSessionAsync(startUrl, callbackUrl);
@@ -287,6 +301,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signOut,
         signInWithOAuth,
         signInWithEmail,
+        requestMagicLink,
         signUpWithEmail,
         requestPasswordReset,
         setPassword,

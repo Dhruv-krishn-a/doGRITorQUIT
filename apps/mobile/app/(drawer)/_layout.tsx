@@ -106,6 +106,8 @@ export default function DrawerLayout() {
   const { session, loading } = useAuth();
   const { width } = useWindowDimensions();
   const { theme, colors } = useTheme();
+  const safeWindowWidth = Number.isFinite(width) && width > 0 ? width : 360;
+  const computedDrawerWidth = Math.max(260, Math.min(safeWindowWidth * 0.78, 380));
 
   if (loading) return null;
   if (!session) return <Redirect href="/(auth)/login" />;
@@ -120,7 +122,7 @@ export default function DrawerLayout() {
           overlayColor: "transparent", 
           drawerStyle: {
             backgroundColor: colors.primary,
-            width: width * 0.75,
+            width: computedDrawerWidth,
           },
           sceneStyle: { backgroundColor: colors.primary },
           headerStyle: {
@@ -133,10 +135,12 @@ export default function DrawerLayout() {
           headerTintColor: colors.text,
           headerTitleStyle: {
             fontWeight: "900",
-            textTransform: "uppercase",
             letterSpacing: 1,
             fontSize: 14,
             fontStyle: "italic",
+          },
+          headerTitleContainerStyle: {
+            maxWidth: Math.max(120, computedDrawerWidth - 140),
           },
           drawerActiveTintColor: colors.accent,
           drawerInactiveTintColor: colors.textSecondary,
