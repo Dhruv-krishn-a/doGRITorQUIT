@@ -140,6 +140,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           Google({
             clientId: googleClientId,
             clientSecret: googleClientSecret,
+            allowDangerousEmailAccountLinking: true,
             authorization: { params: { prompt: "select_account" } },
           }),
         ]
@@ -149,6 +150,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           GitHub({
             clientId: githubClientId,
             clientSecret: githubClientSecret,
+            allowDangerousEmailAccountLinking: true,
             authorization: { params: { prompt: "select_account" } },
           }),
         ]

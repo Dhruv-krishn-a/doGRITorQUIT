@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { compare } from "bcryptjs";
-import { SignJWT } from "jose";
 import {
   clearFailedLoginAttempts,
   extractRequestContext,
@@ -9,14 +8,7 @@ import {
   registerFailedLoginAttempt,
 } from "@/lib/auth-security";
 import { sendNewLoginAlertEmail, sendSuspiciousActivityEmail } from "@/lib/mail";
-
-const getNativeSecret = () => {
-  const secret = process.env.AUTH_NATIVE_JWT_SECRET || process.env.NEXTAUTH_SECRET;
-  if (!secret) {
-    throw new Error("AUTH_NATIVE_JWT_SECRET is not defined");
-  }
-  return new TextEncoder().encode(secret);
-};
+import { signNativeAccessToken } from "@/lib/native-auth-token";
 
 export async function POST(req: Request) {
   try {
@@ -99,26 +91,22 @@ export async function POST(req: Request) {
       });
     }
 
-    // Sign the token for native client
-    const secret = getNativeSecret();
-    const token = await new SignJWT({
-      sub: user.id,
-      email: user.email,
-      name: user.profile?.name,
-      role: user.role,
-      tier: user.tier,
-    })
-      .setProtectedHeader({ alg: "HS256" })
-      .setIssuedAt()
-      .setExpirationTime("30d")
-      .sign(secret);
+    const expiresIn = 60 * 60 * 24 * 30;
+    const token = await signNativeAccessToken(
+      {
+        sub: user.id,
+        email: user.email,
+        type: "native-access",
+      },
+      expiresIn
+    );
 
     return NextResponse.json({
       success: true,
       token,
       token_type: "bearer",
       access_token: token,
-      expires_in: 60 * 60 * 24 * 30,
+      expires_in: expiresIn,
       user: {
         id: user.id,
         email: user.email,
