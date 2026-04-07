@@ -138,6 +138,9 @@ export default function AuthPage({ view: initialView }: AuthPageProps) {
       });
 
       if (result?.error) {
+        if (result.error === "Configuration") {
+          throw new Error("Magic link is not configured on server. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and SMTP_FROM in production env.");
+        }
         throw new Error(result.error);
       }
 
