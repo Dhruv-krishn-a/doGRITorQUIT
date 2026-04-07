@@ -1,0 +1,46 @@
+name: Arch Package Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  arch-package:
+    name: Build Arch Package Only (.pkg.tar.zst)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Arch package in Arch container
+        uses: addnab/docker-run-action@v3
+        with:
+          image: archlinux:latest
+          options: -v ${{ github.workspace }}:/work
+          run: |
+            set -euo pipefail
+            pacman-key --init
+            pacman-key --populate archlinux
+            pacman -Sy --noconfirm archlinux-keyring
+            pacman -S --noconfirm --needed base-devel nodejs npm pnpm rust gtk3 webkit2gtk-4.1 ttf-dejavu
+            
+            useradd -m builder
+            chown -R builder:builder /work
+            cd /work
+            
+            # Run the build natively on Arch to ensure binary compatibility
+            su builder -c "bash -lc 'cd /work && \
+              export VITE_SUPABASE_URL=\"${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}\" && \
+              export VITE_SUPABASE_ANON_KEY=\"${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}\" && \
+              export VITE_APP_ENV=production && \
+              pnpm install --frozen-lockfile && \
+              pnpm --filter desktop tauri build --no-bundle && \
+              ./scripts/build-arch-package.sh \"/work/apps/desktop/src-tauri/target/release/desktop\" \"/work/apps/desktop/dist\"'"
+
+      - name: Upload Arch package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: arch-package-test
+          path: |
+            packaging/arch/*.pkg.tar.zst
+            packaging/arch/PKGBUILD
+            packaging/arch/gritorquit.desktop
+          if-no-files-found: error

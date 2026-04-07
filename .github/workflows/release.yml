@@ -1,0 +1,10 @@
+name: Legacy Release Workflow (Deprecated)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  info:
+    runs-on: ubuntu-22.04
+    steps:
+      - run: echo "Use .github/workflows/desktop-release.yml for production releases."

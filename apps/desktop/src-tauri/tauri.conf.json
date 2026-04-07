@@ -1,0 +1,58 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "gritorquit",
+  "version": "1.1.11",
+  "identifier": "in.gritorquit.desktop",
+  "build": {
+    "beforeDevCommand": "pnpm dev:web",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "gritorquit",
+        "width": 1200,
+        "height": 800,
+        "label": "main",
+        "decorations": false,
+        "transparent": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; connect-src 'self' https://dogritorquit.in https://www.dogritorquit.in https://gritorquit.in https://www.gritorquit.in https://staging.gritorquit.in; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline';"
+    }
+  },
+  "plugins": {
+    "notification": null,
+    "deep-link": {
+      "schemes": ["gritorquit"]
+    },
+    "store": null,
+    "sql": {
+      "preload": ["sqlite:gritorquit.db"]
+    },
+    "updater": {
+      "endpoints": [
+        "https://www.dogritorquit.in/api/update/{{target}}/{{current_version}}"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDJCRDZGOUY2NDM1NDVGQzkKUldUSlgxUkQ5dm5XS3h2VjBaUnJyS3hCMjNqQjFtNFBNQzNmWlBWcTZIbWRpT1k0M1BTNTMrVDkK"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["deb", "rpm", "appimage"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "publisher": "gritorquit",
+    "category": "Productivity",
+    "shortDescription": "Master your habits and study tracks.",
+    "longDescription": "gritorquit is an offline-first professional productivity suite."
+  }
+}

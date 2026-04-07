@@ -1,0 +1,17 @@
+{
+  "name": "@gritorquit/api",
+  "version": "0.0.0",
+  "main": "index.ts",
+  "types": "index.ts",
+  "scripts": {
+    "build": "tsc --noEmit --incremental"
+  },
+  "dependencies": {
+    "@types/react-virtualized-auto-sizer": "^1.0.8",
+    "react-virtualized-auto-sizer": "^2.0.3",
+    "zod": "^4.3.5"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:^"
+  }
+}

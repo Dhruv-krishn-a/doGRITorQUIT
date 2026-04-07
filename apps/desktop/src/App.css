@@ -1,0 +1,107 @@
+/* apps/desktop/src/App.css */
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@source "../../packages/study-ui-web/src";
+@source "../../packages/study-core/src";
+@source "../../packages/notes-ui-web/src";
+
+/* Global Theme Transitions */
+* {
+  transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.3s ease-in-out,
+              box-shadow 0.5s ease-in-out;
+}
+
+@theme {
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 1072px;
+  --breakpoint-lg: 1328px;
+  --breakpoint-xl: 1584px;
+  --breakpoint-2xl: 1840px;
+
+  --color-obsidian: #0B0F19;
+  --color-slate-surface: #1E293B;
+  --color-sky-focus: #0EA5E9;
+  --color-mint: #10B981;
+  --color-amber: #F59E0B;
+}
+
+/* Noir (Dark, modern Indigo/Black) - Default */
+:root, [data-theme="noir"] {
+  --bg-primary: #050508;
+  --bg-secondary: #0f111a;
+  --bg-card: #121420;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --border-color: #1e293b;
+  --accent-color: #6366f1;
+  --hover-bg: #1e293b;
+}
+
+/* Warm Light Theme (Claude Light) */
+[data-theme="warm-light"] {
+  --bg-primary: #faf9f5;
+  --bg-secondary: #f1f0e8;
+  --bg-card: #ffffff;
+  --text-primary: #1d1d1d;
+  --text-secondary: #666666;
+  --border-color: #e5e2d9;
+  --accent-color: #d97706;
+  --hover-bg: #f5f2e9;
+}
+
+/* Dark Theme (Claude Dark) */
+[data-theme="dark"] {
+  --bg-primary: #111111;
+  --bg-secondary: #1a1a1a;
+  --bg-card: #1f1f1f;
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0b0;
+  --border-color: #333333;
+  --accent-color: #f59e0b;
+  --hover-bg: #2a2a2a;
+}
+
+@layer base {
+  html, body, #root {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    overflow: hidden;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overscroll-behavior: none;
+    touch-action: pan-y;
+    scrollbar-gutter: stable;
+  }
+}
+
+/* ... rest of App.css ... */
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 10px;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "extends": "../../packages/typescript-config/nextjs.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./*"],
+      "@gritorquit/domain": ["../../packages/domain/index.ts"],
+      "@gritorquit/domain/*": ["../../packages/domain/*"],
+      "@gritorquit/db": ["../../packages/db/index.ts"],
+      "@gritorquit/db/*": ["../../packages/db/*"]
+    },
+    "strict": true,
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "incremental": true
+  },
+  "include": [
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": ["node_modules"]
+}

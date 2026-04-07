@@ -1,0 +1,32 @@
+// apps/web/app/api/analytics/route.ts
+import { NextResponse } from "next/server";
+import { getServerUser } from "@/lib/auth-server";
+import { analytics, billing } from "@gritorquit/domain";
+import { PlanFeature } from "@gritorquit/domain/billing/entitlements";
+
+export async function GET() {
+  try {
+    const user = await getServerUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // ✅ Enforce Analytics Entitlement
+    await billing.checkFeatureAccess(user.id, PlanFeature.ACCESS_ADVANCED_ANALYTICS);
+
+    // ✅ FIX 1: Pass 'user.id' (string), not the full user object
+    const data = await analytics.getAnalyticsData(user.id);
+    
+    return NextResponse.json(data);
+  } catch (err) {
+    // ✅ FIX 2: Remove 'any' and check type safely
+    console.error("Analytics Error:", err);
+    
+    const message = err instanceof Error ? err.message : "Internal Server Error";
+    if (message.includes('FEATURE_LOCKED')) {
+      return NextResponse.json({ error: "Advanced Analytics is locked on your current plan." }, { status: 403 });
+    }
+
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}

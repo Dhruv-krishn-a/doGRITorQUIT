@@ -1,0 +1,28 @@
+{
+  "name": "@gritorquit/db",
+  "private": true,
+  "version": "0.0.1",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "prisma": "prisma",
+    "build": "tsc",
+    "generate": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/client": "~5.22.0",
+    "@types/react-virtualized-auto-sizer": "^1.0.8",
+    "react-virtualized-auto-sizer": "^2.0.3"
+  },
+  "devDependencies": {
+    "prisma": "~5.22.0",
+    "typescript": "^5.9.2"
+  }
+}

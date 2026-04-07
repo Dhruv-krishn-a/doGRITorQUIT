@@ -1,0 +1,58 @@
+# Node & package managers
+node_modules
+.pnpm-store
+.yarn
+.yarn-cache
+
+# Build outputs
+dist
+build
+out
+.next
+.turbo
+coverage
+
+# Expo / React Native
+.expo
+.expo-shared
+android
+ios
+
+# Tauri
+src-tauri/target
+src-tauri/node_modules
+
+# CMS (usually heavy)
+cms/node_modules
+cms/dist
+cms/.next
+
+# Logs & temp
+*.log
+tmp
+.temp
+
+# Git & env
+.git
+.env
+.env.*
+.DS_Store
+
+# Cache
+.cache
+.eslintcache
+
+
+apps/**/node_modules
+apps/**/.next
+apps/**/dist
+apps/**/build
+apps/**/.expo
+apps/**/android
+apps/**/ios
+apps/**/src-tauri/target
+
+.git
+.env*
+coverage
+tmp

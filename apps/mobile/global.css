@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Noir (Default Mobile) */
+:root, .theme-noir {
+  --bg-primary: #050505;
+  --bg-secondary: #0f0f12;
+  --bg-card: #121216;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --border-color: #1e1e24;
+  --accent-color: #6366f1;
+  --hover-bg: #1a1a20;
+}
+
+.theme-warm-light {
+  --bg-primary: #faf9f5;
+  --bg-secondary: #f1f0e8;
+  --bg-card: #ffffff;
+  --text-primary: #1d1d1d;
+  --text-secondary: #666666;
+  --border-color: #e5e2d9;
+  --accent-color: #d97706;
+  --hover-bg: #f5f2e9;
+}
+
+.theme-dark {
+  --bg-primary: #111111;
+  --bg-secondary: #1a1a1a;
+  --bg-card: #161616;
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0b0;
+  --border-color: #2a2a2a;
+  --accent-color: #f59e0b;
+  --hover-bg: #222222;
+}

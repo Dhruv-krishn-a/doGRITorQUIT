@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@gritorquit/study-core": ["../../packages/study-core/src/index.ts"],
+      "@gritorquit/study-ui-web": ["../../packages/study-ui-web/src/index.ts"],
+      "@gritorquit/habits-core": ["../../packages/habits-core/src/index.ts"],
+      "@gritorquit/habits-ui-web": ["../../packages/habits-ui-web/src/index.ts"],
+      "@gritorquit/notes-ui-web": ["../../packages/notes-ui-web/src/index.ts"],
+      "@gritorquit/dashboard-core": ["../../packages/dashboard-core/src/index.ts"],
+      "@gritorquit/dashboard-ui-web": ["../../packages/dashboard-ui-web/src/index.ts"],
+      "@gritorquit/domain": ["../../packages/domain/index.ts"],
+      "@gritorquit/api": ["../../packages/api/index.ts"]
+    }
+  },
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}

@@ -1,0 +1,29 @@
+# env files
+.env
+.env.*
+apps/*/.env
+apps/*/.env.*
+packages/*/.env
+*.pem
+*.key
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# build / caches
+.next/
+out/
+build/
+dist/
+.turbo
+.vercel
+node_modules/
+
+# Tauri
+apps/*/src-tauri/target/
+
+android/
+packaging/
+scripts/

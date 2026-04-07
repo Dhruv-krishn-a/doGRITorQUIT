@@ -1,0 +1,85 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='1600' height='1000' viewBox='0 0 1600 1000'>
+<defs>
+<marker id='arrow' markerWidth='10' markerHeight='7' refX='10' refY='3.5' orient='auto'>
+  <polygon points='0 0, 10 3.5, 0 7' fill='#334155'/>
+</marker>
+</defs>
+<rect x='0' y='0' width='1600' height='1000' fill='#f8fafc' />
+<text x='800' y='40' text-anchor='middle' font-family='Arial, Helvetica, sans-serif' font-size='24' fill='#0f172a'>Planner Monorepo Architecture</text>
+<text x='180' y='90' text-anchor='middle' font-family='Arial' font-size='16' fill='#334155'>Client Apps</text>
+<text x='800' y='90' text-anchor='middle' font-family='Arial' font-size='16' fill='#334155'>Shared Packages &amp; Backend</text>
+<text x='1400' y='90' text-anchor='middle' font-family='Arial' font-size='16' fill='#334155'>External Services</text>
+<rect x='60' y='120' width='240' height='120' rx='12' ry='12' fill='#eef2ff' stroke='#cbd5f5' stroke-width='1.5'/>
+<text x='180.0' y='144' text-anchor='middle' font-family='Arial' font-size='14' font-weight='bold' fill='#0f172a'>Web</text>
+<text x='180.0' y='166' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>Next.js App Router</text>
+<text x='180.0' y='182' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>User dashboard + API routes</text>
+<rect x='60' y='260' width='240' height='120' rx='12' ry='12' fill='#eef2ff' stroke='#cbd5f5' stroke-width='1.5'/>
+<text x='180.0' y='284' text-anchor='middle' font-family='Arial' font-size='14' font-weight='bold' fill='#0f172a'>CMS</text>
+<text x='180.0' y='306' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>Next.js admin app</text>
+<text x='180.0' y='322' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>Content + products</text>
+<rect x='60' y='400' width='240' height='120' rx='12' ry='12' fill='#eef2ff' stroke='#cbd5f5' stroke-width='1.5'/>
+<text x='180.0' y='424' text-anchor='middle' font-family='Arial' font-size='14' font-weight='bold' fill='#0f172a'>Desktop</text>
+<text x='180.0' y='446' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>Tauri + React</text>
+<text x='180.0' y='462' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>Calls Web API</text>
+<rect x='60' y='540' width='240' height='120' rx='12' ry='12' fill='#eef2ff' stroke='#cbd5f5' stroke-width='1.5'/>
+<text x='180.0' y='564' text-anchor='middle' font-family='Arial' font-size='14' font-weight='bold' fill='#0f172a'>Mobile</text>
+<text x='180.0' y='586' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>Expo React Native</text>
+<text x='180.0' y='602' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>Supabase auth + RPC</text>
+<rect x='400' y='120' width='360' height='140' rx='12' ry='12' fill='#f1f5f9' stroke='#cbd5f5' stroke-width='1.5'/>
+<text x='580.0' y='144' text-anchor='middle' font-family='Arial' font-size='14' font-weight='bold' fill='#0f172a'>Web API (apps/web)</text>
+<text x='580.0' y='166' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>/app/api routes</text>
+<text x='580.0' y='182' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>Uses domain + db</text>
+<text x='580.0' y='198' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>Supabase SSR auth</text>
+<rect x='400' y='290' width='360' height='140' rx='12' ry='12' fill='#f1f5f9' stroke='#cbd5f5' stroke-width='1.5'/>
+<text x='580.0' y='314' text-anchor='middle' font-family='Arial' font-size='14' font-weight='bold' fill='#0f172a'>CMS API (apps/cms)</text>
+<text x='580.0' y='336' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>Admin APIs</text>
+<text x='580.0' y='352' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>Supabase SSR auth</text>
+<rect x='400' y='460' width='360' height='180' rx='12' ry='12' fill='#f8fafc' stroke='#cbd5f5' stroke-width='1.5'/>
+<text x='580.0' y='484' text-anchor='middle' font-family='Arial' font-size='14' font-weight='bold' fill='#0f172a'>Shared Packages</text>
+<text x='580.0' y='506' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>@gritorquit/domain (services)</text>
+<text x='580.0' y='522' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>@gritorquit/db (Prisma)</text>
+<text x='580.0' y='538' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>@gritorquit/api (Zod + Supabase)</text>
+<text x='580.0' y='554' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>@gritorquit/ui, config</text>
+<text x='580.0' y='570' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>study-core, study-ui-web</text>
+<rect x='820' y='120' width='360' height='180' rx='12' ry='12' fill='#fefce8' stroke='#cbd5f5' stroke-width='1.5'/>
+<text x='1000.0' y='144' text-anchor='middle' font-family='Arial' font-size='14' font-weight='bold' fill='#0f172a'>Domain Services</text>
+<text x='1000.0' y='166' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>tasks, plans, habits</text>
+<text x='1000.0' y='182' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>billing, AI, study</text>
+<text x='1000.0' y='198' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>business rules</text>
+<rect x='820' y='340' width='360' height='140' rx='12' ry='12' fill='#fefce8' stroke='#cbd5f5' stroke-width='1.5'/>
+<text x='1000.0' y='364' text-anchor='middle' font-family='Arial' font-size='14' font-weight='bold' fill='#0f172a'>Database Access</text>
+<text x='1000.0' y='386' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>Prisma Client</text>
+<text x='1000.0' y='402' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>schema + migrations</text>
+<rect x='1240' y='120' width='300' height='120' rx='12' ry='12' fill='#ecfeff' stroke='#cbd5f5' stroke-width='1.5'/>
+<text x='1390.0' y='144' text-anchor='middle' font-family='Arial' font-size='14' font-weight='bold' fill='#0f172a'>Supabase</text>
+<text x='1390.0' y='166' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>Auth + sessions</text>
+<text x='1390.0' y='182' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>RPC (mobile)</text>
+<text x='1390.0' y='198' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>JWT for API</text>
+<rect x='1240' y='270' width='300' height='110' rx='12' ry='12' fill='#ecfeff' stroke='#cbd5f5' stroke-width='1.5'/>
+<text x='1390.0' y='294' text-anchor='middle' font-family='Arial' font-size='14' font-weight='bold' fill='#0f172a'>PostgreSQL</text>
+<text x='1390.0' y='316' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>Primary DB</text>
+<text x='1390.0' y='332' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>Prisma managed</text>
+<rect x='1240' y='410' width='300' height='110' rx='12' ry='12' fill='#ecfeff' stroke='#cbd5f5' stroke-width='1.5'/>
+<text x='1390.0' y='434' text-anchor='middle' font-family='Arial' font-size='14' font-weight='bold' fill='#0f172a'>OpenAI / GenAI</text>
+<text x='1390.0' y='456' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>AI features</text>
+<rect x='1240' y='550' width='300' height='110' rx='12' ry='12' fill='#ecfeff' stroke='#cbd5f5' stroke-width='1.5'/>
+<text x='1390.0' y='574' text-anchor='middle' font-family='Arial' font-size='14' font-weight='bold' fill='#0f172a'>Razorpay</text>
+<text x='1390.0' y='596' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>Billing + payments</text>
+<rect x='1240' y='690' width='300' height='110' rx='12' ry='12' fill='#ecfeff' stroke='#cbd5f5' stroke-width='1.5'/>
+<text x='1390.0' y='714' text-anchor='middle' font-family='Arial' font-size='14' font-weight='bold' fill='#0f172a'>YouTube Data API</text>
+<text x='1390.0' y='736' text-anchor='middle' font-family='Arial' font-size='12' fill='#475569'>Study playlists</text>
+<line x1='300' y1='180' x2='400' y2='180' stroke='#334155' stroke-width='1.5' marker-end='url(#arrow)'/>
+<line x1='300' y1='320' x2='400' y2='320' stroke='#334155' stroke-width='1.5' marker-end='url(#arrow)'/>
+<line x1='300' y1='460' x2='400' y2='200' stroke='#334155' stroke-width='1.5' marker-end='url(#arrow)'/>
+<line x1='300' y1='600' x2='1240' y2='180' stroke='#334155' stroke-width='1.5' marker-end='url(#arrow)'/>
+<line x1='760' y1='190' x2='820' y2='190' stroke='#334155' stroke-width='1.5' marker-end='url(#arrow)'/>
+<line x1='760' y1='350' x2='820' y2='190' stroke='#334155' stroke-width='1.5' marker-end='url(#arrow)'/>
+<line x1='760' y1='520' x2='820' y2='380' stroke='#334155' stroke-width='1.5' marker-end='url(#arrow)'/>
+<line x1='1000' y1='300' x2='1000' y2='340' stroke='#334155' stroke-width='1.5' marker-end='url(#arrow)'/>
+<line x1='1180' y1='390' x2='1240' y2='320' stroke='#334155' stroke-width='1.5' marker-end='url(#arrow)'/>
+<line x1='1180' y1='200' x2='1240' y2='180' stroke='#334155' stroke-width='1.5' marker-end='url(#arrow)'/>
+<line x1='1180' y1='440' x2='1240' y2='460' stroke='#334155' stroke-width='1.5' marker-end='url(#arrow)'/>
+<line x1='1180' y1='560' x2='1240' y2='600' stroke='#334155' stroke-width='1.5' marker-end='url(#arrow)'/>
+<line x1='1180' y1='700' x2='1240' y2='740' stroke='#334155' stroke-width='1.5' marker-end='url(#arrow)'/>
+<line x1='1390' y1='240' x2='1390' y2='270' stroke='#334155' stroke-width='1.5' marker-end='url(#arrow)'/>
+</svg>

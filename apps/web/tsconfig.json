@@ -1,0 +1,46 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "target": "es2018",
+    "lib": ["dom", "dom.iterable", "esnext"],
+
+    "plugins": [{ "name": "next" }],
+    
+    "paths": {
+      // Local App Aliases
+      "@/*": ["./*"],
+      "@/utils/*": ["./utils/*"],
+      "@/hooks/*": ["./hooks/*"],
+      
+      "@gritorquit/domain": ["../../packages/domain/index.ts"],
+      "@gritorquit/domain/*": ["../../packages/domain/*"],
+
+      "@gritorquit/db": ["../../packages/db/index.ts"],
+      "@gritorquit/db/*": ["../../packages/db/*"],
+      
+      "@gritorquit/config": ["../../packages/config/index.ts"],
+      
+      "@gritorquit/habits-core": ["../../packages/habits-core/src/index.ts"],
+      "@gritorquit/habits-ui-web": ["../../packages/habits-ui-web/src/index.ts"],
+      "@gritorquit/study-core": ["../../packages/study-core/src/index.ts"],
+      "@gritorquit/study-ui-web": ["../../packages/study-ui-web/src/index.ts"],
+      "@gritorquit/notes-ui-web": ["../../packages/notes-ui-web/src/index.ts"],
+      "@gritorquit/dashboard-core": ["../../packages/dashboard-core/src/index.ts"],
+      "@gritorquit/dashboard-ui-web": ["../../packages/dashboard-ui-web/src/index.ts"],
+
+      // Feature aliases
+      "@features/*": ["./features/*"],
+      "@features": ["./features/index.ts"],
+      "@shared/*": ["./shared/*"],
+      "@shared": ["./shared/index.ts"]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "next-env.d.ts",
+    "next.config.js",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": ["node_modules"]
+}
