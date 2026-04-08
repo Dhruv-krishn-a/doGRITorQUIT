@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import Animated, { FadeInDown, FadeIn, FadeOut } from 'react-native-reanimated';
+import BrandLogo from '../../components/BrandLogo';
 
 export default function Signup() {
   const [authMode, setAuthMode] = useState<'email' | 'phone'>('email');
@@ -70,46 +71,27 @@ export default function Signup() {
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{ flex: 1, backgroundColor: colors.primary }}
+      style={{ flex: 1, backgroundColor: '#efefef' }}
     >
-      {/* Ambient Glow */}
-      <View 
-        style={{ 
-          position: 'absolute', 
-          top: -100, 
-          left: -100, 
-          width: 400, 
-          height: 400, 
-          borderRadius: 200, 
-          backgroundColor: colors.accent, 
-          opacity: 0.05 
-        }} 
-      />
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#efefef' }} />
 
       <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}>
         <Animated.View 
           entering={FadeInDown.duration(600).springify()}
-          className="bg-[var(--bg-card)]/40 p-8 rounded-[2.5rem] border border-[var(--border-color)] shadow-2xl"
-          style={{ backgroundColor: `${colors.card}66`, borderColor: colors.border }}
+          className="p-8 rounded-[2.5rem] border shadow-2xl"
+          style={{ backgroundColor: '#ffffff', borderColor: '#e6e6e9' }}
         >
           {/* Header */}
           <View className="mb-8">
-            <View className="flex-row items-center gap-3 mb-6">
-              <View className="w-10 h-10 bg-[var(--bg-secondary)] rounded-xl items-center justify-center border border-[var(--border-color)]">
-                <Ionicons name="sparkles" size={20} color={colors.accent} />
-              </View>
-              <View>
-                <Text className="text-xl font-black italic uppercase tracking-tighter text-[var(--text-primary)]">DO GRIT</Text>
-                <Text className="text-[8px] font-bold uppercase tracking-[0.2em] text-[var(--text-secondary)]">OK QUIT</Text>
-              </View>
+            <View className="mb-6">
+              <BrandLogo size="sm" />
             </View>
-
-            <Text className="text-3xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter">Create Account</Text>
+            <Text className="text-3xl font-black tracking-tighter" style={{ color: '#0f1115' }}>Create Account</Text>
             <View className="flex-row items-center mt-2">
-              <Text className="text-[var(--text-secondary)] font-bold text-[10px] uppercase tracking-widest">Have an account?</Text>
+              <Text className="font-bold text-[10px] uppercase tracking-widest" style={{ color: '#63666f' }}>Have an account?</Text>
               <Link href="/login" asChild>
                 <TouchableOpacity>
-                  <Text className="text-[var(--accent-color)] font-bold text-[10px] uppercase tracking-widest ml-2">Sign In</Text>
+                  <Text className="font-bold text-[10px] uppercase tracking-widest ml-2" style={{ color: '#ff6a00' }}>Sign In</Text>
                 </TouchableOpacity>
               </Link>
             </View>
@@ -160,14 +142,14 @@ export default function Signup() {
                   onPress={signUpWithEmail} 
                   disabled={loading}
                   className="bg-[var(--accent-color)] py-4 rounded-2xl items-center shadow-lg shadow-[var(--accent-color)]/20 mt-4 flex-row justify-center gap-3"
-                  style={{ backgroundColor: colors.accent }}
+                  style={{ backgroundColor: '#ff6a00' }}
                 >
                   {loading ? (
-                    <ActivityIndicator color={colors.primary} />
+                    <ActivityIndicator color="#ffffff" />
                   ) : (
                     <>
-                      <Text className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: colors.primary }}>Create Account</Text>
-                      <Ionicons name="arrow-forward" size={16} color={colors.primary} />
+                      <Text className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: '#ffffff' }}>Create Account</Text>
+                      <Ionicons name="arrow-forward" size={16} color="#ffffff" />
                     </>
                   )}
                 </TouchableOpacity>

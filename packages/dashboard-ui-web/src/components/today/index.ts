@@ -7,4 +7,5 @@ export * from './UnifiedTaskCard';
 export * from './VitalityBar';
 export * from './TaskCard';
 export * from './CompactUnitCard';
+export * from './architect';
 export { default as TodayUI } from './TodayUI';

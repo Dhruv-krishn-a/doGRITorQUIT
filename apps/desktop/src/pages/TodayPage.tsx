@@ -1,6 +1,6 @@
 // apps/desktop/src/pages/TodayPage.tsx
 import React from 'react';
-import { TodayView } from '../features/today/views/TodayView';
+import { TodayUI } from '@gritorquit/dashboard-ui-web';
 import { HabitsProvider } from '@gritorquit/habits-core';
 import { StudyFeatureProvider } from '../providers/StudyFeatureProvider';
 import { sqliteHabitsBridge } from '../lib/habits-bridge';
@@ -10,7 +10,7 @@ export default function TodayPage() {
   <HabitsProvider offlineStorage={sqliteHabitsBridge}>
    <StudyFeatureProvider>
     <div className="min-h-screen w-full bg-[#fafbfc]">
-     <TodayView />
+     <TodayUI />
     </div>
    </StudyFeatureProvider>
   </HabitsProvider>

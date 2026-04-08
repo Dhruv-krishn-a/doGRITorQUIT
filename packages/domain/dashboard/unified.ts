@@ -56,12 +56,16 @@ export async function getUnifiedToday(userId: string) {
     })
   ]);
 
+  // Separate Fixed Blocks from normal tasks
+  const fixedBlocks = tasks.filter(t => (t.metadata as any)?.isFixedBlock === true);
+  const regularTasks = tasks.filter(t => (t.metadata as any)?.isFixedBlock !== true);
+
   // Logic: Calculate total vs remaining minutes
   const totalStudyMinutes = units.reduce((acc, u) => acc + (u.durationMinutes || 0), 0);
   const completedStudyMinutes = units.reduce((acc, u) => acc + Math.floor(((u.watchPercentage || 0) / 100) * (u.durationMinutes || 0)), 0);
   
-  const totalTaskMinutes = tasks.reduce((acc, t) => acc + (t.estimatedMinutes || 0), 0);
-  const completedTaskMinutes = tasks.filter(t => t.status === 'completed').reduce((acc, t) => acc + (t.estimatedMinutes || 0), 0);
+  const totalTaskMinutes = regularTasks.reduce((acc, t) => acc + (t.estimatedMinutes || 0), 0);
+  const completedTaskMinutes = regularTasks.filter(t => t.status === 'completed').reduce((acc, t) => acc + (t.estimatedMinutes || 0), 0);
 
   const totalPlannedMinutes = totalStudyMinutes + totalTaskMinutes;
   const completedMinutes = completedStudyMinutes + completedTaskMinutes;
@@ -81,7 +85,7 @@ export async function getUnifiedToday(userId: string) {
       totalPlannedMinutes,
       completedMinutes,
       loadState,
-      focusSessionsPlanned: units.length + tasks.length,
+      focusSessionsPlanned: units.length + regularTasks.length,
       executionScore,
     },
     primers: habits.map(h => ({
@@ -91,8 +95,15 @@ export async function getUnifiedToday(userId: string) {
       color: h.color,
       completed: h.logs.length > 0
     })),
+    fixedBlocks: fixedBlocks.map(b => ({
+      id: b.id,
+      title: b.title,
+      start: (b.metadata as any)?.startTime || "09:00",
+      end: (b.metadata as any)?.endTime || "17:00",
+      icon: (b.metadata as any)?.icon || "Briefcase"
+    })),
     sections: {
-      tasks: tasks.map(t => ({
+      tasks: regularTasks.map(t => ({
         id: t.id,
         type: 'TASK',
         title: t.title,

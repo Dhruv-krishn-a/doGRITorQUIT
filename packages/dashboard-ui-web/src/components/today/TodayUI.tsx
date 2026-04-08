@@ -1,516 +1,251 @@
-// packages/dashboard-ui-web/src/components/today/TodayUI.tsx
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUnifiedToday, dashboardApi } from '@gritorquit/dashboard-core';
-import { VitalityBar } from './VitalityBar';
-import { PulsePanel } from './PulsePanel';
 import { FocusOverlay } from './FocusOverlay';
-import { QuickCapture } from './QuickCapture';
-import { TodayTaskCard } from './TodayTaskCard';
-import { TaskCard } from './TaskCard';
+import { AddBlockModal, AddTaskModal, ICON_LIST } from './architect';
+import SmartTimeline from './SmartTimeline';
 import { 
-  Layout, 
-  Calendar, 
-  ListTodo, 
-  Zap, 
-  CalendarClock, 
-  Briefcase, 
-  BookOpen, 
-  Youtube, 
-  Trophy, 
-  Sparkles, 
-  CheckCircle2, 
-  ArrowUpRight,
-  ChevronDown,
-  ChevronUp,
-  Bell,
-  Clock3,
-  PlusCircle
+  Clock, Zap, ListTodo, Plus, CheckCircle2, 
+  AlertTriangle, Trash2, Calendar, Play, Youtube
 } from 'lucide-react';
+
+// --- Constants ---
+const DAY_START_HOUR = 23; // 11 PM as requested by user
 import { toast } from 'sonner';
 
-type CategoryFilter = 'ALL' | 'PLANS' | 'YOUTUBE' | 'COURSES' | 'PROJECTS';
+// --- Utilities ---
+const parse24hToMinutes = (timeStr: string) => {
+  if (!timeStr) return 0;
+  const [h, m] = timeStr.split(':').map(Number);
+  return h * 60 + (m || 0);
+};
 
+const formatMinutesToTime = (mins: number) => {
+  const h = Math.floor(mins / 60) % 24;
+  const m = mins % 60;
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const displayH = h % 12 === 0 ? 12 : h % 12;
+  const displayM = m.toString().padStart(2, '0');
+  return { time: `${displayH}:${displayM}`, ampm };
+};
+
+const formatDuration = (mins: number) => {
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h > 0 && m > 0) return `${h}h ${m}m`;
+  if (h > 0) return `${h}h`;
+  return `${m}m`;
+};
+
+// --- Main Page ---
 export default function TodayUI() {
   const { data, loading, error, refresh } = useUnifiedToday();
-  const [activeTab, setActiveTab] = useState<'TODAY' | 'WEEK'>('TODAY');
-  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('ALL');
-  const [energyLevel, setEnergyLevel] = useState<'LOW' | 'MEDIUM' | 'HIGH'>('MEDIUM');
-  const [focusItem, setFocusItem] = useState<any>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedWeekDay, setSelectedWeekDay] = useState<string>('');
   const [mounted, setMounted] = useState(false);
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
-  const [newTaskTitle, setNewTaskTitle] = useState('');
-  const [newTaskDate, setNewTaskDate] = useState(() => new Date().toISOString().slice(0, 10));
-  const [newTaskTime, setNewTaskTime] = useState('09:00');
-  const [newTaskMinutes, setNewTaskMinutes] = useState('45');
-  const [newTaskPriority, setNewTaskPriority] = useState<'low' | 'medium' | 'high' | 'urgent'>('medium');
-  const [creatingTask, setCreatingTask] = useState(false);
+  const [focusItem, setFocusItem] = useState<any>(null);
+  const [showAddBlock, setShowAddBlock] = useState(false);
+  const [showAddTask, setShowAddTask] = useState(false);
+  const [selectedStartTime, setSelectedStartTime] = useState<number | undefined>();
+  const [selectedGoalIds, setSelectedGoalIds] = useState<string[]>([]);
 
-  const ITEMS_PER_SECTION = 4;
+  useEffect(() => { setMounted(true); }, []);
 
-  useEffect(() => {
-    setMounted(true);
-    setSelectedWeekDay(new Date().toISOString().split('T')[0]);
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (e.key.toLowerCase() === 't') setActiveTab('TODAY');
-      if (e.key.toLowerCase() === 'w') setActiveTab('WEEK');
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  const weekDays = useMemo(() => {
-    if (!data?.week?.bucketed) return [];
-    return Object.keys(data.week.bucketed).sort();
-  }, [data]);
-
-  const selectedDayTasks = useMemo(() => {
-    if (!data?.week?.bucketed || !selectedWeekDay) return [];
-    return data.week.bucketed[selectedWeekDay] || [];
-  }, [data, selectedWeekDay]);
-
-  const plannerTasks = useMemo(() => {
-    const raw = data?.sections?.tasks || [];
-    return raw
-      .filter((t: any) => t.status !== 'completed')
-      .sort((a: any, b: any) => {
-        const aTime = a?.dueDate ? new Date(a.dueDate).getTime() : Number.MAX_SAFE_INTEGER;
-        const bTime = b?.dueDate ? new Date(b.dueDate).getTime() : Number.MAX_SAFE_INTEGER;
-        return aTime - bTime;
-      });
-  }, [data]);
-
-  const groupedSections = useMemo(() => {
-    if (!data?.sections) return [];
+  const scheduleData = useMemo(() => {
+    const rawBlocks = data?.fixedBlocks || [];
+    const normalized: any[] = [];
+    rawBlocks.forEach((b: any) => {
+      const s = parse24hToMinutes(b.start); const e = parse24hToMinutes(b.end);
+      if (e < s) { normalized.push({ ...b, s: 0, e }); normalized.push({ ...b, s, e: 1440 }); }
+      else { normalized.push({ ...b, s, e }); }
+    });
+    const sorted = normalized.sort((a, b) => a.s - b.s);
     
-    let all = [...(data.sections.tasks || []), ...(data.sections.study || [])];
+    // Collision Detection Logic
+    const collisions: string[] = [];
+    for (let i = 0; i < sorted.length; i++) {
+      for (let j = i + 1; j < sorted.length; j++) {
+        if (sorted[i].e > sorted[j].s && sorted[i].s < sorted[j].e) {
+          if (!collisions.includes(sorted[i].title)) collisions.push(sorted[i].title);
+          if (!collisions.includes(sorted[j].title)) collisions.push(sorted[j].title);
+        }
+      }
+    }
+
+    const merged: any[] = [];
+    if (sorted.length > 0) {
+      let current = { s: sorted[0].s, e: sorted[0].e };
+      for (let i = 1; i < sorted.length; i++) {
+        if (sorted[i].s <= current.e) { current.e = Math.max(current.e, sorted[i].e); }
+        else { merged.push(current); current = { s: sorted[i].s, e: sorted[i].e }; }
+      }
+      merged.push(current);
+    }
+    const freeWindows: any[] = []; let lastEnd = 0;
+    merged.forEach(b => { if (b.s > lastEnd) freeWindows.push({ s: lastEnd, e: b.s, d: b.s - lastEnd }); lastEnd = b.e; });
+    if (lastEnd < 1440) freeWindows.push({ s: lastEnd, e: 1440, d: 1440 - lastEnd });
     
-    if (categoryFilter !== 'ALL') {
-      all = all.filter(item => {
-        if (categoryFilter === 'PLANS') return item.type === 'TASK' && !item.trackId;
-        if (categoryFilter === 'YOUTUBE') return item.type === 'VIDEO';
-        if (categoryFilter === 'COURSES') return item.trackType === 'COURSE';
-        if (categoryFilter === 'PROJECTS') return item.trackType === 'PROJECT';
-        return true;
-      });
-    }
+    const totalFree = Math.max(0, freeWindows.reduce((acc, w) => acc + w.d, 0));
+    const tasks = [...(data?.sections?.tasks || []), ...(data?.sections?.study || [])].filter(t => t.status !== 'completed' && t.status !== 'DONE');
+    
+    // Filter by selected goal IDs if any are selected, otherwise show all
+    const filteredTasks = selectedGoalIds.length > 0 ? tasks.filter(t => selectedGoalIds.includes(t.id)) : tasks;
 
-    const filtered = all.filter(item => 
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      (item.vectorName || '').toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    const vectorGroups: Record<string, any[]> = {};
-    filtered.forEach(item => {
-        const groupKey = item.vectorName || 'General';
-        if (!vectorGroups[groupKey]) vectorGroups[groupKey] = [];
-        vectorGroups[groupKey].push(item);
-    });
-
-    return Object.entries(vectorGroups).map(([name, items]) => ({
-        name,
-        type: items[0].trackType || (items[0].type === 'TASK' ? 'PLAN' : 'STUDY'),
-        items: items.sort((a, b) => {
-            if (a.isOverdue && !b.isOverdue) return -1;
-            if (energyLevel === 'LOW') return a.duration - b.duration;
-            if (energyLevel === 'HIGH') return b.duration - a.duration;
-            const priorityMap: any = { 'URGENT': 4, 'HIGH': 3, 'MEDIUM': 2, 'LOW': 1 };
-            return (priorityMap[b.priority] || 0) - (priorityMap[a.priority] || 0);
-        })
-    })).sort((a, b) => {
-        const order: any = { 'PROJECT': 1, 'COURSE': 2, 'VIDEO': 3, 'PLAN': 4 };
-        return (order[a.type] || 5) - (order[b.type] || 5);
-    });
-  }, [data, searchQuery, categoryFilter, energyLevel]);
-
-  const recommendedTask = useMemo(() => {
-      if (!groupedSections.length) return null;
-      const flatList = groupedSections.flatMap(g => g.items).filter(i => i.status !== 'DONE' && i.status !== 'completed');
-      if (!flatList.length) return null;
-      return flatList.sort((a, b) => {
-          if (a.isOverdue && !b.isOverdue) return -1;
-          if (energyLevel === 'LOW') return a.duration - b.duration;
-          if (energyLevel === 'HIGH') return b.duration - a.duration;
-          return 0;
-      })[0];
-  }, [groupedSections, energyLevel]);
-
-  const toggleSection = (name: string) => {
-    setExpandedSections(prev => ({ ...prev, [name]: !prev[name] }));
-  };
-
-  const handleStartSession = (id: string, type: string) => {
-    const allItems = [...(data?.sections?.tasks || []), ...(data?.sections?.study || []), ...selectedDayTasks];
-    const item = allItems.find((t:any) => t.id === id);
-    if (item) setFocusItem(item);
-  };
-
-  const handleComplete = async (id: string, type: string, secondsSpent?: number) => {
-     try {
-        if (type === 'TASK') {
-            await dashboardApi.completeTask(id);
-        } else {
-            await dashboardApi.completeStudyUnit(id, secondsSpent);
-        }
-        toast.success("Sync Complete");
-        setFocusItem(null);
-        refresh();
-     } catch (err) { toast.error("Sync Error"); }
-  };
-
-  const handlePostpone = async (id: string, type: string) => {
-      try {
-          if (type === 'TASK') {
-              const tomorrow = new Date();
-              tomorrow.setDate(tomorrow.getDate() + 1);
-              await dashboardApi.postponeTask(id, tomorrow.toISOString());
-          } else {
-              await dashboardApi.postponeStudyUnit(id);
-          }
-          refresh();
-      } catch (err) { toast.error("Reschedule failed"); }
-  };
-
-  const handleToggleSubtask = async (taskId: string, subtaskId: string, completed: boolean) => {
-      try {
-          await dashboardApi.toggleSubtask(subtaskId, completed);
-          refresh();
-      } catch (err) { toast.error("Update failed"); }
-  };
-
-  const handleCleanSweep = async () => {
-      const overdueTasks = (data?.sections?.tasks || []).filter((t:any) => t.isOverdue);
-      if (!overdueTasks.length) return;
-      const promise = Promise.all(overdueTasks.map((t:any) => handlePostpone(t.id, t.type)));
-      toast.promise(promise, { loading: 'Sweeping...', success: 'Cleared Overdue', error: 'Sweep error' });
-  };
-
-  const toggleHabit = async (habitId: string) => {
-      try {
-          await dashboardApi.toggleHabit(habitId);
-          refresh();
-      } catch (err) { toast.error("Habit sync error"); }
-  };
-
-  const handleQuickCapture = async (title: string, domain: string) => {
-     try {
-        if (domain === 'PLAN') {
-            const data = await dashboardApi.getPlans();
-            const plans = data.plans || [];
-            if (plans && plans.length > 0) {
-                await dashboardApi.quickCapturePlan(plans[0].id, title);
-                toast.success(`Added to ${plans[0].title}`);
-            }
-        } else {
-            const data = await dashboardApi.getStudyTracks();
-            const tracks = data.tracks || [];
-            const targetType = domain === 'PROJECT' ? 'PROJECT' : 'COURSE';
-            const targetTrack = tracks.find((t: any) => t.type === targetType);
-            if (targetTrack) {
-                await dashboardApi.quickCaptureStudy(targetTrack.id, title, domain === 'PROJECT' ? 'FEATURE' : 'LESSON');
-                toast.success(`Added to ${targetTrack.title}`);
-            }
-        }
-        refresh();
-     } catch (err) { toast.error("Capture error"); }
-  };
-
-  const handleCreateTodayTask = async () => {
-    const title = newTaskTitle.trim();
-    if (!title) return;
-    const [hh, mm] = newTaskTime.split(':').map((v) => Number(v));
-    const dueDate = new Date(`${newTaskDate}T00:00:00`);
-    dueDate.setHours(Number.isFinite(hh) ? hh : 9, Number.isFinite(mm) ? mm : 0, 0, 0);
-    try {
-      setCreatingTask(true);
-      await dashboardApi.createTask({
-        title,
-        date: new Date(`${newTaskDate}T00:00:00`).toISOString(),
-        dueDate: dueDate.toISOString(),
-        estimatedMinutes: Number.parseInt(newTaskMinutes, 10) || 45,
-        priority: newTaskPriority,
-        metadata: {
-          todayPlanner: true,
-          reminders: {
-            beforeDay: true,
-            onTime: true,
-            repeatUntilDoneMinutes: 120,
-          },
-        },
-      });
-      setNewTaskTitle('');
-      toast.success('Task scheduled');
-      refresh();
-    } catch (err) {
-      toast.error('Failed to schedule task');
-    } finally {
-      setCreatingTask(false);
-    }
-  };
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !('Notification' in window)) return;
-    // Tauri's permission model restricts browser Notification API on remote dev URLs.
-    if ("__TAURI_INTERNALS__" in window) return;
-    if (Notification.permission === 'default') {
-      Notification.requestPermission().catch(() => {});
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !('Notification' in window)) return;
-    if ("__TAURI_INTERNALS__" in window) return;
-    if (Notification.permission !== 'granted') return;
-    const timers: number[] = [];
-
-    const now = Date.now();
-    plannerTasks.slice(0, 8).forEach((task: any) => {
-      if (!task?.dueDate) return;
-      const target = new Date(task.dueDate).getTime();
-      const leadMs = target - now;
-      if (leadMs <= 0 || leadMs > 2 * 60 * 60 * 1000) return;
-      timers.push(window.setTimeout(() => {
-        new Notification('Upcoming task', { body: `${task.title} starts soon.` });
-      }, leadMs));
-    });
-
-    const daySignals = [
-      { hour: 8, minute: 0, title: 'Start strong', body: 'Set your first focus block for today.' },
-      { hour: 18, minute: 0, title: 'Evening pulse', body: 'Review remaining tasks and close one more.' },
-      { hour: 22, minute: 0, title: 'Night wrap', body: 'Mark done items and prep tomorrow schedule.' },
-    ];
-    daySignals.forEach((s) => {
-      const trigger = new Date();
-      trigger.setHours(s.hour, s.minute, 0, 0);
-      const wait = trigger.getTime() - now;
-      if (wait > 0 && wait < 12 * 60 * 60 * 1000) {
-        timers.push(window.setTimeout(() => new Notification(s.title, { body: s.body }), wait));
+    const tasksWithDurations = filteredTasks.map(t => ({ 
+      ...t, 
+      actualDuration: t.duration || t.estimatedMinutes || 30, 
+      intensity: t.priority === 'HIGH' || t.priority === 'URGENT' ? 'High' : (t.priority === 'LOW' ? 'Low' : 'Mid') 
+    }));
+    
+    const allocated: any[] = []; let currentWindowIdx = 0; let currentWindow = freeWindows.length > 0 ? { ...freeWindows[0] } : null;
+    tasksWithDurations.forEach(task => {
+      let placed = false; let buffer = task.intensity === 'High' ? 15 : (task.intensity === 'Mid' ? 5 : 0);
+      while (currentWindow && !placed) {
+        if (currentWindow.d >= task.actualDuration) {
+          allocated.push({ ...task, startTime: currentWindow.s, endTime: currentWindow.s + task.actualDuration });
+          currentWindow.s += (task.actualDuration + buffer); currentWindow.d -= (task.actualDuration + buffer); placed = true;
+        } else { currentWindowIdx++; currentWindow = currentWindowIdx < freeWindows.length ? { ...freeWindows[currentWindowIdx] } : null; }
       }
     });
+    return { totalFree, allocated, blocks: sorted, collisions };
+  }, [data]);
 
-    return () => {
-      timers.forEach((t) => window.clearTimeout(t));
-    };
-  }, [plannerTasks]);
+  const handleSaveBlocks = async (blocks: any[]) => {
+    try {
+      const promises = blocks.map(b => dashboardApi.createTask({ title: b.title, date: new Date().toISOString(), metadata: { isFixedBlock: true, startTime: b.start, endTime: b.end, icon: b.icon } }));
+      await Promise.all(promises); setShowAddBlock(false); refresh(); toast.success("Deployed");
+    } catch (err) { toast.error("Sync Error"); }
+  };
 
-  if (!mounted || (loading && !data)) return (
-    <div className="transform-gpu flex flex-col items-center justify-center min-h-[60vh] gap-4">
-      <div className="transform-gpu w-10 h-10 border-4 border-[var(--accent-color)] border-t-transparent rounded-full animate-spin" />
-      <div className="transform-gpu text-[var(--accent-color)] font-bold uppercase tracking-widest text-xs animate-pulse">Syncing Horizon...</div>
-    </div>
-  );
+  const handleRemoveBlock = async (id: string) => { try { await dashboardApi.deleteTask(id); refresh(); toast.success('Removed'); } catch (err) { toast.error("Error"); } };
+  const handleCreateTask = async (t: any) => { try { await dashboardApi.createTask({ title: t.title, date: new Date().toISOString(), estimatedMinutes: Number(t.duration), priority: t.intensity.toUpperCase() as any }); setShowAddTask(false); refresh(); toast.success('Added'); } catch (err) { toast.error('Error'); } };
+  const handleComplete = async (id: string, type: string) => { try { if (type === 'TASK') await dashboardApi.completeTask(id); else await dashboardApi.completeStudyUnit(id); refresh(); toast.success("Done"); } catch (err) { toast.error("Error"); } };
 
-  if (error && !data) return (
-    <div className="transform-gpu flex flex-col items-center justify-center min-h-[60vh] gap-6 text-center">
-      <div className="transform-gpu p-6 bg-[var(--accent-color)]/10 text-[var(--accent-color)] rounded-full"><Layout size={40} /></div>
-      <div><h3 className="transform-gpu text-xl font-bold text-[var(--text-primary)]">Neural Sync Failed</h3><p className="transform-gpu text-[var(--text-secondary)] font-bold mt-2">{error}</p></div>
-      <button onClick={() => refresh()} className="transform-gpu px-8 py-4 bg-[var(--accent-color)] text-[var(--bg-primary)] rounded-2xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-[var(--accent-color)]/20 hover:bg-[var(--accent-color)]/90 transition-all">Retry</button>
-    </div>
-  );
-
-  if (!data) return null;
+  if (!mounted || (loading && !data)) return (<div className="flex items-center justify-center min-h-[60vh]"><div className="w-10 h-10 border-4 border-[var(--accent-color)] border-t-transparent rounded-full animate-spin" /></div>);
 
   return (
-    <div className="transform-gpu flex flex-col w-full h-full relative text-[var(--text-primary)] font-sans selection:bg-[var(--accent-color)]/20 selection:text-[var(--text-primary)] pb-12">
-      {/* Background Glow Wrapper - Prevents overflow without breaking sticky children */}
-      <div className="transform-gpu absolute inset-0 overflow-hidden pointer-events-none -z-10 rounded-[3rem] transform-gpu">
-        <motion.div 
-          animate={{ 
-              x: activeTab === 'TODAY' ? '0%' : '50%',
-              backgroundColor: activeTab === 'TODAY' ? 'var(--accent-color)' : 'var(--accent-color)'
-          }}
-          style={{ opacity: 0.1 }}
-          className="transform-gpu absolute top-0 left-1/2 w-[60rem] h-[60rem] rounded-full blur-[140px] -translate-x-1/2 -translate-y-1/2 transition-colors duration-700 transform-gpu" 
-        />
-      </div>
-
-      <VitalityBar stats={data.vitality} energyLevel={energyLevel} onEnergyChange={setEnergyLevel} />
-
-      {/* Primers */}
-      <div className="transform-gpu mb-10">
-          <div className="transform-gpu flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest text-[var(--text-secondary)] mb-4 ml-4">
-            <Sparkles size={14} className="transform-gpu text-[var(--accent-color)]" /> Neural Primers
-          </div>
-          <div className="transform-gpu flex items-center gap-3 overflow-x-auto no-scrollbar py-2 -mx-2 px-2">
-            {data.primers?.map((habit: any) => (
-                <motion.button key={habit.id} whileTap={{ scale: 0.95 }} onClick={() => toggleHabit(habit.id)} className={`flex items-center gap-3 px-6 py-4 rounded-3xl border transition-all duration-300 shadow-sm transform-gpu ${habit.completed ? 'bg-[var(--accent-color)] border-[var(--accent-color)] text-[var(--bg-primary)]' : 'bg-[var(--bg-card)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--accent-color)]/30'}`}>
-                    <span className="transform-gpu text-lg">{habit.icon || '✨'}</span>
-                    <span className="transform-gpu text-sm font-bold whitespace-nowrap">{habit.title}</span>
-                    {habit.completed && <CheckCircle2 size={16} fill="currentColor" />}
-                </motion.button>
-            ))}
-          </div>
-      </div>
-
-      <div className="transform-gpu flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-        <div className="transform-gpu flex items-center gap-8">
-            <button onClick={() => setActiveTab('TODAY')} className={`group relative py-2 flex items-center gap-3 transition-all ${activeTab === 'TODAY' ? 'text-[var(--accent-color)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}>
-                <Layout size={18} /> <span className="transform-gpu text-sm font-bold uppercase tracking-[0.2em]">Today</span>
-                {activeTab === 'TODAY' && <motion.div layoutId="nav-glow" className="transform-gpu absolute -bottom-1 left-0 right-0 h-1 bg-[var(--accent-color)] rounded-full shadow-[0_0_15px_rgba(var(--accent-color),0.6)] transform-gpu" />}
-            </button>
-            <button onClick={() => setActiveTab('WEEK')} className={`group relative py-2 flex items-center gap-3 transition-all ${activeTab === 'WEEK' ? 'text-[var(--accent-color)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}>
-                <Calendar size={18} /> <span className="transform-gpu text-sm font-bold uppercase tracking-[0.2em]">This Week</span>
-                {activeTab === 'WEEK' && <motion.div layoutId="nav-glow" className="transform-gpu absolute -bottom-1 left-0 right-0 h-1 bg-[var(--accent-color)] rounded-full shadow-[0_0_15px_rgba(var(--accent-color),0.6)] transform-gpu" />}
-            </button>
-        </div>
-
-        <div className="transform-gpu flex items-center gap-2 p-1.5 bg-[var(--bg-secondary)]/50 rounded-2xl border border-[var(--border-color)]/50">
-            {['ALL', 'PLANS', 'YOUTUBE', 'PROJECTS', 'COURSES'].map((cat) => (
-                <button key={cat} onClick={() => setCategoryFilter(cat as CategoryFilter)} className={`px-4 py-2 rounded-xl text-[9px] font-semibold uppercase tracking-widest transition-all ${categoryFilter === cat ? 'bg-[var(--bg-card)] text-[var(--accent-color)] shadow-sm' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}>{cat}</button>
-            ))}
-        </div>
-      </div>
-
-      <div className="transform-gpu flex flex-col xl:flex-row gap-10 xl:gap-14 items-start pb-20">
-        <div className="transform-gpu flex-1 w-full space-y-12 min-w-0">
-          <QuickCapture onCapture={handleQuickCapture} />
-
-          {activeTab === 'WEEK' && (
-            <div className="transform-gpu flex items-center gap-3 overflow-x-auto no-scrollbar pb-6 -mx-2 px-2">
-               {weekDays.map(dayStr => {
-                  const date = new Date(dayStr);
-                  const isSelected = selectedWeekDay === dayStr;
-                  return (
-                    <button key={dayStr} onClick={() => setSelectedWeekDay(dayStr)} className={`flex flex-col items-center min-w-[90px] p-5 rounded-[2rem] border transition-all duration-500 ${isSelected ? 'bg-[var(--accent-color)] border-[var(--accent-color)] text-[var(--bg-primary)] shadow-[0_15px_30px_var(--accent-color)]/20 scale-105' : 'bg-[var(--bg-card)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--accent-color)]/30'}`}>
-                        <span className="transform-gpu text-[10px] font-semibold uppercase tracking-widest mb-1.5 opacity-70">{date.toLocaleDateString('en-US', { weekday: 'short' })}</span>
-                        <span className="transform-gpu text-xl font-bold tracking-tighter">{date.getDate()}</span>
-                    </button>
-                  );
-               })}
+    <div className="w-full max-w-[1400px] mx-auto pb-16 text-[var(--text-primary)] px-6 sm:px-10 lg:px-12 relative pt-12">
+      {mounted && typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {showAddBlock && (
+            <AddBlockModal 
+              onClose={() => { setShowAddBlock(false); setSelectedStartTime(undefined); }} 
+              onSaveAll={handleSaveBlocks}
+              initialStartTime={selectedStartTime}
+              dayStartHour={DAY_START_HOUR}
+              goals={[...(data?.sections?.tasks || []), ...(data?.sections?.study || [])].filter(t => t.status !== 'completed' && t.status !== 'DONE')}
+              selectedGoalIds={selectedGoalIds}
+              onToggleGoal={(id) => setSelectedGoalIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])}
+            />
+          )}
+          {showAddTask && <AddTaskModal onClose={() => setShowAddTask(false)} onSubmit={handleCreateTask} />}
+          {focusItem && (
+            <FocusOverlay 
+              item={focusItem} 
+              onClose={() => { setFocusItem(null); refresh(); }} 
+              onComplete={() => { handleComplete(focusItem.id, focusItem.type); setFocusItem(null); }}
+            />
+          )}
+        </AnimatePresence>, 
+        document.body
+      )}
+      <header className="mb-8 flex items-end justify-between">
+        <div><h1 className="text-4xl font-black tracking-tightest mb-1">Today</h1><p className="text-[var(--text-secondary)] font-bold text-base opacity-60">Define your non-negotiable path.</p></div>
+        <div className="flex flex-col items-end gap-3">
+          {scheduleData.collisions.length > 0 && (
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-rose-500/10 text-rose-600 rounded-xl border border-rose-500/20 text-[9px] font-black uppercase tracking-widest">
+              <AlertTriangle size={10}/> Collision: {scheduleData.collisions.join(', ')}
             </div>
           )}
-
-          <div className="transform-gpu space-y-16">
-            <AnimatePresence mode="popLayout">
-                {activeTab === 'TODAY' ? (
-                    groupedSections.length > 0 ? (
-                        groupedSections.map((group, gIdx) => (
-                            <motion.section key={group.name} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: gIdx * 0.1 }} className="transform-gpu space-y-6 transform-gpu">
-                                <div className="transform-gpu flex items-center justify-between px-2">
-                                    <div className="transform-gpu flex items-center gap-4">
-                                        <div className={`p-2.5 rounded-2xl text-[var(--bg-primary)] shadow-lg ${group.type === 'PROJECT' ? 'bg-emerald-500' : group.type === 'COURSE' ? 'bg-[var(--accent-color)]' : group.type === 'VIDEO' ? 'bg-[var(--accent-color)]' : 'bg-[var(--text-primary)]'}`}>
-                                            {group.type === 'PROJECT' ? <Briefcase size={18} /> : group.type === 'COURSE' ? <BookOpen size={18} /> : group.type === 'VIDEO' ? <Youtube size={18} /> : <ListTodo size={18} />}
-                                        </div>
-                                        <div>
-                                            <h2 className="transform-gpu text-xl font-bold text-[var(--text-primary)] tracking-tight uppercase leading-none">{group.name}</h2>
-                                            <p className="transform-gpu text-[10px] font-semibold text-[var(--text-secondary)] uppercase tracking-widest mt-1.5">{group.items.length} Vectors</p>
-                                        </div>
-                                    </div>
-                                    <div className="transform-gpu flex items-center gap-3">
-                                        <button onClick={() => handleStartSession(group.items[0].id, group.items[0].type)} className="transform-gpu flex items-center gap-2 px-4 py-2 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-xl text-[10px] font-semibold uppercase tracking-widest hover:bg-[var(--accent-color)] transition-all shadow-md"><Zap size={14} fill="currentColor" /> Focus Vector</button>
-                                        {gIdx === 0 && (data?.sections?.tasks || []).some((t:any) => t.isOverdue) && (
-                                            <button onClick={handleCleanSweep} className="transform-gpu flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-600 border border-amber-100 rounded-xl text-[10px] font-semibold uppercase tracking-widest hover:bg-amber-500 hover:text-white transition-all"><CalendarClock size={14} /> Sweep Overdue</button>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="transform-gpu grid grid-cols-1 gap-4">
-                                    {(expandedSections[group.name] ? group.items : group.items.slice(0, ITEMS_PER_SECTION)).map((item, idx) => (
-                                        <TodayTaskCard key={item.id} item={item} index={idx} onStart={handleStartSession} onComplete={handleComplete} onPostpone={handlePostpone} onToggleSubtask={handleToggleSubtask} TaskCardComponent={TaskCard} />
-                                    ))}
-                                </div>
-                                {group.items.length > ITEMS_PER_SECTION && (
-                                    <div className="transform-gpu flex justify-center pt-2">
-                                        <button 
-                                            onClick={() => toggleSection(group.name)}
-                                            className="transform-gpu px-6 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--accent-color)]/30 hover:text-[var(--accent-color)] text-[var(--text-secondary)] rounded-full text-[10px] font-semibold uppercase tracking-[0.2em] transition-all flex items-center gap-2 shadow-sm"
-                                        >
-                                            {expandedSections[group.name] ? <><ChevronUp size={12} /> Show Less</> : <><ChevronDown size={12} /> View All {group.items.length} Vectors</>}
-                                        </button>
-                                    </div>
-                                )}
-                            </motion.section>
-                        ))
-                    ) : (
-                        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="transform-gpu py-32 flex flex-col items-center justify-center text-center bg-[var(--bg-card)]/40 border-2 border-dashed border-[var(--accent-color)]/10 rounded-[4rem] shadow-inner transform-gpu">
-                            <div className="transform-gpu relative mb-8">
-                                <div className="transform-gpu absolute inset-0 bg-[var(--accent-color)]/20 rounded-full blur-[40px] opacity-20 animate-pulse" />
-                                <div className="transform-gpu relative p-10 bg-[var(--bg-card)] rounded-full shadow-2xl shadow-[var(--accent-color)]/10"><Trophy size={64} className="transform-gpu text-[var(--accent-color)]" /></div>
-                                <motion.div animate={{ rotate: 360 }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }} className="transform-gpu absolute -top-4 -right-4 p-4 bg-amber-100 text-amber-600 rounded-2xl shadow-lg border border-[var(--bg-card)] transform-gpu"><Sparkles size={24} /></motion.div>
-                            </div>
-                            <h3 className="transform-gpu text-3xl font-bold text-[var(--text-primary)] tracking-tighter uppercase mb-3">Neural Horizon Reached</h3>
-                            <p className="transform-gpu text-[var(--text-secondary)] font-semibold max-w-sm mx-auto text-lg leading-relaxed">Daily execution cycle complete. Every objective has been synchronized.</p>
-                            <button onClick={() => setActiveTab('WEEK')} className="transform-gpu mt-8 px-8 py-4 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-2xl font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-3 hover:bg-[var(--accent-color)] transition-all shadow-xl shadow-[var(--bg-secondary)]">View Strategic Roadmap <ArrowUpRight size={16} /></button>
-                        </motion.div>
-                    )
-                ) : (
-                    selectedDayTasks.length > 0 ? (
-                        <div className="transform-gpu grid grid-cols-1 gap-4">
-                            {selectedDayTasks.map((item: any, idx: number) => (
-                                <TodayTaskCard key={item.id} item={{ ...item, vectorName: item.plan?.title || 'Inbox' }} index={idx} onStart={handleStartSession} onComplete={handleComplete} onPostpone={handlePostpone} onToggleSubtask={handleToggleSubtask} TaskCardComponent={TaskCard} />
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="transform-gpu py-24 flex flex-col items-center justify-center text-center bg-[var(--accent-color)]/5 border-2 border-dashed border-[var(--accent-color)]/10 rounded-[3rem]">
-                            <div className="transform-gpu p-8 bg-[var(--accent-color)]/10 text-[var(--accent-color)]/40 rounded-full mb-6"><Calendar size={56} /></div>
-                            <h3 className="transform-gpu text-xl font-bold text-[var(--text-primary)] tracking-tight">Open Horizon</h3>
-                        </div>
-                    )
-                )}
-            </AnimatePresence>
-          </div>
+          <button onClick={() => setShowAddBlock(true)} className="px-6 py-3 bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--accent-color)] rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-sm flex items-center gap-2"><Plus size={16}/> Architect Day</button>
         </div>
-
-        <div className="transform-gpu w-full xl:w-[360px] 2xl:w-[400px] shrink-0 sticky top-10 space-y-4">
-           <section className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-4 shadow-sm">
-             <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--text-secondary)]">Today Planner</h3>
-                <Bell size={14} className="text-[var(--accent-color)]" />
-             </div>
-             <div className="space-y-2">
-               <input
-                 value={newTaskTitle}
-                 onChange={(e) => setNewTaskTitle(e.target.value)}
-                 placeholder="Add task (work, study, job...)"
-                 className="w-full px-3 py-2 rounded-xl border border-[var(--border-color)] text-sm bg-transparent text-[var(--text-primary)]"
-               />
-               <div className="grid grid-cols-2 gap-2">
-                 <input type="date" value={newTaskDate} onChange={(e) => setNewTaskDate(e.target.value)} className="px-3 py-2 rounded-xl border border-[var(--border-color)] text-sm bg-transparent text-[var(--text-primary)]" />
-                 <input type="time" value={newTaskTime} onChange={(e) => setNewTaskTime(e.target.value)} className="px-3 py-2 rounded-xl border border-[var(--border-color)] text-sm bg-transparent text-[var(--text-primary)]" />
-               </div>
-               <div className="grid grid-cols-2 gap-2">
-                 <input type="number" min={5} max={480} value={newTaskMinutes} onChange={(e) => setNewTaskMinutes(e.target.value)} className="px-3 py-2 rounded-xl border border-[var(--border-color)] text-sm bg-transparent text-[var(--text-primary)]" />
-                 <select value={newTaskPriority} onChange={(e) => setNewTaskPriority(e.target.value as any)} className="px-3 py-2 rounded-xl border border-[var(--border-color)] text-sm bg-transparent text-[var(--text-primary)]">
-                   <option value="low">Low</option>
-                   <option value="medium">Medium</option>
-                   <option value="high">High</option>
-                   <option value="urgent">Urgent</option>
-                 </select>
-               </div>
-               <button onClick={handleCreateTodayTask} disabled={creatingTask} className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-[var(--text-primary)] text-[var(--bg-primary)] text-xs font-semibold uppercase tracking-wider disabled:opacity-60">
-                 <PlusCircle size={14} /> {creatingTask ? 'Scheduling...' : 'Schedule Task'}
-               </button>
-             </div>
-             <div className="mt-4 pt-4 border-t border-[var(--border-color)] space-y-2">
-               {plannerTasks.slice(0, 6).map((task: any) => (
-                 <div key={task.id} className="flex items-center justify-between gap-2 px-2 py-2 rounded-xl bg-[var(--bg-secondary)]">
-                   <div className="min-w-0">
-                     <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{task.title}</p>
-                     <p className="text-[10px] uppercase tracking-wider text-[var(--text-secondary)] flex items-center gap-1">
-                       <Clock3 size={10} />
-                       {task?.dueDate ? new Date(task.dueDate).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'No time'}
-                     </p>
-                   </div>
-                   <button onClick={() => handleComplete(task.id, 'TASK')} className="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2 py-1 rounded-lg">
-                     Done
-                   </button>
-                 </div>
-               ))}
-               {plannerTasks.length === 0 && <p className="text-xs text-[var(--text-secondary)]">No scheduled tasks yet.</p>}
-             </div>
-           </section>
-           <PulsePanel data={{ ...data.pulse, recommended: recommendedTask }} onStart={handleStartSession} />
+      </header>
+      <section className="mb-12">
+        <SmartTimeline 
+          blocks={scheduleData.blocks} 
+          onTimeClick={(mins) => {
+            setSelectedStartTime(mins);
+            setShowAddBlock(true);
+          }}
+          startHour={DAY_START_HOUR}
+        />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <AnimatePresence mode="popLayout">
+            {data?.fixedBlocks?.map((b: any) => {
+              const s = formatMinutesToTime(parse24hToMinutes(b.start)); const e = formatMinutesToTime(parse24hToMinutes(b.end));
+              const IconComp = ICON_LIST.find(i=>i.id===b.icon)?.icon || Clock;
+              return (
+                <motion.div layout initial={{opacity:0, scale:0.9}} animate={{opacity:1, scale:1}} exit={{opacity:0, scale:0.9}} key={b.id} className="group p-5 bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--accent-color)]/50 rounded-2xl shadow-sm transition-all relative overflow-hidden">
+                  <div className="flex justify-between items-start mb-4"><div className="p-3 bg-[var(--bg-secondary)] rounded-xl text-[var(--accent-color)] shadow-inner"><IconComp size={20} /></div><button onClick={()=>handleRemoveBlock(b.id)} className="opacity-0 group-hover:opacity-100 p-2 text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all"><Trash2 size={16}/></button></div>
+                  <h3 className="text-lg font-black mb-1 truncate">{b.title}</h3><p className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest">{s.time} {s.ampm} — {e.time} {e.ampm}</p>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+          <button onClick={()=>setShowAddBlock(true)} className="flex flex-col items-center justify-center gap-3 p-5 bg-[var(--bg-secondary)]/50 border-2 border-[var(--border-color)] border-dashed rounded-2xl text-[var(--text-secondary)] hover:text-[var(--accent-color)] hover:border-[var(--accent-color)]/50 transition-all min-h-[140px]"><Plus size={32} strokeWidth={3}/><span className="text-[9px] font-black uppercase tracking-widest">Add Pillar</span></button>
         </div>
-      </div>
-
-      <AnimatePresence>
-         {focusItem && <FocusOverlay item={focusItem} onClose={() => setFocusItem(null)} onComplete={handleComplete} />}
-      </AnimatePresence>
+      </section>
+      <section className="mb-12 p-8 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl flex flex-col lg:flex-row items-center justify-between gap-8 shadow-xl">
+        <div><h2 className="text-6xl font-black text-[var(--accent-color)] tracking-tightest mb-2">{formatDuration(scheduleData.totalFree)}</h2><p className="text-[var(--text-secondary)] font-bold text-base opacity-60">Architected capacity for today.</p></div>
+        <div className="flex flex-wrap justify-center gap-4">{[ {t:'7-10 AM',l:'Peak'}, {t:'6-7 PM',l:'Pulse'}, {t:'8-12 PM',l:'Orbit'} ].map((z,i)=>(<div key={i} className="flex flex-col items-center p-4 px-8 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-secondary)] hover:scale-105 transition-transform"><span className="text-base font-black">{z.t}</span><span className="text-[8px] uppercase tracking-widest font-black mt-1 opacity-40">{z.l}</span></div>))}</div>
+      </section>
+      <div className="flex justify-center gap-4 mb-16"><button onClick={()=>setShowAddTask(true)} className="px-8 py-4 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-full font-black text-xs uppercase tracking-widest shadow-md hover:border-[var(--accent-color)] transition-all flex items-center gap-3"><Plus size={20}/> New Objective</button><button onClick={()=>refresh()} className="px-12 py-4 bg-[var(--accent-color)] text-[var(--bg-primary)] rounded-full font-black text-xs uppercase tracking-[0.3em] shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-3"><Zap size={20} fill="currentColor"/> Generate Plan</button></div>
+      <section>
+        <div className="flex items-center justify-between mb-8 border-b border-[var(--border-color)] pb-4">
+          <h2 className="text-2xl font-black tracking-tight">The Allocated Path</h2>
+          {selectedGoalIds.length > 0 && (
+            <button 
+              onClick={() => setSelectedGoalIds([])}
+              className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-color)] hover:underline"
+            >
+              Reset Selection
+            </button>
+          )}
+        </div>
+        <div className="space-y-6 relative">
+          <div className="absolute left-[80px] top-6 bottom-6 w-px bg-gradient-to-b from-[var(--accent-color)]/30 via-[var(--border-color)] to-[var(--accent-color)]/30 hidden sm:block" />
+          <AnimatePresence mode="popLayout">{scheduleData.allocated.map(task=>{
+            const s = formatMinutesToTime(task.startTime);
+            const isVideo = task.type === 'VIDEO' || (task.metadata as any)?.youtubeId;
+            return (
+              <motion.div key={task.id} initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} className="flex flex-col sm:flex-row gap-6 sm:gap-12 group">
+                <div className="sm:w-20 pt-6 sm:text-right shrink-0">
+                  <div className="text-xl font-black tracking-tighter">{s.time}</div>
+                  <div className="text-[9px] uppercase tracking-widest text-[var(--accent-color)] font-black mt-0.5">{s.ampm}</div>
+                </div>
+                <div className="flex-1 p-6 bg-[var(--bg-card)] border border-[var(--border-color)] group-hover:border-[var(--accent-color)]/40 rounded-3xl shadow-sm hover:shadow-xl transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      {isVideo && <Youtube size={14} className="text-rose-500" />}
+                      <h3 className="text-xl font-black leading-tight">{task.title}</h3>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-[var(--bg-secondary)]">{task.intensity} Intensity</span>
+                      <span className="text-xs text-[var(--text-secondary)] font-black uppercase tracking-widest opacity-40 flex items-center gap-2"><Clock size={12}/> {task.actualDuration}m</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={() => setFocusItem(task)}
+                      className="flex items-center gap-2 px-5 py-3 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] hover:border-[var(--accent-color)] rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all"
+                    >
+                      <Play size={14} fill="currentColor"/> Start
+                    </button>
+                    <button 
+                      onClick={() => handleComplete(task.id, task.type)}
+                      className="p-4 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:text-white rounded-2xl transition-all shadow-sm"
+                    >
+                      <CheckCircle2 size={24}/>
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}</AnimatePresence>
+          {scheduleData.allocated.length===0 && <div className="p-24 text-center border-4 border-dashed border-[var(--border-color)] rounded-3xl text-[var(--text-secondary)] opacity-20"><ListTodo size={64} className="mx-auto mb-6"/><p className="text-base font-black uppercase tracking-widest">Awaiting Plan Deployment</p></div>}
+        </div>
+      </section>
     </div>
   );
 }
