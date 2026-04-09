@@ -19,6 +19,16 @@
     "sql:default",
     "sql:allow-execute",
     "sql:allow-select",
-    "sql:allow-load"
+    "sql:allow-load",
+    "http:default",
+    {
+      "identifier": "http:default",
+      "allow": [
+        { "url": "https://dogritorquit.in/*" },
+        { "url": "https://www.dogritorquit.in/*" },
+        { "url": "https://staging.gritorquit.in/*" },
+        { "url": "http://localhost:3000/*" }
+      ]
+    }
   ]
 }

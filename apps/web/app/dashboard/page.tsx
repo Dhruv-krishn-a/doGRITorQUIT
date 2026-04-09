@@ -1,8 +1,8 @@
 import React, { Suspense } from "react";
 import { getServerUser } from "@/lib/auth-server"; 
 import { redirect } from "next/navigation";
-import { dashboard } from "@gritorquit/domain";
-import DashboardUI from "./DashboardUI";
+import { dashboard, analytics } from "@gritorquit/domain";
+import InsightsHub from "./InsightsHub";
 import Loading from "./loading";
 
 export default async function DashboardHome() {
@@ -13,33 +13,18 @@ export default async function DashboardHome() {
   const firstName = displayName.split(' ')[0];
 
   return (
-    <div className="transform-gpu space-y-8">
-      {/* Header Section */}
-      <div className="transform-gpu flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className="transform-gpu text-3xl md:text-4xl font-bold text-slate-800 tracking-tight">
-            Hello, <span className="transform-gpu text-transparent bg-clip-text bg-linear-to-r from-indigo-600 to-violet-600">{firstName}</span> 👋
-          </h1>
-          <p className="transform-gpu text-slate-500 font-medium mt-2 text-lg">
-            Let&apos;s make today productive.
-          </p>
-        </div>
-        <div className="transform-gpu text-sm font-medium text-slate-400 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm">
-           {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-        </div>
-      </div>
-
-      {/* Async Content Wrapper */}
-      <Suspense fallback={<Loading />}>
-        <AsyncDashboardWrapper userId={user.id} firstName={firstName} />
-      </Suspense>
-    </div>
+    <Suspense fallback={<Loading />}>
+      <AsyncInsightsWrapper userId={user.id} firstName={firstName} />
+    </Suspense>
   );
 }
 
 // Separate async component to fetch data
-async function AsyncDashboardWrapper({ userId, firstName }: { userId: string, firstName: string }) {
-  const dbData = await dashboard.getDashboardStats(userId);
+async function AsyncInsightsWrapper({ userId, firstName }: { userId: string, firstName: string }) {
+  const [dbData, analyticsData] = await Promise.all([
+    dashboard.getDashboardStats(userId),
+    analytics.getAnalyticsData(userId)
+  ]);
 
   if (!dbData) {
     return (
@@ -50,7 +35,7 @@ async function AsyncDashboardWrapper({ userId, firstName }: { userId: string, fi
   }
 
   // ENRICHMENT: Map DB data to the richer DashboardUI structure
-  const enrichedData = {
+  const enrichedDashboardData = {
     user: {
       firstName,
       level: 1, // Placeholder
@@ -91,5 +76,11 @@ async function AsyncDashboardWrapper({ userId, firstName }: { userId: string, fi
     })),
   };
 
-  return <DashboardUI data={enrichedData} />;
+  return (
+    <InsightsHub 
+      dashboardData={enrichedDashboardData} 
+      analyticsData={analyticsData} 
+      firstName={firstName} 
+    />
+  );
 }

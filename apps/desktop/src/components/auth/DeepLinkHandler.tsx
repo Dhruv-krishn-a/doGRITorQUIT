@@ -17,7 +17,7 @@ export function DeepLinkHandler() {
       if (urls && urls.length > 0) {
         console.log("[DeepLink] Initial URLs:", urls);
         for (const url of urls) {
-          if (url.startsWith("gritorquit://auth/callback")) {
+          if (url.startsWith("gritorquit://auth/callback") || url.startsWith("grit.io://auth/callback") || url.startsWith("grit-io://auth/callback")) {
             pendingUrlRef.current = url;
             break;
           }
@@ -28,7 +28,7 @@ export function DeepLinkHandler() {
     const unlisten = onOpenUrl((urls) => {
       console.log("[DeepLink] Received URLs:", urls);
       for (const url of urls) {
-        if (url.startsWith("gritorquit://auth/callback")) {
+        if (url.startsWith("gritorquit://auth/callback") || url.startsWith("grit.io://auth/callback") || url.startsWith("grit-io://auth/callback")) {
           pendingUrlRef.current = url;
           // Trigger a re-render or effect to process it immediately
           window.dispatchEvent(new Event("deep_link_received"));

@@ -170,54 +170,61 @@ function TaskForm({ initialData, onSubmit, onCancel, isCreating }: {
   };
 
   return (
-    <div className="transform-gpu bg-white border border-purple-200 rounded-2xl p-6 shadow-xl ring-4 ring-purple-50/50 my-4 animate-in fade-in zoom-in-95 duration-200">
-      <form onSubmit={handleSubmit}>
-        <div className="transform-gpu flex items-start gap-4 mb-4">
-             <div className="transform-gpu p-2 bg-purple-100 rounded-lg text-purple-600"><Layout size={20}/></div>
+    <div className="transform-gpu bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[2rem] p-8 shadow-2xl my-6 animate-in fade-in zoom-in-95 duration-200">
+      <form onSubmit={handleSubmit} className="text-left">
+        <div className="transform-gpu flex items-start gap-5 mb-6">
+             <div className="transform-gpu p-3 bg-[var(--accent-color)]/10 rounded-xl text-[var(--accent-color)] shadow-sm"><Layout size={22}/></div>
              <div className="transform-gpu flex-1">
-                <input name="title" defaultValue={initialData?.title} className="transform-gpu w-full font-bold text-xl text-slate-900 bg-transparent border-b border-transparent hover:border-slate-200 focus:border-purple-500 focus:outline-hidden pb-1" placeholder="Task Title..." autoFocus required />
+                <input name="title" defaultValue={initialData?.title} className="transform-gpu w-full font-black text-2xl text-[var(--text-primary)] bg-transparent border-b border-[var(--border-color)] hover:border-[var(--text-secondary)] focus:border-[var(--accent-color)] focus:outline-none pb-2 italic uppercase tracking-tighter transition-colors" placeholder="Archive Title..." autoFocus required />
              </div>
         </div>
         
-        <div className="transform-gpu flex items-center gap-3 mb-6 pl-14">
-            <select name="priority" defaultValue={initialData?.priority || "Medium"} className="transform-gpu bg-slate-50 border border-slate-200 text-slate-600 rounded-full px-3 py-1 text-xs font-bold uppercase focus:ring-2 focus:ring-purple-500/20 outline-hidden cursor-pointer hover:bg-white">
+        <div className="transform-gpu flex flex-wrap items-center gap-4 mb-8 pl-[60px]">
+            <select name="priority" defaultValue={initialData?.priority || "Medium"} className="transform-gpu bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest focus:ring-4 focus:ring-[var(--accent-color)]/10 outline-none cursor-pointer hover:border-[var(--text-secondary)] transition-all italic">
                {["Low", "Medium", "High", "Urgent"].map(p => <option key={p} value={p}>{p}</option>)}
             </select>
-            <div className="transform-gpu flex items-center gap-1.5 bg-slate-50 border border-slate-200 text-slate-600 rounded-full px-3 py-1">
-                <Clock size={12} className="transform-gpu text-slate-400" />
-                <input name="estimatedMinutes" type="number" defaultValue={initialData?.estimatedMinutes || 60} className="transform-gpu w-10 text-xs font-medium bg-transparent outline-hidden" />
-                <span className="transform-gpu text-[10px] font-bold uppercase text-slate-400">min</span>
+            <div className="transform-gpu flex items-center gap-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl px-4 py-2">
+                <Clock size={14} className="transform-gpu text-[var(--accent-color)]" />
+                <input name="estimatedMinutes" type="number" defaultValue={initialData?.estimatedMinutes || 60} className="transform-gpu w-12 text-[10px] font-black bg-transparent outline-none italic" />
+                <span className="transform-gpu text-[9px] font-black uppercase text-[var(--text-secondary)] tracking-widest">MIN</span>
             </div>
         </div>
 
-        <div className="transform-gpu pl-14">
-            <label className="transform-gpu block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Description</label>
-            <textarea name="description" defaultValue={initialData?.description || ""} className="transform-gpu w-full text-sm text-slate-600 bg-slate-50 border border-slate-200 rounded-lg p-3 resize-none outline-hidden focus:bg-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300 mb-6" placeholder="What is this task about?" rows={2} />
-
-            <label className="transform-gpu block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Subtasks</label>
-            <div className="transform-gpu space-y-2 mb-3">
-                {subtasks.map((st, i) => (
-                    <div key={i} className="transform-gpu flex items-center gap-3 p-2 bg-white border border-slate-100 rounded-lg group shadow-sm">
-                        <div className="transform-gpu w-4 h-4 rounded-full border-2 border-slate-200"></div>
-                        <span className="transform-gpu flex-1 text-sm text-slate-700">{st.title}</span>
-                        <button type="button" onClick={() => setSubtasks(subtasks.filter((_, idx) => idx !== i))}><X size={14} className="transform-gpu text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"/></button>
-                    </div>
-                ))}
+        <div className="transform-gpu pl-[60px] space-y-8">
+            <div>
+              <label className="transform-gpu block text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-3 ml-1 italic opacity-60">Objective Scope</label>
+              <textarea name="description" defaultValue={initialData?.description || ""} className="transform-gpu w-full text-sm font-black text-[var(--text-primary)] bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-5 resize-none outline-none focus:bg-[var(--bg-card)] focus:ring-4 focus:ring-[var(--accent-color)]/5 focus:border-[var(--accent-color)] transition-all mb-2 italic uppercase tracking-tight" placeholder="Define the mission parameters..." rows={3} />
             </div>
-            <div className="transform-gpu flex items-center gap-3 p-2 border-2 border-dashed border-slate-200 rounded-lg hover:border-purple-300 transition-colors bg-slate-50/50">
-                <Plus size={16} className="transform-gpu text-purple-400" />
-                <input className="transform-gpu flex-1 text-sm bg-transparent outline-hidden placeholder:text-slate-400" placeholder="Add a new subtask..." value={newSubtask} onChange={(e) => setNewSubtask(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), newSubtask.trim() && (setSubtasks([...subtasks, { title: newSubtask.trim() }]), setNewSubtask("")))} />
-                <button type="button" onClick={() => { if(newSubtask.trim()) { setSubtasks([...subtasks, { title: newSubtask.trim() }]); setNewSubtask(""); }}} className="transform-gpu text-xs font-bold text-purple-600 uppercase tracking-wide px-2">Add</button>
+
+            <div>
+              <label className="transform-gpu block text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-4 ml-1 italic opacity-60">Sub-Vectors</label>
+              <div className="transform-gpu space-y-3 mb-4">
+                  {subtasks.map((st, i) => (
+                      <div key={i} className="transform-gpu flex items-center gap-4 p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl group shadow-sm">
+                          <div className="transform-gpu w-5 h-5 rounded-full border-2 border-[var(--border-color)] group-hover:border-[var(--accent-color)]/50 transition-colors flex items-center justify-center">
+                            <div className="w-2 h-2 rounded-full bg-[var(--accent-color)] opacity-0 group-hover:opacity-20" />
+                          </div>
+                          <span className="transform-gpu flex-1 text-[11px] font-black text-[var(--text-primary)] uppercase italic tracking-tight">{st.title}</span>
+                          <button type="button" onClick={() => setSubtasks(subtasks.filter((_, idx) => idx !== i))} className="p-1.5 hover:bg-rose-500/10 rounded-lg transition-all"><X size={14} className="transform-gpu text-[var(--text-secondary)] hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity"/></button>
+                      </div>
+                  ))}
+              </div>
+              <div className="transform-gpu flex items-center gap-4 p-3 border-2 border-dashed border-[var(--border-color)] rounded-xl hover:border-[var(--accent-color)]/50 transition-all bg-[var(--bg-secondary)]/30 group">
+                  <Plus size={18} className="transform-gpu text-[var(--text-secondary)] group-hover:text-[var(--accent-color)] transition-colors" />
+                  <input className="transform-gpu flex-1 text-[11px] font-black bg-transparent outline-none placeholder:text-[var(--text-secondary)]/20 uppercase italic tracking-tight" placeholder="Initialize sub-vector..." value={newSubtask} onChange={(e) => setNewSubtask(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), newSubtask.trim() && (setSubtasks([...subtasks, { title: newSubtask.trim() }]), setNewSubtask("")))} />
+                  <button type="button" onClick={() => { if(newSubtask.trim()) { setSubtasks([...subtasks, { title: newSubtask.trim() }]); setNewSubtask(""); }}} className="transform-gpu text-[10px] font-black text-[var(--accent-color)] uppercase tracking-widest px-3 py-1 hover:underline">Add</button>
+              </div>
             </div>
         </div>
 
-        <div className="transform-gpu flex justify-end gap-3 pt-6 mt-6 border-t border-slate-100">
-            <button type="button" onClick={onCancel} className="transform-gpu px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors">Cancel</button>
-            <button type="submit" disabled={isSubmitting} className="transform-gpu px-6 py-2 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700 flex items-center gap-2 shadow-md hover:shadow-lg transition-all transform active:scale-95"><Save size={16} /> {isCreating ? "Create Task" : "Save Changes"}</button>
+        <div className="transform-gpu flex justify-end gap-4 pt-8 mt-10 border-t border-[var(--border-color)]">
+            <button type="button" onClick={onCancel} className="transform-gpu px-6 py-3 text-[10px] font-black text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all uppercase tracking-widest italic">Standby</button>
+            <button type="submit" disabled={isSubmitting} className="transform-gpu px-8 py-3 bg-[var(--accent-color)] text-[var(--bg-primary)] rounded-xl text-[10px] font-black uppercase tracking-widest hover:opacity-90 flex items-center gap-3 shadow-xl shadow-[var(--accent-color)]/20 transition-all transform active:scale-95 italic"><Save size={16} /> {isCreating ? "Deploy Objective" : "Update Core"}</button>
         </div>
       </form>
     </div>
   );
+}
 }
 
 import { TaskCard } from "@gritorquit/dashboard-ui-web";

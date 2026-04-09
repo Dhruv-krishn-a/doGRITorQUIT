@@ -37,6 +37,7 @@ export default function TodayPage() {
     toggleTaskComplete, toggleUnitComplete, createScheduledTask
   } = useToday();
   const router = useRouter();
+  const { colors } = useTheme();
 
   const [fixedBlocks, setFixedBlocks] = useState([
     { id: '1', title: 'Sleep', start: '23:00', end: '07:00', icon: 'moon' as const },
@@ -136,8 +137,8 @@ export default function TodayPage() {
 
   const handleStartMission = (item: any) => {
     router.push({
-      pathname: '/mission',
-      params: { id: item.id, title: item.title, type: item.type }
+      pathname: '/study/[id]',
+      params: { id: item.id }
     });
   };
 
@@ -145,13 +146,13 @@ export default function TodayPage() {
     if (item.type === 'HABIT') toggleHabit(item.id, false);
     else if (item.type === 'PROJECT') toggleTaskComplete(item.id, false);
     else toggleUnitComplete(item.id, false);
-    Alert.alert("Success", "Completed!");
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
   if (loading && actionStream.length === 0) {
     return (
       <View className="flex-1 items-center justify-center bg-[var(--bg-primary)]">
-        <ActivityIndicator size="large" color="#0EA5E9" />
+        <ActivityIndicator size="large" color={colors.accent} />
       </View>
     );
   }
@@ -159,53 +160,62 @@ export default function TodayPage() {
   return (
     <PerspectiveWrapper>
       <Modal visible={showAddBlock} transparent animationType="slide">
-        <View className="flex-1 justify-end bg-black/50">
-          <View className="bg-[var(--bg-card)] p-6 rounded-t-3xl border-t border-[var(--border-color)]">
-            <View className="flex-row justify-between items-center mb-6">
-              <Text className="text-xl font-black text-[var(--text-primary)]">Architect Day</Text>
-              <TouchableOpacity onPress={() => setShowAddBlock(false)} className="p-2">
-                <Ionicons name="close" size={24} color="#64748b" />
+        <View className="flex-1 justify-end bg-black/60">
+          <View 
+            style={{ backgroundColor: colors.card }}
+            className="p-8 rounded-t-[3.5rem] border-t border-[var(--border-color)] shadow-2xl"
+          >
+            <View className="flex-row justify-between items-center mb-8">
+              <Text className="text-3xl font-black italic uppercase tracking-tighter text-[var(--text-primary)]">Architect Day</Text>
+              <TouchableOpacity onPress={() => setShowAddBlock(false)} className="p-2 bg-[var(--bg-secondary)] rounded-full border border-[var(--border-color)]">
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
-            <ScrollView className="space-y-6 max-h-[80vh]">
+            <ScrollView className="space-y-8 max-h-[80vh]" showsVerticalScrollIndicator={false}>
               {/* Objectives Selection */}
-              <View>
-                <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest mb-3">Today's Objectives</Text>
+              <View className="text-left">
+                <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-4 ml-1 italic">Mission Objectives</Text>
                 <View className="flex-row flex-wrap gap-2">
                   {goals.map(goal => (
                     <TouchableOpacity 
                       key={goal.id} 
                       onPress={() => setSelectedGoalIds(prev => prev.includes(goal.id) ? prev.filter(id => id !== goal.id) : [...prev, goal.id])}
-                      className={`px-4 py-2 rounded-xl border ${selectedGoalIds.includes(goal.id) ? 'bg-[var(--accent-color)] border-[var(--accent-color)]' : 'bg-[var(--bg-secondary)] border-[var(--border-color)]'}`}
+                      className={`px-5 py-3 rounded-2xl border ${selectedGoalIds.includes(goal.id) ? 'bg-[var(--accent-color)] border-[var(--accent-color)] shadow-lg shadow-sky-500/20' : 'bg-[var(--bg-secondary)] border-[var(--border-color)]'}`}
                     >
-                      <Text className={`text-[10px] font-black ${selectedGoalIds.includes(goal.id) ? 'text-white' : 'text-[var(--text-secondary)]'}`}>{goal.title}</Text>
+                      <Text className={`text-[10px] font-black uppercase tracking-widest ${selectedGoalIds.includes(goal.id) ? 'text-[var(--bg-primary)]' : 'text-[var(--text-secondary)]'}`}>{goal.title}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
               </View>
 
-              <View>
-                <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest mb-2">Block Name</Text>
-                <TextInput value={newBlockTitle} onChangeText={setNewBlockTitle} placeholder="e.g., Deep Work" placeholderTextColor="#64748b" className="w-full px-5 py-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl text-[var(--text-primary)] font-bold" />
+              <View className="text-left">
+                <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-3 ml-1 italic">Block Designation</Text>
+                <TextInput 
+                  value={newBlockTitle} 
+                  onChangeText={setNewBlockTitle} 
+                  placeholder="DEEP WORK..." 
+                  placeholderTextColor={colors.textSecondary + '40'} 
+                  className="w-full px-6 py-5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-3xl text-[var(--text-primary)] font-black italic uppercase tracking-tight" 
+                />
               </View>
               
               <View className="flex-row gap-4">
-                <View className="flex-1">
-                  <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest mb-2">Start</Text>
-                  <TextInput value={newBlockStart} onChangeText={setNewBlockStart} placeholder="09:00" placeholderTextColor="#64748b" className="w-full px-5 py-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl text-[var(--text-primary)] font-bold" />
+                <View className="flex-1 text-left">
+                  <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-3 ml-1 italic">Window Start</Text>
+                  <TextInput value={newBlockStart} onChangeText={setNewBlockStart} placeholder="09:00" placeholderTextColor={colors.textSecondary + '40'} className="w-full px-6 py-5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-3xl text-[var(--text-primary)] font-black italic uppercase tracking-tight" />
                 </View>
-                <View className="flex-1">
-                  <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest mb-2">End</Text>
-                  <TextInput value={newBlockEnd} onChangeText={setNewBlockEnd} placeholder="10:00" placeholderTextColor="#64748b" className="w-full px-5 py-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl text-[var(--text-primary)] font-bold" />
+                <View className="flex-1 text-left">
+                  <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-3 ml-1 italic">Window End</Text>
+                  <TextInput value={newBlockEnd} onChangeText={setNewBlockEnd} placeholder="10:00" placeholderTextColor={colors.textSecondary + '40'} className="w-full px-6 py-5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-3xl text-[var(--text-primary)] font-black italic uppercase tracking-tight" />
                 </View>
               </View>
 
-              <View>
-                <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest mb-2">Icon</Text>
-                <View className="flex-row gap-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-1.5">
+              <View className="text-left">
+                <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-4 ml-1 italic">Icon Signature</Text>
+                <View className="flex-row gap-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[2rem] p-2">
                   {(['briefcase', 'moon', 'barbell', 'cafe', 'book'] as const).map(icon => (
-                    <TouchableOpacity key={icon} onPress={() => setNewBlockIcon(icon)} className={`flex-1 p-3 rounded-xl items-center justify-center ${newBlockIcon === icon ? 'bg-[var(--bg-card)]' : ''}`}>
-                      <Ionicons name={icon} size={20} color={newBlockIcon === icon ? '#0EA5E9' : '#64748b'} />
+                    <TouchableOpacity key={icon} onPress={() => setNewBlockIcon(icon)} className={`flex-1 p-4 rounded-2xl items-center justify-center ${newBlockIcon === icon ? 'bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm' : ''}`}>
+                      <Ionicons name={icon} size={24} color={newBlockIcon === icon ? colors.accent : colors.textSecondary} />
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -219,19 +229,19 @@ export default function TodayPage() {
                   }
                   setShowAddBlock(false);
                 }} 
-                className="w-full mt-4 px-6 py-5 bg-[var(--accent-color)] rounded-2xl items-center shadow-lg"
+                className="w-full mt-4 px-6 py-6 bg-[var(--accent-color)] rounded-3xl items-center shadow-xl shadow-sky-500/20"
               >
-                <Text className="text-[11px] font-black text-white uppercase tracking-widest">Update Schedule</Text>
+                <Text className="text-[11px] font-black text-[var(--bg-primary)] uppercase tracking-[0.2em] italic">Commit to Schedule</Text>
               </TouchableOpacity>
             </ScrollView>
           </View>
         </View>
       </Modal>
 
-      <ScrollView className="flex-1 bg-[var(--bg-primary)]" contentContainerStyle={{ paddingBottom: 100, paddingTop: 20 }}>
-        <View className="px-6 mb-6">
-          <Text className="text-3xl font-black text-[var(--text-primary)] tracking-tighter">Today</Text>
-          <Text className="text-xs font-bold text-[var(--text-secondary)] opacity-60">Define your non-negotiable path.</Text>
+      <ScrollView className="flex-1 bg-[var(--bg-primary)]" contentContainerStyle={{ paddingBottom: 120, paddingTop: 24 }}>
+        <View className="px-6 mb-8 text-left">
+          <Text className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--text-secondary)] mb-2 italic">Non-Negotiable Path</Text>
+          <Text className="text-4xl font-black text-[var(--text-primary)] tracking-tighter uppercase italic leading-none">Today</Text>
         </View>
 
         <SmartTimeline 
@@ -240,48 +250,49 @@ export default function TodayPage() {
           startHour={DAY_START_HOUR} 
         />
 
-        <View className="px-6 mb-10">
-          <View className="p-6 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[2rem] shadow-sm">
-            <Text className="text-4xl font-black text-[var(--accent-color)] tracking-tighter mb-1">{formatDuration(scheduleData.totalFreeMinutes)}</Text>
-            <Text className="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest opacity-60">Architected Capacity</Text>
+        <View className="px-6 mb-12 text-left">
+          <View className="p-8 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[3rem] shadow-2xl relative overflow-hidden">
+            <View className="transform-gpu absolute top-0 left-0 w-full h-full bg-gradient-to-br from-[var(--accent-color)]/5 via-transparent to-transparent pointer-events-none" />
+            <Text className="text-5xl font-black text-[var(--accent-color)] tracking-tightest mb-2 italic">{formatDuration(scheduleData.totalFreeMinutes)}</Text>
+            <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em] opacity-60 italic">Architected Capacity</Text>
           </View>
         </View>
 
         <View className="px-6">
-          <View className="flex-row justify-between items-center mb-6">
-            <Text className="text-xl font-black text-[var(--text-primary)]">Allocated Path</Text>
+          <View className="flex-row justify-between items-center mb-8 border-b border-[var(--border-color)] pb-4 text-left">
+            <Text className="text-2xl font-black text-[var(--text-primary)] uppercase italic tracking-tight">Allocated Path</Text>
             {selectedGoalIds.length > 0 && (
-              <TouchableOpacity onPress={() => setSelectedGoalIds([])}>
-                <Text className="text-[10px] font-black text-[var(--accent-color)] uppercase">Reset</Text>
+              <TouchableOpacity onPress={() => setSelectedGoalIds([])} className="bg-[var(--accent-color)]/10 px-3 py-1.5 rounded-lg border border-[var(--accent-color)]/20">
+                <Text className="text-[9px] font-black text-[var(--accent-color)] uppercase italic">Reset</Text>
               </TouchableOpacity>
             )}
           </View>
 
-          <View className="space-y-4">
+          <View className="space-y-8">
             {scheduleData.allocated.map((task) => (
-              <View key={task.id} className="flex-row gap-4">
-                <View className="w-14 items-end pt-4">
-                  <Text className="text-sm font-black text-[var(--text-primary)]">{formatTime(task.startTime).split(' ')[0]}</Text>
-                  <Text className="text-[8px] font-black text-[var(--accent-color)] uppercase mt-0.5">{formatTime(task.startTime).split(' ')[1]}</Text>
+              <View key={task.id} className="flex-row gap-6">
+                <View className="w-16 items-end pt-6">
+                  <Text className="text-xl font-black text-[var(--text-primary)] tracking-tighter leading-none italic">{formatTime(task.startTime).split(' ')[0]}</Text>
+                  <Text className="text-[10px] font-black text-[var(--accent-color)] uppercase mt-1 italic">{formatTime(task.startTime).split(' ')[1]}</Text>
                 </View>
-                <View className="flex-1 p-5 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl shadow-sm">
-                  <View className="flex-row items-center gap-2 mb-2">
-                    {(task.type === 'YOUTUBE' || task.type === 'VIDEO') && <Ionicons name="logo-youtube" size={14} color="#ef4444" />}
-                    <Text className="text-base font-black text-[var(--text-primary)] flex-1" numberOfLines={1}>{task.title}</Text>
+                <View className="flex-1 p-6 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[2.5rem] shadow-xl relative overflow-hidden group">
+                  <View className="flex-row items-center gap-3 mb-4 text-left">
+                    {(task.type === 'YOUTUBE' || task.type === 'VIDEO') && <Ionicons name="logo-youtube" size={18} color="#ef4444" />}
+                    <Text className="text-xl font-black text-[var(--text-primary)] flex-1 uppercase italic tracking-tighter leading-none" numberOfLines={1}>{task.title}</Text>
                   </View>
                   
                   <View className="flex-row items-center justify-between">
-                    <View className="flex-row items-center gap-2">
-                      <Text className="text-[9px] font-black text-[var(--text-secondary)] uppercase opacity-40">{task.actualDuration}m</Text>
+                    <View className="px-3 py-1.5 bg-[var(--bg-secondary)] rounded-full border border-[var(--border-color)]">
+                      <Text className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest italic">{task.actualDuration} MIN</Text>
                     </View>
                     
-                    <View className="flex-row gap-2">
-                      <TouchableOpacity onPress={() => handleStartMission(task)} className="flex-row items-center gap-1.5 px-4 py-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl">
-                        <Ionicons name="play" size={12} color="#0EA5E9" />
-                        <Text className="text-[9px] font-black text-[var(--text-primary)] uppercase">Start</Text>
+                    <View className="flex-row gap-3">
+                      <TouchableOpacity onPress={() => handleStartMission(task)} className="flex-row items-center gap-2 px-5 py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl active:scale-95 transition-all">
+                        <Ionicons name="play" size={14} color={colors.accent} />
+                        <Text className="text-[10px] font-black text-[var(--text-primary)] uppercase italic">Engage</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity onPress={() => handleComplete(task)} className="p-2.5 bg-emerald-500/10 rounded-xl">
-                        <Ionicons name="checkmark" size={16} color="#10b981" />
+                      <TouchableOpacity onPress={() => handleComplete(task)} className="w-12 h-12 bg-emerald-500/10 rounded-2xl items-center justify-center border border-emerald-500/20 active:scale-95 transition-all">
+                        <Ionicons name="checkmark" size={24} color="#10b981" />
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -290,9 +301,9 @@ export default function TodayPage() {
             ))}
 
             {scheduleData.allocated.length === 0 && (
-              <View className="p-12 border-2 border-dashed border-[var(--border-color)] rounded-[2.5rem] items-center opacity-30">
-                <Ionicons name="list" size={40} color="#64748b" />
-                <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mt-4">Awaiting Plan Deployment</Text>
+              <View className="p-20 border-2 border-dashed border-[var(--border-color)] rounded-[3.5rem] items-center justify-center bg-[var(--bg-secondary)]/10 opacity-30">
+                <Ionicons name="flash-outline" size={48} color={colors.textSecondary} />
+                <Text className="text-[11px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em] mt-6 italic text-center leading-relaxed">Awaiting Neural Plan Deployment</Text>
               </View>
             )}
           </View>

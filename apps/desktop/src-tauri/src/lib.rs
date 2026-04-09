@@ -528,6 +528,7 @@ pub fn run() {
         .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_sql::Builder::default().build())
+        .plugin(tauri_plugin_http::init())
         .invoke_handler(tauri::generate_handler![
             notify,
             fetch_entitlements,

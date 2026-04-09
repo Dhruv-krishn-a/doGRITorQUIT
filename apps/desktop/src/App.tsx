@@ -9,6 +9,7 @@ import { DeepLinkHandler } from "./components/auth/DeepLinkHandler";
 import { AppLayout } from "./layouts/AppLayout";
 import { GlobalErrorBoundary } from "./components/shared/GlobalErrorBoundary";
 
+const InsightsPage = lazy(() => import("./pages/InsightsPage"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const NotesPage = lazy(() => import("./pages/NotesPage"));
 const TracksPage = lazy(() => import("./pages/study/TracksPage"));
@@ -66,7 +67,7 @@ function App() {
 
             {/* Modular Layout for Main Application */}
             <Route element={user ? <AppLayout /> : <Navigate to="/login" replace />}>
-              <Route path="/" element={<DashboardPage />} />
+              <Route path="/" element={<InsightsPage />} />
               <Route path="/today" element={<TodayPage />} />
               <Route path="/notes" element={<NotesPage />} />
               <Route path="/daily-checklist" element={<ChecklistPage />} />
@@ -80,7 +81,7 @@ function App() {
               <Route path="/study/:trackId" element={<Navigate to="/study" replace />} />
 
               <Route path="/plans/:planId" element={<PlanDetailPage />} />
-              <Route path="/analytics" element={<AnalyticsPage />} />
+              <Route path="/analytics" element={<Navigate to="/" replace />} />
               <Route path="/subscriptions" element={<SubscriptionsPage />} />
               <Route path="/settings" element={<SettingsPage />} />
             </Route>

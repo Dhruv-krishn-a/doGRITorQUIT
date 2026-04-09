@@ -43,6 +43,7 @@ export const HabitsProvider: React.FC<{ children: React.ReactNode, offlineStorag
 
   const refreshData = useCallback(async (start: Date, end: Date) => {
     setLoading(true);
+    let hasData = habits.length > 0;
     try {
       // 1. Always load local data first
       let localData: HabitData | null = null;
@@ -52,6 +53,7 @@ export const HabitsProvider: React.FC<{ children: React.ReactNode, offlineStorag
           setHabits(localData.habits);
           setLogs(localData.logs);
           setNotes(localData.notes);
+          hasData = true;
         }
       }
 
@@ -82,10 +84,11 @@ export const HabitsProvider: React.FC<{ children: React.ReactNode, offlineStorag
           );
           return [...filteredServerNotes, ...tempNotes];
         });
+        hasData = true;
       }
     } catch (err) {
       console.error('Failed to load habits:', err);
-      if (habits.length === 0) toast.error('Failed to load checklist data');
+      if (!hasData) toast.error('Failed to load checklist data');
     } finally {
       setLoading(false);
     }

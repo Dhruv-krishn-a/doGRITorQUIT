@@ -42,7 +42,7 @@ function isAllowedOrigin(origin: string | null) {
   }
 }
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const origin = request.headers.get("origin");
   const host = request.headers.get("host")?.toLowerCase();

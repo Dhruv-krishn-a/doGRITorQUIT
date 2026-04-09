@@ -140,7 +140,7 @@ export default function AuthPage({ view: initialView }: AuthPageProps) {
     try {
       setLoading(true);
       setError(null);
-      const url = buildApiUrl(`/native-auth/start/${provider}?redirect_uri=${encodeURIComponent('gritorquit://auth/callback')}`);
+      const url = buildApiUrl(`/native-auth/start/${provider}?redirect_uri=${encodeURIComponent('grit.io://auth/callback')}`);
       const isTauri = "__TAURI_INTERNALS__" in window;
       if (isTauri) {
         await openUrl(url);

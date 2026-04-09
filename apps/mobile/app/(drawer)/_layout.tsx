@@ -194,10 +194,10 @@ export default function DrawerLayout() {
           }}
         />
         <Drawer.Screen
-          name="dashboard"
+          name="insights"
           options={{
             drawerLabel: "Insights",
-            headerTitle: "Performance HUD",
+            headerTitle: "Neural Hub",
             drawerIcon: ({ color, size }) => (
               <Ionicons name="stats-chart" size={size} color={color} />
             ),
@@ -225,6 +225,7 @@ export default function DrawerLayout() {
         />
         
         {/* Hidden screens */}
+        <Drawer.Screen name="dashboard" options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name="analytics" options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name="profile" options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name="planner" options={{ drawerItemStyle: { display: 'none' } }} />

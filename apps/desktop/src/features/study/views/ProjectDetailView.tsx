@@ -137,20 +137,20 @@ export function ProjectDetailView() {
  if (!mounted) return null;
 
  if (loading && !activeTrack) return (
-  <div className="flex items-center justify-center min-h-[60vh] bg-[#fdfbfb] w-full">
+  <div className="flex items-center justify-center min-h-[60vh] bg-[var(--bg-primary)] w-full">
    <div className="flex flex-col items-center gap-4">
-    <Loader2 className="w-8 h-8 text-rose-500 animate-spin drop-shadow-[0_0_10px_rgba(244,63,94,0.5)]" />
-    <div className="text-rose-500 font-bold uppercase tracking-widest text-xs">Loading Project Vector...</div>
+    <Loader2 className="w-8 h-8 text-[var(--accent-color)] animate-spin drop-shadow-[0_0_10px_var(--accent-color)]" />
+    <div className="text-[var(--accent-color)] font-black uppercase tracking-widest text-xs italic">Loading Project Vector...</div>
    </div>
   </div>
  );
 
  if (!activeTrack || !track) return (
-  <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 bg-[#fdfbfb] w-full">
-   <div className="text-slate-400 font-bold uppercase tracking-widest text-sm">Vector not found.</div>
+  <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 bg-[var(--bg-primary)] w-full text-left">
+   <div className="text-[var(--text-secondary)] font-black uppercase tracking-widest text-sm italic">Vector not found.</div>
    <button 
     onClick={() => navigate('/study')} 
-    className="px-8 py-4 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-2xl font-bold text-xs uppercase tracking-widest shadow-[0_4px_15px_rgba(244,63,94,0.3)] hover:shadow-[0_6px_20px_rgba(244,63,94,0.4)] transition-all active:scale-95"
+    className="px-8 py-4 bg-gradient-to-r from-[var(--accent-color)] to-sky-600 text-[var(--bg-primary)] rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:opacity-90 transition-all active:scale-95 italic"
    >
     Return to Command Center
    </button>
@@ -169,10 +169,9 @@ export function ProjectDetailView() {
  };
 
  return (
-  <div className="flex flex-col w-full h-full flex-1 bg-[#fdfbfb] text-slate-800 overflow-hidden font-sans selection:bg-rose-100 selection:text-rose-900 relative">
+  <div className="flex flex-col w-full h-full flex-1 bg-[var(--bg-primary)] text-[var(--text-primary)] overflow-hidden font-sans selection:bg-[var(--accent-color)]/30 selection:text-[var(--text-primary)] relative">
    {/* --- BACKGROUND GLOW --- */}
-   <div className="absolute top-0 left-1/2 w-[60rem] h-[40rem] bg-rose-200/30 rounded-full blur-[60px] -translate-x-1/2 pointer-events-none -z-10" />
-   <div className="absolute bottom-0 right-0 w-[40rem] h-[40rem] bg-fuchsia-200/20 rounded-full blur-[60px] pointer-events-none -z-10" />
+   <div className="absolute top-0 left-1/2 w-[60rem] h-[40rem] bg-[var(--accent-color)]/5 rounded-full blur-[120px] -translate-x-1/2 pointer-events-none -z-10" />
 
    {/* --- STICKY TOP BAR --- */}
    <div className="shrink-0">
@@ -189,7 +188,7 @@ export function ProjectDetailView() {
 
    <div className="flex-1 flex overflow-hidden">
     {/* --- LEFT COLUMN: SideBar --- */}
-    <div className="shrink-0 h-full border-r border-slate-100">
+    <div className="shrink-0 h-full border-r border-[var(--border-color)]">
      <ProjectSidebar 
       {...sharedProps}
       isSidebarCollapsed={isSidebarCollapsed}
@@ -241,7 +240,7 @@ export function ProjectDetailView() {
     </main>
 
     {/* --- RIGHT COLUMN: Context Panel --- */}
-    <div className="shrink-0 h-full border-l border-slate-100 bg-white/40 backdrop-blur-md">
+    <div className="shrink-0 h-full border-l border-[var(--border-color)] bg-[var(--bg-card)]/40 backdrop-blur-xl">
      <ProjectContextPanel 
       track={track}
       units={units}

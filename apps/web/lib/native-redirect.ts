@@ -1,5 +1,7 @@
 const allowedSchemes = [
   "gritorquit://",
+  "grit.io://",
+  "grit-io://",
   "exp+mobile://",
   "exp://",
   "com.gritorquit.app://",

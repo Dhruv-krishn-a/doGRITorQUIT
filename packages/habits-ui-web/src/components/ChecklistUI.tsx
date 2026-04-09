@@ -253,44 +253,44 @@ export const ChecklistUI: React.FC<ChecklistUIProps> = ({
   const habitCount = habits.length;
 
   return (
-    <div className="transform-gpu w-full p-4 sm:p-8 space-y-8 font-sans text-slate-800 relative min-h-screen">
+    <div className="transform-gpu w-full p-4 sm:p-8 space-y-8 font-sans text-[var(--text-primary)] relative min-h-screen bg-[var(--bg-primary)]">
       
       {/* --- ADD HABIT MODAL --- */}
       <AnimatePresence>
         {isModalOpen && (
-          <div className="transform-gpu fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 backdrop-blur-sm p-4">
+          <div className="transform-gpu fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
              <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.2 }}
-              className="transform-gpu bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]"
+              className="transform-gpu bg-[var(--bg-card)] rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] border border-[var(--border-color)]"
             >
-              <div className="transform-gpu p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 className="transform-gpu text-xl font-bold text-slate-800">Create New Habit</h3>
-                <button onClick={() => setIsModalOpen(false)} className="transform-gpu text-slate-400 hover:text-slate-700 transition-colors bg-white p-2 rounded-full shadow-sm border border-slate-100"><X size={20}/></button>
+              <div className="transform-gpu p-8 border-b border-[var(--border-color)] flex justify-between items-center bg-[var(--bg-secondary)]/50">
+                <h3 className="transform-gpu text-2xl font-black text-[var(--text-primary)] italic uppercase tracking-tight">Initialize Vector</h3>
+                <button onClick={() => setIsModalOpen(false)} className="transform-gpu text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors bg-[var(--bg-primary)] p-3 rounded-2xl shadow-sm border border-[var(--border-color)]"><X size={20}/></button>
               </div>
               
-              <form onSubmit={handleCreateHabit} className="transform-gpu flex-1 overflow-y-auto p-6 space-y-8">
-                <div className="transform-gpu space-y-3">
-                  <label className="transform-gpu text-xs font-bold uppercase tracking-wider text-slate-400">What do you want to achieve?</label>
+              <form onSubmit={handleCreateHabit} className="transform-gpu flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar text-left">
+                <div className="transform-gpu space-y-4">
+                  <label className="transform-gpu text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] ml-1">Mission Objective</label>
                   <input 
                     type="text" 
                     autoFocus
-                    placeholder="e.g. 15 mins Meditation"
+                    placeholder="e.g. 15 MINS MEDITATION"
                     value={newHabitTitle}
                     onChange={e => setNewHabitTitle(e.target.value)}
-                    className="transform-gpu w-full text-2xl font-semibold placeholder:text-slate-300 border-b-2 border-slate-100 py-2 focus:outline-none focus:border-indigo-500 transition-colors bg-transparent"
+                    className="transform-gpu w-full text-3xl font-black italic uppercase placeholder:text-[var(--text-secondary)]/20 border-b-2 border-[var(--border-color)] py-3 focus:outline-none focus:border-[var(--accent-color)] transition-colors bg-transparent tracking-tighter"
                   />
                 </div>
 
-                <div className="transform-gpu space-y-4">
-                  <label className="transform-gpu text-xs font-bold uppercase tracking-wider text-slate-400">Choose an Icon</label>
-                  <div className="transform-gpu space-y-6">
+                <div className="transform-gpu space-y-6">
+                  <label className="transform-gpu text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] ml-1">Icon Designation</label>
+                  <div className="transform-gpu space-y-8">
                     {ICON_OPTIONS.map((cat) => (
                       <div key={cat.category}>
-                        <h4 className="transform-gpu text-xs font-semibold text-slate-400 mb-3">{cat.category}</h4>
-                        <div className="transform-gpu grid grid-cols-4 sm:grid-cols-6 gap-3">
+                        <h4 className="transform-gpu text-[9px] font-black text-[var(--text-secondary)]/60 mb-4 uppercase tracking-[0.3em]">{cat.category}</h4>
+                        <div className="transform-gpu grid grid-cols-4 sm:grid-cols-6 gap-4">
                           {cat.items.map((opt) => {
                             const IsSelected = newHabitIcon === opt.value;
                             const IconComp = opt.component;
@@ -302,14 +302,14 @@ export const ChecklistUI: React.FC<ChecklistUIProps> = ({
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => setNewHabitIcon(opt.value)}
                                 className={cn(
-                                  "flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border transition-all",
+                                  "flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border transition-all",
                                   IsSelected 
-                                    ? `bg-indigo-50 border-indigo-200 text-indigo-600 shadow-sm ring-2 ring-indigo-500/20` 
-                                    : "bg-white border-slate-100 text-slate-400 hover:border-slate-300 hover:text-slate-600"
+                                    ? `bg-[var(--accent-color)]/10 border-[var(--accent-color)]/30 text-[var(--accent-color)] shadow-xl shadow-[var(--accent-color)]/10 ring-2 ring-[var(--accent-color)]/20` 
+                                    : "bg-[var(--bg-secondary)]/50 border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                                 )}
                               >
-                                <IconComp size={24} strokeWidth={1.5} />
-                                <span className="transform-gpu text-[10px] font-medium">{opt.label}</span>
+                                <IconComp size={24} strokeWidth={2} />
+                                <span className="transform-gpu text-[8px] font-black uppercase tracking-tighter mt-1">{opt.label}</span>
                               </motion.button>
                             )
                           })}
@@ -319,35 +319,35 @@ export const ChecklistUI: React.FC<ChecklistUIProps> = ({
                   </div>
                 </div>
 
-                <div className="transform-gpu space-y-3">
-                  <label className="transform-gpu text-xs font-bold uppercase tracking-wider text-slate-400">Color Theme</label>
-                  <div className="transform-gpu flex flex-wrap gap-4">
+                <div className="transform-gpu space-y-4">
+                  <label className="transform-gpu text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] ml-1">Color Frequency</label>
+                  <div className="transform-gpu flex flex-wrap gap-5">
                     {COLOR_OPTIONS.map((c) => (
                       <button
                         key={c.name}
                         type="button"
                         onClick={() => setNewHabitColor(c)}
                         className={cn(
-                          "w-10 h-10 rounded-full transition-all flex items-center justify-center",
+                          "w-12 h-12 rounded-2xl transition-all flex items-center justify-center border border-white/10",
                           c.bg,
-                          (newHabitColor.name === c.name) ? "ring-4 ring-offset-2 ring-slate-200 scale-110 shadow-lg" : "opacity-70 hover:opacity-100 hover:scale-110"
+                          (newHabitColor.name === c.name) ? "ring-4 ring-offset-4 ring-offset-[var(--bg-card)] ring-[var(--accent-color)] scale-110 shadow-2xl" : "opacity-60 hover:opacity-100 hover:scale-110"
                         )}
                         title={c.name}
                       >
-                         {(newHabitColor.name === c.name) && <Check className="transform-gpu text-white w-5 h-5" />}
+                         {(newHabitColor.name === c.name) && <Check className="transform-gpu text-white w-6 h-6 stroke-[4]" />}
                       </button>
                     ))}
                   </div>
                 </div>
               </form>
 
-              <div className="transform-gpu p-6 border-t border-slate-100 bg-slate-50">
+              <div className="transform-gpu p-8 border-t border-[var(--border-color)] bg-[var(--bg-secondary)]/50">
                 <button 
                   onClick={handleCreateHabit}
                   disabled={!newHabitTitle}
-                  className="transform-gpu w-full py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-slate-200"
+                  className="transform-gpu w-full py-5 bg-[var(--accent-color)] hover:opacity-90 text-[var(--bg-primary)] font-black uppercase tracking-[0.3em] rounded-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl shadow-[var(--accent-color)]/20 italic text-xs"
                 >
-                  Create Habit
+                  Execute Initialization
                 </button>
               </div>
             </motion.div>
@@ -356,46 +356,49 @@ export const ChecklistUI: React.FC<ChecklistUIProps> = ({
       </AnimatePresence>
 
       {/* --- HERO HEADER & ANALYTICS --- */}
-      <div className="transform-gpu grid grid-cols-1 xl:grid-cols-12 gap-6 min-w-0 overflow-hidden">
-        <div className="transform-gpu xl:col-span-4 relative overflow-hidden bg-linear-to-br from-indigo-600 to-violet-700 rounded-3xl p-6 sm:p-8 text-white shadow-2xl shadow-indigo-200 h-full min-h-[300px]">
-          <div className="transform-gpu absolute top-0 right-0 p-8 opacity-10"><Sparkles size={180} strokeWidth={1} /></div>
-          <div className="transform-gpu relative z-10 h-full flex flex-col justify-between gap-6">
-            <div className="transform-gpu flex items-center gap-2 text-indigo-100 font-medium text-xs uppercase tracking-widest bg-white/10 w-fit px-3 py-1 rounded-full backdrop-blur-md border border-white/10">
-              <Quote size={12} /><span>Daily Inspiration</span>
+      <div className="transform-gpu grid grid-cols-1 xl:grid-cols-12 gap-8 min-w-0 overflow-hidden">
+        <div className="transform-gpu xl:col-span-4 relative overflow-hidden bg-gradient-to-br from-[var(--accent-color)] to-indigo-700 rounded-[3rem] p-8 sm:p-10 text-[var(--bg-primary)] shadow-2xl shadow-[var(--accent-color)]/20 h-full min-h-[320px]">
+          <div className="transform-gpu absolute top-0 right-0 p-10 opacity-10"><Sparkles size={200} strokeWidth={1} /></div>
+          <div className="transform-gpu relative z-10 h-full flex flex-col justify-between gap-8 text-left">
+            <div className="transform-gpu flex items-center gap-2 text-[var(--bg-primary)] font-black text-[10px] uppercase tracking-[0.3em] bg-white/20 w-fit px-4 py-2 rounded-full backdrop-blur-md border border-white/10">
+              <Quote size={14} /><span>Neural Directive</span>
             </div>
-            <h2 className="transform-gpu text-xl sm:text-2xl font-bold leading-tight font-serif italic tracking-wide">&quot;{quote}&quot;</h2>
-            <div className="transform-gpu flex items-center gap-2 opacity-80 text-sm">
-              <div className="transform-gpu w-8 h-px bg-white/50"></div>
+            <h2 className="transform-gpu text-2xl sm:text-3xl font-black leading-tight italic uppercase tracking-tighter">&quot;{quote}&quot;</h2>
+            <div className="transform-gpu flex items-center gap-3 opacity-80 text-[10px] font-black uppercase tracking-[0.4em]">
+              <div className="transform-gpu w-10 h-px bg-[var(--bg-primary)]/50"></div>
               <span>Keep pushing forward</span>
             </div>
           </div>
         </div>
 
-        <div className="xl:col-span-5 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col min-h-[300px] min-w-0 h-full overflow-hidden">
-           <div className="flex items-center justify-between mb-6 shrink-0">
-              <div className="flex flex-col gap-1">
-                <h2 className="text-slate-400 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
-                  <TrendingUp size={14} className="text-indigo-50"/> Consistency Pulse
+        <div className="xl:col-span-5 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[3rem] p-8 shadow-xl flex flex-col min-h-[320px] min-w-0 h-full overflow-hidden text-left relative">
+           {/* Animated Background Gradients */}
+           <div className="transform-gpu absolute top-[-10%] left-[-10%] w-[20vw] h-[20vw] bg-[var(--accent-color)]/5 rounded-full blur-[80px] pointer-events-none" />
+
+           <div className="flex items-center justify-between mb-8 shrink-0 relative z-10">
+              <div className="flex flex-col gap-2">
+                <h2 className="text-[var(--text-secondary)] text-[10px] font-black uppercase tracking-[0.4em] flex items-center gap-2 italic">
+                  <TrendingUp size={14} className="text-[var(--accent-color)]"/> Consistency Pulse
                 </h2>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   <select 
                     value={selectedHabitId} 
                     onChange={(e) => setSelectedHabitId(e.target.value)}
-                    className="bg-slate-50 border-none text-[10px] font-bold uppercase tracking-wider text-slate-600 rounded-lg px-2 py-1 outline-none cursor-pointer hover:bg-slate-100 transition-colors"
+                    className="bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[10px] font-black uppercase tracking-wider text-[var(--text-primary)] rounded-xl px-3 py-2 outline-none cursor-pointer hover:border-[var(--text-secondary)] transition-colors italic"
                   >
                     <option value="all">All Vectors</option>
                     {habits.map(h => (
                       <option key={h.id} value={h.id}>{h.title}</option>
                     ))}
                   </select>
-                  <div className="flex gap-1 bg-slate-50 p-0.5 rounded-lg border border-slate-100">
+                  <div className="flex gap-1 bg-[var(--bg-secondary)] p-1 rounded-xl border border-[var(--border-color)]">
                     {(['7d', '30d', 'view'] as const).map(r => (
                       <button
                         key={r}
                         onClick={() => setAnalyticsRange(r)}
                         className={cn(
-                          "px-2 py-0.5 text-[8px] font-black uppercase rounded-md transition-all",
-                          analyticsRange === r ? "bg-white text-indigo-600 shadow-xs" : "text-slate-400 hover:text-slate-600"
+                          "px-3 py-1 text-[9px] font-black uppercase rounded-lg transition-all italic",
+                          analyticsRange === r ? "bg-[var(--bg-card)] text-[var(--accent-color)] shadow-sm border border-[var(--border-color)]" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                         )}
                       >
                         {r}
@@ -405,76 +408,83 @@ export const ChecklistUI: React.FC<ChecklistUIProps> = ({
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Avg Pulse</div>
-                <div className="text-xl font-bold text-slate-800">{stats.avg}%</div>
+                <div className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] italic mb-1">Avg Pulse</div>
+                <div className="text-3xl font-black text-[var(--text-primary)] italic tracking-tighter">{stats.avg}%</div>
               </div>
            </div>
            
-           <div className="w-full flex-1 min-h-[180px] h-[180px] relative mt-2">
+           <div className="w-full flex-1 min-h-[180px] h-[180px] relative mt-2 z-10">
               <ResponsiveContainer width="99%" height="100%" minHeight={180}>
                 <AreaChart data={analyticsData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorRate" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.1}/>
-                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="var(--accent-color)" stopOpacity={0.2}/>
+                      <stop offset="95%" stopColor="var(--accent-color)" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f8fafc" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" strokeOpacity={0.5} />
                   <XAxis 
                     dataKey="name" 
                     axisLine={false} 
                     tickLine={false} 
-                    tick={{fontSize: 8, fontWeight: 700, fill: '#94a3b8'}} 
+                    tick={{fontSize: 8, fontWeight: 900, fill: 'var(--text-secondary)', textTransform: 'uppercase'}} 
                     dy={10}
                     interval={analyticsRange === '30d' ? 4 : 0}
                   />
                   <YAxis domain={[0, 100]} hide />
                   <Tooltip 
-                    cursor={{ stroke: '#e2e8f0', strokeWidth: 1 }}
-                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
-                    itemStyle={{ fontSize: '10px', fontWeight: 'bold', color: '#6366f1' }}
-                    labelStyle={{ fontSize: '10px', fontWeight: 'bold', color: '#64748b', marginBottom: '4px' }}
+                    cursor={{ stroke: 'var(--border-color)', strokeWidth: 1 }}
+                    contentStyle={{ backgroundColor: 'var(--bg-card)', borderRadius: '20px', border: '1px solid var(--border-color)', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', padding: '12px' }}
+                    itemStyle={{ fontSize: '10px', fontWeight: '900', color: 'var(--accent-color)', textTransform: 'uppercase', fontStyle: 'italic' }}
+                    labelStyle={{ fontSize: '10px', fontWeight: '900', color: 'var(--text-secondary)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}
                   />
                   <Area 
                     type="monotone" 
                     dataKey="rate" 
-                    name="Completion"
-                    stroke="#6366f1" 
-                    strokeWidth={3}
+                    name="Resolution"
+                    stroke="var(--accent-color)" 
+                    strokeWidth={4}
                     fillOpacity={1} 
                     fill="url(#colorRate)" 
                     animationDuration={1500}
                     baseValue={0}
                     connectNulls
-                    dot={{ r: 4, fill: '#6366f1', strokeWidth: 2, stroke: '#fff' }}
-                    activeDot={{ r: 6, fill: '#4f46e5', strokeWidth: 2, stroke: '#fff' }}
+                    dot={{ r: 5, fill: 'var(--accent-color)', strokeWidth: 2, stroke: 'var(--bg-card)' }}
+                    activeDot={{ r: 7, fill: 'var(--accent-color)', strokeWidth: 3, stroke: 'var(--bg-card)', shadow: '0 0 10px var(--accent-color)' }}
                   />
                 </AreaChart>
               </ResponsiveContainer>
            </div>
         </div>
 
-        <div className="transform-gpu xl:col-span-3 flex flex-col gap-4 min-w-0">
-          <div className="transform-gpu grid grid-cols-2 gap-4 flex-1">
-             <div className="transform-gpu bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col justify-center">
-                <div className="transform-gpu text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Perfect Days</div>
-                <div className="transform-gpu text-2xl font-bold text-indigo-600">{stats.perfect}</div>
+        <div className="transform-gpu xl:col-span-3 flex flex-col gap-6 min-w-0">
+          <div className="transform-gpu grid grid-cols-2 gap-6 flex-1 text-left">
+             <div className="transform-gpu bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[2.5rem] p-6 shadow-sm flex flex-col justify-center relative overflow-hidden group">
+                <div className="transform-gpu absolute -right-4 -bottom-4 opacity-[0.03] text-[var(--accent-color)] group-hover:scale-110 transition-transform duration-700">
+                  <CheckCircle2 size={100} />
+                </div>
+                <div className="transform-gpu text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em] mb-2 italic">Resonance Days</div>
+                <div className="transform-gpu text-4xl font-black text-[var(--accent-color)] italic tracking-tighter">{stats.perfect}</div>
              </div>
-             <div className="transform-gpu bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col justify-center overflow-hidden">
-                <div className="transform-gpu text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Top Vector</div>
-                <div className="transform-gpu text-[10px] font-bold text-slate-800 truncate">{stats.topHabit}</div>
+             <div className="transform-gpu bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[2.5rem] p-6 shadow-sm flex flex-col justify-center overflow-hidden relative group">
+                <div className="transform-gpu absolute -right-4 -bottom-4 opacity-[0.03] text-indigo-500 group-hover:scale-110 transition-transform duration-700">
+                  <Zap size={100} />
+                </div>
+                <div className="transform-gpu text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em] mb-2 italic">Prime Vector</div>
+                <div className="transform-gpu text-xs font-black text-[var(--text-primary)] truncate uppercase italic leading-tight">{stats.topHabit}</div>
              </div>
           </div>
 
-          <div className="transform-gpu bg-slate-900 rounded-2xl p-4 text-white shadow-lg space-y-4">
+          <div className="transform-gpu bg-[var(--text-primary)] rounded-[2.5rem] p-6 text-[var(--bg-primary)] shadow-2xl space-y-6">
             <div className="transform-gpu flex items-center justify-between">
-              <button onClick={() => shiftDate(-1)} className="transform-gpu p-2 hover:bg-white/10 rounded-lg transition-all"><ChevronLeft size={16} /></button>
-              <div className="transform-gpu text-center">
-                <div className="transform-gpu text-[10px] font-bold">
+              <button onClick={() => shiftDate(-1)} className="transform-gpu p-3 hover:bg-[var(--bg-primary)]/10 rounded-xl transition-all"><ChevronLeft size={18} strokeWidth={3} /></button>
+              <div className="transform-gpu text-center flex flex-col">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50 mb-1">Temporal Window</span>
+                <div className="transform-gpu text-[11px] font-black uppercase italic tracking-tighter">
                   {start.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - {end.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                 </div>
               </div>
-              <button onClick={() => shiftDate(1)} className="transform-gpu p-2 hover:bg-white/10 rounded-lg transition-all"><ChevronRight size={16} /></button>
+              <button onClick={() => shiftDate(1)} className="transform-gpu p-3 hover:bg-[var(--bg-primary)]/10 rounded-xl transition-all"><ChevronRight size={18} strokeWidth={3} /></button>
             </div>
             <div className="transform-gpu flex gap-2">
                {(["week", "month"] as const).map((v) => (
@@ -482,15 +492,15 @@ export const ChecklistUI: React.FC<ChecklistUIProps> = ({
                   key={v} 
                   onClick={() => setView(v)} 
                   className={cn(
-                    "flex-1 py-2 text-[10px] font-bold rounded-lg transition-all border",
-                    view === v ? "bg-white text-slate-900 border-white" : "bg-transparent text-white/60 border-white/20 hover:border-white/40"
+                    "flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all border-2 italic",
+                    view === v ? "bg-[var(--bg-primary)] text-[var(--text-primary)] border-[var(--bg-primary)]" : "bg-transparent text-[var(--bg-primary)]/60 border-[var(--bg-primary)]/20 hover:border-[var(--bg-primary)]/40"
                   )}
                 >
-                  {v.charAt(0).toUpperCase() + v.slice(1)}
+                  {v}
                 </button>
               ))}
-               <button onClick={() => setBaseDate(new Date())} className="transform-gpu p-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors">
-                 <RotateCcw size={14} />
+               <button onClick={() => setBaseDate(new Date())} className="transform-gpu p-3 bg-[var(--bg-primary)]/10 text-[var(--bg-primary)] rounded-xl hover:bg-[var(--bg-primary)]/20 transition-colors border border-[var(--bg-primary)]/10">
+                 <RotateCcw size={16} strokeWidth={3} />
                </button>
             </div>
           </div>
@@ -498,22 +508,27 @@ export const ChecklistUI: React.FC<ChecklistUIProps> = ({
       </div>
 
       {/* --- MAIN GRID CONTAINER --- */}
-      <div className="transform-gpu bg-white border border-slate-200 rounded-3xl sm:rounded-4xl shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col">
-        <div className="transform-gpu custom-scrollbar">
+      <div className="transform-gpu bg-[var(--bg-card)]/40 backdrop-blur-xl border border-[var(--border-color)] rounded-[3rem] sm:rounded-[4rem] shadow-2xl overflow-hidden flex flex-col relative">
+        <div className="transform-gpu absolute top-0 left-0 w-full h-[150px] bg-gradient-to-b from-[var(--accent-color)]/5 to-transparent pointer-events-none" />
+        
+        <div className="transform-gpu custom-scrollbar relative z-10">
           <div className="transform-gpu w-full">
             
             {/* Grid Header */}
             <div 
-              className="transform-gpu grid gap-4 p-4 sm:p-6 border-b border-slate-100 bg-white sticky top-0 z-30 items-end shadow-sm"
-              style={{ gridTemplateColumns: `140px repeat(${habitCount}, 1fr) 1.5fr 80px` }}
+              className="transform-gpu grid gap-6 p-6 sm:p-8 border-b border-[var(--border-color)] bg-[var(--bg-card)]/80 backdrop-blur-xl sticky top-0 z-30 items-end shadow-sm"
+              style={{ gridTemplateColumns: `160px repeat(${habitCount}, 1fr) 1.8fr 100px` }}
             >
-              <div className="transform-gpu flex flex-col gap-2 pl-4 pb-4">
-                <span className="transform-gpu text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Timeline</span>
+              <div className="transform-gpu flex flex-col gap-3 pl-4 pb-4 text-left">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-[var(--accent-color)] animate-pulse" />
+                  <span className="transform-gpu text-[11px] font-black text-[var(--text-secondary)] uppercase tracking-[0.4em] italic">Pulse Line</span>
+                </div>
                 <button 
                   onClick={handleMarkAllDone}
-                  className="transform-gpu flex items-center gap-1.5 text-indigo-600 text-[8px] font-black uppercase tracking-wider hover:text-indigo-700 transition-colors bg-indigo-50 px-2 py-1 rounded-md border border-indigo-100 w-fit"
+                  className="transform-gpu flex items-center gap-2 text-[var(--bg-primary)] text-[9px] font-black uppercase tracking-widest hover:opacity-90 transition-all bg-[var(--accent-color)] px-4 py-2.5 rounded-xl shadow-lg shadow-[var(--accent-color)]/20 w-fit italic"
                 >
-                  <CheckCircle2 size={10} /> Mark Today
+                  <CheckCircle2 size={12} /> Sync Today
                 </button>
               </div>
 
@@ -530,26 +545,26 @@ export const ChecklistUI: React.FC<ChecklistUIProps> = ({
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.8 }}
                       key={habit.id} 
-                      className="transform-gpu group relative flex flex-col items-center gap-3 pb-2 w-full overflow-hidden"
+                      className="transform-gpu group relative flex flex-col items-center gap-4 pb-2 w-full overflow-hidden"
                     >
                       <div className={cn(
-                        "relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:-translate-y-1 shadow-sm shrink-0",
+                        "relative w-14 h-14 sm:w-16 sm:h-16 rounded-[1.5rem] flex items-center justify-center transition-all duration-500 group-hover:-translate-y-2 shadow-sm shrink-0 border border-white/5",
                         theme.light, theme.class
                       )}>
-                        <Icon size={24} />
+                        <Icon size={28} strokeWidth={2.5} />
                         {streak > 0 && (
-                          <div className="transform-gpu absolute -bottom-1 -right-1 bg-amber-400 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full border border-white shadow-sm flex items-center gap-0.5">
-                            <Zap size={8} fill="currentColor" />{streak}
+                          <div className="transform-gpu absolute -bottom-2 -right-2 bg-amber-500 text-white text-[9px] font-black px-2 py-1 rounded-lg border-2 border-[var(--bg-card)] shadow-xl flex items-center gap-0.5 italic">
+                            <Zap size={10} fill="currentColor" />{streak}
                           </div>
                         )}
                          <button 
                           onClick={() => handleDeleteHabit(habit.id, habit.title)}
-                          className="transform-gpu absolute -top-2 -right-2 bg-white border border-rose-100 text-rose-400 p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-500 hover:text-white shadow-sm scale-75 hover:scale-100"
+                          className="transform-gpu absolute -top-3 -right-3 bg-[var(--bg-card)] border border-[var(--border-color)] text-rose-500 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-500 hover:text-white shadow-xl scale-75 hover:scale-100 z-20"
                         >
-                          <Trash2 size={12} />
+                          <Trash2 size={14} strokeWidth={2.5} />
                         </button>
                       </div>
-                      <span className="transform-gpu text-[10px] sm:text-xs font-bold text-slate-600 line-clamp-2 text-center px-2 min-h-[2.5em] leading-snug w-full">
+                      <span className="transform-gpu text-[10px] sm:text-xs font-black text-[var(--text-primary)] line-clamp-2 text-center px-2 min-h-[2.5em] leading-snug w-full uppercase italic tracking-tighter">
                         {habit.title}
                       </span>
                     </motion.div>
@@ -557,23 +572,23 @@ export const ChecklistUI: React.FC<ChecklistUIProps> = ({
                 })}
               </AnimatePresence>
 
-              <div className="transform-gpu flex flex-col items-center justify-end pb-4">
+              <div className="transform-gpu flex flex-col items-center justify-end pb-6">
                  <motion.button 
                   whileHover={{ scale: 1.1, rotate: 90 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setIsModalOpen(true)}
-                  className="transform-gpu w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-lg hover:shadow-xl hover:shadow-indigo-500/20 transition-all"
+                  className="transform-gpu w-14 h-14 rounded-2xl bg-[var(--text-primary)] text-[var(--bg-primary)] flex items-center justify-center shadow-xl hover:shadow-[var(--accent-color)]/20 transition-all border border-transparent hover:bg-[var(--accent-color)]"
                 >
-                  <Plus size={20} />
+                  <Plus size={28} strokeWidth={3} />
                 </motion.button>
               </div>
 
-              <div className="transform-gpu text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] pb-4 pl-4">Reflection</div>
-              <div className="transform-gpu text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] text-center pb-4">Score</div>
+              <div className="transform-gpu text-[11px] font-black text-[var(--text-secondary)] uppercase tracking-[0.4em] pb-6 pl-6 italic text-left">Reflection Ledger</div>
+              <div className="transform-gpu text-[11px] font-black text-[var(--text-secondary)] uppercase tracking-[0.4em] text-center pb-6 italic">Pulse</div>
             </div>
 
             {/* Grid Rows */}
-            <div className="transform-gpu divide-y divide-slate-50 w-full">
+            <div className="transform-gpu divide-y divide-[var(--border-color)]/30 w-full bg-[var(--bg-card)]/20">
               {days.map((day) => {
                 const dateKey = day.toDateString();
                 const isToday = new Date().toDateString() === dateKey;
@@ -594,22 +609,24 @@ export const ChecklistUI: React.FC<ChecklistUIProps> = ({
                     animate={{ opacity: 1 }}
                     key={day.toISOString()} 
                     className={cn(
-                      "grid gap-4 px-4 sm:px-6 items-center transition-colors duration-200 group relative w-full",
-                      view === 'month' ? 'py-2' : 'py-4',
-                      isToday ? 'bg-indigo-50/40' : 'hover:bg-slate-50'
+                      "grid gap-6 px-6 sm:px-8 items-center transition-all duration-300 group relative w-full",
+                      view === 'month' ? 'py-3' : 'py-6',
+                      isToday ? 'bg-[var(--accent-color)]/5 backdrop-blur-sm' : 'hover:bg-[var(--bg-secondary)]/40'
                     )}
-                    style={{ gridTemplateColumns: `140px repeat(${habitCount}, 1fr) 1.5fr 80px` }}
+                    style={{ gridTemplateColumns: `160px repeat(${habitCount}, 1fr) 1.8fr 100px` }}
                   >
                     
-                    <div className="transform-gpu flex items-center gap-4 pl-4 bg-transparent">
+                    <div className="transform-gpu flex items-center gap-5 pl-4 bg-transparent text-left">
                       <div className={cn(
-                        "flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl border transition-colors",
-                        isToday ? "bg-white border-indigo-200 shadow-md shadow-indigo-100" : "bg-white/50 border-transparent group-hover:border-slate-200"
+                        "flex flex-col items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-2 transition-all duration-500",
+                        isToday 
+                          ? "bg-[var(--accent-color)] border-[var(--accent-color)] shadow-xl shadow-[var(--accent-color)]/20 scale-105" 
+                          : "bg-[var(--bg-secondary)]/50 border-[var(--border-color)] group-hover:border-[var(--text-secondary)]/30"
                       )}>
-                        <span className="transform-gpu text-[8px] sm:text-[10px] font-bold uppercase text-slate-400">{day.toLocaleDateString("en-US", { weekday: "short" })}</span>
-                        <span className={cn("text-base sm:text-lg font-bold", isToday ? "text-indigo-600" : "text-slate-700")}>{day.getDate()}</span>
+                        <span className={cn("transform-gpu text-[9px] font-black uppercase tracking-widest", isToday ? "text-[var(--bg-primary)]" : "text-[var(--text-secondary)]")}>{day.toLocaleDateString("en-US", { weekday: "short" })}</span>
+                        <span className={cn("text-xl font-black italic tracking-tighter leading-none", isToday ? "text-[var(--bg-primary)]" : "text-[var(--text-primary)]")}>{day.getDate()}</span>
                       </div>
-                      {isToday && <div className="transform-gpu hidden sm:block text-[8px] font-bold text-indigo-500 bg-indigo-100 px-2 py-0.5 rounded-full uppercase">Today</div>}
+                      {isToday && <div className="transform-gpu hidden sm:block text-[9px] font-black text-[var(--accent-color)] bg-[var(--accent-color)]/10 px-3 py-1 rounded-lg uppercase tracking-widest italic border border-[var(--accent-color)]/20 shadow-sm">Today</div>}
                     </div>
 
                     {habits.map((habit) => {
@@ -622,9 +639,11 @@ export const ChecklistUI: React.FC<ChecklistUIProps> = ({
                             onClick={() => handleToggle(habit.id, day, isChecked)}
                             whileTap={{ scale: 0.8 }}
                             className={cn(
-                              "relative flex items-center justify-center rounded-xl transition-all duration-300 border-2 overflow-hidden",
-                              view === 'month' ? 'w-8 h-8 sm:w-10 sm:h-10' : 'w-10 h-10 sm:w-12 sm:h-12',
-                              isChecked ? `${theme.bg} ${theme.border} shadow-lg shadow-indigo-500/20` : "bg-slate-50 border-slate-200 hover:border-slate-300"
+                              "relative flex items-center justify-center rounded-2xl transition-all duration-500 border-2 overflow-hidden",
+                              view === 'month' ? 'w-10 h-10 sm:w-12 sm:h-12' : 'w-12 h-12 sm:w-14 sm:h-14',
+                              isChecked 
+                                ? `${theme.bg} ${theme.border} shadow-2xl shadow-[var(--accent-color)]/10 scale-110` 
+                                : "bg-[var(--bg-secondary)]/30 border-[var(--border-color)] hover:border-[var(--text-secondary)]/50 hover:bg-[var(--bg-secondary)]/60"
                             )}
                           >
                             <AnimatePresence>
@@ -635,7 +654,7 @@ export const ChecklistUI: React.FC<ChecklistUIProps> = ({
                                         exit={{ scale: 0 }}
                                         transition={{ type: "spring", stiffness: 400, damping: 15 }}
                                     >
-                                        <Check strokeWidth={4} className="transform-gpu w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                                        <Check strokeWidth={5} className="transform-gpu w-5 h-5 sm:w-6 sm:h-6 text-white" />
                                     </motion.div>
                                 )}
                             </AnimatePresence>
@@ -644,26 +663,26 @@ export const ChecklistUI: React.FC<ChecklistUIProps> = ({
                       );
                     })}
 
-                    <div className="transform-gpu relative group/note w-full">
+                    <div className="transform-gpu relative group/note w-full pl-4 text-left">
                         <input
                             type="text"
                             defaultValue={notes.find(n => new Date(n.date).toDateString() === dateKey)?.content || ""}
                             onBlur={(e) => handleNoteBlur(day, e.target.value)}
-                            placeholder="Daily reflection..."
-                            className="transform-gpu w-full bg-slate-50/50 border border-transparent hover:border-slate-200 focus:border-indigo-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100 rounded-lg px-4 py-2 text-sm text-slate-700 placeholder-slate-400 transition-all"
+                            placeholder="DAILY REFLECTION VECTOR..."
+                            className="transform-gpu w-full bg-[var(--bg-secondary)]/30 border border-[var(--border-color)] hover:border-[var(--text-secondary)]/30 focus:border-[var(--accent-color)]/50 focus:bg-[var(--bg-card)] focus:outline-none focus:ring-4 focus:ring-[var(--accent-color)]/5 rounded-2xl px-5 py-3 text-sm font-black text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/20 transition-all italic uppercase tracking-tight"
                         />
                     </div>
 
-                    <div className="transform-gpu flex flex-col items-center justify-center gap-1 min-w-[60px]">
-                       <div className="transform-gpu relative w-full h-1.5 sm:h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="transform-gpu flex flex-col items-center justify-center gap-2 min-w-[80px]">
+                       <div className="transform-gpu relative w-full h-2 sm:h-2.5 bg-[var(--bg-secondary)] rounded-full overflow-hidden border border-[var(--border-color)] shadow-inner">
                           <motion.div 
-                            className={cn("h-full absolute left-0 top-0 rounded-full", isPerfect ? "bg-gradient-to-r from-emerald-400 to-emerald-500" : "bg-gradient-to-r from-indigo-400 to-violet-500")}
+                            className={cn("h-full absolute left-0 top-0 rounded-full shadow-lg", isPerfect ? "bg-gradient-to-r from-emerald-400 to-emerald-600 shadow-emerald-500/20" : "bg-gradient-to-r from-[var(--accent-color)] to-indigo-600 shadow-[var(--accent-color)]/20")}
                             initial={{ width: 0 }}
                             animate={{ width: `${progress}%` }}
-                            transition={{ duration: 0.5, ease: "easeOut" }}
+                            transition={{ duration: 0.8, ease: "easeOut" }}
                           />
                        </div>
-                       <span className={cn("text-[8px] sm:text-[10px] font-bold", isPerfect ? "text-emerald-600" : "text-slate-400")}>{progress}%</span>
+                       <span className={cn("text-[9px] sm:text-[11px] font-black uppercase italic tracking-tighter", isPerfect ? "text-emerald-500 drop-shadow-sm" : "text-[var(--text-secondary)]")}>{progress}%</span>
                     </div>
 
                   </motion.div>
@@ -675,21 +694,29 @@ export const ChecklistUI: React.FC<ChecklistUIProps> = ({
       </div>
 
       {/* Future Roadmap Section */}
-      <section className="transform-gpu pt-12 border-t border-slate-100">
-        <div className="transform-gpu flex items-center gap-3 mb-6">
-          <Sparkles className="transform-gpu text-indigo-500" size={20} />
-          <h2 className="transform-gpu text-xs font-bold text-slate-400 uppercase tracking-[0.3em]">Habit Evolution Roadmap</h2>
+      <section className="transform-gpu pt-16 border-t border-[var(--border-color)] text-left">
+        <div className="transform-gpu flex items-center gap-4 mb-10 ml-2">
+          <div className="p-3 bg-[var(--bg-secondary)] text-[var(--accent-color)] rounded-2xl border border-[var(--border-color)] shadow-sm">
+            <Sparkles size={24} />
+          </div>
+          <div className="flex flex-col">
+            <h2 className="text-[11px] font-black text-[var(--text-secondary)] uppercase tracking-[0.4em] italic">Evolution Roadmap</h2>
+            <p className="text-[9px] font-bold text-[var(--text-secondary)]/40 uppercase tracking-widest mt-1">Pending System Enhancements</p>
+          </div>
         </div>
-        <div className="transform-gpu grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="transform-gpu grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { title: "Smart Reminders", desc: "Get personalized notifications to stay on track." },
-            { title: "Weekly Reports", desc: "Deep dive into your performance with automated emails." },
-            { title: "Habit Stacking", desc: "Link multiple habits together for higher efficiency." },
-            { title: "Peer Motivation", desc: "Join focus groups and compete with fellow builders." }
+            { title: "Neural Nudges", desc: "Adaptive notifications triggered by cognitive velocity patterns.", icon: Zap, color: 'text-amber-500' },
+            { title: "Synapse Reports", desc: "Automated multidimensional performance synthesis delivered weekly.", icon: TrendingUp, color: 'text-[var(--accent-color)]' },
+            { title: "Vector Stacking", desc: "Sequential habit chaining for maximum mission efficiency.", icon: CheckCircle2, color: 'text-emerald-500' },
+            { title: "Hive Motivation", desc: "Asynchronous competitive protocols with fellow architects.", icon: Sparkles, color: 'text-fuchsia-500' }
           ].map((feat, i) => (
-            <div key={i} className="transform-gpu p-5 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md transition-all group">
-              <h3 className="transform-gpu text-xs font-bold text-slate-800 uppercase tracking-widest mb-2 group-hover:text-indigo-600 transition-colors">{feat.title}</h3>
-              <p className="transform-gpu text-xs text-slate-500 leading-relaxed">{feat.desc}</p>
+            <div key={i} className="transform-gpu p-8 bg-[var(--bg-card)]/40 backdrop-blur-md border border-[var(--border-color)] rounded-[2.5rem] shadow-sm hover:shadow-2xl hover:border-[var(--accent-color)]/20 transition-all group relative overflow-hidden">
+              <div className={cn("absolute -right-4 -bottom-4 opacity-[0.02] group-hover:opacity-5 transition-opacity duration-700", feat.color)}>
+                <feat.icon size={120} />
+              </div>
+              <h3 className={cn("text-xs font-black uppercase tracking-widest mb-3 transition-colors italic", feat.color)}>{feat.title}</h3>
+              <p className="transform-gpu text-[10px] font-bold text-[var(--text-secondary)] leading-relaxed uppercase tracking-tighter">{feat.desc}</p>
             </div>
           ))}
         </div>

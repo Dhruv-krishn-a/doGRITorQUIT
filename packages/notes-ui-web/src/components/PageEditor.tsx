@@ -53,17 +53,17 @@ function patternStyle(pattern: "blank" | "ruled" | "grid" | "dots") {
     case "ruled":
       return {
         backgroundImage:
-          "repeating-linear-gradient(transparent, transparent 31px, #e2e8f0 31px, #e2e8f0 32px)",
+          "repeating-linear-gradient(transparent, transparent 31px, var(--border-color) 31px, var(--border-color) 32px)",
       };
     case "grid":
       return {
         backgroundSize: "20px 20px",
         backgroundImage:
-          "linear-gradient(to right, #f1f5f9 1px, transparent 1px), linear-gradient(to bottom, #f1f5f9 1px, transparent 1px)",
+          "linear-gradient(to right, var(--border-color) 1px, transparent 1px), linear-gradient(to bottom, var(--border-color) 1px, transparent 1px)",
       };
     case "dots":
       return {
-        backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
+        backgroundImage: "radial-gradient(var(--text-secondary) 1px, transparent 1px)",
         backgroundSize: "20px 20px",
       };
     default:
@@ -141,11 +141,11 @@ export const PageEditor = React.forwardRef<HTMLDivElement, PageEditorProps>(
     return (
       <div className="relative mb-16 w-full flex justify-center overflow-x-auto py-10 no-scrollbar">
         {isDrawingMode && (
-          <div className="fixed right-10 top-32 z-50 flex flex-col gap-2 opacity-60 hover:opacity-100 transition-opacity ui-hide-on-export bg-white p-2 rounded-2xl shadow-xl border border-slate-100">
+          <div className="fixed right-10 top-32 z-50 flex flex-col gap-2 opacity-60 hover:opacity-100 transition-opacity ui-hide-on-export bg-[var(--bg-card)] p-2 rounded-2xl shadow-xl border border-[var(--border-color)]">
             <button
               onClick={undo}
               disabled={historyIndex === 0}
-              className="p-3 bg-white rounded-xl shadow-sm border border-slate-200 text-slate-600 disabled:opacity-30 hover:bg-slate-50 transition-all"
+              className="p-3 bg-[var(--bg-card)] rounded-xl shadow-sm border border-[var(--border-color)] text-[var(--text-secondary)] disabled:opacity-30 hover:bg-[var(--hover-bg)] transition-all"
               title="Undo"
             >
               <Undo2 size={18} />
@@ -153,7 +153,7 @@ export const PageEditor = React.forwardRef<HTMLDivElement, PageEditorProps>(
             <button
               onClick={redo}
               disabled={historyIndex === history.length - 1}
-              className="p-3 bg-white rounded-xl shadow-sm border border-slate-200 text-slate-600 disabled:opacity-30 hover:bg-slate-50 transition-all"
+              className="p-3 bg-[var(--bg-card)] rounded-xl shadow-sm border border-[var(--border-color)] text-[var(--text-secondary)] disabled:opacity-30 hover:bg-[var(--hover-bg)] transition-all"
               title="Redo"
             >
               <Redo2 size={18} />
@@ -161,7 +161,7 @@ export const PageEditor = React.forwardRef<HTMLDivElement, PageEditorProps>(
             <button
               onClick={clearAll}
               disabled={strokes.length === 0}
-              className="p-3 bg-white rounded-xl shadow-sm border border-slate-200 text-rose-500 disabled:opacity-30 hover:bg-rose-50 transition-all"
+              className="p-3 bg-[var(--bg-card)] rounded-xl shadow-sm border border-[var(--border-color)] text-rose-500 disabled:opacity-30 hover:bg-rose-500/10 transition-all"
               title="Clear All"
             >
               <span className="text-[10px] font-bold">CLEAR</span>
@@ -171,7 +171,7 @@ export const PageEditor = React.forwardRef<HTMLDivElement, PageEditorProps>(
 
         <div
           id="document-editor-surface"
-          className="relative bg-white shadow-2xl shadow-slate-300 ring-1 ring-slate-200 page-editor-container flex-shrink-0"
+          className="relative bg-[var(--bg-paper)] shadow-2xl shadow-black/10 ring-1 ring-[var(--border-color)] page-editor-container flex-shrink-0"
           ref={ref}
           style={{
             ...patternStyle(backgroundPattern),

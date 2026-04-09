@@ -100,20 +100,20 @@ export function CourseDetailView() {
  if (!mounted) return null;
 
  if (loading && !activeTrack) return (
-  <div className="flex items-center justify-center min-h-[60vh] bg-[#0a0105] w-full">
+  <div className="flex items-center justify-center min-h-[60vh] bg-[var(--bg-primary)] w-full">
    <div className="flex flex-col items-center gap-4">
-    <Loader2 className="w-8 h-8 text-rose-500 animate-spin drop-shadow-[0_0_10px_rgba(244,63,94,0.5)]" />
-    <div className="text-rose-300/50 font-bold uppercase tracking-widest text-xs">Accessing Knowledge Base...</div>
+    <Loader2 className="w-8 h-8 text-[var(--accent-color)] animate-spin drop-shadow-[0_0_10px_var(--accent-color)]" />
+    <div className="text-[var(--text-secondary)] font-black uppercase tracking-widest text-xs italic">Accessing Knowledge Base...</div>
    </div>
   </div>
  );
 
  if (!activeTrack) return (
-  <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 bg-[#0a0105] w-full">
-   <div className="text-rose-400/50 font-bold uppercase tracking-widest text-sm">Course link severed.</div>
+  <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 bg-[var(--bg-primary)] w-full">
+   <div className="text-[var(--text-secondary)] font-black uppercase tracking-widest text-sm italic">Course link severed.</div>
    <button 
     onClick={() => navigate('/study')} 
-    className="px-8 py-4 bg-linear-to-r from-rose-600 to-pink-600 text-white rounded-2xl font-bold text-xs uppercase tracking-widest shadow-[0_0_15px_rgba(244,63,94,0.4)] hover:shadow-[0_0_25px_rgba(244,63,94,0.6)] border border-rose-400/50 transition-all active:scale-95"
+    className="px-8 py-4 bg-gradient-to-r from-[var(--accent-color)] to-sky-600 text-[var(--bg-primary)] rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:opacity-90 transition-all active:scale-95 italic"
    >
     Return to Command Center
    </button>
@@ -123,59 +123,59 @@ export function CourseDetailView() {
  const { track, stats } = activeTrack;
 
  return (
-  <div className="flex-1 min-w-0 relative space-y-12 text-rose-100 w-full font-sans bg-[#0a0105] flex flex-col h-full overflow-hidden">
-   <div className="fixed top-0 right-0 w-96 h-96 bg-fuchsia-500/10 rounded-full blur-[60px] -z-10 pointer-events-none opacity-50" />
+  <div className="flex-1 min-w-0 relative space-y-12 text-[var(--text-primary)] w-full font-sans bg-[var(--bg-primary)] flex flex-col h-full overflow-hidden">
+   <div className="fixed top-0 right-0 w-96 h-96 bg-[var(--accent-color)]/5 rounded-full blur-[120px] -z-10 pointer-events-none opacity-50" />
    
    <div className="relative z-10 flex flex-col h-full w-full">
     <header className="flex flex-col gap-10 w-full p-6 md:p-8 shrink-0">
      <div className="flex flex-col md:flex-row md:items-center gap-8 w-full">
       <button 
        onClick={() => navigate('/study')} 
-       className="p-5 bg-[#14030b] border border-rose-900/50 rounded-3xl text-rose-300/50 hover:text-rose-400 hover:border-rose-500/50 hover:bg-[#1c0510] transition-all active:scale-95 shrink-0 self-start"
+       className="p-5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl text-[var(--text-secondary)] hover:text-[var(--accent-color)] hover:border-[var(--accent-color)]/30 transition-all active:scale-95 shrink-0 self-start"
       >
        <ArrowLeft size={28} />
       </button>
       
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 text-left">
         <div className="flex items-center gap-4 mb-2">
-         <h1 className="text-4xl md:text-5xl font-bold text-rose-50 tracking-tight truncate drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">
+         <h1 className="text-4xl md:text-5xl font-black text-[var(--text-primary)] tracking-tight truncate italic uppercase">
           {track.title}
          </h1>
-         <span className="text-[10px] font-bold bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30 shadow-[0_0_10px_rgba(217,70,239,0.2)] px-3 py-1 rounded-lg uppercase tracking-widest shrink-0 flex items-center gap-1.5">
+         <span className="text-[10px] font-black bg-[var(--accent-color)]/10 text-[var(--accent-color)] border border-[var(--accent-color)]/20 shadow-sm px-3 py-1 rounded-lg uppercase tracking-widest shrink-0 flex items-center gap-1.5 italic">
           <BookOpen size={10} /> Course Vector
          </span>
         </div>
-        <p className="text-rose-400/60 font-bold uppercase tracking-widest text-[10px]">
+        <p className="text-[var(--text-secondary)] font-black uppercase tracking-widest text-[10px] italic">
          {track.description || 'Structured cognitive acquisition track.'}
         </p>
       </div>
 
-      <div className="flex items-center gap-4 bg-[#14030b] border border-fuchsia-900/40 p-2 rounded-2xl shadow-xl">
-        <div className="px-4 py-2 border-r border-fuchsia-900/20">
-         <p className="text-[8px] font-bold uppercase text-fuchsia-400/40 tracking-widest">Focus Duration</p>
-         <p className="text-xl font-bold text-rose-50 font-mono tracking-tighter">{formatTime(seconds)}</p>
+      <div className="flex items-center gap-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] p-2 rounded-2xl shadow-xl">
+        <div className="px-4 py-2 border-r border-[var(--border-color)] text-left">
+         <p className="text-[8px] font-black uppercase text-[var(--text-secondary)] tracking-widest italic">Focus Duration</p>
+         <p className="text-xl font-black text-[var(--text-primary)] font-mono tracking-tighter italic">{formatTime(seconds)}</p>
         </div>
         <div className="flex gap-1 pr-2">
          <button 
           onClick={() => setIsTimerRunning(!isTimerRunning)}
-          className={`p-3 rounded-xl transition-all ${isTimerRunning ? 'bg-fuchsia-500 text-white shadow-[0_0_15px_rgba(217,70,239,0.4)]' : 'bg-[#1c0510] text-fuchsia-400 hover:text-rose-100'}`}
+          className={`p-3 rounded-xl transition-all ${isTimerRunning ? 'bg-[var(--accent-color)] text-[var(--bg-primary)] shadow-lg shadow-[var(--accent-color)]/20' : 'bg-[var(--bg-primary)] text-[var(--accent-color)] hover:bg-[var(--bg-card)]'}`}
          >
           {isTimerRunning ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
          </button>
-         <button onClick={() => { setSeconds(0); setIsTimerRunning(false); }} className="p-3 bg-[#1c0510] text-fuchsia-400/40 hover:text-rose-400 rounded-xl transition-all">
+         <button onClick={() => { setSeconds(0); setIsTimerRunning(false); }} className="p-3 bg-[var(--bg-primary)] text-[var(--text-secondary)]/40 hover:text-[var(--text-secondary)] rounded-xl transition-all border border-[var(--border-color)]">
           <RotateCcw size={20} />
          </button>
         </div>
       </div>
 
       <div className="flex flex-wrap gap-4 shrink-0">
-       <button className="p-5 bg-[#14030b] border border-rose-900/50 rounded-3xl text-rose-300/50 hover:text-rose-400 hover:bg-[#1c0510] hover:border-rose-500/50 transition-all active:scale-95"><Share2 size={24} /></button>
-       <button onClick={() => openModal('COMMIT')} className="p-5 bg-[#14030b] border border-rose-900/50 rounded-3xl text-rose-300/50 hover:text-rose-400 hover:bg-[#1c0510] hover:border-rose-500/50 transition-all active:scale-95"><Settings size={24} /></button>
-       <button onClick={async () => { await fetchTrack(track.id); openModal('DELETE'); }} className="p-5 bg-[#14030b] border border-red-900/50 rounded-3xl text-red-400/60 hover:text-red-400 hover:bg-red-950/30 hover:border-red-500/50 transition-all active:scale-95"><Trash2 size={24} /></button>
+       <button className="p-5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all active:scale-95"><Share2 size={24} /></button>
+       <button onClick={() => openModal('COMMIT')} className="p-5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all active:scale-95"><Settings size={24} /></button>
+       <button onClick={async () => { await fetchTrack(track.id); openModal('DELETE'); }} className="p-5 bg-[var(--bg-secondary)] border border-rose-500/20 rounded-3xl text-rose-500 hover:bg-rose-500/10 transition-all active:scale-95"><Trash2 size={24} /></button>
       </div>
      </div>
 
-     <div className="mt-8 bg-white/5 backdrop-blur-md border border-white/10 rounded-[2.5rem] p-2">
+     <div className="mt-8 bg-[var(--bg-secondary)]/40 backdrop-blur-xl border border-[var(--border-color)] rounded-[2.5rem] p-2">
       <TrackHeader 
        track={track as Track & { units: Unit[] }} 
        stats={stats}
@@ -186,33 +186,33 @@ export function CourseDetailView() {
      </div>
     </header>
 
-    <div className="flex-1 flex flex-col min-h-0 bg-black/20">
-     <div className="flex items-center justify-between px-8 py-6 border-b border-rose-900/40">
+    <div className="flex-1 flex flex-col min-h-0 bg-black/5">
+     <div className="flex items-center justify-between px-8 py-6 border-b border-[var(--border-color)]">
       <div className="flex gap-10">
        <button 
         onClick={() => setActiveTab('BOARD')}
-        className={`text-xl font-bold uppercase tracking-tight flex items-center gap-3 transition-all ${activeTab === 'BOARD' ? 'text-rose-50' : 'text-rose-400/30 hover:text-rose-400/60'}`}
+        className={`text-xl font-black uppercase tracking-tight flex items-center gap-3 transition-all italic ${activeTab === 'BOARD' ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]/30 hover:text-[var(--text-secondary)]/60'}`}
        >
-        <LayoutGrid size={20} className={activeTab === 'BOARD' ? 'text-fuchsia-500' : ''} /> Lesson Board
+        <LayoutGrid size={20} className={activeTab === 'BOARD' ? 'text-[var(--accent-color)]' : ''} /> Lesson Board
        </button>
        <button 
         onClick={() => setActiveTab('NOTES')}
-        className={`text-xl font-bold uppercase tracking-tight flex items-center gap-3 transition-all ${activeTab === 'NOTES' ? 'text-rose-50' : 'text-rose-400/30 hover:text-rose-400/60'}`}
+        className={`text-xl font-black uppercase tracking-tight flex items-center gap-3 transition-all italic ${activeTab === 'NOTES' ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]/30 hover:text-[var(--text-secondary)]/60'}`}
        >
-        <Brain size={20} className={activeTab === 'NOTES' ? 'text-fuchsia-500' : ''} /> Course Ledger
+        <Brain size={20} className={activeTab === 'NOTES' ? 'text-[var(--accent-color)]' : ''} /> Course Ledger
        </button>
       </div>
 
-      <div className="flex bg-[#14030b] border border-rose-900/50 p-1 rounded-xl shadow-inner">
+      <div className="flex bg-[var(--bg-secondary)] border border-[var(--border-color)] p-1 rounded-xl shadow-inner">
        <button 
         onClick={() => setViewMode('KANBAN')}
-        className={`p-2 rounded-lg transition-all ${viewMode === 'KANBAN' ? 'bg-linear-to-r from-fuchsia-600 to-purple-600 text-white' : 'text-rose-400/40 hover:text-rose-200'}`}
+        className={`p-2 rounded-lg transition-all ${viewMode === 'KANBAN' ? 'bg-[var(--accent-color)] text-[var(--bg-primary)] shadow-sm' : 'text-[var(--text-secondary)]/40 hover:text-[var(--text-secondary)]'}`}
        >
         <LayoutGrid size={18} />
        </button>
        <button 
         onClick={() => setViewMode('LIST')}
-        className={`p-2 rounded-lg transition-all ${viewMode === 'LIST' ? 'bg-linear-to-r from-fuchsia-600 to-purple-600 text-white' : 'text-rose-400/40 hover:text-rose-200'}`}
+        className={`p-2 rounded-lg transition-all ${viewMode === 'LIST' ? 'bg-[var(--accent-color)] text-[var(--bg-primary)] shadow-sm' : 'text-[var(--text-secondary)]/40 hover:text-[var(--text-secondary)]'}`}
        >
         <List size={18} />
        </button>
@@ -220,7 +220,7 @@ export function CourseDetailView() {
      </div>
 
      <main className="flex-1 relative overflow-hidden">
-      <div className="absolute inset-0 overflow-y-auto custom-scrollbar p-8">
+      <div className="absolute inset-0 overflow-y-auto no-scrollbar p-8">
        <AnimatePresence mode="wait">
         {activeTab === 'BOARD' && (
          <motion.div key="board" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
@@ -248,18 +248,18 @@ export function CourseDetailView() {
 
         {activeTab === 'NOTES' && (
          <motion.div key="notes" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6 max-w-6xl mx-auto">
-           <div className="bg-[#14030b] border border-rose-900/40 rounded-[2.5rem] p-10 space-y-8">
+           <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[2.5rem] p-10 space-y-8 text-left shadow-2xl">
             <div className="flex items-center justify-between">
              <div>
-              <h3 className="text-2xl font-bold text-rose-50 uppercase tracking-tight">Curriculum Notes</h3>
-              <p className="text-[10px] font-bold text-rose-400/40 uppercase tracking-widest mt-1">Syllabus-wide synthesis</p>
+              <h3 className="text-2xl font-black text-[var(--text-primary)] uppercase tracking-tight italic">Curriculum Notes</h3>
+              <p className="text-[10px] font-black text-[var(--text-secondary)]/40 uppercase tracking-[0.2em] mt-1 italic">Syllabus-wide synthesis</p>
              </div>
              <button 
               onClick={async () => {
                setIsSaving(true);
                setTimeout(() => { setIsSaving(false); toast.success("Ledger updated"); }, 800);
               }}
-              className="flex items-center gap-2 px-8 py-4 bg-linear-to-r from-fuchsia-600 to-purple-600 text-white rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:from-fuchsia-500 hover:to-purple-500"
+              className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[var(--accent-color)] to-sky-600 text-[var(--bg-primary)] rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl hover:opacity-90 italic"
              >
               {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
               Sync Ledger
@@ -267,7 +267,7 @@ export function CourseDetailView() {
             </div>
             
             <textarea 
-             className="w-full h-125 bg-[#0a0105] border border-rose-900/20 rounded-3xl p-10 font-medium text-rose-100/80 text-lg focus:border-fuchsia-500/50 transition-all outline-none resize-none placeholder:text-rose-900/20 custom-scrollbar shadow-inner"
+             className="w-full h-125 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-3xl p-10 font-black text-[var(--text-primary)] text-lg focus:border-[var(--accent-color)]/50 transition-all outline-none resize-none placeholder:text-[var(--text-secondary)]/20 custom-scrollbar shadow-inner uppercase tracking-tighter italic"
              placeholder="Capture high-level concepts and course structures here..."
              value={globalNotes}
              onChange={(e) => setGlobalNotes(e.target.value)}

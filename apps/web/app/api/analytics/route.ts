@@ -4,18 +4,26 @@ import { getServerUser } from "@/lib/auth-server";
 import { analytics, billing } from "@gritorquit/domain";
 import { PlanFeature } from "@gritorquit/domain/billing/entitlements";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const user = await getServerUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { searchParams } = new URL(req.url);
+    const startDateParam = searchParams.get("startDate");
+    const endDateParam = searchParams.get("endDate");
+    const categoryParam = searchParams.get("category");
+
     // ✅ Enforce Analytics Entitlement
     await billing.checkFeatureAccess(user.id, PlanFeature.ACCESS_ADVANCED_ANALYTICS);
 
-    // ✅ FIX 1: Pass 'user.id' (string), not the full user object
-    const data = await analytics.getAnalyticsData(user.id);
+    const data = await analytics.getAnalyticsData(user.id, {
+      startDate: startDateParam ? new Date(startDateParam) : undefined,
+      endDate: endDateParam ? new Date(endDateParam) : undefined,
+      category: categoryParam as 'ALL' | 'YOUTUBE' | 'PLAN' | 'COURSE' | 'PROJECT' | null as any
+    });
     
     return NextResponse.json(data);
   } catch (err) {

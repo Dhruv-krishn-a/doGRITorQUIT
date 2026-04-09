@@ -14,10 +14,10 @@ export function AppLayout() {
   return (
     <StudyFeatureProvider>
       <OfflineGuard>
-        <div className="flex flex-col h-screen overflow-hidden bg-obsidian">
+        <div className="flex flex-col h-screen overflow-hidden bg-[var(--bg-primary)]">
           <TitleBar />
           
-          <div className="flex flex-1 text-slate-200 overflow-hidden font-sans selection:bg-sky-500/30 selection:text-white">
+          <div className="flex flex-1 text-[var(--text-primary)] overflow-hidden font-sans selection:bg-sky-500/30 selection:text-white">
             
             <Sidebar permissions={{
               canViewToday: true,

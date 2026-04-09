@@ -150,15 +150,15 @@ export default function TodayUI() {
         </AnimatePresence>, 
         document.body
       )}
-      <header className="mb-8 flex items-end justify-between">
-        <div><h1 className="text-4xl font-black tracking-tightest mb-1">Today</h1><p className="text-[var(--text-secondary)] font-bold text-base opacity-60">Define your non-negotiable path.</p></div>
+      <header className="mb-8 flex items-end justify-between text-left">
+        <div><h1 className="text-4xl font-black tracking-tightest mb-1 italic uppercase">Today</h1><p className="text-[var(--text-secondary)] font-black text-base opacity-60 uppercase italic">Define your non-negotiable path.</p></div>
         <div className="flex flex-col items-end gap-3">
           {scheduleData.collisions.length > 0 && (
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-rose-500/10 text-rose-600 rounded-xl border border-rose-500/20 text-[9px] font-black uppercase tracking-widest">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-rose-500/10 text-rose-500 rounded-xl border border-rose-500/20 text-[9px] font-black uppercase tracking-widest italic">
               <AlertTriangle size={10}/> Collision: {scheduleData.collisions.join(', ')}
             </div>
           )}
-          <button onClick={() => setShowAddBlock(true)} className="px-6 py-3 bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--accent-color)] rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-sm flex items-center gap-2"><Plus size={16}/> Architect Day</button>
+          <button onClick={() => setShowAddBlock(true)} className="px-6 py-3 bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--accent-color)] text-[var(--text-primary)] rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-sm flex items-center gap-2 italic"><Plus size={16}/> Architect Day</button>
         </div>
       </header>
       <section className="mb-12">
@@ -170,7 +170,7 @@ export default function TodayUI() {
           }}
           startHour={DAY_START_HOUR}
         />
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-left">
           <AnimatePresence mode="popLayout">
             {data?.fixedBlocks?.map((b: any) => {
               const s = formatMinutesToTime(parse24hToMinutes(b.start)); const e = formatMinutesToTime(parse24hToMinutes(b.end));
@@ -178,17 +178,28 @@ export default function TodayUI() {
               return (
                 <motion.div layout initial={{opacity:0, scale:0.9}} animate={{opacity:1, scale:1}} exit={{opacity:0, scale:0.9}} key={b.id} className="group p-5 bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--accent-color)]/50 rounded-2xl shadow-sm transition-all relative overflow-hidden">
                   <div className="flex justify-between items-start mb-4"><div className="p-3 bg-[var(--bg-secondary)] rounded-xl text-[var(--accent-color)] shadow-inner"><IconComp size={20} /></div><button onClick={()=>handleRemoveBlock(b.id)} className="opacity-0 group-hover:opacity-100 p-2 text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all"><Trash2 size={16}/></button></div>
-                  <h3 className="text-lg font-black mb-1 truncate">{b.title}</h3><p className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest">{s.time} {s.ampm} — {e.time} {e.ampm}</p>
+                  <h3 className="text-lg font-black mb-1 truncate italic uppercase leading-none">{b.title}</h3><p className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest italic">{s.time} {s.ampm} — {e.time} {e.ampm}</p>
                 </motion.div>
               );
             })}
           </AnimatePresence>
-          <button onClick={()=>setShowAddBlock(true)} className="flex flex-col items-center justify-center gap-3 p-5 bg-[var(--bg-secondary)]/50 border-2 border-[var(--border-color)] border-dashed rounded-2xl text-[var(--text-secondary)] hover:text-[var(--accent-color)] hover:border-[var(--accent-color)]/50 transition-all min-h-[140px]"><Plus size={32} strokeWidth={3}/><span className="text-[9px] font-black uppercase tracking-widest">Add Pillar</span></button>
+          <button onClick={()=>setShowAddBlock(true)} className="flex flex-col items-center justify-center gap-3 p-5 bg-[var(--bg-secondary)]/50 border-2 border-[var(--border-color)] border-dashed rounded-2xl text-[var(--text-secondary)] hover:text-[var(--accent-color)] hover:border-[var(--accent-color)]/50 transition-all min-h-[140px] italic"><Plus size={32} strokeWidth={3}/><span className="text-[9px] font-black uppercase tracking-widest">Add Pillar</span></button>
         </div>
       </section>
-      <section className="mb-12 p-8 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl flex flex-col lg:flex-row items-center justify-between gap-8 shadow-xl">
-        <div><h2 className="text-6xl font-black text-[var(--accent-color)] tracking-tightest mb-2">{formatDuration(scheduleData.totalFree)}</h2><p className="text-[var(--text-secondary)] font-bold text-base opacity-60">Architected capacity for today.</p></div>
-        <div className="flex flex-wrap justify-center gap-4">{[ {t:'7-10 AM',l:'Peak'}, {t:'6-7 PM',l:'Pulse'}, {t:'8-12 PM',l:'Orbit'} ].map((z,i)=>(<div key={i} className="flex flex-col items-center p-4 px-8 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-secondary)] hover:scale-105 transition-transform"><span className="text-base font-black">{z.t}</span><span className="text-[8px] uppercase tracking-widest font-black mt-1 opacity-40">{z.l}</span></div>))}</div>
+      <section className="mb-12 p-8 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[2.5rem] flex flex-col lg:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden text-left">
+        <div className="transform-gpu absolute top-0 left-0 w-full h-full bg-gradient-to-br from-[var(--accent-color)]/5 via-transparent to-transparent pointer-events-none" />
+        <div className="relative z-10">
+          <h2 className="text-6xl font-black text-[var(--accent-color)] tracking-tightest mb-2 italic uppercase">{formatDuration(scheduleData.totalFree)}</h2>
+          <p className="text-[var(--text-secondary)] font-black text-base opacity-60 uppercase italic tracking-tighter">Architected capacity for today.</p>
+        </div>
+        <div className="flex flex-wrap justify-center gap-4 relative z-10">
+          {[ {t:'7-10 AM',l:'Peak'}, {t:'6-7 PM',l:'Pulse'}, {t:'8-12 PM',l:'Orbit'} ].map((z,i)=>(
+            <div key={i} className="flex flex-col items-center p-5 px-10 rounded-[1.5rem] border border-[var(--border-color)] bg-[var(--bg-secondary)]/80 backdrop-blur-sm hover:scale-105 transition-transform shadow-sm">
+              <span className="text-base font-black text-[var(--text-primary)] italic uppercase">{z.t}</span>
+              <span className="text-[9px] uppercase tracking-[0.3em] font-black mt-1 text-[var(--text-secondary)] opacity-40 italic">{z.l}</span>
+            </div>
+          ))}
+        </div>
       </section>
       <div className="flex justify-center gap-4 mb-16"><button onClick={()=>setShowAddTask(true)} className="px-8 py-4 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-full font-black text-xs uppercase tracking-widest shadow-md hover:border-[var(--accent-color)] transition-all flex items-center gap-3"><Plus size={20}/> New Objective</button><button onClick={()=>refresh()} className="px-12 py-4 bg-[var(--accent-color)] text-[var(--bg-primary)] rounded-full font-black text-xs uppercase tracking-[0.3em] shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-3"><Zap size={20} fill="currentColor"/> Generate Plan</button></div>
       <section>

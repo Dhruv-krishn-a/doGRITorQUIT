@@ -9,7 +9,7 @@ export default function TodayPage() {
  return (
   <HabitsProvider offlineStorage={sqliteHabitsBridge}>
    <StudyFeatureProvider>
-    <div className="min-h-screen w-full bg-[#fafbfc]">
+    <div className="min-h-screen w-full bg-[var(--bg-primary)]">
      <TodayUI />
     </div>
    </StudyFeatureProvider>

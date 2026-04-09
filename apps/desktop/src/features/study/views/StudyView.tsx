@@ -153,8 +153,8 @@ export function StudyView() {
 
  if (!unit) {
   return (
-   <div className="fixed inset-0 z-[2000] bg-[#fff9fa] flex items-center justify-center">
-    <div className="p-20 text-center text-rose-400 font-bold animate-pulse uppercase tracking-widest">
+   <div className="fixed inset-0 z-[2000] bg-[var(--bg-primary)] flex items-center justify-center">
+    <div className="p-20 text-center text-[var(--accent-color)] font-black animate-pulse uppercase tracking-[0.3em] italic">
      Opening Study Environment...
     </div>
    </div>
@@ -177,30 +177,30 @@ export function StudyView() {
       navigate(backPath);
      }}
      title="Save session and return to course"
-     className="p-4 bg-white border border-rose-100 rounded-2xl text-slate-400 hover:text-rose-600 hover:border-rose-300 transition-all shadow-sm active:scale-95"
+     className="p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl text-[var(--text-secondary)] hover:text-[var(--accent-color)] hover:border-[var(--accent-color)]/30 transition-all shadow-sm active:scale-95"
     >
      <ArrowLeft size={20} />
     </button>
-    <div className="hidden md:block">
-     <p className="text-[10px] font-bold uppercase tracking-widest text-rose-400 mb-0.5">
+    <div className="hidden md:block text-left">
+     <p className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-color)] mb-0.5 italic">
       {activeTrack?.track?.title}
      </p>
-     <h2 className="text-xl font-bold text-slate-900 tracking-tight truncate max-w-sm">{unit.title}</h2>
+     <h2 className="text-xl font-black text-[var(--text-primary)] tracking-tight truncate max-w-sm uppercase italic leading-none">{unit.title}</h2>
     </div>
    </div>
 
    <div className="flex items-center gap-6">
     {dashboard?.fatigueDetails && (
-     <div className="hidden lg:flex items-center gap-3 bg-white px-4 py-2 rounded-2xl border border-rose-100 shadow-sm">
+     <div className="hidden lg:flex items-center gap-3 bg-[var(--bg-secondary)] px-4 py-2 rounded-2xl border border-[var(--border-color)] shadow-sm">
       <Activity
        size={16}
        className={dashboard.fatigueDetails.score > 5 ?"text-rose-500 animate-pulse" :"text-emerald-500"}
       />
-      <div className="flex flex-col">
-       <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">System Health</span>
+      <div className="flex flex-col text-left">
+       <span className="text-[8px] font-black text-[var(--text-secondary)] uppercase tracking-widest">System Health</span>
        <span
-        className={`text-[10px] font-bold uppercase tracking-widest ${
-         dashboard.fatigueDetails.score > 5 ?"text-rose-600" :"text-emerald-600"
+        className={`text-[10px] font-black uppercase tracking-widest italic ${
+         dashboard.fatigueDetails.score > 5 ?"text-rose-500" :"text-emerald-500"
         }`}
        >
         {dashboard.fatigueLevel ||"OPTIMAL"}
@@ -211,17 +211,17 @@ export function StudyView() {
 
     <div className="flex items-center gap-2">
      {showDiscardConfirm ? (
-      <div className="flex items-center gap-3 bg-rose-50 px-4 py-2 rounded-2xl border border-rose-100 animate-in slide-in-from-right-4 duration-300">
-       <span className="text-[10px] font-bold text-rose-600 uppercase tracking-widest">Discard session?</span>
+      <div className="flex items-center gap-3 bg-rose-500/10 px-4 py-2 rounded-2xl border border-rose-500/20 animate-in slide-in-from-right-4 duration-300">
+       <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest italic">Discard session?</span>
        <button 
         onClick={() => navigate(backPath)}
-        className="text-[10px] font-bold text-rose-600 hover:underline uppercase"
+        className="text-[10px] font-black text-rose-500 hover:underline uppercase italic"
        >
         Yes
        </button>
        <button 
         onClick={() => setShowDiscardConfirm(false)}
-        className="text-[10px] font-bold text-slate-400 hover:text-slate-600 uppercase"
+        className="text-[10px] font-black text-[var(--text-secondary)] hover:text-[var(--text-primary)] uppercase italic"
        >
         No
        </button>
@@ -230,7 +230,7 @@ export function StudyView() {
       <button
        onClick={() => setShowDiscardConfirm(true)}
        title="Exit without saving session"
-       className="px-4 py-2 bg-white text-slate-400 border border-slate-100 rounded-2xl hover:text-rose-600 hover:bg-rose-50 transition-all text-[10px] font-bold uppercase tracking-widest"
+       className="px-4 py-2 bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border-color)] rounded-2xl hover:text-rose-500 hover:bg-rose-500/5 transition-all text-[10px] font-black uppercase tracking-widest italic"
       >
        Discard
       </button>
@@ -239,40 +239,40 @@ export function StudyView() {
      <button
       onClick={() => setIsDeepWork(true)}
       title="Hide all distractions for deep focus"
-      className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-2xl hover:bg-slate-800 transition-all shadow-lg active:scale-95"
+      className="flex items-center gap-2 px-4 py-2 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-2xl hover:bg-[var(--accent-color)] transition-all shadow-lg active:scale-95"
      >
-      <Zap size={16} className="text-amber-400" />
-      <span className="text-[10px] font-bold uppercase tracking-widest">Deep Work</span>
+      <Zap size={16} className="text-amber-500" />
+      <span className="text-[10px] font-black uppercase tracking-widest italic">Deep Work</span>
      </button>
     </div>
 
-    <div className="flex items-center gap-3 bg-white p-2 rounded-2xl border border-rose-100 shadow-sm">
+    <div className="flex items-center gap-3 bg-[var(--bg-secondary)] p-2 rounded-2xl border border-[var(--border-color)] shadow-sm">
      <button
       onClick={() => setLayout("SPLIT")}
       title="Video and notes side-by-side"
-      className={`p-3 rounded-xl transition-all ${layout ==="SPLIT" ?"bg-rose-600 text-white shadow-md shadow-rose-200" :"text-slate-400 hover:bg-rose-50"}`}
+      className={`p-3 rounded-xl transition-all ${layout ==="SPLIT" ?"bg-[var(--accent-color)] text-[var(--bg-primary)] shadow-lg shadow-[var(--accent-color)]/20" :"text-[var(--text-secondary)] hover:bg-[var(--bg-card)]"}`}
      >
       <Layout size={18} />
      </button>
      <button
       onClick={() => setLayout("THEATER")}
       title="Large video layout"
-      className={`p-3 rounded-xl transition-all ${layout ==="THEATER" ?"bg-rose-600 text-white shadow-md shadow-rose-200" :"text-slate-400 hover:bg-rose-50"}`}
+      className={`p-3 rounded-xl transition-all ${layout ==="THEATER" ?"bg-[var(--accent-color)] text-[var(--bg-primary)] shadow-lg shadow-[var(--accent-color)]/20" :"text-[var(--text-secondary)] hover:bg-[var(--bg-card)]"}`}
      >
       <Maximize2 size={18} />
      </button>
      <button
       onClick={() => setLayout("FULL_NOTES")}
       title="Writing focused layout"
-      className={`p-3 rounded-xl transition-all ${layout ==="FULL_NOTES" ?"bg-rose-600 text-white shadow-md shadow-rose-200" :"text-slate-400 hover:bg-rose-50"}`}
+      className={`p-3 rounded-xl transition-all ${layout ==="FULL_NOTES" ?"bg-[var(--accent-color)] text-[var(--bg-primary)] shadow-lg shadow-[var(--accent-color)]/20" :"text-[var(--text-secondary)] hover:bg-[var(--bg-card)]"}`}
      >
       <Brain size={18} />
      </button>
-     <div className="w-px h-6 bg-rose-100 mx-1" />
+     <div className="w-px h-6 bg-[var(--border-color)] mx-1" />
      <button 
       onClick={() => setTranspose(!transpose)} 
       title="Swap side panels"
-      className="p-3 text-slate-400 hover:bg-rose-50 rounded-xl transition-all"
+      className="p-3 text-[var(--text-secondary)] hover:bg-[var(--bg-card)] rounded-xl transition-all"
      >
       {transpose ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
      </button>
@@ -284,7 +284,7 @@ export function StudyView() {
  return (
   <div
    className={`fixed inset-0 z-[2000] flex flex-col overflow-hidden transition-colors duration-700 ${
-    isDeepWork ?"bg-slate-950 p-0" :"bg-[#fff9fa] p-4 md:p-8 lg:p-10 gap-6"
+    isDeepWork ?"bg-black p-0" :"bg-[var(--bg-primary)] p-4 md:p-8 lg:p-10 gap-6"
    }`}
   >
    {!isDeepWork && globalHeader}
@@ -332,16 +332,16 @@ export function StudyView() {
        </div>
 
        <div 
-        className={`w-2 h-full cursor-col-resize group flex items-center justify-center z-10 relative transition-colors ${isDragging ? 'bg-rose-500/20' : 'hover:bg-rose-500/5'}`}
+        className={`w-2 h-full cursor-col-resize group flex items-center justify-center z-10 relative transition-colors ${isDragging ? 'bg-[var(--accent-color)]/20' : 'hover:bg-[var(--accent-color)]/5'}`}
         onMouseDown={(e) => {
          e.preventDefault();
          setIsDragging(true);
         }}
        >
-        <div className={`w-1 h-16 rounded-full transition-colors ${isDragging ? 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]' : 'bg-slate-300 group-hover:bg-rose-400'}`} />
+        <div className={`w-1 h-16 rounded-full transition-colors ${isDragging ? 'bg-[var(--accent-color)] shadow-[0_0_10px_var(--accent-color)]' : 'bg-[var(--border-color)] group-hover:bg-[var(--accent-color)]/50'}`} />
        </div>
 
-       <div className="flex-1 h-full min-w-0">
+       <div className="flex-1 h-full min-w-0 text-left">
         <NotesPanel
          playerRef={playerRef}
          currentTab={currentTab}
@@ -394,7 +394,7 @@ export function StudyView() {
          />
         </div>
        </div>
-       <div className="flex-1 h-full">
+       <div className="flex-1 h-full text-left">
         <NotesPanel
          playerRef={playerRef}
          currentTab={currentTab}
@@ -426,17 +426,17 @@ export function StudyView() {
        <div className="w-20 flex flex-col gap-4">
         <button
          onClick={() => setIsPaused(!isPaused)}
-         className={`w-full aspect-square rounded-3xl flex items-center justify-center transition-all ${isPaused ?"bg-rose-600 text-white" :"bg-white text-slate-400 border border-rose-100"}`}
+         className={`w-full aspect-square rounded-3xl flex items-center justify-center transition-all ${isPaused ?"bg-[var(--accent-color)] text-[var(--bg-primary)] shadow-lg" :"bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border-color)] shadow-sm"}`}
         >
          {isPaused ? <Play size={24} fill="currentColor" /> : <Pause size={24} fill="currentColor" />}
         </button>
-        <div className="flex-1 bg-white border border-rose-100 rounded-3xl flex flex-col items-center justify-center gap-1 py-4">
-         <span className="text-[8px] font-bold text-slate-300 uppercase vertical-text tracking-widest mb-4">Timer</span>
-         <span className="text-xl font-bold text-rose-600 font-mono rotate-90">{Math.floor(seconds / 60).toString().padStart(2,"0")}</span>
-         <span className="text-xl font-bold text-rose-400 font-mono rotate-90">{(seconds % 60).toString().padStart(2,"0")}</span>
+        <div className="flex-1 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl flex flex-col items-center justify-center gap-1 py-4 shadow-inner">
+         <span className="text-[8px] font-black text-[var(--text-secondary)] uppercase vertical-text tracking-[0.3em] mb-4 italic">Neural Clock</span>
+         <span className="text-xl font-black text-[var(--accent-color)] font-mono rotate-90 italic tracking-tighter">{Math.floor(seconds / 60).toString().padStart(2,"0")}</span>
+         <span className="text-xl font-black text-[var(--text-secondary)] font-mono rotate-90 italic tracking-tighter">{(seconds % 60).toString().padStart(2,"0")}</span>
         </div>
        </div>
-       <div className="flex-1 h-full">
+       <div className="flex-1 h-full text-left">
         <NotesPanel
          playerRef={playerRef}
          currentTab={currentTab}

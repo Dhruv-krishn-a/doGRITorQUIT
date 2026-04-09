@@ -44,6 +44,7 @@ export default function ChecklistPage() {
   const [newHabitTitle, setNewHabitTitle] = useState('');
   const [reflection, setReflection] = useState('');
   const [reflectionNote, setReflectionNote] = useState<Note | null>(null);
+  const { colors } = useTheme();
 
   const completedHabitIds = useMemo(() => {
     return new Set(logs.map((log) => log.habitId));
@@ -142,62 +143,64 @@ export default function ChecklistPage() {
       <View className="flex-1 bg-[var(--bg-primary)]">
         <ScrollView
           className="flex-1"
-          contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 56 }}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 80 }}
           showsVerticalScrollIndicator={false}
         >
-          <View className="mb-6">
-            <Text className="text-[10px] font-black uppercase tracking-[0.45em] text-[var(--text-secondary)]">
+          <View className="mb-8 text-left">
+            <Text className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--text-secondary)] mb-2 italic">
               Daily Execution
             </Text>
-            <Text className="mt-1 text-4xl font-black italic uppercase tracking-tight text-[var(--text-primary)]">
+            <Text className="text-4xl font-black italic uppercase tracking-tighter text-[var(--text-primary)] leading-none">
               Pulse
             </Text>
           </View>
 
-          <View className="rounded-[2rem] border border-[var(--border-color)] bg-[var(--bg-secondary)]/20 p-5 shadow-sm">
-            <View className="flex-row items-center justify-between">
-              <Text className="text-[10px] font-black uppercase tracking-[0.25em] text-[var(--text-secondary)]">
+          <View className="rounded-[2.5rem] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 shadow-2xl mb-8">
+            <View className="flex-row items-center justify-between mb-4">
+              <Text className="text-[10px] font-black uppercase tracking-[0.25em] text-[var(--text-secondary)] italic">
                 Flow Status
               </Text>
-              <Text className="text-[11px] font-black uppercase tracking-wider text-[var(--accent-color)]">
+              <Text className="text-[11px] font-black uppercase tracking-widest text-[var(--accent-color)] italic">
                 {completedCount}/{totalCount} Resolved
               </Text>
             </View>
 
-            <View className="mt-3 h-2 overflow-hidden rounded-full bg-[var(--bg-secondary)]">
+            <View className="h-3 overflow-hidden rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)]/50">
               <View
-                className="h-2 rounded-full bg-[var(--accent-color)] shadow-lg shadow-sky-500/50"
+                className="h-full rounded-full bg-[var(--accent-color)] shadow-lg shadow-sky-500/50"
                 style={{ width: `${Math.min(progress, 100)}%` }}
               />
             </View>
 
-            <View className="mt-4 flex-row items-center justify-between rounded-2xl bg-[var(--bg-secondary)]/50 p-4 border border-[var(--border-color)]">
-              <View className="flex-1 mr-4">
+            <View className="mt-6 flex-row items-center justify-between rounded-[2rem] bg-[var(--bg-secondary)]/40 p-5 border border-[var(--border-color)]">
+              <View className="flex-1 mr-4 text-left">
                 <Text className="text-xs font-black uppercase tracking-wide text-[var(--text-primary)] italic">
-                  {remainingCount === 0 ? 'All Clear' : `${remainingCount} Vectors Pending`}
+                  {remainingCount === 0 ? 'Resonance Achieved' : `${remainingCount} Vectors Pending`}
                 </Text>
-                <Text className="mt-1 text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-widest leading-3">
+                <Text className="mt-1 text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-widest leading-tight italic">
                   {remainingCount === 0
-                    ? 'Resonance achieved. maintain the vector.'
-                    : 'Maintain momentum. complete the pulse.'}
+                    ? 'Flow state maintained. the system is stable.'
+                    : 'Maintain momentum. Complete the daily pulse.'}
                 </Text>
               </View>
               {remainingCount > 0 ? (
                 <TouchableOpacity
                   onPress={handleRemindMe}
-                  className="rounded-xl bg-[var(--accent-color)] px-4 py-2"
+                  className="rounded-xl bg-[var(--accent-color)] px-5 py-2.5 shadow-lg shadow-sky-500/20"
                 >
-                  <Text className="text-[10px] font-black uppercase tracking-wider text-[var(--bg-primary)]">
+                  <Text className="text-[10px] font-black uppercase tracking-widest text-[var(--bg-primary)]">
                     Nudge
                   </Text>
                 </TouchableOpacity>
               ) : (
-                <Ionicons name="sparkles" size={24} color="#0EA5E9" />
+                <View className="w-10 h-10 items-center justify-center bg-[var(--accent-color)]/10 rounded-full border border-[var(--accent-color)]/20">
+                  <Ionicons name="sparkles" size={20} color={colors.accent} />
+                </View>
               )}
             </View>
           </View>
 
-          <View className="mt-5 flex-row items-center justify-between">
+          <View className="flex-row items-center justify-between mb-8">
             <View className="flex-row gap-2">
               {(['PENDING', 'DONE', 'ALL'] as HabitFilter[]).map((item) => {
                 const active = filter === item;
@@ -205,10 +208,10 @@ export default function ChecklistPage() {
                   <TouchableOpacity
                     key={item}
                     onPress={() => setFilter(item)}
-                    className={`rounded-full px-4 py-2 border ${active ? 'bg-[var(--text-primary)] border-[var(--text-primary)]' : 'bg-[var(--bg-secondary)] border-[var(--border-color)]'}`}
+                    className={`rounded-full px-5 py-2.5 border ${active ? 'bg-[var(--accent-color)] border-[var(--accent-color)] shadow-lg shadow-sky-500/20' : 'bg-[var(--bg-secondary)] border-[var(--border-color)]'}`}
                   >
                     <Text
-                      className={`text-[10px] font-black uppercase tracking-wider ${
+                      className={`text-[9px] font-black uppercase tracking-widest ${
                         active ? 'text-[var(--bg-primary)]' : 'text-[var(--text-secondary)]'
                       }`}
                     >
@@ -221,15 +224,15 @@ export default function ChecklistPage() {
 
             <TouchableOpacity
               onPress={() => setModalVisible(true)}
-              className="h-11 w-11 items-center justify-center rounded-2xl bg-[var(--accent-color)] shadow-lg shadow-sky-500/20"
+              className="h-12 w-12 items-center justify-center rounded-2xl bg-[var(--text-primary)] shadow-xl"
             >
-              <Ionicons name="add" size={24} color="#0B0F19" />
+              <Ionicons name="add" size={28} color={colors.primary} />
             </TouchableOpacity>
           </View>
 
-          <View className="mt-5 flex-row flex-wrap justify-between">
+          <View className="flex-row flex-wrap justify-between">
             {loading && habits.length === 0 ? (
-              <ActivityIndicator color="#0EA5E9" className="w-full py-10" />
+              <ActivityIndicator color={colors.accent} size="large" className="w-full py-12" />
             ) : (
               visibleHabits.map((habit) => (
                 <HabitItem
@@ -242,34 +245,36 @@ export default function ChecklistPage() {
             )}
 
             {!loading && visibleHabits.length === 0 && (
-              <View className="w-full items-center rounded-[2rem] border border-dashed border-[var(--border-color)] bg-[var(--bg-secondary)]/10 p-10">
-                <Text className="text-[10px] font-black uppercase tracking-wider text-[var(--text-secondary)]">
-                  Awaiting Data
+              <View className="w-full items-center justify-center rounded-[2.5rem] border-2 border-dashed border-[var(--border-color)] bg-[var(--bg-secondary)]/10 p-12">
+                <Ionicons name="layers-outline" size={32} color={colors.textSecondary} style={{ opacity: 0.2, marginBottom: 12 }} />
+                <Text className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic opacity-40">
+                  Sector Neutral
                 </Text>
               </View>
             )}
           </View>
 
-          <View className="mt-8">
-            <Text className="ml-1 text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)]">
-              Daily Reflection
-            </Text>
-            <View className="mt-3 rounded-[2rem] border border-[var(--border-color)] bg-[var(--bg-secondary)]/30 p-5 shadow-sm">
+          <View className="mt-10 text-left">
+            <View className="flex-row items-center gap-3 mb-5 ml-1">
+               <View className="w-1 h-4 bg-[var(--accent-color)] rounded-full" />
+               <Text className="text-[11px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)]">Daily Reflection</Text>
+            </View>
+            <View className="rounded-[2.5rem] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 shadow-2xl">
               <TextInput
                 value={reflection}
                 onChangeText={setReflection}
-                placeholder="What went well today?"
-                placeholderTextColor="#475569"
+                placeholder="MISSION DEBRIEF..."
+                placeholderTextColor={colors.textSecondary + '40'}
                 multiline
                 textAlignVertical="top"
-                className="min-h-[140px] text-[15px] font-bold leading-6 text-[var(--text-primary)]"
+                className="min-h-[160px] text-[15px] font-black leading-6 text-[var(--text-primary)] italic uppercase tracking-tighter"
                 onBlur={saveReflection}
               />
               <TouchableOpacity
                 onPress={saveReflection}
-                className="mt-4 items-center rounded-xl bg-[var(--accent-color)] py-3"
+                className="mt-6 items-center rounded-2xl bg-[var(--accent-color)] py-4 shadow-lg shadow-sky-500/20"
               >
-                <Text className="text-[10px] font-black uppercase tracking-widest text-[var(--bg-primary)]">
+                <Text className="text-[10px] font-black uppercase tracking-widest text-[var(--bg-primary)] italic">
                   Log Reflection
                 </Text>
               </TouchableOpacity>
@@ -278,30 +283,37 @@ export default function ChecklistPage() {
         </ScrollView>
 
         <Modal animationType="slide" transparent={true} visible={modalVisible}>
-          <View className="flex-1 justify-end bg-[var(--bg-primary)]/80">
-            <View className="rounded-t-[2.5rem] bg-[var(--bg-secondary)] p-7 pb-10 border-t border-[var(--border-color)]">
-              <View className="mb-6 flex-row items-center justify-between">
-                <Text className="text-2xl font-black italic uppercase text-[var(--text-primary)]">New Vector</Text>
-                <TouchableOpacity onPress={() => setModalVisible(false)}>
-                  <Ionicons name="close-circle" size={30} color="#475569" />
+          <View className="flex-1 justify-end bg-black/60">
+            <View 
+              style={{ backgroundColor: colors.card }}
+              className="rounded-t-[3.5rem] p-10 pb-16 border-t border-[var(--border-color)] shadow-2xl"
+            >
+              <View className="mb-10 flex-row items-center justify-between">
+                <Text className="text-3xl font-black italic uppercase tracking-tighter text-[var(--text-primary)]">Initialize Vector</Text>
+                <TouchableOpacity onPress={() => setModalVisible(false)} className="p-2 bg-[var(--bg-secondary)] rounded-full border border-[var(--border-color)]">
+                  <Ionicons name="close" size={24} color={colors.textSecondary} />
                 </TouchableOpacity>
               </View>
 
-              <TextInput
-                value={newHabitTitle}
-                onChangeText={setNewHabitTitle}
-                placeholder="Vector Label..."
-                placeholderTextColor="#475569"
-                className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-4 text-base font-bold text-[var(--text-primary)] uppercase italic"
-                autoFocus
-              />
+              <View className="mb-8 text-left">
+                <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-4 ml-1">Mission Label</Text>
+                <TextInput
+                  value={newHabitTitle}
+                  onChangeText={setNewHabitTitle}
+                  placeholder="Designation..."
+                  placeholderTextColor={colors.textSecondary + '40'}
+                  className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-6 text-lg font-black text-[var(--text-primary)] uppercase italic tracking-tight"
+                  autoFocus
+                />
+              </View>
 
               <TouchableOpacity
                 onPress={handleCreateHabit}
-                className="mt-6 items-center rounded-2xl bg-[var(--accent-color)] p-5 shadow-lg shadow-sky-500/20"
+                activeOpacity={0.9}
+                className="items-center rounded-3xl bg-[var(--accent-color)] p-6 shadow-xl shadow-sky-500/30"
               >
-                <Text className="text-[11px] font-black uppercase tracking-wider text-[var(--bg-primary)]">
-                  Initialize Vector
+                <Text className="text-[11px] font-black uppercase tracking-[0.2em] text-[var(--bg-primary)] italic">
+                  Execute Initialization
                 </Text>
               </TouchableOpacity>
             </View>
@@ -321,38 +333,38 @@ function HabitItem({
   done: boolean;
   onToggle: (habitId: string) => Promise<void>;
 }) {
+  const { colors } = useTheme();
   return (
     <TouchableOpacity
       onPress={() => onToggle(habit.id)}
-      className={`mb-4 w-[48%] rounded-[1.75rem] border p-5 ${
+      activeOpacity={0.8}
+      className={`mb-5 w-[48%] rounded-[2rem] border p-6 ${
         done
-          ? 'border-mint/20 bg-mint/5 shadow-sm'
-          : 'border-[var(--border-color)] bg-[var(--bg-secondary)]/30'
+          ? 'border-mint/30 bg-mint/10 shadow-lg shadow-mint/10'
+          : 'border-[var(--border-color)] bg-[var(--bg-secondary)]/40 shadow-sm'
       }`}
     >
       <View className="flex-row items-start justify-between">
         <View
-          className={`h-10 w-10 items-center justify-center rounded-xl ${
-            done ? 'bg-mint/10' : 'bg-[var(--bg-secondary)]'
+          className={`h-12 w-12 items-center justify-center rounded-2xl border ${
+            done ? 'bg-mint/20 border-mint/30' : 'bg-[var(--bg-card)] border-[var(--border-color)] shadow-sm'
           }`}
         >
           <Ionicons
             name={normalizeHabitIcon(habit.icon)}
-            size={18}
-            color={done ? '#10B981' : '#0EA5E9'}
+            size={22}
+            color={done ? '#10B981' : colors.accent}
           />
         </View>
-        <Ionicons
-          name={done ? 'checkmark-circle' : 'ellipse-outline'}
-          size={20}
-          color={done ? '#10B981' : '#1E293B'}
-        />
+        <View className={`w-6 h-6 rounded-full items-center justify-center border-2 ${done ? 'bg-mint border-mint' : 'border-[var(--border-color)]'}`}>
+           {done && <Ionicons name="checkmark" size={14} color="white" />}
+        </View>
       </View>
 
-      <Text className={`mt-3 text-sm font-black uppercase italic tracking-tight ${done ? 'text-mint' : 'text-[var(--text-primary)]'}`}>
+      <Text className={`mt-5 text-base font-black uppercase italic tracking-tighter leading-none ${done ? 'text-mint' : 'text-[var(--text-primary)]'}`}>
         {habit.title}
       </Text>
-      <Text className={`mt-1 text-[9px] font-bold uppercase tracking-widest ${done ? 'text-mint/60' : 'text-[var(--text-secondary)]'}`}>
+      <Text className={`mt-2 text-[9px] font-black uppercase tracking-widest italic ${done ? 'text-mint/60' : 'text-[var(--text-secondary)]'}`}>
         {done ? 'Resolved' : 'Pending'}
       </Text>
     </TouchableOpacity>

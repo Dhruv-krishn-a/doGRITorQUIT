@@ -1,25 +1,45 @@
 import { prisma } from "@gritorquit/db";
 import { TaskStatus } from "@prisma/client"; // ✅ Import Enum is mandatory
 
-export async function getAnalyticsData(userId: string) {
-  const endDate = new Date();
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - 6); // Last 7 days
-  startDate.setHours(0, 0, 0, 0);
+export interface AnalyticsOptions {
+  startDate?: Date;
+  endDate?: Date;
+  category?: 'ALL' | 'YOUTUBE' | 'PLAN' | 'COURSE' | 'PROJECT';
+}
+
+export async function getAnalyticsData(userId: string, options: AnalyticsOptions = {}) {
+  const endDate = options.endDate || new Date();
+  const startDate = options.startDate || (() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 6); // Default 7 days
+    d.setHours(0, 0, 0, 0);
+    return d;
+  })();
+
+  const category = options.category || 'ALL';
+
+  // Base filters for tasks
+  const taskWhere: any = {
+    userId,
+    date: { gte: startDate, lte: endDate },
+    status: { not: TaskStatus.archived }
+  };
+
+  if (category === 'PLAN') {
+    taskWhere.planId = { not: null };
+  } else if (category === 'YOUTUBE') {
+    taskWhere.metadata = { path: ['source'], equals: 'youtube' };
+  }
 
   const [tasks, habits, taskCounts] = await Promise.all([
     prisma.task.findMany({
-      where: {
-        userId,
-        date: { gte: startDate, lte: endDate },
-        // ✅ FIX 1: Use Enum 'archived' instead of string "Discarded"
-        status: { not: TaskStatus.archived } 
-      },
+      where: taskWhere,
       select: {
         date: true,
         status: true,
         timeSpentMinutes: true,
-        estimatedMinutes: true
+        estimatedMinutes: true,
+        metadata: true
       }
     }),
 
@@ -28,14 +48,14 @@ export async function getAnalyticsData(userId: string) {
       include: {
         logs: {
           where: { date: { gte: startDate, lte: endDate } },
-          select: { date: true } // Only need date to count
+          select: { date: true }
         }
       }
     }),
 
     prisma.task.groupBy({
       by: ['status'],
-      where: { userId },
+      where: { userId, ...(category !== 'ALL' ? taskWhere : {}) },
       _count: { id: true }
     })
   ]);
@@ -77,12 +97,15 @@ export async function getAnalyticsData(userId: string) {
     });
   }
 
+  const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+
   // Habit Stats
   const habitStats = habits.map(h => ({
     name: h.title,
-    total: 7,
+    total: diffDays,
     completed: h.logs.length,
-    rate: Math.round((h.logs.length / 7) * 100)
+    rate: Math.round((h.logs.length / diffDays) * 100)
   }));
 
   return {

@@ -538,9 +538,9 @@ export function NoteEditor({
   const printableHeightMm = Math.max(0, page.heightMm - page.marginMm * 2 - page.headerMm - page.footerMm);
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col bg-obsidian text-slate-200">
+    <div className="flex h-full min-h-0 w-full flex-col bg-[var(--bg-primary)] text-[var(--text-primary)]">
       <div
-        className={`flex items-center justify-between border-b border-slate-800 bg-obsidian/80 backdrop-blur-md z-50 relative ${
+        className={`flex items-center justify-between border-b border-[var(--border-color)] bg-[var(--bg-primary)]/80 backdrop-blur-md z-50 relative ${
           mode === "SPLIT" ? "px-3 py-3" : "px-4 py-4 md:px-6"
         }`}
       >
@@ -551,7 +551,7 @@ export function NoteEditor({
                 debouncedSave.flush();
                 onBack();
               }}
-              className="p-3 bg-slate-800 border border-slate-700 text-slate-400 rounded-2xl hover:text-white hover:border-sky-focus transition-all shadow-sm shrink-0"
+              className="p-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-secondary)] rounded-2xl hover:text-[var(--text-primary)] hover:border-[var(--accent-color)] transition-all shadow-sm shrink-0"
             >
               <ArrowLeft size={16} />
             </button>
@@ -562,9 +562,9 @@ export function NoteEditor({
               value={title}
               onChange={handleTitleChange}
               placeholder="Archive Title..."
-              className={`${mode === "SPLIT" ? "text-xl" : "text-4xl"} font-black italic uppercase bg-transparent border-none outline-none text-white placeholder:text-slate-700 w-full truncate tracking-tighter`}
+              className={`${mode === "SPLIT" ? "text-xl" : "text-4xl"} font-black italic uppercase bg-transparent border-none outline-none text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/30 w-full truncate tracking-tighter`}
             />
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">
+            <span className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest mt-1">
               {page.widthMm}x{page.heightMm} MM // {printableWidthMm}x{printableHeightMm} PRINTABLE
             </span>
           </div>
@@ -574,7 +574,7 @@ export function NoteEditor({
           <button
             onClick={handleExportPdf}
             disabled={isExporting}
-            className={`flex items-center gap-2.5 ${mode === "SPLIT" ? "px-4 py-3" : "px-6 py-4"} bg-slate-800 text-slate-400 border border-slate-700 rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:text-white hover:border-slate-600 transition-all active:scale-95 disabled:opacity-50`}
+            className={`flex items-center gap-2.5 ${mode === "SPLIT" ? "px-4 py-3" : "px-6 py-4"} bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border-color)] rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:text-[var(--text-primary)] hover:border-[var(--text-secondary)] transition-all active:scale-95 disabled:opacity-50`}
             title="Export to PDF"
           >
             {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
@@ -583,7 +583,7 @@ export function NoteEditor({
 
           <button
             onClick={cycleBackground}
-            className={`flex items-center gap-2.5 ${mode === "SPLIT" ? "px-4 py-3" : "px-6 py-4"} bg-slate-800 text-slate-400 border border-slate-700 rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:text-white hover:border-slate-600 transition-all active:scale-95`}
+            className={`flex items-center gap-2.5 ${mode === "SPLIT" ? "px-4 py-3" : "px-6 py-4"} bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border-color)] rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:text-[var(--text-primary)] hover:border-[var(--text-secondary)] transition-all active:scale-95`}
             title="Toggle Background"
           >
             <Grid3X3 size={14} />
@@ -592,7 +592,7 @@ export function NoteEditor({
 
           <button
             onClick={cycleLayout}
-            className={`flex items-center gap-2.5 ${mode === "SPLIT" ? "px-4 py-3" : "px-6 py-4"} bg-slate-800 text-slate-400 border border-slate-700 rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:text-white hover:border-slate-600 transition-all active:scale-95`}
+            className={`flex items-center gap-2.5 ${mode === "SPLIT" ? "px-4 py-3" : "px-6 py-4"} bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border-color)] rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:text-[var(--text-primary)] hover:border-[var(--text-secondary)] transition-all active:scale-95`}
             title="Toggle Layout"
           >
             <LayoutTemplate size={14} />
@@ -603,8 +603,8 @@ export function NoteEditor({
             onClick={() => setIsDrawingMode(!isDrawingMode)}
             className={`flex items-center gap-2.5 ${mode === "SPLIT" ? "px-4 py-3" : "px-6 py-4"} rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 border ${
               isDrawingMode
-                ? "bg-sky-focus/10 text-sky-focus border-sky-focus/30 shadow-inner"
-                : "bg-slate-800 text-slate-400 hover:text-white border-slate-700 hover:border-slate-600"
+                ? "bg-[var(--accent-color)]/10 text-[var(--accent-color)] border-[var(--accent-color)]/30 shadow-inner"
+                : "bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-[var(--border-color)] hover:border-[var(--text-secondary)]"
             }`}
             title="Toggle Draw Mode"
           >
@@ -616,7 +616,7 @@ export function NoteEditor({
             <button
               onClick={() => void onSync()}
               disabled={isSyncing || isSaving}
-              className={`flex items-center gap-2.5 ${mode === "SPLIT" ? "px-4 py-3" : "px-6 py-4"} bg-slate-800 text-slate-400 border border-slate-700 rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:text-white transition-all active:scale-95 disabled:opacity-50`}
+              className={`flex items-center gap-2.5 ${mode === "SPLIT" ? "px-4 py-3" : "px-6 py-4"} bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border-color)] rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:text-[var(--text-primary)] transition-all active:scale-95 disabled:opacity-50`}
             >
               <RefreshCw size={14} className={isSyncing ? "animate-spin" : ""} />
               {isSyncing ? "Syncing..." : "Sync"}
@@ -628,20 +628,20 @@ export function NoteEditor({
               emitSave(false, true);
             }}
             disabled={isSaving}
-            className={`flex items-center gap-2.5 ${mode === "SPLIT" ? "px-5 py-3" : "px-8 py-4"} bg-sky-focus text-obsidian rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:bg-white transition-all shadow-lg shadow-sky-500/20 active:scale-95 disabled:opacity-50`}
+            className={`flex items-center gap-2.5 ${mode === "SPLIT" ? "px-5 py-3" : "px-8 py-4"} bg-[var(--accent-color)] text-[var(--bg-primary)] rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition-all shadow-lg shadow-[var(--accent-color)]/20 active:scale-95 disabled:opacity-50`}
           >
-            {isSaving ? <Loader2 size={16} className="animate-spin text-obsidian" /> : null}
+            {isSaving ? <Loader2 size={16} className="animate-spin text-[var(--bg-primary)]" /> : null}
             {isSaving ? "Saving..." : "Seal Archive"}
           </button>
         </div>
       </div>
 
-      <div className="border-b border-slate-800 bg-obsidian px-4 py-3 md:px-6">
+      <div className="border-b border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 md:px-6">
         <div className="flex flex-wrap items-center gap-2">
           <select
             value={page.preset}
             onChange={(e) => applyPreset(e.target.value as PagePreset)}
-            className="h-10 rounded-xl border border-slate-800 bg-slate-900 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400 focus:border-sky-focus/50 outline-none"
+            className="h-10 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 text-[10px] font-black uppercase tracking-wider text-[var(--text-secondary)] focus:border-[var(--accent-color)]/50 outline-none"
           >
             {Object.entries(PAGE_PRESETS).map(([key, value]) => (
               <option key={key} value={key}>
@@ -658,7 +658,7 @@ export function NoteEditor({
                 min={100}
                 max={600}
                 onChange={(e) => updatePageSetting("widthMm", Number(e.target.value))}
-                className="h-10 w-24 rounded-xl border border-slate-800 bg-slate-900 px-3 text-xs font-bold text-white outline-none focus:border-sky-focus/50"
+                className="h-10 w-24 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 text-xs font-bold text-[var(--text-primary)] outline-none focus:border-[var(--accent-color)]/50"
                 title="Width (mm)"
               />
               <input
@@ -667,7 +667,7 @@ export function NoteEditor({
                 min={100}
                 max={800}
                 onChange={(e) => updatePageSetting("heightMm", Number(e.target.value))}
-                className="h-10 w-24 rounded-xl border border-slate-800 bg-slate-900 px-3 text-xs font-bold text-white outline-none focus:border-sky-focus/50"
+                className="h-10 w-24 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 text-xs font-bold text-[var(--text-primary)] outline-none focus:border-[var(--accent-color)]/50"
                 title="Height (mm)"
               />
             </>
@@ -679,7 +679,7 @@ export function NoteEditor({
             min={0}
             max={80}
             onChange={(e) => updatePageSetting("marginMm", Number(e.target.value))}
-            className="h-10 w-24 rounded-xl border border-slate-800 bg-slate-900 px-3 text-xs font-bold text-white outline-none focus:border-sky-focus/50"
+            className="h-10 w-24 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 text-xs font-bold text-[var(--text-primary)] outline-none focus:border-[var(--accent-color)]/50"
             title="Margins (mm)"
           />
           <input
@@ -688,7 +688,7 @@ export function NoteEditor({
             min={0}
             max={80}
             onChange={(e) => updatePageSetting("headerMm", Number(e.target.value))}
-            className="h-10 w-24 rounded-xl border border-slate-800 bg-slate-900 px-3 text-xs font-bold text-white outline-none focus:border-sky-focus/50"
+            className="h-10 w-24 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 text-xs font-bold text-[var(--text-primary)] outline-none focus:border-[var(--accent-color)]/50"
             title="Header reserve (mm)"
           />
           <input
@@ -697,17 +697,17 @@ export function NoteEditor({
             min={0}
             max={80}
             onChange={(e) => updatePageSetting("footerMm", Number(e.target.value))}
-            className="h-10 w-24 rounded-xl border border-slate-800 bg-slate-900 px-3 text-xs font-bold text-white outline-none focus:border-sky-focus/50"
+            className="h-10 w-24 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 text-xs font-bold text-[var(--text-primary)] outline-none focus:border-[var(--accent-color)]/50"
             title="Footer reserve (mm)"
           />
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar pt-8 pb-24 bg-obsidian relative" id="editor-scroll-container">
+      <div className="flex-1 overflow-y-auto custom-scrollbar pt-8 pb-24 bg-[var(--bg-primary)] relative" id="editor-scroll-container">
         {isDrawingMode && (
           <div className="sticky top-6 z-50 flex justify-center mb-8 pointer-events-none">
-            <div className="bg-slate-900 border border-slate-800 shadow-2xl p-2 rounded-2xl flex items-center gap-2 pointer-events-auto">
-              <div className="flex bg-obsidian p-1 rounded-xl gap-1 border border-slate-800">
+            <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] shadow-2xl p-2 rounded-2xl flex items-center gap-2 pointer-events-auto">
+              <div className="flex bg-[var(--bg-primary)] p-1 rounded-xl gap-1 border border-[var(--border-color)]">
                 {[
                   { id: "pointer", icon: <MousePointer2 size={16} /> },
                   { id: "pen", icon: <PenTool size={16} /> },
@@ -722,7 +722,7 @@ export function NoteEditor({
                     key={t.id}
                     onClick={() => setCurrentTool(t.id as ToolType)}
                     className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
-                      currentTool === t.id ? "bg-sky-focus text-obsidian shadow-lg" : "text-slate-500 hover:text-slate-300"
+                      currentTool === t.id ? "bg-[var(--accent-color)] text-[var(--bg-primary)] shadow-lg" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                     }`}
                     title={t.id}
                   >
@@ -730,27 +730,27 @@ export function NoteEditor({
                   </button>
                 ))}
               </div>
-              <div className="w-px h-8 bg-slate-800 mx-2" />
+              <div className="w-px h-8 bg-[var(--border-color)] mx-2" />
               <div className="flex gap-1.5 px-2">
                 {colors.map((c) => (
                   <button
                     key={c}
                     onClick={() => setCurrentColor(c)}
                     className={`w-6 h-6 rounded-full transition-all border border-white/10 ${
-                      currentColor === c ? "ring-2 ring-offset-2 ring-offset-obsidian ring-sky-focus scale-110" : "hover:scale-110"
+                      currentColor === c ? "ring-2 ring-offset-2 ring-offset-[var(--bg-primary)] ring-[var(--accent-color)] scale-110" : "hover:scale-110"
                     }`}
                     style={{ backgroundColor: c }}
                   />
                 ))}
               </div>
-              <div className="w-px h-8 bg-slate-800 mx-2" />
+              <div className="w-px h-8 bg-[var(--border-color)] mx-2" />
               <div className="flex gap-2 items-center px-2">
                 {sizes.map((s) => (
                   <button
                     key={s}
                     onClick={() => setCurrentSize(s)}
                     className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${
-                      currentSize === s ? "bg-sky-focus/20 text-sky-focus" : "text-slate-500 hover:text-slate-300"
+                      currentSize === s ? "bg-[var(--accent-color)]/20 text-[var(--accent-color)]" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                     }`}
                   >
                     <div className="bg-current rounded-full" style={{ width: s, height: s }} />
@@ -797,24 +797,24 @@ export function NoteEditor({
 
         .custom-blocknote-theme .bn-editor * {
           background-color: transparent !important;
-          color: #e2e8f0 !important;
+          color: var(--text-primary) !important;
         }
 
         .custom-blocknote-theme .bn-side-menu .bn-button {
-          color: #64748b;
+          color: var(--text-secondary);
           border-radius: 8px;
           transition: background-color 0.2s ease, color 0.2s ease;
         }
 
         .custom-blocknote-theme .bn-side-menu .bn-button:hover {
-          color: #0ea5e9;
-          background: rgba(14, 165, 233, 0.1);
+          color: var(--accent-color);
+          background: var(--hover-bg);
         }
 
         .custom-blocknote-theme [data-content-type="paragraph"] {
           font-size: 16px;
           line-height: 1.625;
-          color: #cbd5e1;
+          color: var(--text-primary);
         }
 
         .mantine-FocusRing-auto {
@@ -823,9 +823,9 @@ export function NoteEditor({
 
         .mantine-Popover-dropdown {
           position: absolute !important;
-          background: #151c2c !important;
-          border: 1px solid #1e293b !important;
-          color: #f8fafc !important;
+          background: var(--bg-card) !important;
+          border: 1px solid var(--border-color) !important;
+          color: var(--text-primary) !important;
         }
 
         .bn-block-content {

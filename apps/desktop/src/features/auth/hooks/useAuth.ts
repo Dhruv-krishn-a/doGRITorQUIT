@@ -91,7 +91,6 @@ export function useAuth() {
     setSession(prev => {
       if (prev?.access_token === currentSession?.access_token && 
           prev?.user?.id === currentSession?.user?.id) {
-        setLoading(false);
         return prev;
       }
       
@@ -107,22 +106,24 @@ export function useAuth() {
         });
       }
 
-      setUser(currentSession?.user ?? null);
-      setAccessToken(currentSession?.access_token ?? null);
-      setHabitsAccessToken(currentSession?.access_token ?? null);
-      setDashboardAccessToken(currentSession?.access_token ?? null);
-      
-      if (currentSession) {
-        fetchOfflineToken(currentSession);
-        invoke('fetch_entitlements', { 
-          baseUrl: API_BASE_URL, 
-          token: currentSession.access_token 
-        }).catch(() => {});
-      }
-
-      setLoading(false);
       return currentSession;
     });
+
+    // Run all side-effects and other state setters OUTSIDE the updater function
+    setUser(currentSession?.user ?? null);
+    setAccessToken(currentSession?.access_token ?? null);
+    setHabitsAccessToken(currentSession?.access_token ?? null);
+    setDashboardAccessToken(currentSession?.access_token ?? null);
+      
+    if (currentSession) {
+      fetchOfflineToken(currentSession);
+      invoke('fetch_entitlements', { 
+        baseUrl: API_BASE_URL, 
+        token: currentSession.access_token 
+      }).catch(() => {});
+    }
+
+    setLoading(false);
   }, [fetchOfflineToken, queryClient]);
 
   useEffect(() => {

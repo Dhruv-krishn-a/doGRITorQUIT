@@ -53,21 +53,21 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note }) => {
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-      className="flex-1 bg-obsidian"
+      style={{ flex: 1, backgroundColor: colors.paper }}
     >
       {/* Top Bar */}
-      <View className="p-6 pt-12 border-b border-slate-800">
+      <div className={`p-6 pt-12 border-b border-[var(--border-color)]`}>
         <View className="flex-row items-center justify-between mb-6">
-          <TouchableOpacity onPress={() => router.back()} className="w-10 h-10 items-center justify-center bg-slate-800 rounded-xl">
-            <Ionicons name="chevron-back" size={24} color="#64748b" />
+          <TouchableOpacity onPress={() => router.back()} className="w-10 h-10 items-center justify-center bg-[var(--bg-secondary)] rounded-xl">
+            <Ionicons name="chevron-back" size={24} color={colors.textSecondary} />
           </TouchableOpacity>
           
           <View className="flex-row">
              <TouchableOpacity 
               onPress={() => setIsEditing(!isEditing)}
-              className="w-10 h-10 rounded-xl bg-slate-800 items-center justify-center mr-2 border border-slate-700"
+              className="w-10 h-10 rounded-xl bg-[var(--bg-secondary)] items-center justify-center mr-2 border border-[var(--border-color)]"
             >
-              <Ionicons name={isEditing ? "eye-outline" : "create-outline"} size={20} color="#0EA5E9" />
+              <Ionicons name={isEditing ? "eye-outline" : "create-outline"} size={20} color={colors.accent} />
             </TouchableOpacity>
             <TouchableOpacity 
               onPress={handleDelete}
@@ -84,18 +84,18 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note }) => {
               key={cat}
               onPress={() => updateCategory(cat)}
               className={`mr-2 px-5 py-2.5 rounded-2xl border ${
-                note.category === cat ? 'bg-sky-focus border-sky-focus' : 'bg-slate-800 border-slate-700'
+                note.category === cat ? 'bg-[var(--accent-color)] border-[var(--accent-color)]' : 'bg-[var(--bg-secondary)] border-[var(--border-color)]'
               }`}
             >
               <Text className={`text-[10px] font-black uppercase tracking-widest ${
-                note.category === cat ? 'text-obsidian' : 'text-slate-500'
+                note.category === cat ? 'text-[var(--bg-primary)]' : 'text-[var(--text-secondary)]'
               }`}>
                 {cat}
               </Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
-      </View>
+      </div>
 
       <ScrollView className="flex-1 p-6" showsVerticalScrollIndicator={false}>
         {isEditing ? (
@@ -104,16 +104,16 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note }) => {
               value={title}
               onChangeText={setTitle}
               placeholder="Archive Title..."
-              placeholderTextColor="#475569"
-              className="text-3xl font-black text-white italic uppercase tracking-tighter mb-6"
+              placeholderTextColor={colors.textSecondary}
+              className="text-3xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter mb-6"
               multiline
             />
             <TextInput
               value={content}
               onChangeText={setContent}
               placeholder="Begin drafting neural data..."
-              placeholderTextColor="#475569"
-              className="text-lg text-slate-300 leading-relaxed min-h-[400px]"
+              placeholderTextColor={colors.textSecondary}
+              className="text-lg text-[var(--text-secondary)] leading-relaxed min-h-[400px]"
               multiline
               textAlignVertical="top"
               autoFocus
@@ -122,10 +122,42 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note }) => {
           </>
         ) : (
           <>
-            <Text className="text-3xl font-black text-white italic uppercase tracking-tighter mb-6">
+            <Text className="text-3xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter mb-6">
               {title || 'Untitled Note'}
             </Text>
-            <Markdown style={markdownStyles}>
+            <Markdown style={{
+              body: {
+                color: colors.textSecondary,
+                fontSize: 16,
+                lineHeight: 26,
+              },
+              heading1: {
+                color: colors.text,
+                fontWeight: '900',
+                textTransform: 'uppercase',
+                fontStyle: 'italic',
+                marginTop: 20,
+                marginBottom: 10,
+              },
+              paragraph: {
+                marginTop: 10,
+                marginBottom: 10,
+              },
+              blockquote: {
+                backgroundColor: `${colors.accent}10`,
+                borderLeftColor: colors.accent,
+                borderLeftWidth: 4,
+                paddingLeft: 20,
+                paddingVertical: 10,
+                borderRadius: 8,
+              },
+              code_inline: {
+                backgroundColor: colors.secondary,
+                color: colors.accent,
+                paddingHorizontal: 5,
+                borderRadius: 4,
+              },
+            }}>
               {content || '_No content recorded in this archive sector._'}
             </Markdown>
           </>
@@ -135,47 +167,13 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note }) => {
       {isEditing && (
         <TouchableOpacity 
           onPress={handleSave}
-          className="absolute bottom-10 right-6 bg-sky-focus px-8 py-4 rounded-[2rem] shadow-lg shadow-sky-500/20"
+          className="absolute bottom-10 right-6 bg-[var(--accent-color)] px-8 py-4 rounded-[2rem] shadow-lg shadow-[var(--accent-color)]/20"
         >
-          <Text className="text-obsidian font-black uppercase tracking-widest">Seal Archive</Text>
+          <Text className="text-[var(--bg-primary)] font-black uppercase tracking-widest">Seal Archive</Text>
         </TouchableOpacity>
       )}
     </KeyboardAvoidingView>
   );
-};
-
-const markdownStyles = {
-  body: {
-    color: '#94a3b8',
-    fontSize: 16,
-    lineHeight: 26,
-  },
-  heading1: {
-    color: '#ffffff',
-    fontWeight: '900',
-    textTransform: 'uppercase',
-    fontStyle: 'italic',
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  paragraph: {
-    marginTop: 10,
-    marginBottom: 10,
-  },
-  blockquote: {
-    backgroundColor: 'rgba(30, 41, 59, 0.5)',
-    borderLeftColor: '#0EA5E9',
-    borderLeftWidth: 4,
-    paddingLeft: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  code_inline: {
-    backgroundColor: '#1e293b',
-    color: '#0ea5e9',
-    paddingHorizontal: 5,
-    borderRadius: 4,
-  },
 };
 
 const enhance = withObservables(['id'], ({ id }) => ({

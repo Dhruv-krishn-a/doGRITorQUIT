@@ -159,20 +159,20 @@ export function YoutubeDetailView() {
   if (!mounted) return null;
 
   if (loading && !activeTrack) return (
-    <div className="flex items-center justify-center min-h-[60vh] bg-slate-50 w-full rounded-tl-3xl">
+    <div className="flex items-center justify-center min-h-[60vh] bg-[var(--bg-primary)] w-full rounded-tl-3xl">
       <div className="flex flex-col items-center gap-4">
-        <Loader2 className="w-8 h-8 text-rose-500 animate-spin" />
-        <div className="text-rose-400 font-bold uppercase tracking-widest text-xs">Loading Course...</div>
+        <Loader2 className="w-8 h-8 text-[var(--accent-color)] animate-spin" />
+        <div className="text-[var(--accent-color)] font-black uppercase tracking-widest text-xs italic">Loading Course...</div>
       </div>
     </div>
   );
 
   if (!activeTrack) return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 bg-slate-50 w-full rounded-tl-3xl">
-      <div className="text-slate-400 font-bold uppercase tracking-widest text-sm">Course not found.</div>
+    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 bg-[var(--bg-primary)] w-full rounded-tl-3xl text-left">
+      <div className="text-[var(--text-secondary)] font-black uppercase tracking-widest text-sm italic">Course not found.</div>
       <button 
         onClick={() => navigate('/study')} 
-        className="px-8 py-4 bg-rose-500 text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-rose-600 transition-colors"
+        className="px-8 py-4 bg-gradient-to-r from-[var(--accent-color)] to-sky-600 text-[var(--bg-primary)] rounded-2xl font-black text-xs uppercase tracking-widest hover:opacity-90 transition-all italic active:scale-95"
       >
         Return to Dashboard
       </button>
@@ -182,34 +182,34 @@ export function YoutubeDetailView() {
   const { track, stats, momentum } = activeTrack;
 
   return (
-    <div className="flex-1 min-w-0 relative text-slate-800 w-full rounded-tl-3xl overflow-x-hidden min-h-screen bg-slate-50/50">
+    <div className="flex-1 min-w-0 relative text-[var(--text-primary)] w-full rounded-tl-3xl overflow-x-hidden min-h-screen bg-[var(--bg-primary)]">
       
-      <div className="relative z-10 w-full px-4 md:px-8 pb-24 space-y-8">
+      <div className="relative z-10 w-full px-4 md:px-8 pb-24 space-y-8 text-left">
         <header className="flex flex-col gap-6 w-full pt-8 relative z-10">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 w-full">
             
             <div className="flex items-start md:items-center gap-4 flex-1 min-w-0">
               <button 
                 onClick={() => navigate('/study')} 
-                className="p-3 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-rose-500 hover:border-rose-300 shadow-sm transition-colors shrink-0"
+                className="p-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl text-[var(--text-secondary)] hover:text-[var(--accent-color)] hover:border-[var(--accent-color)]/30 shadow-sm transition-colors shrink-0 active:scale-95"
               >
                 <ArrowLeft size={20} />
               </button>
               
               <div className="flex-1 min-w-0 space-y-2">
                  <div className="flex flex-wrap items-center gap-3">
-                   <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight truncate">
+                   <h1 className="text-2xl md:text-3xl font-black text-[var(--text-primary)] tracking-tighter italic uppercase truncate leading-none">
                      {track.title}
                    </h1>
-                   <span className="text-[9px] font-bold bg-rose-50 text-rose-500 border border-rose-100 px-2 py-1 rounded-md uppercase tracking-widest shrink-0">
-                     YouTube Course
+                   <span className="text-[9px] font-black bg-rose-500/10 text-rose-500 border border-rose-500/20 px-2.5 py-1 rounded-md uppercase tracking-widest shrink-0 italic">
+                     YouTube Vector
                    </span>
                  </div>
                  <div className="flex items-center gap-3">
-                   <div className="h-1.5 w-32 bg-slate-200 rounded-full overflow-hidden">
-                     <div style={{ width: `${track.progressPercentage}%` }} className="h-full bg-rose-500 rounded-full" />
+                   <div className="h-1.5 w-32 bg-[var(--bg-secondary)] rounded-full overflow-hidden border border-[var(--border-color)]/50 p-0.5">
+                     <div style={{ width: `${track.progressPercentage}%` }} className="h-full bg-gradient-to-r from-rose-500 to-pink-500 rounded-full shadow-[0_0_8px_rgba(244,63,94,0.4)]" />
                    </div>
-                   <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest">
+                   <p className="text-[var(--text-secondary)] font-black text-[10px] uppercase tracking-widest italic opacity-60">
                      {Math.round(track.progressPercentage)}% Complete
                    </p>
                  </div>
@@ -219,35 +219,35 @@ export function YoutubeDetailView() {
             <div className="flex flex-wrap items-center gap-3 shrink-0">
               
               {/* Session Controls */}
-              <div className="flex items-center gap-2 bg-white border border-slate-200 p-1.5 rounded-xl shadow-sm">
+              <div className="flex items-center gap-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] p-1.5 rounded-xl shadow-sm">
                  <div className="px-3">
-                    <p className="text-[8px] font-bold uppercase text-slate-400 tracking-widest leading-none mb-1">Session</p>
-                    <p className="text-lg font-bold text-slate-800 font-mono tracking-tight leading-none">{formatTime(seconds)}</p>
+                    <p className="text-[8px] font-black uppercase text-[var(--text-secondary)] tracking-widest leading-none mb-1 opacity-40 italic">Session</p>
+                    <p className="text-lg font-black text-[var(--text-primary)] font-mono tracking-tight leading-none italic">{formatTime(seconds)}</p>
                  </div>
-                 <div className="flex gap-1 border-l border-slate-100 pl-2">
+                 <div className="flex gap-1 border-l border-[var(--border-color)] pl-2">
                     <button 
                       onClick={() => setIsTimerRunning(!isTimerRunning)}
-                      className={`p-2 rounded-lg transition-colors ${isTimerRunning ? 'bg-rose-500 text-white' : 'bg-slate-50 text-slate-500 hover:text-rose-500 hover:bg-rose-50'}`}
+                      className={`p-2 rounded-lg transition-colors ${isTimerRunning ? 'bg-[var(--accent-color)] text-[var(--bg-primary)] shadow-lg shadow-[var(--accent-color)]/20' : 'bg-[var(--bg-primary)] text-[var(--accent-color)] hover:bg-[var(--bg-card)]'}`}
                       title={isTimerRunning ? "Pause Session" : "Start Session"}
                     >
                       {isTimerRunning ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
                     </button>
-                    <button onClick={() => { setSeconds(0); setIsTimerRunning(false); }} className="p-2 bg-slate-50 text-slate-500 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors" title="Reset Timer">
+                    <button onClick={() => { setSeconds(0); setIsTimerRunning(false); }} className="p-2 bg-[var(--bg-primary)] text-[var(--text-secondary)]/40 hover:text-[var(--text-secondary)] rounded-lg transition-colors border border-[var(--border-color)]" title="Reset Timer">
                       <RotateCcw size={16} />
                     </button>
                  </div>
               </div>
 
               {/* Menu Actions */}
-              <div className="flex items-center gap-1.5 bg-white border border-slate-200 p-1.5 rounded-xl shadow-sm">
+              <div className="flex items-center gap-1.5 bg-[var(--bg-secondary)] border border-[var(--border-color)] p-1.5 rounded-xl shadow-sm">
                 <button 
                   onClick={handleSync} disabled={isSyncing}
-                  className="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors disabled:opacity-50"
+                  className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--accent-color)] transition-colors disabled:opacity-50"
                   title="Sync Vectors"
                 >
-                  <RefreshCw size={16} className={isSyncing ? "animate-spin text-rose-500" : ""} />
+                  <RefreshCw size={16} className={isSyncing ? "animate-spin text-[var(--accent-color)]" : ""} />
                 </button>
-                <button onClick={async () => { await fetchTrack(track.id); openModal('DELETE'); }} className="p-2 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Delete Course">
+                <button onClick={async () => { await fetchTrack(track.id); openModal('DELETE'); }} className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-rose-500 hover:bg-rose-500/10 transition-colors" title="Delete Vector">
                   <Trash2 size={16} />
                 </button>
               </div>
@@ -256,62 +256,63 @@ export function YoutubeDetailView() {
         </header>
 
         <div className="space-y-6 relative z-10">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-4">
-            <div className="flex gap-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--border-color)] pb-4 text-left">
+            <div className="flex gap-8">
               <button 
                 onClick={() => setActiveTab('BOARD')}
-                className={`text-sm font-bold uppercase tracking-widest flex items-center gap-2 transition-colors ${activeTab === 'BOARD' ? 'text-rose-500 border-b-2 border-rose-500 pb-2 -mb-[18px]' : 'text-slate-400 hover:text-slate-600 pb-2 -mb-[18px]'}`}
+                className={`text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2 transition-colors italic ${activeTab === 'BOARD' ? 'text-[var(--accent-color)] border-b-2 border-[var(--accent-color)] pb-2 -mb-[18px]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] pb-2 -mb-[18px] opacity-60'}`}
               >
                 <LayoutGrid size={16} /> Lessons
               </button>
               <button 
                 onClick={() => setActiveTab('NOTES')}
-                className={`text-sm font-bold uppercase tracking-widest flex items-center gap-2 transition-colors ${activeTab === 'NOTES' ? 'text-rose-500 border-b-2 border-rose-500 pb-2 -mb-[18px]' : 'text-slate-400 hover:text-slate-600 pb-2 -mb-[18px]'}`}
+                className={`text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2 transition-colors italic ${activeTab === 'NOTES' ? 'text-[var(--accent-color)] border-b-2 border-[var(--accent-color)] pb-2 -mb-[18px]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] pb-2 -mb-[18px] opacity-60'}`}
               >
-                <Brain size={16} /> Global Notes
+                <Brain size={16} /> Neural Ledger
               </button>
               <button 
                 onClick={() => setActiveTab('ANALYTICS')}
-                className={`text-sm font-bold uppercase tracking-widest flex items-center gap-2 transition-colors ${activeTab === 'ANALYTICS' ? 'text-rose-500 border-b-2 border-rose-500 pb-2 -mb-[18px]' : 'text-slate-400 hover:text-slate-600 pb-2 -mb-[18px]'}`}
+                className={`text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2 transition-colors italic ${activeTab === 'ANALYTICS' ? 'text-[var(--accent-color)] border-b-2 border-[var(--accent-color)] pb-2 -mb-[18px]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] pb-2 -mb-[18px] opacity-60'}`}
               >
-                <Activity size={16} /> Analytics
+                <Activity size={16} /> Intelligence
               </button>
             </div>
 
             {activeTab === 'BOARD' && (
-              <div className="flex bg-white border border-slate-200 p-1 rounded-lg shadow-sm self-start md:self-auto">
+              <div className="flex bg-[var(--bg-secondary)] border border-[var(--border-color)] p-1 rounded-xl shadow-inner self-start md:self-auto">
                 <button 
                   onClick={() => setViewMode('KANBAN')}
-                  className={`p-1.5 rounded-md transition-colors ${viewMode === 'KANBAN' ? 'bg-rose-500 text-white' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-50'}`}
+                  className={`p-2 rounded-lg transition-all ${viewMode === 'KANBAN' ? 'bg-[var(--accent-color)] text-[var(--bg-primary)] shadow-sm' : 'text-[var(--text-secondary)]/40 hover:text-[var(--text-secondary)]'}`}
                 >
-                  <LayoutGrid size={14} />
+                  <LayoutGrid size={16} />
                 </button>
                 <button 
                   onClick={() => setViewMode('LIST')}
-                  className={`p-1.5 rounded-md transition-colors ${viewMode === 'LIST' ? 'bg-rose-500 text-white' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-50'}`}
+                  className={`p-2 rounded-lg transition-all ${viewMode === 'LIST' ? 'bg-[var(--accent-color)] text-[var(--bg-primary)] shadow-sm' : 'text-[var(--text-secondary)]/40 hover:text-[var(--text-secondary)]'}`}
                 >
-                  <List size={14} />
+                  <List size={16} />
                 </button>
               </div>
             )}
           </div>
 
-          <main className="pt-4">
+          <main className="pt-4 text-left">
             <AnimatePresence mode="wait">
 
               {activeTab === 'BOARD' && (
                 <motion.div key="board" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                   {momentum?.isDrifting && momentum?.nudge && (
-                    <div className="bg-rose-500/10 border border-rose-500/20 rounded-3xl p-6 mb-8 flex items-center justify-between shadow-sm">
-                      <div>
-                        <h3 className="text-rose-400 font-bold text-lg mb-1">{momentum.nudge.message}</h3>
-                        <p className="text-slate-300 font-medium">{momentum.nudge.action}</p>
+                    <div className="bg-rose-500/10 border border-rose-500/20 rounded-[2.5rem] p-8 mb-10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl relative overflow-hidden group">
+                      <div className="transform-gpu absolute top-0 right-0 w-64 h-64 bg-rose-500/5 rounded-full blur-3xl pointer-events-none group-hover:scale-110 transition-transform duration-1000" />
+                      <div className="relative z-10 text-left">
+                        <h3 className="text-rose-500 font-black text-xl italic uppercase tracking-tighter mb-2">{momentum.nudge.message}</h3>
+                        <p className="text-[var(--text-secondary)] font-black text-xs uppercase tracking-widest italic opacity-60">{momentum.nudge.action}</p>
                       </div>
                       <button 
                         onClick={() => navigate(`/study/youtube/${trackId}/unit/${momentum.nudge?.unitId}`)}
-                        className="px-6 py-3 bg-rose-600 text-white font-bold rounded-xl text-xs uppercase tracking-widest hover:bg-rose-700 transition-colors shadow-lg shadow-rose-900/50"
+                        className="px-8 py-4 bg-rose-500 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest hover:bg-rose-600 transition-all shadow-xl shadow-rose-500/20 italic active:scale-95 relative z-10"
                       >
-                        Resume for 5 mins
+                        Resume Transmission
                       </button>
                     </div>
                   )}
@@ -323,7 +324,7 @@ export function YoutubeDetailView() {
                       onDragEnd={handleDragEnd}
                     />
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                       {track.units.map((unit, idx) => (
                         <UnitCard 
                           key={unit.id}
@@ -340,27 +341,27 @@ export function YoutubeDetailView() {
 
               {activeTab === 'NOTES' && (
                 <motion.div key="notes" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
-                   <div className="bg-white border border-slate-200 shadow-sm rounded-3xl p-6 md:p-8 space-y-6">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div>
-                          <h3 className="text-xl font-bold text-slate-900 uppercase tracking-tight">Track Observations</h3>
-                          <p className="text-xs font-medium text-slate-500 mt-1">Cross-unit synthesis and mental models</p>
+                   <div className="bg-[var(--bg-card)] border border-[var(--border-color)] shadow-2xl rounded-[3rem] p-8 md:p-12 space-y-8 text-left">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="text-left">
+                          <h3 className="text-2xl font-black text-[var(--text-primary)] uppercase tracking-tight italic leading-none">Channel Synthesis</h3>
+                          <p className="text-[10px] font-black text-[var(--text-secondary)] mt-2 uppercase tracking-widest italic opacity-40">Cross-vector neural notes</p>
                         </div>
                         <button 
                           onClick={async () => {
                             setIsSaving(true);
-                            setTimeout(() => { setIsSaving(false); toast.success("Notes synchronized"); }, 800);
+                            setTimeout(() => { setIsSaving(false); toast.success("Ledger updated"); }, 800);
                           }}
-                          className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-rose-500 transition-colors"
+                          className="flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-[var(--accent-color)] to-sky-600 text-[var(--bg-primary)] rounded-2xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition-all shadow-xl shadow-[var(--accent-color)]/20 italic"
                         >
-                          {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                          Save Insights
+                          {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                          Sync Ledger
                         </button>
                       </div>
                       
                       <textarea 
-                        className="w-full h-[400px] bg-slate-50 border border-slate-200 rounded-2xl p-6 font-medium text-slate-700 focus:border-rose-400 focus:bg-white transition-colors outline-none resize-none placeholder:text-slate-400"
-                        placeholder="Capture high-level patterns across the entire course here..."
+                        className="w-full h-[500px] bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-[2rem] p-8 font-black text-[var(--text-primary)] text-lg focus:border-[var(--accent-color)]/50 transition-all outline-none resize-none placeholder:text-[var(--text-secondary)]/20 italic uppercase tracking-tighter custom-scrollbar shadow-inner"
+                        placeholder="Initialize neural recording for channel structure..."
                         value={globalNotes}
                         onChange={(e) => setGlobalNotes(e.target.value)}
                       />
@@ -369,9 +370,9 @@ export function YoutubeDetailView() {
               )}
 
               {activeTab === 'ANALYTICS' && (
-                <motion.div key="analytics" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
+                <motion.div key="analytics" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-10 text-left">
                   
-                  <div className="mb-8">
+                  <div className="bg-[var(--bg-secondary)]/40 backdrop-blur-xl border border-[var(--border-color)] rounded-[3rem] p-4 shadow-sm">
                     <TrackHeader 
                       track={track as Track & { units: Unit[] }} 
                       stats={stats}
@@ -382,30 +383,31 @@ export function YoutubeDetailView() {
                   </div>
 
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {/* Momentum Graph */}
-                    <div className="bg-white/5 p-6 rounded-3xl border border-white/10 shadow-sm col-span-full">
-                      <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2.5 bg-rose-500/20 text-rose-400 rounded-xl"><Activity size={18} /></div>
-                          <h3 className="text-sm font-bold uppercase tracking-widest text-white">Study Momentum</h3>
+                    <div className="bg-[var(--bg-card)] p-8 rounded-[3rem] border border-[var(--border-color)] shadow-2xl col-span-full relative overflow-hidden group">
+                      <div className="transform-gpu absolute top-0 right-0 w-96 h-96 bg-[var(--accent-color)]/5 rounded-full blur-[100px] pointer-events-none group-hover:scale-110 transition-transform duration-1000" />
+                      <div className="flex items-center justify-between mb-10 relative z-10 text-left">
+                        <div className="flex items-center gap-4">
+                          <div className="p-3 bg-[var(--accent-color)]/10 text-[var(--accent-color)] rounded-xl border border-[var(--accent-color)]/20 shadow-sm"><Activity size={20} /></div>
+                          <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] italic">Neural Momentum</h3>
                         </div>
                         <div className="text-right">
-                          <span className="text-2xl font-bold text-rose-400">{momentum?.score || 0}%</span>
-                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-2">{momentum?.status || 'STEADY'}</span>
+                          <span className="text-3xl font-black text-[var(--accent-color)] italic tracking-tighter leading-none">{momentum?.score || 0}%</span>
+                          <span className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest ml-3 italic opacity-40 leading-none">{momentum?.status || 'STEADY'}</span>
                         </div>
                       </div>
-                      <div className="flex justify-between items-center gap-2">
+                      <div className="flex justify-between items-center gap-3 relative z-10">
                         {momentum?.activity?.map((day: any, idx: number) => {
                           const minutes = Math.floor(day.seconds / 60);
-                          let colorClass = "bg-white/5";
-                          if (minutes > 30) colorClass = "bg-rose-500";
-                          else if (minutes > 10) colorClass = "bg-rose-400";
-                          else if (minutes > 0) colorClass = "bg-rose-500/40";
+                          let colorClass = "bg-[var(--bg-secondary)] border-[var(--border-color)]";
+                          if (minutes > 30) colorClass = "bg-[var(--accent-color)] border-[var(--accent-color)] shadow-[0_0_15px_var(--accent-color)]";
+                          else if (minutes > 10) colorClass = "bg-[var(--accent-color)]/60 border-[var(--accent-color)]/20";
+                          else if (minutes > 0) colorClass = "bg-[var(--accent-color)]/30 border-[var(--accent-color)]/10";
                           
                           return (
                             <div key={idx} className="flex flex-col items-center gap-2 flex-1">
-                              <div className={`w-full aspect-square rounded-md ${colorClass}`} title={`${day.date}: ${minutes} mins`} />
+                              <div className={`w-full aspect-square rounded-lg border transition-all duration-500 ${colorClass}`} title={`${day.date}: ${minutes} mins`} />
                             </div>
                           );
                         })}
@@ -413,79 +415,79 @@ export function YoutubeDetailView() {
                     </div>
     
                     {/* Time Remaining Card */}
-                    <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2.5 bg-rose-50 text-rose-500 rounded-xl"><Clock size={18} /></div>
-                        <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">Time Remaining</h3>
+                    <div className="bg-[var(--bg-card)] p-8 rounded-[2.5rem] border border-[var(--border-color)] shadow-xl relative overflow-hidden group text-left">
+                      <div className="flex items-center gap-4 mb-6">
+                        <div className="p-3 bg-rose-500/10 text-rose-500 rounded-xl border border-rose-500/20 shadow-sm"><Clock size={20} /></div>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic">Time Remaining</h3>
                       </div>
-                      <p className="text-3xl font-bold text-slate-800">{formatMins(track.remainingMinutes || 0)}</p>
-                      <p className="text-xs text-slate-400 mt-2 font-medium">Estimated pure watch time left in the course.</p>
+                      <p className="text-4xl font-black text-[var(--text-primary)] italic tracking-tighter uppercase leading-none">{formatMins(track.remainingMinutes || 0)}</p>
+                      <p className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest mt-4 opacity-40 leading-relaxed italic">Estimated watch time remaining in the mission.</p>
                     </div>
 
                     {/* Longest Watched Lesson */}
-                    <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2.5 bg-fuchsia-50 text-fuchsia-500 rounded-xl"><TrendingUp size={18} /></div>
-                        <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">Longest Study Session</h3>
+                    <div className="bg-[var(--bg-card)] p-8 rounded-[2.5rem] border border-[var(--border-color)] shadow-xl relative overflow-hidden group text-left">
+                      <div className="flex items-center gap-4 mb-6">
+                        <div className="p-3 bg-fuchsia-500/10 text-fuchsia-500 rounded-xl border border-fuchsia-500/20 shadow-sm"><TrendingUp size={20} /></div>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic">Peak Engagement</h3>
                       </div>
                       {analytics?.longestUnit && (analytics.longestUnit.actualTimeSpentMinutes || 0) > 0 ? (
                         <>
-                          <p className="text-2xl font-bold text-slate-800 truncate mb-1" title={analytics.longestUnit.title}>{analytics.longestUnit.title}</p>
-                          <p className="text-sm font-bold text-rose-500">{analytics.longestUnit.actualTimeSpentMinutes} mins logged</p>
+                          <p className="text-xl font-black text-[var(--text-primary)] truncate mb-2 italic uppercase tracking-tighter" title={analytics.longestUnit.title}>{analytics.longestUnit.title}</p>
+                          <p className="text-xs font-black text-fuchsia-500 italic uppercase leading-none">{analytics.longestUnit.actualTimeSpentMinutes} MIN LOGGED</p>
                         </>
                       ) : (
-                        <p className="text-sm font-medium text-slate-400 italic">No study sessions logged yet.</p>
+                        <p className="text-[10px] font-black text-[var(--text-secondary)] italic opacity-40 uppercase tracking-widest leading-none">No sessions logged yet.</p>
                       )}
                     </div>
 
                     {/* Needs Review (Hardest Lesson) */}
-                    <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2.5 bg-amber-50 text-amber-500 rounded-xl"><AlertCircle size={18} /></div>
-                        <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">Most Challenging Lesson</h3>
+                    <div className="bg-[var(--bg-card)] p-8 rounded-[2.5rem] border border-[var(--border-color)] shadow-xl relative overflow-hidden group text-left">
+                      <div className="flex items-center gap-4 mb-6">
+                        <div className="p-3 bg-amber-500/10 text-amber-500 rounded-xl border border-amber-500/20 shadow-sm"><AlertCircle size={20} /></div>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic">Critical Vector</h3>
                       </div>
                       {analytics?.hardestUnit ? (
                         <>
-                          <p className="text-2xl font-bold text-slate-800 truncate mb-1" title={analytics.hardestUnit.title}>{analytics.hardestUnit.title}</p>
-                          <p className="text-sm font-bold text-amber-500">Confidence: {analytics.hardestUnit.confidenceRating}/5</p>
+                          <p className="text-xl font-black text-[var(--text-primary)] truncate mb-2 italic uppercase tracking-tighter" title={analytics.hardestUnit.title}>{analytics.hardestUnit.title}</p>
+                          <p className="text-xs font-black text-amber-500 italic uppercase tracking-widest leading-none">Confidence: {analytics.hardestUnit.confidenceRating}/5</p>
                         </>
                       ) : (
-                        <p className="text-sm font-medium text-slate-400 italic">Complete lessons and rate confidence to see insights.</p>
+                        <p className="text-[10px] font-black text-[var(--text-secondary)] italic opacity-40 uppercase tracking-widest leading-none">Rate confidence for insights.</p>
                       )}
                     </div>
 
                     {/* Average Confidence */}
-                    <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2.5 bg-emerald-50 text-emerald-500 rounded-xl"><Star size={18} /></div>
-                        <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">Avg. Confidence</h3>
+                    <div className="bg-[var(--bg-card)] p-8 rounded-[2.5rem] border border-[var(--border-color)] shadow-xl relative overflow-hidden group text-left">
+                      <div className="flex items-center gap-4 mb-6">
+                        <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-xl border border-emerald-500/20 shadow-sm"><Star size={20} /></div>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic">Neural Integration</h3>
                       </div>
-                      <p className="text-3xl font-bold text-slate-800">{analytics?.avgConfidence ? analytics.avgConfidence.toFixed(1) : "0.0"} <span className="text-xl text-slate-400">/ 5</span></p>
-                      <p className="text-xs text-slate-400 mt-2 font-medium">Average understanding across completed lessons.</p>
+                      <p className="text-4xl font-black text-[var(--text-primary)] italic tracking-tighter leading-none">{analytics?.avgConfidence ? analytics.avgConfidence.toFixed(1) : "0.0"} <span className="text-xl text-[var(--text-secondary)] opacity-30 italic">/ 5</span></p>
+                      <p className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest mt-4 opacity-40 italic">Avg comprehension across resolved units.</p>
                     </div>
 
                     {/* Study Efficiency */}
-                    <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2.5 bg-indigo-50 text-indigo-500 rounded-xl"><Zap size={18} /></div>
-                        <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">Study Efficiency</h3>
+                    <div className="bg-[var(--bg-card)] p-8 rounded-[2.5rem] border border-[var(--border-color)] shadow-xl relative overflow-hidden group text-left">
+                      <div className="flex items-center gap-4 mb-6">
+                        <div className="p-3 bg-indigo-500/10 text-indigo-500 rounded-xl border border-indigo-500/20 shadow-sm"><Zap size={20} /></div>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic">Velocity Multiplier</h3>
                       </div>
-                      <p className="text-3xl font-bold text-slate-800">{analytics?.studyMultiplier}x</p>
-                      <p className="text-xs text-slate-400 mt-2 font-medium">Time spent studying vs actual video length.</p>
+                      <p className="text-4xl font-black text-[var(--text-primary)] italic tracking-tighter leading-none">{analytics?.studyMultiplier}X</p>
+                      <p className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest mt-4 opacity-40 italic">Study duration relative to ingestion.</p>
                     </div>
 
                     {/* Course Distribution */}
-                    <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2.5 bg-sky-50 text-sky-500 rounded-xl"><PieChart size={18} /></div>
-                        <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">Course Distribution</h3>
+                    <div className="bg-[var(--bg-card)] p-8 rounded-[2.5rem] border border-[var(--border-color)] shadow-xl relative overflow-hidden group text-left">
+                      <div className="flex items-center gap-4 mb-6">
+                        <div className="p-3 bg-sky-500/10 text-sky-500 rounded-xl border border-sky-500/20 shadow-sm"><PieChart size={20} /></div>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic">Sector Map</h3>
                       </div>
                       {analytics?.counts && (
                         <>
-                           <p className="text-3xl font-bold text-slate-800 mb-2">{analytics.counts.completed} Done</p>
-                           <div className="flex gap-4 text-sm font-bold">
+                           <p className="text-3xl font-black text-[var(--text-primary)] mb-3 italic uppercase tracking-tighter leading-none">{analytics.counts.completed} Resolved</p>
+                           <div className="flex gap-5 text-[10px] font-black uppercase tracking-widest italic leading-none">
                              <span className="text-sky-500">{analytics.counts.active} Active</span>
-                             <span className="text-slate-400">{analytics.counts.backlog} Queued</span>
+                             <span className="text-[var(--text-secondary)] opacity-40">{analytics.counts.backlog} Queued</span>
                            </div>
                         </>
                       )}

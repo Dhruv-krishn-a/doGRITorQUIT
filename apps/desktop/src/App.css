@@ -33,6 +33,7 @@
   --bg-primary: #050508;
   --bg-secondary: #0f111a;
   --bg-card: #121420;
+  --bg-paper: #161821;
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --border-color: #1e293b;
@@ -45,6 +46,7 @@
   --bg-primary: #faf9f5;
   --bg-secondary: #f1f0e8;
   --bg-card: #ffffff;
+  --bg-paper: #ffffff;
   --text-primary: #1d1d1d;
   --text-secondary: #666666;
   --border-color: #e5e2d9;
@@ -57,6 +59,7 @@
   --bg-primary: #111111;
   --bg-secondary: #1a1a1a;
   --bg-card: #1f1f1f;
+  --bg-paper: #242424;
   --text-primary: #ffffff;
   --text-secondary: #b0b0b0;
   --border-color: #333333;

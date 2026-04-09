@@ -68,123 +68,119 @@ export function InitializeVectorModal({
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95, y: 20 }}
       transition={springConfig}
-      className="relative w-full max-w-4xl bg-white/80 backdrop-blur-md rounded-[3rem] shadow-[0_20px_60_rgba(0,0,0,0.15)] border border-white overflow-hidden antialiased"
+      className="relative w-full max-w-4xl bg-[var(--bg-card)]/80 backdrop-blur-xl rounded-[3rem] shadow-2xl border border-[var(--border-color)] overflow-hidden antialiased"
      >
-      {/* Animated Background Gradients */}
-      <div className="absolute top-[-10%] left-[-10%] w-[30vw] h-[30vw] bg-rose-200/40 rounded-full blur-[60px]  pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-pink-200/40 rounded-full blur-[60px]  pointer-events-none" />
-
       <div className="p-8 md:p-12 relative z-10">
        <header className="flex justify-between items-center mb-10">
         <div>
-         <h2 className="text-3xl font-bold text-slate-900 tracking-tighter uppercase">Initialize New Vector</h2>
-         <p className="text-slate-500 font-bold text-xs uppercase tracking-[0.2em] mt-1">Select your tracking mechanism</p>
+         <h2 className="text-3xl font-black text-[var(--text-primary)] tracking-tighter uppercase italic">Initialize New Vector</h2>
+         <p className="text-[var(--text-secondary)] font-black text-xs uppercase tracking-[0.2em] mt-1">Select your tracking mechanism</p>
         </div>
         <button 
          onClick={onClose} 
-         className="p-3 bg-white border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 shadow-sm hover:shadow-md rounded-xl transition-all active:scale-95"
+         className="p-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--accent-color)] hover:border-[var(--accent-color)]/30 rounded-xl transition-all active:scale-95 shadow-sm"
         >
          <X size={20} />
         </button>
        </header>
 
-       <div className="space-y-8">
+       <div className="space-y-8 text-left">
         {/* Study Vectors */}
         <div>
-         <div className="text-[10px] font-bold text-slate-400 mb-4 uppercase tracking-[0.2em] ml-2">Study Vectors</div>
+         <div className="text-[10px] font-black text-[var(--text-secondary)] mb-4 uppercase tracking-[0.2em] ml-2">Study Vectors</div>
          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <button 
            onClick={() => { openModal('CREATE_COURSE'); onClose(); }}
-           className="flex flex-col items-center justify-center gap-4 p-8 bg-white/60 backdrop-blur-md border border-slate-100 rounded-[2rem] hover:border-blue-200 hover:bg-blue-50/50 hover:shadow-[0_8px_30_rgba(59,130,246,0.1)] transition-all group active:scale-95"
+           className="flex flex-col items-center justify-center gap-4 p-8 bg-[var(--bg-secondary)]/40 backdrop-blur-md border border-[var(--border-color)] rounded-[2rem] hover:border-blue-500/30 hover:bg-blue-500/5 transition-all group active:scale-95"
           >
-           <div className="p-5 bg-blue-50 text-blue-500 rounded-2xl group-hover:bg-blue-500 group-hover:text-white transition-all group-hover:scale-110 shadow-sm">
+           <div className="p-5 bg-blue-500/10 text-blue-500 rounded-2xl group-hover:bg-blue-500 group-hover:text-white transition-all group-hover:scale-110 shadow-sm border border-blue-500/20">
             <BookOpen size={32} />
            </div>
-           <div className="text-center">
-            <span className="font-bold text-sm uppercase tracking-widest text-slate-800">New Course</span>
-            <p className="text-[10px] text-slate-400 mt-1">Track structured learning</p>
+           <div className="text-center text-left items-center flex flex-col">
+            <span className="font-black text-sm uppercase tracking-widest text-[var(--text-primary)] italic">New Course</span>
+            <p className="text-[10px] font-bold text-[var(--text-secondary)] mt-1 uppercase tracking-tighter">Track structured learning</p>
            </div>
           </button>
 
           <button 
            onClick={() => { openModal('CREATE_PROJECT'); onClose(); }}
-           className="flex flex-col items-center justify-center gap-4 p-8 bg-white/60 backdrop-blur-md border border-slate-100 rounded-[2rem] hover:border-emerald-200 hover:bg-emerald-50/50 hover:shadow-[0_8px_30_rgba(16,185,129,0.1)] transition-all group active:scale-95"
+           className="flex flex-col items-center justify-center gap-4 p-8 bg-[var(--bg-secondary)]/40 backdrop-blur-md border border-[var(--border-color)] rounded-[2rem] hover:border-emerald-500/30 hover:bg-emerald-500/5 transition-all group active:scale-95"
           >
-           <div className="p-5 bg-emerald-50 text-emerald-500 rounded-2xl group-hover:bg-emerald-500 group-hover:text-white transition-all group-hover:scale-110 shadow-sm">
+           <div className="p-5 bg-emerald-500/10 text-emerald-500 rounded-2xl group-hover:bg-emerald-500 group-hover:text-white transition-all group-hover:scale-110 shadow-sm border border-emerald-500/20">
             <Briefcase size={32} />
            </div>
-           <div className="text-center">
-            <span className="font-bold text-sm uppercase tracking-widest text-slate-800">New Project</span>
-            <p className="text-[10px] text-slate-400 mt-1">Manage complex builds</p>
+           <div className="text-center text-left items-center flex flex-col">
+            <span className="font-black text-sm uppercase tracking-widest text-[var(--text-primary)] italic">New Project</span>
+            <p className="text-[10px] font-bold text-[var(--text-secondary)] mt-1 uppercase tracking-tighter">Manage complex builds</p>
            </div>
           </button>
 
           <button 
            onClick={() => { openModal('IMPORT_YOUTUBE'); onClose(); }}
-           className="flex flex-col items-center justify-center gap-4 p-8 bg-white/60 backdrop-blur-md border border-slate-100 rounded-[2rem] hover:border-red-200 hover:bg-red-50/50 hover:shadow-[0_8px_30_rgba(239,68,68,0.1)] transition-all group active:scale-95"
+           className="flex flex-col items-center justify-center gap-4 p-8 bg-[var(--bg-secondary)]/40 backdrop-blur-md border border-[var(--border-color)] rounded-[2rem] hover:border-red-500/30 hover:bg-red-500/5 transition-all group active:scale-95"
           >
-           <div className="p-5 bg-red-50 text-red-500 rounded-2xl group-hover:bg-red-500 group-hover:text-white transition-all group-hover:scale-110 shadow-sm">
+           <div className="p-5 bg-red-500/10 text-red-500 rounded-2xl group-hover:bg-red-500 group-hover:text-white transition-all group-hover:scale-110 shadow-sm border border-red-500/20">
             <Youtube size={32} />
            </div>
-           <div className="text-center">
-            <span className="font-bold text-sm uppercase tracking-widest text-slate-800">New Media</span>
-            <p className="text-[10px] text-slate-400 mt-1">Track a video playlist</p>
+           <div className="text-center text-left items-center flex flex-col">
+            <span className="font-black text-sm uppercase tracking-widest text-[var(--text-primary)] italic">New Media</span>
+            <p className="text-[10px] font-bold text-[var(--text-secondary)] mt-1 uppercase tracking-tighter">Track a video playlist</p>
            </div>
           </button>
          </div>
         </div>
 
-        <div className="h-px bg-slate-100" />
+        <div className="h-px bg-[var(--border-color)]" />
 
         {/* Roadmaps */}
         <div>
-         <div className="flex justify-between items-center mb-4 ml-2">
-          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Roadmaps</div>
-          {isLimitReached && <div className="text-[10px] font-bold text-amber-500 flex items-center gap-1"><Lock size={12} /> Limit Reached ({plansCount}/{maxPlans})</div>}
+         <div className="flex justify-between items-center mb-4 ml-2 text-left">
+          <div className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em]">Roadmaps</div>
+          {isLimitReached && <div className="text-[10px] font-black text-amber-500 flex items-center gap-1"><Lock size={12} /> Limit Reached ({plansCount}/{maxPlans})</div>}
          </div>
          
          {isLimitReached ? (
-          <div className="p-6 bg-amber-50/50 border border-amber-100/50 rounded-[2rem] text-center">
-            <p className="text-sm font-bold text-amber-700">You have reached the maximum number of roadmaps. Upgrade to create more.</p>
+          <div className="p-6 bg-amber-500/5 border border-amber-500/20 rounded-[2rem] text-center">
+            <p className="text-sm font-black text-amber-500 uppercase italic">Threshold Reached. Evolve plan to expand capacity.</p>
           </div>
          ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
            <button 
             onClick={() => { onAiArchitect(); onClose(); }}
-            className="flex flex-col items-center justify-center gap-4 p-8 bg-gradient-to-br from-rose-50/50 to-fuchsia-50/50 backdrop-blur-md border border-rose-100/50 rounded-[2rem] hover:border-rose-300 hover:shadow-[0_8px_30_rgba(244,63,94,0.15)] transition-all group active:scale-95"
+            className="flex flex-col items-center justify-center gap-4 p-8 bg-gradient-to-br from-[var(--accent-color)]/10 to-fuchsia-500/10 backdrop-blur-md border border-[var(--border-color)] rounded-[2rem] hover:border-[var(--accent-color)]/30 hover:shadow-xl transition-all group active:scale-95"
            >
-            <div className="p-5 bg-gradient-to-br from-rose-500 to-fuchsia-500 text-white rounded-2xl group-hover:scale-110 transition-all shadow-md">
+            <div className="p-5 bg-gradient-to-br from-[var(--accent-color)] to-fuchsia-500 text-white rounded-2xl group-hover:scale-110 transition-all shadow-md">
              <Sparkles size={32} />
             </div>
-            <div className="text-center">
-             <span className="font-bold text-sm uppercase tracking-widest text-slate-900">AI Architect</span>
-             <p className="text-[10px] text-rose-600/80 mt-1">Generate detailed plans</p>
+            <div className="text-center text-left items-center flex flex-col">
+             <span className="font-black text-sm uppercase tracking-widest text-[var(--text-primary)] italic">AI Architect</span>
+             <p className="text-[10px] font-bold text-[var(--accent-color)] mt-1 uppercase tracking-tighter">Generate detailed plans</p>
             </div>
            </button>
 
            <button 
             onClick={() => { onImportExcel(); onClose(); }}
-            className="flex flex-col items-center justify-center gap-4 p-8 bg-white/60 backdrop-blur-md border border-slate-100 rounded-[2rem] hover:border-green-200 hover:bg-green-50/50 hover:shadow-[0_8px_30_rgba(34,197,94,0.1)] transition-all group active:scale-95"
+            className="flex flex-col items-center justify-center gap-4 p-8 bg-[var(--bg-secondary)]/40 backdrop-blur-md border border-[var(--border-color)] rounded-[2rem] hover:border-green-500/30 hover:bg-green-500/5 transition-all group active:scale-95"
            >
-            <div className="p-5 bg-green-50 text-green-600 rounded-2xl group-hover:bg-green-500 group-hover:text-white transition-all group-hover:scale-110 shadow-sm">
+            <div className="p-5 bg-green-500/10 text-green-500 rounded-2xl group-hover:bg-green-500 group-hover:text-white transition-all group-hover:scale-110 shadow-sm border border-green-500/20">
              <FileSpreadsheet size={32} />
             </div>
-            <div className="text-center">
-             <span className="font-bold text-sm uppercase tracking-widest text-slate-800">Import Excel</span>
-             <p className="text-[10px] text-slate-400 mt-1">Use existing data</p>
+            <div className="text-center text-left items-center flex flex-col">
+             <span className="font-black text-sm uppercase tracking-widest text-[var(--text-primary)] italic">Import Excel</span>
+             <p className="text-[10px] font-bold text-[var(--text-secondary)] mt-1 uppercase tracking-tighter">Use existing data</p>
             </div>
            </button>
 
            <button 
             onClick={() => { onManualEntry(); onClose(); }}
-            className="flex flex-col items-center justify-center gap-4 p-8 bg-white/60 backdrop-blur-md border border-slate-100 rounded-[2rem] hover:border-slate-300 hover:bg-slate-50/50 hover:shadow-[0_8px_30_rgba(100,116,139,0.1)] transition-all group active:scale-95"
+            className="flex flex-col items-center justify-center gap-4 p-8 bg-[var(--bg-secondary)]/40 backdrop-blur-md border border-[var(--border-color)] rounded-[2rem] hover:border-[var(--accent-color)]/30 hover:bg-[var(--bg-secondary)] transition-all group active:scale-95"
            >
-            <div className="p-5 bg-slate-100 text-slate-600 rounded-2xl group-hover:bg-slate-600 group-hover:text-white transition-all group-hover:scale-110 shadow-sm">
+            <div className="p-5 bg-[var(--bg-secondary)] text-[var(--text-secondary)] rounded-2xl group-hover:bg-[var(--text-primary)] group-hover:text-[var(--bg-primary)] transition-all group-hover:scale-110 shadow-sm border border-[var(--border-color)]">
              <PenTool size={32} />
             </div>
-            <div className="text-center">
-             <span className="font-bold text-sm uppercase tracking-widest text-slate-800">Manual Entry</span>
-             <p className="text-[10px] text-slate-400 mt-1">Start from scratch</p>
+            <div className="text-center text-left items-center flex flex-col">
+             <span className="font-black text-sm uppercase tracking-widest text-[var(--text-primary)] italic">Manual Entry</span>
+             <p className="text-[10px] font-bold text-[var(--text-secondary)] mt-1 uppercase tracking-tighter">Start from scratch</p>
             </div>
            </button>
           </div>
