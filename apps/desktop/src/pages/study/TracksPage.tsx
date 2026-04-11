@@ -34,7 +34,7 @@ export default function TracksPage() {
   const canViewStudy = entitlements?.features?.ACCESS_STUDY;
 
   if (!canViewStudy) {
-    return <FeatureLocked title="Upgrade OS" description="Upgrade your plan to unlock the Study Hub and supercharge your learning." />;
+    return <FeatureLocked title="Growth Hub" description="Upgrade your plan to unlock the Study Hub and supercharge your learning." />;
   }
 
   return <DesktopTracksView />;

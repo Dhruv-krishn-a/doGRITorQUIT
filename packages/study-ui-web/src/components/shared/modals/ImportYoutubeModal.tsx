@@ -62,7 +62,7 @@ export function ImportYoutubeModal() {
               </div>
               <div>
                 <h2 className="transform-gpu text-2xl font-bold text-slate-900 tracking-tighter uppercase">Import YouTube</h2>
-                <p className="transform-gpu text-slate-500 font-bold text-xs uppercase tracking-[0.2em] mt-1">Playlist or Video Vector</p>
+                <p className="transform-gpu text-slate-500 font-bold text-xs uppercase tracking-[0.2em] mt-1">Playlist or Video Step</p>
               </div>
             </div>
             <button 
@@ -105,7 +105,7 @@ export function ImportYoutubeModal() {
                 )}
                 
                 {loading ? <Loader2 className="transform-gpu animate-spin relative z-10" size={18} /> : <Youtube size={18} className="transform-gpu relative z-10 group-hover/btn:scale-110 transition-transform" />}
-                <span className="transform-gpu relative z-10 pt-0.5">{loading ? 'Processing Vector...' : 'Initialize Import'}</span>
+                <span className="transform-gpu relative z-10 pt-0.5">{loading ? 'Processing Step...' : 'Initialize Import'}</span>
               </motion.button>
             </div>
           </form>

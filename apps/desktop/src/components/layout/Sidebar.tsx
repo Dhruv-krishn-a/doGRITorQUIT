@@ -190,6 +190,52 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
               </Link>
             );
           })}
+
+          <div className="pt-4 mt-4 border-t border-[var(--border-color)]/50">
+            <Link to="/feedback" className="block group relative outline-none">
+              <div
+                className={cn(
+                  "relative flex items-center px-4 py-3 rounded-[1.25rem] transition-colors duration-300",
+                  pathname === "/feedback"
+                    ? "text-[var(--text-primary)] font-bold"
+                    : "text-[var(--text-secondary)] font-medium hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/50"
+                )}
+              >
+                {pathname === "/feedback" && (
+                  <motion.div
+                    layoutId="activeSidebarIndicator"
+                    className="absolute inset-0 bg-[var(--accent-color)]/10 border border-[var(--accent-color)]/20 rounded-[1.25rem] -z-10"
+                    transition={springConfig}
+                  />
+                )}
+
+                <div className="relative z-10 flex items-center gap-4 w-full">
+                  <motion.span 
+                    whileHover={{ scale: pathname === "/feedback" ? 1 : 1.1 }}
+                    className={cn(
+                      "transition-all duration-300", 
+                      pathname === "/feedback" ? "text-[var(--accent-color)]" : "text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]"
+                    )}
+                  >
+                    <MessageSquare size={20} />
+                  </motion.span>
+                  
+                  <AnimatePresence mode="wait">
+                    {!collapsed && (
+                      <motion.span
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        className="text-sm tracking-wide whitespace-nowrap flex-1 uppercase font-black"
+                      >
+                        Feedback
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+            </Link>
+          </div>
         </nav>
 
         <div className="p-6 mt-2 relative z-10 shrink-0">
@@ -213,7 +259,7 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
                     className="flex-1 min-w-0"
                   >
                     <p className="text-[10px] font-black text-[var(--text-primary)] tracking-widest uppercase">
-                      Neural Sync
+                      Smart Sync
                     </p>
                     <p className="text-[8px] font-bold text-[var(--text-secondary)] uppercase tracking-widest mt-0.5 truncate">
                       System Operational

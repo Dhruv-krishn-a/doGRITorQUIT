@@ -91,7 +91,7 @@ export function ProjectTasksTab({ trackId, units, phases, addUnit, updateUnit, d
             value={formData.title} 
             onChange={e => setFormData({ ...formData, title: e.target.value })}
             className="transform-gpu w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl px-4 py-2 text-sm font-black text-[var(--text-primary)] focus:border-[var(--accent-color)] focus:ring-4 focus:ring-[var(--accent-color)]/10 outline-none shadow-sm italic uppercase tracking-tight"
-            placeholder="Vector designation..."
+            placeholder="Step name..."
           />
           <select 
             value={formData.phase} 
@@ -162,14 +162,14 @@ export function ProjectTasksTab({ trackId, units, phases, addUnit, updateUnit, d
           <button 
             onClick={() => handleEditClick(unit)} 
             className="transform-gpu p-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--accent-color)] hover:border-[var(--accent-color)]/30 rounded-lg transition-all"
-            title="Refine Vector"
+            title="Edit Step"
           >
             <Edit2 size={14} />
           </button>
           <button 
             onClick={() => handleDelete(unit.id, unit.title)} 
             className="transform-gpu p-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-rose-500 hover:border-rose-500/30 rounded-lg transition-all"
-            title="Purge Vector"
+            title="Delete Step"
           >
             <Trash2 size={14} />
           </button>
@@ -187,7 +187,7 @@ export function ProjectTasksTab({ trackId, units, phases, addUnit, updateUnit, d
       className="transform-gpu p-8 h-full flex flex-col text-left"
     >
       <div className="transform-gpu flex items-center justify-between mb-10 px-2">
-        <h2 className="transform-gpu text-2xl font-black text-[var(--text-primary)] uppercase tracking-tighter italic">Mission Vectors</h2>
+        <h2 className="transform-gpu text-2xl font-black text-[var(--text-primary)] uppercase tracking-tighter italic">Path Steps</h2>
         <button 
           onClick={() => {
             setIsAdding(true);
@@ -197,14 +197,14 @@ export function ProjectTasksTab({ trackId, units, phases, addUnit, updateUnit, d
           className="transform-gpu flex items-center gap-3 px-8 py-4 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 italic"
           disabled={isAdding}
         >
-          <Plus size={18} strokeWidth={3} /> New Vector
+          <Plus size={18} strokeWidth={3} /> New Step
         </button>
       </div>
 
       <div className="transform-gpu flex-1 bg-[var(--bg-card)] border border-[var(--border-color)] shadow-2xl rounded-[3rem] overflow-hidden flex flex-col">
         <div className="transform-gpu grid grid-cols-[40px_1fr_120px_120px_100px_100px_100px_70px] gap-4 px-8 py-6 bg-[var(--bg-secondary)]/50 border-b border-[var(--border-color)] text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em] shrink-0 italic opacity-40">
           <div>#</div>
-          <div>Vector Designation</div>
+          <div>Step Name</div>
           <div>Phase</div>
           <div>Status</div>
           <div>Priority</div>
@@ -219,7 +219,7 @@ export function ProjectTasksTab({ trackId, units, phases, addUnit, updateUnit, d
           {units.length === 0 && !isAdding && (
             <div className="transform-gpu flex flex-col items-center justify-center p-20 opacity-20">
               <Plus size={48} className="mb-6" />
-              <p className="font-black text-sm uppercase tracking-widest italic">Awaiting operational vectors</p>
+              <p className="font-black text-sm uppercase tracking-widest italic">No steps added yet</p>
             </div>
           )}
         </div>

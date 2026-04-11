@@ -40,7 +40,7 @@ export default function DashboardUI({ data }: { data: DashboardData }) {
       {/* --- Header Section --- */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--text-secondary)] mb-2 text-left">Atmospheric Scan</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--text-secondary)] mb-2 text-left">Overview</p>
           <h1 className="text-4xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter">
             Insights
           </h1>
@@ -48,7 +48,7 @@ export default function DashboardUI({ data }: { data: DashboardData }) {
         
         <div className="flex items-center gap-4 bg-[var(--bg-card)]/50 p-4 rounded-3xl border border-[var(--border-color)]">
            <div className="text-right">
-              <p className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest">Neural XP</p>
+              <p className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest">XP</p>
               <p className="text-xs font-black text-[var(--text-primary)] uppercase tracking-tighter">Level {user.level}</p>
            </div>
            <div className="w-10 h-10 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center border border-[var(--border-color)]">
@@ -93,9 +93,9 @@ export default function DashboardUI({ data }: { data: DashboardData }) {
         {/* XP Progress */}
         <div className="bg-[var(--bg-card)]/40 p-6 rounded-[2.5rem] border border-[var(--border-color)] shadow-sm relative overflow-hidden group">
            <TrendingUp size={40} className="absolute -right-2 -top-2 text-indigo-500/5 group-hover:text-indigo-500/10 transition-colors" />
-           <p className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest mb-4">Evolution</p>
+           <p className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest mb-4">Progress</p>
            <span className="text-3xl font-black text-[var(--text-primary)] italic">{Math.round(xpPercentage)}%</span>
-           <p className="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-widest mt-1">Next Neural Tier</p>
+           <p className="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-widest mt-1">Next Plan Tier</p>
         </div>
       </div>
 
@@ -110,7 +110,7 @@ export default function DashboardUI({ data }: { data: DashboardData }) {
               <div className="flex justify-between items-start z-10">
                  <div>
                     <div className="flex items-center gap-2 text-[var(--accent-color)] text-[10px] font-black uppercase tracking-widest mb-4 text-left">
-                       <Target size={14} /> Current Mission
+                       <Target size={14} /> Current Path
                     </div>
                     <h3 className="text-4xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter">{activePlan?.title || "No Active Mission"}</h3>
                  </div>
@@ -123,7 +123,7 @@ export default function DashboardUI({ data }: { data: DashboardData }) {
               {activePlan ? (
                  <div className="z-10">
                     <div className="flex justify-between items-end mb-4">
-                       <p className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest text-left">Sector Progress</p>
+                       <p className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest text-left">Path Progress</p>
                        <p className="text-2xl font-black text-[var(--text-primary)] italic">{activePlan.progress}%</p>
                     </div>
                     <div className="w-full h-4 bg-[var(--bg-secondary)] rounded-full overflow-hidden border border-[var(--border-color)] p-1">
@@ -137,7 +137,7 @@ export default function DashboardUI({ data }: { data: DashboardData }) {
                  </div>
               ) : (
                  <Link to="/study" className="z-10 inline-flex items-center gap-3 px-8 py-4 bg-[var(--accent-color)] text-[var(--bg-primary)] rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)] transition-all shadow-lg active:scale-95 w-fit">
-                    Forge New Mission <Plus size={16} />
+                    Start New Path <Plus size={16} />
                  </Link>
               )}
               
@@ -149,7 +149,7 @@ export default function DashboardUI({ data }: { data: DashboardData }) {
            {/* Habits */}
            <div className="h-2/5 flex flex-col">
               <div className="flex items-center justify-between mb-4 ml-1">
-                 <p className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em]">Pulse Channels</p>
+                 <p className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em]">Habits</p>
                  <Link to="/daily-checklist" className="text-[9px] font-black text-[var(--accent-color)] uppercase tracking-widest hover:underline">Full Array &rarr;</Link>
               </div>
               <div className="grid grid-cols-3 gap-6 flex-1">

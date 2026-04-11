@@ -452,7 +452,7 @@ export default function NotesPage() {
                   </p>
                   <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-[8px] font-black uppercase tracking-widest ${isOnline ? 'bg-mint/10 border-mint/20 text-mint' : 'bg-amber-500/10 border-amber-500/20 text-amber-500'}`}>
                     {isOnline ? <Wifi size={10} /> : <WifiOff size={10} />}
-                    {isOnline ? 'Neural Link Active' : 'Offline Buffer'}
+                    {isOnline ? 'Smart Link Active' : 'Offline Buffer'}
                   </div>
                 </div>
               </div>

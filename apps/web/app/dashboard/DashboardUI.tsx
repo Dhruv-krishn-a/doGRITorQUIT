@@ -42,7 +42,7 @@ export default function DashboardUI({ data }: { data: DashboardData }) {
       {/* --- Header Section --- */}
       <div className="transform-gpu flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
-          <Text className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500 mb-2">Atmospheric Scan</Text>
+          <Text className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500 mb-2">Overview</Text>
           <h1 className="text-4xl font-black text-white italic uppercase tracking-tighter">
             Insights
           </h1>
@@ -50,7 +50,7 @@ export default function DashboardUI({ data }: { data: DashboardData }) {
         
         <div className="flex items-center gap-4 bg-slate-800/50 p-4 rounded-3xl border border-slate-700">
            <div className="text-right">
-              <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Neural XP</p>
+              <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Smart XP</p>
               <p className="text-xs font-black text-white uppercase tracking-tighter">Level {user.level}</p>
            </div>
            <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center border border-slate-600">
@@ -95,9 +95,9 @@ export default function DashboardUI({ data }: { data: DashboardData }) {
         {/* XP Progress */}
         <div className="transform-gpu bg-slate-surface/30 p-6 rounded-[2.5rem] border border-slate-800 shadow-sm relative overflow-hidden group">
            <TrendingUp size={40} className="absolute -right-2 -top-2 text-indigo-500/5 group-hover:text-indigo-500/10 transition-colors" />
-           <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Evolution</p>
+           <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Progress</p>
            <span className="text-3xl font-black text-white italic">{Math.round(xpPercentage)}%</span>
-           <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mt-1">Next Neural Tier</p>
+           <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mt-1">Next Smart Tier</p>
         </div>
       </div>
 
@@ -119,7 +119,7 @@ export default function DashboardUI({ data }: { data: DashboardData }) {
                     <div>
                        <div className="flex justify-between items-end mb-3">
                           <div>
-                             <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 text-left">Sector Progress</p>
+                             <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 text-left">Path Progress</p>
                              <p className="text-2xl font-black text-white italic">{activePlan.progress}%</p>
                           </div>
                           <div className="text-right">
@@ -138,7 +138,7 @@ export default function DashboardUI({ data }: { data: DashboardData }) {
                     </div>
                  ) : (
                     <Link href="/dashboard/study" className="inline-flex items-center gap-2 px-6 py-3 bg-sky-focus text-obsidian rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white transition-all shadow-lg shadow-sky-500/20">
-                       Forge New Mission <Plus size={14} />
+                       Start New Path <Plus size={14} />
                     </Link>
                  )}
               </div>
@@ -150,7 +150,7 @@ export default function DashboardUI({ data }: { data: DashboardData }) {
            {/* Habit Pulse Grid */}
            <div>
               <div className="flex items-center justify-between mb-4 ml-1">
-                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Pulse Channels</p>
+                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Habits</p>
                  <Link href="/dashboard/daily-checklist" className="text-[9px] font-black text-sky-focus uppercase tracking-widest hover:underline">Full Array &rarr;</Link>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

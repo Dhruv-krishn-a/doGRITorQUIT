@@ -270,7 +270,7 @@ export function YoutubeDetailView() {
                 onClick={() => setActiveTab('NOTES')}
                 className={`text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2 transition-colors italic ${activeTab === 'NOTES' ? 'text-[var(--accent-color)] border-b-2 border-[var(--accent-color)] pb-2 -mb-[18px]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] pb-2 -mb-[18px] opacity-60'}`}
               >
-                <Brain size={16} /> Neural Ledger
+                <Brain size={16} /> Smart Ledger
               </button>
               <button 
                 onClick={() => setActiveTab('ANALYTICS')}
@@ -392,7 +392,7 @@ export function YoutubeDetailView() {
                       <div className="flex items-center justify-between mb-10 relative z-10 text-left">
                         <div className="flex items-center gap-4">
                           <div className="p-3 bg-[var(--accent-color)]/10 text-[var(--accent-color)] rounded-xl border border-[var(--accent-color)]/20 shadow-sm"><Activity size={20} /></div>
-                          <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] italic">Neural Momentum</h3>
+                          <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] italic">Smart Momentum</h3>
                         </div>
                         <div className="text-right">
                           <span className="text-3xl font-black text-[var(--accent-color)] italic tracking-tighter leading-none">{momentum?.score || 0}%</span>
@@ -462,7 +462,7 @@ export function YoutubeDetailView() {
                     <div className="bg-[var(--bg-card)] p-8 rounded-[2.5rem] border border-[var(--border-color)] shadow-xl relative overflow-hidden group text-left">
                       <div className="flex items-center gap-4 mb-6">
                         <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-xl border border-emerald-500/20 shadow-sm"><Star size={20} /></div>
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic">Neural Integration</h3>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic">Smart Integration</h3>
                       </div>
                       <p className="text-4xl font-black text-[var(--text-primary)] italic tracking-tighter leading-none">{analytics?.avgConfidence ? analytics.avgConfidence.toFixed(1) : "0.0"} <span className="text-xl text-[var(--text-secondary)] opacity-30 italic">/ 5</span></p>
                       <p className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest mt-4 opacity-40 italic">Avg comprehension across resolved units.</p>

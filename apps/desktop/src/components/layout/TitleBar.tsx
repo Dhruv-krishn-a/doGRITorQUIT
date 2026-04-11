@@ -40,7 +40,7 @@ export const TitleBar: React.FC = () => {
         {!isOnline && (
           <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full">
             <WifiOff size={10} className="text-amber-500" />
-            <span className="text-[8px] font-black uppercase tracking-widest text-amber-500">Neural Link Down</span>
+            <span className="text-[8px] font-black uppercase tracking-widest text-amber-500">Offline</span>
           </div>
         )}
       </div>

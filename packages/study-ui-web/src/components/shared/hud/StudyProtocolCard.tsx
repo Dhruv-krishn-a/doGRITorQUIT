@@ -93,7 +93,7 @@ export function StudyProtocolCard({ nextUnit }: StudyProtocolCardProps) {
           <div className="transform-gpu flex items-center gap-4 mb-8">
             <div className="transform-gpu bg-rose-50 border border-rose-100 px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-sm group-hover:bg-rose-100 transition-colors duration-300">
               <Zap size={12} className="transform-gpu text-rose-500 fill-rose-500" />
-              <span className="transform-gpu text-[10px] font-bold uppercase tracking-widest text-rose-600 mt-0.5">Active Vector</span>
+              <span className="transform-gpu text-[10px] font-bold uppercase tracking-widest text-rose-600 mt-0.5">Active Step</span>
             </div>
             <div className="transform-gpu h-px w-8 md:w-12 bg-slate-200" />
             <span className="transform-gpu text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] truncate block max-w-[200px] md:max-w-[400px] mt-0.5 group-hover:text-slate-600 transition-colors">
@@ -104,7 +104,7 @@ export function StudyProtocolCard({ nextUnit }: StudyProtocolCardProps) {
           {/* Main Content */}
           <div className="transform-gpu max-w-3xl mt-2">
             <h2 className="transform-gpu text-4xl md:text-5xl font-bold tracking-tighter mb-6 text-slate-900 group-hover:text-rose-950 transition-colors duration-500 leading-[1.1]">
-              {unit?.title || "Initialize a new learning vector to begin."}
+              {unit?.title || "Initialize a new learning step to begin."}
             </h2>
             
             <p className="transform-gpu text-slate-500 font-bold text-[15px] md:text-lg max-w-[85%] leading-relaxed mb-10 line-clamp-3">

@@ -27,7 +27,7 @@ export function ProjectNotesTab({ track, metadata, projectNotes, setProjectNotes
           <div className="transform-gpu flex flex-col md:flex-row md:items-center justify-between border-b border-[var(--border-color)] pb-8 gap-6 relative z-10">
             <div className="text-left">
               <h3 className="transform-gpu text-2xl font-black text-[var(--text-primary)] uppercase tracking-tighter flex items-center gap-4 italic leading-none"><FileText size={28} className="transform-gpu text-[var(--accent-color)]" /> Project Documentation</h3>
-              <p className="transform-gpu text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em] mt-3 italic opacity-40">Global intelligence base for this vector</p>
+              <p className="transform-gpu text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em] mt-3 italic opacity-40">Global intelligence base for this step</p>
             </div>
             <button 
               onClick={async () => {
@@ -44,7 +44,7 @@ export function ProjectNotesTab({ track, metadata, projectNotes, setProjectNotes
               className="transform-gpu flex items-center justify-center gap-3 px-8 py-4 bg-[var(--accent-color)] text-[var(--bg-primary)] rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-[var(--accent-color)]/20 hover:opacity-90 transition-all active:scale-95 italic"
             >
               {isSaving ? <Loader2 size={16} className="transform-gpu animate-spin" /> : <Save size={16} />}
-              Sync Ledger
+              Sync Notes
             </button>
           </div>
           

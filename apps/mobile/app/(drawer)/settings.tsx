@@ -88,7 +88,7 @@ export default function SettingsPage() {
               <Text className="text-3xl font-black text-[var(--text-primary)] uppercase">{user?.email?.[0]}</Text>
            </View>
            <Text className="text-[var(--text-primary)] font-black uppercase text-lg tracking-tight">{user?.email?.split('@')[0]}</Text>
-           <Text className="text-[var(--text-secondary)] font-bold uppercase text-[10px] tracking-widest mt-1 italic">Neural Link: Operational</Text>
+           <Text className="text-[var(--text-secondary)] font-bold uppercase text-[10px] tracking-widest mt-1 italic">Cloud Sync: Connected</Text>
         </View>
 
         <View className="mb-10">
@@ -100,6 +100,12 @@ export default function SettingsPage() {
             <Switch value={haptics} onValueChange={setHaptics} trackColor={{ false: '#1E293B', true: '#6366f1' }} />
           </SettingRow>
           
+          <SettingRow 
+            icon="document-text" 
+            label="Terms of Service" 
+            onPress={() => Linking.openURL('https://www.dogritorquit.in/terms')}
+          />
+
           <SettingRow 
             icon="color-palette" 
             label="Visual Theme" 

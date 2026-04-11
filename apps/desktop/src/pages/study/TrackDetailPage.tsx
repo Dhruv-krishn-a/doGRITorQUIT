@@ -110,7 +110,7 @@ export default function TrackDetailPage() {
       <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-white">
         <h2 className="text-xs font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
           <BookOpen size={14} className="text-indigo-500" />
-          Neural Notes
+          Smart Notes
         </h2>
         <div className="flex items-center gap-2">
            <button 

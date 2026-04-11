@@ -163,10 +163,20 @@ export default function DrawerLayout() {
         }}
       >
         <Drawer.Screen
+          name="dashboard"
+          options={{
+            drawerLabel: "Dashboard",
+            headerTitle: "Command Center",
+            drawerIcon: ({ color, size }) => (
+              <Ionicons name="apps" size={size} color={color} />
+            ),
+          }}
+        />
+        <Drawer.Screen
           name="today"
           options={{
             drawerLabel: "Today",
-            headerTitle: "Command Center",
+            headerTitle: "Daily Planner",
             drawerIcon: ({ color, size }) => (
               <Ionicons name="flash" size={size} color={color} />
             ),
@@ -176,7 +186,7 @@ export default function DrawerLayout() {
           name="notes"
           options={{
             drawerLabel: "Notes",
-            headerTitle: "Neural Archive",
+            headerTitle: "My Notes",
             drawerIcon: ({ color, size }) => (
               <Ionicons name="journal" size={size} color={color} />
             ),
@@ -185,8 +195,8 @@ export default function DrawerLayout() {
         <Drawer.Screen
           name="study"
           options={{
-            drawerLabel: "Projects",
-            headerTitle: "Active Missions",
+            drawerLabel: "Paths",
+            headerTitle: "Current Paths",
             drawerIcon: ({ color, size }) => (
               <Ionicons name="rocket" size={size} color={color} />
             ),
@@ -195,20 +205,10 @@ export default function DrawerLayout() {
         <Drawer.Screen
           name="checklist"
           options={{
-            drawerLabel: "Daily Checklist",
-            headerTitle: "The Pulse",
+            drawerLabel: "Checklist",
+            headerTitle: "Daily Checklist",
             drawerIcon: ({ color, size }) => (
               <Ionicons name="checkmark-circle" size={size} color={color} />
-            ),
-          }}
-        />
-        <Drawer.Screen
-          name="insights"
-          options={{
-            drawerLabel: "Insights",
-            headerTitle: "Neural Hub",
-            drawerIcon: ({ color, size }) => (
-              <Ionicons name="stats-chart" size={size} color={color} />
             ),
           }}
         />
@@ -216,7 +216,7 @@ export default function DrawerLayout() {
           name="settings"
           options={{
             drawerLabel: "Settings",
-            headerTitle: "System Config",
+            headerTitle: "Settings",
             drawerIcon: ({ color, size }) => (
               <Ionicons name="settings" size={size} color={color} />
             ),
@@ -225,16 +225,26 @@ export default function DrawerLayout() {
         <Drawer.Screen
           name="subscriptions"
           options={{
-            drawerLabel: "Subscription",
-            headerTitle: "Neural Limits",
+            drawerLabel: "Plan & Usage",
+            headerTitle: "Usage & Plan",
             drawerIcon: ({ color, size }) => (
               <Ionicons name="card" size={size} color={color} />
             ),
           }}
         />
+        <Drawer.Screen
+          name="feedback"
+          options={{
+            drawerLabel: "Developer Hub",
+            headerTitle: "Community",
+            drawerIcon: ({ color, size }) => (
+              <Ionicons name="people" size={size} color={color} />
+            ),
+          }}
+        />
         
-        {/* Hidden screens */}
-        <Drawer.Screen name="dashboard" options={{ drawerItemStyle: { display: 'none' } }} />
+        {/* Hidden internal screens */}
+        <Drawer.Screen name="insights" options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name="analytics" options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name="profile" options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name="planner" options={{ drawerItemStyle: { display: 'none' } }} />

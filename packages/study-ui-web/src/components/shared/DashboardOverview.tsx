@@ -176,7 +176,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ data }) =>
               <div className="transform-gpu flex items-center gap-4 mb-8">
                 <div className="transform-gpu bg-[var(--accent-color)]/10 px-4 py-2 rounded-xl border border-[var(--accent-color)]/20 shadow-sm shrink-0 flex items-center gap-1.5">
                   <Zap size={12} className="transform-gpu text-[var(--accent-color)] fill-current" />
-                  <span className="transform-gpu text-[9px] font-black uppercase tracking-[0.3em] text-[var(--accent-color)] mt-0.5">Priority Vector</span>
+                  <span className="transform-gpu text-[9px] font-black uppercase tracking-[0.3em] text-[var(--accent-color)] mt-0.5">Priority Step</span>
                 </div>
                 <div className="transform-gpu h-px w-8 md:w-12 bg-[var(--border-color)] shrink-0" />
                 <span className="transform-gpu text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest truncate min-w-0 w-full block mt-0.5 italic">
@@ -185,7 +185,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ data }) =>
               </div>
 
               <h2 className="transform-gpu text-4xl md:text-5xl font-black tracking-tighter mb-6 leading-[1.05] max-w-lg break-words whitespace-normal text-[var(--text-primary)] group-hover:text-[var(--accent-color)] transition-colors italic uppercase">
-                {data.globalNextUnit?.title || "Neural engine idle. Initialize a learning vector."}
+                {data.globalNextUnit?.title || "Neural engine idle. Initialize a learning step."}
               </h2>
               
               <p className="transform-gpu text-[var(--text-secondary)] font-bold text-sm md:text-base max-w-md line-clamp-3 overflow-hidden leading-relaxed tracking-wide break-words whitespace-normal uppercase tracking-tighter">

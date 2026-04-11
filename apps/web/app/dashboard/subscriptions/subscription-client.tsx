@@ -188,7 +188,7 @@ const UsageCard = ({ usage }: { usage: UsageStats }) => {
            <div className="grid grid-cols-1 gap-5">
               <LimitRow label="YouTube" used={usage.study.youtube.used} limit={usage.study.youtube.limit} icon={Youtube} />
               <LimitRow label="Courses" used={usage.study.courses.used} limit={usage.study.courses.limit} icon={BookOpen} />
-              <LimitRow label="Projects" used={usage.study.projects.used} limit={usage.study.projects.limit} icon={Hammer} />
+              <LimitRow label="Paths" used={usage.study.projects.used} limit={usage.study.projects.limit} icon={Hammer} />
            </div>
         </div>
       </div>

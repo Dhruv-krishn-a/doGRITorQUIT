@@ -15,7 +15,7 @@ export default function InsightsPage() {
       {/* Header with Tab Switcher */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--text-secondary)] mb-2">Neural Hub</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--text-secondary)] mb-2">Insights</p>
           <h1 className="text-4xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter">
             Insights
           </h1>

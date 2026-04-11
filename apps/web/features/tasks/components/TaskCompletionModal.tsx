@@ -66,7 +66,7 @@ export default function TaskCompletionModal({ isOpen, onClose, onConfirm, taskTi
 
         <div className="transform-gpu flex flex-col gap-4 pt-2">
           <div className="transform-gpu flex justify-between items-center px-2">
-            <span className="transform-gpu text-[10px] font-bold text-rose-400/40 uppercase tracking-widest">Total Neural Effort</span>
+            <span className="transform-gpu text-[10px] font-bold text-rose-400/40 uppercase tracking-widest">Total Smart Effort</span>
             <span className="transform-gpu text-lg font-bold text-rose-50 tracking-tighter">{total} <span className="transform-gpu text-[10px] text-rose-400/60 uppercase tracking-widest ml-1">Minutes</span></span>
           </div>
           

@@ -80,10 +80,10 @@ export const EmptyTrackSetup: React.FC<EmptyTrackSetupProps> = ({ trackId, onRef
           <Cpu size={64} strokeWidth={1.5} className="transform-gpu drop-shadow-sm relative z-10" />
         </motion.div>
         <h2 className="transform-gpu text-5xl md:text-7xl font-black text-[var(--text-primary)] tracking-tighter leading-none uppercase drop-shadow-sm italic">
-          Empty Vector
+          Empty Path
         </h2>
         <p className="transform-gpu text-[var(--text-secondary)] text-xl font-black max-w-lg mx-auto leading-relaxed tracking-tight uppercase italic opacity-40">
-          Neural track requires content. Import syllabus or quick-add lessons to initiate tracking.
+          This path requires content. Add steps to get started.
         </p>
       </motion.div>
 
@@ -173,7 +173,7 @@ export const EmptyTrackSetup: React.FC<EmptyTrackSetupProps> = ({ trackId, onRef
                   disabled={loading || !newUnit.title}
                   className="transform-gpu w-full h-[64px] bg-[var(--accent-color)] text-[var(--bg-primary)] rounded-3xl font-black uppercase tracking-[0.3em] text-[11px] transition-all shadow-xl shadow-[var(--accent-color)]/20 hover:opacity-90 disabled:opacity-20 disabled:grayscale relative overflow-hidden group/btn flex items-center justify-center gap-3 italic"
                 >
-                   <span className="transform-gpu relative z-10">Initialize Vector</span>
+                   <span className="transform-gpu relative z-10">Add Step</span>
                    <ArrowRight size={16} strokeWidth={3} className="transform-gpu relative z-10 group-hover/btn:translate-x-2 transition-transform" />
                 </motion.button>
               </div>
@@ -181,7 +181,7 @@ export const EmptyTrackSetup: React.FC<EmptyTrackSetupProps> = ({ trackId, onRef
           </form>
 
           <p className="transform-gpu text-[9px] text-[var(--text-secondary)] font-black uppercase tracking-[0.4em] text-center relative z-10 italic opacity-20">
-            Metrics sync upon resolution.
+            Progress syncs on completion.
           </p>
         </motion.div>
       </div>

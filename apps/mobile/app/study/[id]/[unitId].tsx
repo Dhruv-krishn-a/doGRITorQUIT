@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Modal, SafeAreaView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Modal, SafeAreaView, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { database } from '../../../db';
 import StudyTrack from '../../../db/models/StudyTrack';
@@ -12,6 +12,8 @@ import * as Haptics from 'expo-haptics';
 import YoutubePlayer from 'react-native-youtube-iframe';
 import { PerspectiveWrapper } from '../../(drawer)/_layout';
 import { updateUnitNotes, toggleUnitCompletion } from '../../../lib/study-logic';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface UnitSessionProps {
   track: StudyTrack;
@@ -158,163 +160,141 @@ const UnitSession: React.FC<UnitSessionProps> = ({ track, unit }) => {
 
   return (
     <PerspectiveWrapper>
-      <KeyboardAvoidingView 
-        style={{ flex: 1 }} 
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <View className="flex-1 bg-[var(--bg-primary)]">
-          {/* Header */}
-          <View className="pt-16 px-6 pb-4 bg-[var(--bg-card)] border-b border-[var(--border-color)] flex-row items-center justify-between shadow-sm z-10 relative">
-            <TouchableOpacity 
-              onPress={() => { handleSaveNotes(); router.back(); }}
-              className="w-12 h-12 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl items-center justify-center active:scale-95 transition-all shadow-sm"
-            >
-              <Ionicons name="chevron-back" size={24} color={colors.textSecondary} />
-            </TouchableOpacity>
-            <View className="flex-1 px-4 text-center items-center">
-              <Text className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--accent-color)] italic mb-1 opacity-80">Studying Vector</Text>
-              <Text className="text-base font-black text-[var(--text-primary)] italic tracking-tighter uppercase leading-tight" numberOfLines={1}>{unit.title}</Text>
+      <View className="flex-1 bg-[var(--bg-primary)]">
+        {/* Fixed Video Player Header */}
+        <View className="bg-black aspect-video w-full z-20 relative shadow-2xl">
+          {youtubeId ? (
+            <YoutubePlayer
+              ref={playerRef}
+              height={Dimensions.get('window').width * (9/16)}
+              play={isPlaying}
+              videoId={youtubeId}
+              onChangeState={(state) => setIsPlaying(state === "playing")}
+            />
+          ) : (
+            <View className="flex-1 items-center justify-center bg-[var(--bg-card)] border-b border-[var(--border-color)]">
+              <Ionicons name="videocam-off-outline" size={48} color={colors.border} />
+              <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mt-4 italic opacity-40">Stream Unavailable</Text>
             </View>
+          )}
+          
+          {/* Top Control Overlay */}
+          <View className="absolute top-4 left-4 right-4 flex-row justify-between items-center z-30 pointer-events-none">
+             <TouchableOpacity 
+              onPress={() => { handleSaveNotes(); router.back(); }}
+              className="w-10 h-10 bg-black/40 rounded-xl items-center justify-center border border-white/10 pointer-events-auto"
+            >
+              <Ionicons name="chevron-back" size={20} color="white" />
+            </TouchableOpacity>
             <TouchableOpacity 
               onPress={() => setIsDeepWork(true)}
-              className="w-12 h-12 bg-amber-500/10 border border-amber-500/20 rounded-2xl items-center justify-center active:scale-95 transition-all shadow-sm"
+              className="w-10 h-10 bg-amber-500/40 border border-amber-500/20 rounded-xl items-center justify-center pointer-events-auto"
             >
-              <Ionicons name="flash" size={20} color="#f59e0b" />
+              <Ionicons name="expand" size={18} color="white" />
             </TouchableOpacity>
           </View>
+        </View>
 
-          <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 100 }}>
-            {/* Video Player Section */}
-            <View className="bg-black aspect-video w-full z-0 relative">
-              {youtubeId ? (
-                <YoutubePlayer
-                  ref={playerRef}
-                  height={240}
-                  play={isPlaying}
-                  videoId={youtubeId}
-                  onChangeState={(state) => setIsPlaying(state === "playing")}
-                />
-              ) : (
-                <View className="flex-1 items-center justify-center bg-[var(--bg-card)] border-b border-[var(--border-color)]">
-                  <Ionicons name="videocam-off-outline" size={48} color={colors.border} />
-                  <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mt-4 italic opacity-40">Stream Unavailable</Text>
-                </View>
-              )}
-            </View>
-
-            {/* Timer & Controls */}
-            <View className="px-6 py-6 border-b border-[var(--border-color)] bg-[var(--bg-card)] shadow-sm">
-              <View className="flex-row items-center justify-between">
-                <View className="flex-row items-center gap-4">
-                  <View className="w-12 h-12 bg-[var(--accent-color)]/10 rounded-2xl items-center justify-center border border-[var(--accent-color)]/20 shadow-sm">
-                    <Ionicons name="timer-outline" size={24} color={colors.accent} />
-                  </View>
-                  <View className="text-left">
-                    <Text className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic opacity-40">Session Clock</Text>
-                    <Text className="text-3xl font-black text-[var(--text-primary)] font-mono italic tracking-tighter leading-none">{formatTime(seconds)}</Text>
-                  </View>
-                </View>
-                <View className="flex-row gap-2">
+        <KeyboardAvoidingView 
+          style={{ flex: 1 }} 
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        >
+          {/* Main Controls & Content */}
+          <View className="flex-1">
+            <View className="px-6 py-4 border-b border-[var(--border-color)] bg-[var(--bg-card)] flex-row items-center justify-between shadow-sm">
+               <View className="flex-1">
+                  <Text className="text-[8px] font-black uppercase tracking-[0.3em] text-[var(--accent-color)] italic mb-0.5">Focus Clock</Text>
+                  <Text className="text-xl font-black text-[var(--text-primary)] italic tracking-tighter" numberOfLines={1}>{formatTime(seconds)}</Text>
+               </View>
+               <View className="flex-row gap-2">
                   <TouchableOpacity 
                     onPress={() => setIsPaused(!isPaused)}
-                    className={`w-12 h-12 rounded-2xl items-center justify-center shadow-sm active:scale-95 transition-all ${isPaused ? 'bg-[var(--accent-color)] border border-[var(--accent-color)]' : 'bg-[var(--bg-secondary)] border border-[var(--border-color)]'}`}
+                    className={`w-10 h-10 rounded-xl items-center justify-center shadow-sm ${isPaused ? 'bg-[var(--accent-color)]' : 'bg-[var(--bg-secondary)] border border-[var(--border-color)]'}`}
                   >
-                    <Ionicons name={isPaused ? "play" : "pause"} size={20} color={isPaused ? "white" : colors.textSecondary} />
+                    <Ionicons name={isPaused ? "play" : "pause"} size={18} color={isPaused ? "white" : colors.textSecondary} />
                   </TouchableOpacity>
                   <TouchableOpacity 
-                    onPress={() => setSeconds(0)}
-                    className="w-12 h-12 bg-[var(--bg-secondary)] rounded-2xl items-center justify-center border border-[var(--border-color)] shadow-sm active:scale-95 transition-all"
+                    onPress={async () => {
+                      await handleSaveNotes();
+                      await toggleUnitCompletion(unit.id);
+                      router.back();
+                    }}
+                    className="h-10 px-5 bg-[var(--text-primary)] rounded-xl items-center justify-center shadow-md"
                   >
-                    <Ionicons name="refresh" size={20} color={colors.textSecondary} />
+                    <Text className="text-[8px] font-black text-[var(--bg-primary)] uppercase tracking-widest italic">Resolve</Text>
                   </TouchableOpacity>
-                </View>
-              </View>
+               </View>
             </View>
 
-            {/* Notes & Questions Tabs */}
-            <View className="px-6 pt-6 flex-1">
-              <View className="flex-row gap-4 mb-6">
+            <View className="flex-1">
+              <View className="flex-row px-6 py-3 bg-[var(--bg-card)] border-b border-[var(--border-color)] gap-4">
                 {(['NOTES', 'QUESTIONS'] as const).map(tab => (
                   <TouchableOpacity 
                     key={tab} 
                     onPress={() => { setActiveTab(tab); Haptics.selectionAsync(); }}
-                    className={`px-6 py-3 rounded-full border shadow-sm transition-all ${activeTab === tab ? 'bg-[var(--accent-color)] border-[var(--accent-color)]' : 'bg-[var(--bg-secondary)] border-[var(--border-color)]'}`}
+                    className={`pb-2 border-b-2 ${activeTab === tab ? 'border-[var(--accent-color)]' : 'border-transparent'}`}
                   >
-                    <Text className={`text-[10px] font-black uppercase tracking-[0.2em] italic ${activeTab === tab ? 'text-[var(--bg-primary)]' : 'text-[var(--text-secondary)] opacity-60'}`}>
+                    <Text className={`text-[9px] font-black uppercase tracking-widest italic ${activeTab === tab ? 'text-[var(--accent-color)]' : 'text-[var(--text-secondary)] opacity-40'}`}>
                       {tab}
                     </Text>
                   </TouchableOpacity>
                 ))}
               </View>
 
-              {activeTab === 'NOTES' ? (
-                <View className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[2.5rem] p-6 shadow-sm min-h-[300px]">
-                  <TextInput
-                    multiline
-                    placeholder="Capture neural insights..."
-                    placeholderTextColor={`${colors.textSecondary}40`}
-                    value={freeformNotes}
-                    onChangeText={setFreeformNotes}
-                    onEndEditing={handleSaveNotes}
-                    className="flex-1 w-full text-base font-black italic text-[var(--text-primary)] uppercase tracking-tighter"
-                    style={{ textAlignVertical: 'top', minHeight: 250 }}
-                  />
-                </View>
-              ) : (
-                <View className="flex-1 space-y-4">
-                  {questions.map(q => (
-                    <View key={q.id} className="bg-[var(--bg-card)] border border-[var(--border-color)] p-5 rounded-2xl shadow-sm text-left">
-                      <View className="flex-row justify-between items-start mb-3">
-                        <Text className="text-[8px] font-black uppercase tracking-[0.3em] text-[var(--accent-color)] bg-[var(--accent-color)]/10 px-2.5 py-1 rounded-md italic border border-[var(--accent-color)]/20 shadow-sm">
-                          Timestamp: {formatTime(q.timestampSeconds)}
-                        </Text>
-                        <TouchableOpacity 
-                          onPress={() => {
-                            if (playerRef.current) playerRef.current.seekTo(q.timestampSeconds, true);
-                          }}
-                          className="flex-row items-center gap-1.5"
-                        >
-                          <Ionicons name="play-circle" size={14} color={colors.accent} />
-                          <Text className="text-[10px] font-black text-[var(--accent-color)] uppercase tracking-widest italic">Jump</Text>
-                        </TouchableOpacity>
-                      </View>
-                      <Text className="text-sm font-black text-[var(--text-primary)] uppercase tracking-tight italic">{q.content}</Text>
-                    </View>
-                  ))}
-
-                  <View className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-4 flex-row items-center mt-4 shadow-inner">
+              <ScrollView className="flex-1" contentContainerStyle={{ padding: 24, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+                {activeTab === 'NOTES' ? (
+                  <View className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[2.5rem] p-8 shadow-sm min-h-[400px]">
                     <TextInput
-                      value={newQuestion}
-                      onChangeText={setNewQuestion}
-                      placeholder="Ask query..."
+                      multiline
+                      placeholder="Capture neural insights..."
                       placeholderTextColor={`${colors.textSecondary}40`}
-                      className="flex-1 text-[11px] font-black text-[var(--text-primary)] uppercase tracking-widest italic"
-                      onSubmitEditing={handleAddQuestion}
+                      value={freeformNotes}
+                      onChangeText={setFreeformNotes}
+                      className="flex-1 w-full text-base font-black italic text-[var(--text-primary)] uppercase tracking-tighter"
+                      style={{ textAlignVertical: 'top' }}
                     />
-                    <TouchableOpacity onPress={handleAddQuestion} className="w-10 h-10 bg-[var(--accent-color)] rounded-xl items-center justify-center shadow-lg shadow-[var(--accent-color)]/20 active:scale-90 transition-all">
-                      <Ionicons name="arrow-up" size={18} color="white" />
-                    </TouchableOpacity>
                   </View>
-                </View>
-              )}
-            </View>
-          </ScrollView>
+                ) : (
+                  <View className="flex-1 space-y-4">
+                    {questions.map(q => (
+                      <View key={q.id} className="bg-[var(--bg-card)] border border-[var(--border-color)] p-5 rounded-2xl shadow-sm text-left">
+                        <View className="flex-row justify-between items-start mb-3">
+                          <Text className="text-[8px] font-black uppercase tracking-[0.3em] text-[var(--accent-color)] bg-[var(--accent-color)]/10 px-2.5 py-1 rounded-md italic">
+                            {formatTime(q.timestampSeconds)}
+                          </Text>
+                          <TouchableOpacity 
+                            onPress={() => { if (playerRef.current) playerRef.current.seekTo(q.timestampSeconds, true); }}
+                            className="flex-row items-center gap-1.5"
+                          >
+                            <Ionicons name="play-circle" size={14} color={colors.accent} />
+                            <Text className="text-[10px] font-black text-[var(--accent-color)] uppercase italic">Jump</Text>
+                          </TouchableOpacity>
+                        </View>
+                        <Text className="text-sm font-black text-[var(--text-primary)] uppercase tracking-tight italic">{q.content}</Text>
+                      </View>
+                    ))}
 
-          {/* Floating Action Bar */}
-          <View className="absolute bottom-0 left-0 right-0 p-6 bg-[var(--bg-card)]/80 border-t border-[var(--border-color)] shadow-lg backdrop-blur-md">
-             <TouchableOpacity 
-               onPress={async () => {
-                 await handleSaveNotes();
-                 await toggleUnitCompletion(unit.id);
-                 router.back();
-               }}
-               className="w-full py-5 bg-[var(--text-primary)] rounded-3xl items-center shadow-xl hover:opacity-90 active:scale-95 transition-all"
-             >
-               <Text className="text-[11px] font-black text-[var(--bg-primary)] uppercase tracking-[0.3em] italic">Commit Vector Resolution</Text>
-             </TouchableOpacity>
+                    <View className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-4 flex-row items-center mt-4">
+                      <TextInput
+                        value={newQuestion}
+                        onChangeText={setNewQuestion}
+                        placeholder="Ask query..."
+                        placeholderTextColor={`${colors.textSecondary}40`}
+                        className="flex-1 text-[11px] font-black text-[var(--text-primary)] uppercase tracking-widest italic"
+                        onSubmitEditing={handleAddQuestion}
+                      />
+                      <TouchableOpacity onPress={handleAddQuestion} className="w-10 h-10 bg-[var(--accent-color)] rounded-xl items-center justify-center shadow-lg active:scale-90 transition-all">
+                        <Ionicons name="arrow-up" size={18} color="white" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+              </ScrollView>
+            </View>
           </View>
-        </View>
-      </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      </View>
     </PerspectiveWrapper>
   );
 };

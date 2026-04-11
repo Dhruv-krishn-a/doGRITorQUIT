@@ -90,7 +90,7 @@ export function TrackHeader({ track, stats, currentEnergy, onEnergySelect, onOpt
                   <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] italic opacity-40">System Progress</h3>
                   <div className="flex items-baseline gap-4 mt-1">
                     <span className="text-5xl font-black text-[var(--text-primary)] italic tracking-tighter">{Math.round(track.progressPercentage)}%</span>
-                    <span className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] italic opacity-60">{completedVideos} / {totalVideos} Vectors</span>
+                    <span className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] italic opacity-60">{completedVideos} / {totalVideos} Steps</span>
                   </div>
                 </div>
               </div>
@@ -104,7 +104,7 @@ export function TrackHeader({ track, stats, currentEnergy, onEnergySelect, onOpt
                 </div>
                 <p className="text-[9px] font-black text-[var(--accent-color)] uppercase tracking-[0.3em] flex items-center gap-2 italic">
                   <span className="w-2 h-2 rounded-full bg-[var(--accent-color)] animate-pulse" />
-                  {track.progressPercentage === 100 ? "MISSION RESOLVED" : "VECTOR ACTIVE"}
+                  {track.progressPercentage === 100 ? "PATH COMPLETED" : "PATH ACTIVE"}
                 </p>
               </div>
             </div>
@@ -144,22 +144,22 @@ export function TrackHeader({ track, stats, currentEnergy, onEnergySelect, onOpt
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-10 pt-8 border-t border-[var(--border-color)] relative z-10">
             <MetricItem 
               icon={<Youtube size={16} className="text-rose-500" />}
-              label="Vector Mass"
+              label="Total Duration"
               value={formatMins(track.totalDurationMinutes)}
             />
             <MetricItem 
               icon={<PlayCircleIcon size={16} className="text-emerald-500" />}
-              label="Processed"
+              label="Completed"
               value={formatMins(watchTimeMins)}
             />
             <MetricItem 
               icon={<Timer size={16} className="text-fuchsia-500" />}
-              label="Integration"
+              label="Time Spent"
               value={formatMins(studyTimeMins)}
             />
             <MetricItem 
               icon={<Clock size={16} className="text-amber-500" />}
-              label="Temporal Debt"
+              label="Remaining"
               value={formatMins(track.remainingMinutes || 0)}
             />
           </div>
@@ -223,7 +223,7 @@ export function TrackHeader({ track, stats, currentEnergy, onEnergySelect, onOpt
               className="w-full py-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all hover:border-[var(--accent-color)] hover:text-[var(--accent-color)] shadow-sm flex items-center justify-center gap-3 active:scale-95 italic"
             >
               <Settings size={16} />
-              {track.targetDate ? 'Recalibrate Path' : 'Set Mission Path'}
+              {track.targetDate ? 'Update Date' : 'Set Deadline'}
             </button>
           </div>
         </div>

@@ -26,7 +26,7 @@ export function ProjectTimeTab({ units, formatMins }: Pick<ProjectContextProps, 
                <span className="transform-gpu text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic opacity-40">Total Temporal</span>
             </div>
             <div className="transform-gpu text-5xl font-black text-[var(--text-primary)] tracking-tighter italic leading-none">{formatMins(units.reduce((a, b) => a + (b.actualTimeSpentMinutes || 0), 0))}</div>
-            <p className="transform-gpu text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest opacity-20 italic">Across {units.length} resolved vectors</p>
+            <p className="transform-gpu text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest opacity-20 italic">Across {units.length} resolved steps</p>
          </div>
          
          <div className="transform-gpu bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl rounded-[2.5rem] p-10 space-y-8 hover:shadow-2xl hover:border-[var(--accent-color)]/30 transition-all group">

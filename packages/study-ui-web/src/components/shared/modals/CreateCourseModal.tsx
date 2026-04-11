@@ -29,7 +29,7 @@ export function CreateCourseModal() {
         targetDate: targetDate || undefined,
         link: courseUrl
       } as any);
-      toast.success('Course vector initialized');
+      toast.success('Course step initialized');
       fetchDashboard();
       closeModal();
     } catch (err: any) {
@@ -59,7 +59,7 @@ export function CreateCourseModal() {
           <header className="transform-gpu flex justify-between items-center mb-8">
             <div>
               <h2 className="transform-gpu text-2xl font-bold text-slate-900 tracking-tighter uppercase">Add Course</h2>
-              <p className="transform-gpu text-slate-500 font-bold text-xs uppercase tracking-[0.2em] mt-1">Structured Learning Vector</p>
+              <p className="transform-gpu text-slate-500 font-bold text-xs uppercase tracking-[0.2em] mt-1">Structured Learning Step</p>
             </div>
             <button onClick={closeModal} className="transform-gpu p-3 bg-white border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 shadow-sm hover:shadow-md rounded-xl transition-all">
               <X size={20} />
@@ -103,7 +103,7 @@ export function CreateCourseModal() {
             <div className="transform-gpu pt-4">
               <button disabled={loading} type="submit" className="transform-gpu w-full bg-linear-to-r from-rose-500 to-fuchsia-500 text-white py-4 rounded-2xl font-bold text-xs uppercase tracking-widest hover:from-rose-400 hover:to-fuchsia-400 shadow-[0_8px_20px_rgba(244,63,94,0.25)] border border-rose-400/20 transition-all flex items-center justify-center gap-2 group">
                 {loading ? <Loader2 className="transform-gpu animate-spin" size={16} /> : <BookOpen size={16} className="transform-gpu group-hover:scale-110 transition-transform" />}
-                {loading ? 'Initializing Course...' : 'Create Course Vector'}
+                {loading ? 'Initializing Course...' : 'Create Course Step'}
               </button>
             </div>
           </form>

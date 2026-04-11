@@ -227,7 +227,7 @@ export default function Header({ nav }: Props) {
           
           <div className="transform-gpu flex flex-col items-start text-left">
             <span className="transform-gpu text-xs font-black text-[var(--text-primary)] group-hover:text-[var(--accent-color)] max-w-32 truncate leading-tight uppercase tracking-tighter transition-colors">{userEmail.split('@')[0]}</span>
-            <span className="transform-gpu text-[9px] text-[var(--text-secondary)] font-bold uppercase tracking-widest leading-none mt-0.5">Neural Link</span>
+            <span className="transform-gpu text-[9px] text-[var(--text-secondary)] font-bold uppercase tracking-widest leading-none mt-0.5">Cloud Sync</span>
           </div>
           <ChevronDown size={14} className={`text-[var(--text-secondary)] transition-transform duration-300 ml-1 ${profileOpen ? "rotate-180 text-[var(--accent-color)]" : "group-hover:text-[var(--accent-color)]"}`} />
          </button>
@@ -251,7 +251,7 @@ export default function Header({ nav }: Props) {
             </div>
             <div className="transform-gpu h-px bg-[var(--border-color)] my-3 mx-2" />
             <button onClick={() => { setProfileOpen(false); setShowLogoutModal(true); }} className="transform-gpu w-full flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)] rounded-xl hover:bg-rose-500/10 hover:text-rose-500 transition-colors text-left group">
-             <LogOut size={16} className="transform-gpu group-hover:-translate-x-1 transition-transform" /> Disconnect
+             <LogOut size={16} className="transform-gpu group-hover:-translate-x-1 transition-transform" /> Sign Out
             </button>
            </motion.div>
           )}
@@ -300,7 +300,7 @@ export default function Header({ nav }: Props) {
               </div>
               <div className="overflow-hidden">
                 <p className="font-black text-[var(--text-primary)] tracking-tight truncate uppercase">{userEmail.split('@')[0]}</p>
-                <p className="text-[10px] text-[var(--accent-color)] font-bold uppercase tracking-[0.2em] mt-1">Neural Link Active</p>
+                <p className="text-[10px] text-[var(--accent-color)] font-bold uppercase tracking-[0.2em] mt-1">Sync Active</p>
               </div>
             </div>
           )}
@@ -343,7 +343,7 @@ export default function Header({ nav }: Props) {
    </AnimatePresence>
 
    <Modal isOpen={showLogoutModal} title="Terminate Session?" onClose={() => setShowLogoutModal(false)} onConfirm={async () => { await doSignOut(); }} confirmLabel="Disconnect" cancelLabel="Stay" confirmLoading={loggingOut}>
-    <p className="text-[var(--text-secondary)] text-sm font-medium">You are about to disconnect from the Neural Command Center. Authentication will be required for subsequent access.</p>
+    <p className="text-[var(--text-secondary)] text-sm font-medium">You are about to sign out. Authentication will be required for subsequent access.</p>
    </Modal>
   </>
  );

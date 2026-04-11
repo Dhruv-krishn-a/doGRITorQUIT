@@ -25,7 +25,7 @@ const CATEGORIES = [
   { label: 'YouTube', value: 'YOUTUBE', icon: Youtube },
   { label: 'Plans', value: 'PLAN', icon: Target },
   { label: 'Courses', value: 'COURSE', icon: BookOpen },
-  { label: 'Projects', value: 'PROJECT', icon: Brain },
+  { label: 'Paths', value: 'PROJECT', icon: Brain },
 ];
 
 export default function AnalyticsUI() {
@@ -116,7 +116,7 @@ export default function AnalyticsUI() {
           color="indigo"
         />
         <KPICard 
-          title="Neural Output" 
+          title="Smart Output" 
           value={totalTasks}
           subValue="Completed Vectors"
           icon={<CheckCircle2 size={20} />}

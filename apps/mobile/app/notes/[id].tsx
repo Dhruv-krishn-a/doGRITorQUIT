@@ -58,17 +58,28 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note, id }) => {
     router.back();
   };
 
+  const markdownStyles = {
+    body: { color: colors.text, fontSize: 16, lineHeight: 26 },
+    heading1: { color: colors.text, fontWeight: '900', textTransform: 'uppercase', fontStyle: 'italic', marginTop: 20, marginBottom: 10 },
+    heading2: { color: colors.text, fontWeight: '900', textTransform: 'uppercase', fontStyle: 'italic', marginTop: 16, marginBottom: 8 },
+    paragraph: { marginTop: 10, marginBottom: 10 },
+    blockquote: { backgroundColor: `${colors.accent}10`, borderLeftColor: colors.accent, borderLeftWidth: 4, paddingLeft: 20, paddingVertical: 10, borderRadius: 8 },
+    code_inline: { backgroundColor: colors.bgSecondary, color: colors.accent, borderRadius: 4, paddingHorizontal: 4 },
+    fence: { backgroundColor: colors.bgSecondary, borderWidth: 1, borderColor: colors.borderColor, borderRadius: 12, padding: 12, marginVertical: 10 },
+    link: { color: colors.accent, textDecorationLine: 'underline' }
+  };
+
   if (!note) {
     return (
       <View className="flex-1 items-center justify-center bg-[var(--bg-primary)] p-10">
         <Ionicons name="alert-circle-outline" size={64} color={colors.textSecondary} />
-        <Text className="text-[var(--text-primary)] text-xl font-black italic uppercase mt-6">Archive Lost</Text>
-        <Text className="text-[var(--text-secondary)] text-center mt-2 uppercase tracking-widest text-[10px]">Record notes#{id} not found in local sync.</Text>
+        <Text className="text-[var(--text-primary)] text-xl font-black italic uppercase mt-6">Note Not Found</Text>
+        <Text className="text-[var(--text-secondary)] text-center mt-2 uppercase tracking-widest text-[10px]">Record #{id} not found in local sync.</Text>
         <TouchableOpacity 
           onPress={() => router.back()}
           className="mt-8 px-8 py-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl"
         >
-          <Text className="text-[var(--text-primary)] font-black uppercase tracking-widest text-[10px]">Return to Repository</Text>
+          <Text className="text-[var(--text-primary)] font-black uppercase tracking-widest text-[10px]">Return to Notes</Text>
         </TouchableOpacity>
       </View>
     );
@@ -108,7 +119,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note, id }) => {
               key={cat}
               onPress={() => updateCategory(cat)}
               className={`mr-2 px-5 py-2.5 rounded-2xl border ${
-                note.category === cat ? 'bg-[var(--accent-color)] border-[var(--accent-color)]' : 'bg-[var(--bg-secondary)] border-[var(--border-color)]'
+                note.category === cat ? 'bg-[var(--accent-color)] border-[var(--accent-color)]' : 'bg-[var(--bg-secondary)] border border-[var(--border-color)]'
               }`}
             >
               <Text className={`text-[10px] font-black uppercase tracking-widest ${
@@ -127,7 +138,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note, id }) => {
             <TextInput
               value={title}
               onChangeText={setTitle}
-              placeholder="Archive Title..."
+              placeholder="Note Title..."
               placeholderTextColor={`${colors.textSecondary}40`}
               className="text-3xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter mb-6"
               multiline
@@ -135,7 +146,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note, id }) => {
             <TextInput
               value={content}
               onChangeText={setContent}
-              placeholder="Begin drafting neural data..."
+              placeholder="Begin writing your note..."
               placeholderTextColor={`${colors.textSecondary}40`}
               className="text-lg text-[var(--text-secondary)] leading-relaxed min-h-[400px] italic font-black uppercase tracking-tighter"
               multiline
@@ -149,41 +160,11 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note, id }) => {
             <Text className="text-3xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter mb-6">
               {title || 'Untitled Note'}
             </Text>
-            <Markdown style={{
-              body: {
-                color: colors.textSecondary,
-                fontSize: 16,
-                lineHeight: 26,
-              },
-              heading1: {
-                color: colors.text,
-                fontWeight: '900',
-                textTransform: 'uppercase',
-                fontStyle: 'italic',
-                marginTop: 20,
-                marginBottom: 10,
-              },
-              paragraph: {
-                marginTop: 10,
-                marginBottom: 10,
-              },
-              blockquote: {
-                backgroundColor: `${colors.accent}10`,
-                borderLeftColor: colors.accent,
-                borderLeftWidth: 4,
-                paddingLeft: 20,
-                paddingVertical: 10,
-                borderRadius: 8,
-              },
-              code_inline: {
-                backgroundColor: colors.secondary,
-                color: colors.accent,
-                paddingHorizontal: 5,
-                borderRadius: 4,
-              },
-            }}>
-              {content || '_No content recorded in this archive sector._'}
-            </Markdown>
+            <View className="text-left">
+              <Markdown style={markdownStyles as any}>
+                {content || '_No content recorded._'}
+              </Markdown>
+            </View>
           </>
         )}
       </ScrollView>
@@ -193,7 +174,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note, id }) => {
           onPress={handleSave}
           className="absolute bottom-10 right-6 bg-[var(--accent-color)] px-8 py-4 rounded-[2rem] shadow-xl shadow-[var(--accent-color)]/30 active:scale-95"
         >
-          <Text className="text-[var(--bg-primary)] font-black uppercase tracking-widest italic">Seal Archive</Text>
+          <Text className="text-[var(--bg-primary)] font-black uppercase tracking-widest italic">Save Note</Text>
         </TouchableOpacity>
       )}
     </KeyboardAvoidingView>
@@ -210,7 +191,7 @@ export default function NotePage() {
   if (!id) {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#050505' }}>
-        <Text style={{ color: 'white' }}>Missing Archive ID</Text>
+        <Text style={{ color: 'white' }}>Missing Note ID</Text>
       </View>
     );
   }

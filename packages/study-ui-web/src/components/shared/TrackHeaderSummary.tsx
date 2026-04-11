@@ -155,7 +155,7 @@ export const TrackHeaderSummary: React.FC<TrackHeaderSummaryProps> = ({
                 <div className="transform-gpu p-2.5 bg-rose-50 rounded-xl border border-rose-100 shadow-sm group-hover/metric:scale-110 group-hover/metric:-rotate-12 transition-transform duration-500">
                   <Youtube size={18} className="transform-gpu text-rose-500 drop-shadow-[0_0_8px_rgba(244,63,94,0.4)]" />
                 </div>
-                <span className="transform-gpu text-[10px] font-bold uppercase tracking-[0.3em] group-hover/metric:text-rose-500 transition-colors">Vector Length</span>
+                <span className="transform-gpu text-[10px] font-bold uppercase tracking-[0.3em] group-hover/metric:text-rose-500 transition-colors">Step Length</span>
               </div>
               <div className="transform-gpu flex items-baseline gap-1">
                 <span className="transform-gpu text-6xl md:text-5xl lg:text-6xl font-bold text-slate-800 tracking-tighter leading-none">{totalTime.h}</span>
@@ -307,7 +307,7 @@ export const TrackHeaderSummary: React.FC<TrackHeaderSummaryProps> = ({
 
           <div className="transform-gpu mt-8 p-4 bg-slate-50/80 rounded-2xl border border-slate-100 relative z-10 text-center">
              <p className="transform-gpu text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] opacity-80 flex items-center justify-center gap-1.5">
-               <Activity size={12} /> Auto-adjusts vector pacing
+               <Activity size={12} /> Auto-adjusts step pacing
              </p>
           </div>
         </motion.div>

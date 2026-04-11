@@ -233,10 +233,10 @@ export function TrackCard({ track, onDelete }: TrackCardProps) {
           </div>
         </div>
 
-        {/* Bottom vector bar */}
+        {/* Bottom step bar */}
         <div className={`relative w-full bg-[var(--bg-secondary)]/50 rounded-full border border-[var(--border-color)] flex items-center p-1 sm:p-1.5 overflow-hidden transition-all duration-300 group-hover:bg-[var(--accent-color)]/5 group-hover:border-[var(--accent-color)]/30`}>
           <span className="transform-gpu relative z-10 pl-3 sm:pl-4 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-secondary)] group-hover:text-[var(--accent-color)] transition-colors duration-300">
-            Access Vector
+            Access Step
           </span>
           <div className="transform-gpu relative z-10 ml-auto w-8 h-8 sm:w-10 sm:h-10 bg-[var(--bg-card)] rounded-full flex items-center justify-center text-[var(--text-secondary)] border border-[var(--border-color)] shadow-sm group-hover:bg-[var(--accent-color)] group-hover:text-[var(--bg-primary)] group-hover:border-[var(--accent-color)] transition-all duration-300">
              <ArrowRight size={14} className="transform-gpu group-hover:translate-x-0.5 transition-transform" />

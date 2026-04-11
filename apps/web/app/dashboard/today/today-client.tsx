@@ -26,7 +26,7 @@ const QUOTES = [
   "Your future is created by what you do today, not tomorrow.",
   "Discipline is choosing between what you want now and what you want most.",
   "Atomic habits lead to massive results.",
-  "Neural Command Center: READY_FOR_EXECUTION",
+  "Smart Command Center: READY_FOR_EXECUTION",
   "Stay on the vector. Maintain the pulse."
 ];
 
@@ -96,7 +96,7 @@ export default function TodayClientPage({ initialTasks, initialUnits }: TodayCli
             <div className="transform-gpu space-y-1">
               <div className="transform-gpu flex items-center gap-3">
                 <h1 className="transform-gpu text-4xl font-black text-white italic uppercase tracking-tighter">Command Center</h1>
-                <span className="transform-gpu bg-sky-500/10 text-sky-focus text-[10px] font-black px-3 py-1 rounded-full border border-sky-500/20 shadow-lg shadow-sky-500/10 uppercase tracking-widest">Active Vector</span>
+                <span className="transform-gpu bg-sky-500/10 text-sky-focus text-[10px] font-black px-3 py-1 rounded-full border border-sky-500/20 shadow-lg shadow-sky-500/10 uppercase tracking-widest">Active Task</span>
               </div>
               <p className="transform-gpu text-slate-500 font-black uppercase tracking-[0.3em] text-[10px] flex items-center gap-2 mt-2 ml-1">
                 <Activity size={12} className="text-sky-focus animate-pulse" />
@@ -123,7 +123,7 @@ export default function TodayClientPage({ initialTasks, initialUnits }: TodayCli
               </div>
               <div className="transform-gpu relative z-10 space-y-4">
                 <div className="transform-gpu flex items-center gap-2 text-slate-500 font-black text-[10px] uppercase tracking-[0.4em]">
-                  <Sparkles size={12} /> Neural Inspiration
+                  <Sparkles size={12} /> Smart Inspiration
                 </div>
                 <h2 className="transform-gpu text-2xl md:text-3xl font-black text-white leading-tight italic uppercase tracking-tight">
                   &quot;{quote}&quot;
@@ -139,9 +139,9 @@ export default function TodayClientPage({ initialTasks, initialUnits }: TodayCli
               <div className="transform-gpu flex items-center justify-between ml-1">
                 <div className="transform-gpu flex items-center gap-3">
                   <div className="transform-gpu w-1 h-6 bg-sky-focus rounded-full shadow-lg shadow-sky-500/50" />
-                  <h2 className="transform-gpu text-xl font-black text-white uppercase tracking-widest italic">Action Stream</h2>
+                  <h2 className="transform-gpu text-xl font-black text-white uppercase tracking-widest italic">Focus Stream</h2>
                 </div>
-                <span className="transform-gpu text-[10px] font-black text-slate-600 uppercase tracking-widest bg-slate-800/50 px-3 py-1 rounded-full border border-slate-700">{tasks.length + units.length} Active Vectors</span>
+                <span className="transform-gpu text-[10px] font-black text-slate-600 uppercase tracking-widest bg-slate-800/50 px-3 py-1 rounded-full border border-slate-700">{tasks.length + units.length} Active Tasks</span>
               </div>
 
               <div className="transform-gpu space-y-4">
@@ -158,7 +158,7 @@ export default function TodayClientPage({ initialTasks, initialUnits }: TodayCli
                          <div>
                             <div className="transform-gpu flex items-center gap-2 text-slate-500 mb-6">
                                <CheckCircle2 size={16} className="transform-gpu text-sky-focus" />
-                               <span className="transform-gpu text-[9px] font-black uppercase tracking-widest">Plan Instruction</span>
+                               <span className="transform-gpu text-[9px] font-black uppercase tracking-widest">Task</span>
                             </div>
                             <h3 className="transform-gpu text-lg font-black text-white uppercase italic tracking-tight mb-3 group-hover:text-sky-focus transition-colors leading-tight">{task.title}</h3>
                             {task.description && <p className="transform-gpu text-[11px] font-bold text-slate-500 line-clamp-2 uppercase tracking-wide leading-relaxed">{task.description}</p>}
@@ -189,7 +189,7 @@ export default function TodayClientPage({ initialTasks, initialUnits }: TodayCli
                            <div>
                               <div className={`flex items-center gap-2 mb-6 ${isCourse ? 'text-sky-focus/50' : 'text-mint/50'}`}>
                                  {isCourse ? <BookOpen size={16} className="transform-gpu text-sky-focus" /> : <Briefcase size={16} className="transform-gpu text-mint" />}
-                                 <span className="transform-gpu text-[9px] font-black uppercase tracking-widest">{isCourse ? 'Skill Module' : 'Project Phase'}</span>
+                                 <span className="transform-gpu text-[9px] font-black uppercase tracking-widest">{isCourse ? 'Lesson' : 'Step'}</span>
                                  <span className="transform-gpu text-[9px] font-black text-slate-600 uppercase tracking-widest opacity-50 truncate max-w-[100px] ml-auto italic">{unit.trackTitle}</span>
                               </div>
                               <h3 className="transform-gpu text-lg font-black text-white uppercase italic tracking-tight mb-3 group-hover:text-sky-focus transition-colors leading-tight">{unit.title}</h3>

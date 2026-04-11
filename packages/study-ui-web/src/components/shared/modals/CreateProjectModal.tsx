@@ -64,7 +64,7 @@ export function CreateProjectModal() {
                   template === 'RESEARCH' ? ['Discovery', 'PoC', 'Documentation'] : ['Default']
         }
       } as any);
-      toast.success('Project vector initialized');
+      toast.success('Project step initialized');
       fetchDashboard();
       closeModal();
     } catch (err: any) {
@@ -130,7 +130,7 @@ export function CreateProjectModal() {
               </div>
               <div>
                 <h2 className="transform-gpu text-2xl font-bold text-slate-900 tracking-tighter uppercase">New Project</h2>
-                <p className="transform-gpu text-rose-600 font-bold text-xs uppercase tracking-[0.2em] mt-1">Execution & Delivery Vector</p>
+                <p className="transform-gpu text-rose-600 font-bold text-xs uppercase tracking-[0.2em] mt-1">Execution & Delivery Step</p>
               </div>
             </div>
             <button 

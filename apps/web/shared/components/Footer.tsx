@@ -34,7 +34,7 @@ export default function Footer({ nav }: { nav: NavItem[] }) {
                   <Sparkles size={16} className="group-hover:rotate-12 transition-transform duration-500" />
                 </div>
                 <div className="flex flex-col leading-none">
-                  <span className="font-bold text-xl tracking-tight text-[var(--text-primary)] group-hover:text-[var(--accent-color)] transition-colors uppercase">DO GRIT</span>
+                  <span className="font-bold text-xl tracking-tight text-[var(--text-primary)] group-hover:text-[var(--accent-color)] transition-colors uppercase">grit.io</span>
                   <span className="text-[9px] font-bold text-[var(--text-secondary)] tracking-[0.2em] uppercase mt-0.5 group-hover:text-[var(--accent-color)] transition-colors">OK QUIT</span>
                 </div>
              </Link>
@@ -73,10 +73,10 @@ export default function Footer({ nav }: { nav: NavItem[] }) {
         {/* --- Bottom Bar --- */}
         <div className="pt-6 border-t border-[var(--border-color)] flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-6">
-            <span className="text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-widest">© {currentYear} Do Grit Or Quit</span>
+            <span className="text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-widest">© {currentYear} grit.io</span>
             <div className="flex gap-4 text-[10px] font-bold uppercase tracking-widest">
               <Link href="/privacy" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Privacy</Link>
-              <Link href="/terms" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Terms</Link>
+              <Link href="/terms" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Terms of Service</Link>
             </div>
           </div>
           

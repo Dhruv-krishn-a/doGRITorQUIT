@@ -167,7 +167,7 @@ export default function TodayPage() {
             className="p-8 rounded-t-[3.5rem] border-t border-[var(--border-color)] shadow-2xl"
           >
             <View className="flex-row justify-between items-center mb-8">
-              <Text className="text-3xl font-black italic uppercase tracking-tighter text-[var(--text-primary)]">Architect Day</Text>
+              <Text className="text-3xl font-black italic uppercase tracking-tighter text-[var(--text-primary)]">Plan Your Day</Text>
               <TouchableOpacity onPress={() => setShowAddBlock(false)} className="p-2 bg-[var(--bg-secondary)] rounded-full border border-[var(--border-color)]">
                 <Ionicons name="close" size={24} color={colors.textSecondary} />
               </TouchableOpacity>
@@ -175,7 +175,7 @@ export default function TodayPage() {
             <ScrollView className="space-y-8 max-h-[80vh]" showsVerticalScrollIndicator={false}>
               {/* Objectives Selection */}
               <View className="text-left">
-                <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-4 ml-1 italic">Mission Objectives</Text>
+                <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-4 ml-1 italic">Tasks to focus on</Text>
                 <View className="flex-row flex-wrap gap-2">
                   {goals.map(goal => (
                     <TouchableOpacity 
@@ -190,11 +190,11 @@ export default function TodayPage() {
               </View>
 
               <View className="text-left">
-                <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-3 ml-1 italic">Block Designation</Text>
+                <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-3 ml-1 italic">Activity Name</Text>
                 <TextInput 
                   value={newBlockTitle} 
                   onChangeText={setNewBlockTitle} 
-                  placeholder="DEEP WORK..." 
+                  placeholder="Work, Study, Gym..." 
                   placeholderTextColor={colors.textSecondary + '40'} 
                   className="w-full px-6 py-5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-3xl text-[var(--text-primary)] font-black italic uppercase tracking-tight" 
                 />
@@ -212,7 +212,7 @@ export default function TodayPage() {
               </View>
 
               <View className="text-left">
-                <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-4 ml-1 italic">Icon Signature</Text>
+                <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-4 ml-1 italic">Select Icon</Text>
                 <View className="flex-row gap-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[2rem] p-2">
                   {(['briefcase', 'moon', 'barbell', 'cafe', 'book'] as const).map(icon => (
                     <TouchableOpacity key={icon} onPress={() => setNewBlockIcon(icon)} className={`flex-1 p-4 rounded-2xl items-center justify-center ${newBlockIcon === icon ? 'bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm' : ''}`}>
@@ -232,7 +232,7 @@ export default function TodayPage() {
                 }} 
                 className="w-full mt-4 px-6 py-6 bg-[var(--accent-color)] rounded-3xl items-center shadow-xl shadow-sky-500/20"
               >
-                <Text className="text-[11px] font-black text-[var(--bg-primary)] uppercase tracking-[0.2em] italic">Commit to Schedule</Text>
+                <Text className="text-[11px] font-black text-[var(--bg-primary)] uppercase tracking-[0.2em] italic">Save Schedule</Text>
               </TouchableOpacity>
             </ScrollView>
           </View>
@@ -241,7 +241,7 @@ export default function TodayPage() {
 
       <ScrollView className="flex-1 bg-[var(--bg-primary)]" contentContainerStyle={{ paddingBottom: 120, paddingTop: 24 }}>
         <View className="px-6 mb-8 text-left">
-          <Text className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--text-secondary)] mb-2 italic">Non-Negotiable Path</Text>
+          <Text className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--text-secondary)] mb-2 italic">Daily Schedule</Text>
           <Text className="text-4xl font-black text-[var(--text-primary)] tracking-tighter uppercase italic leading-none">Today</Text>
         </View>
 
@@ -255,13 +255,13 @@ export default function TodayPage() {
           <View className="p-8 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[3rem] shadow-2xl relative overflow-hidden">
             <View className="transform-gpu absolute top-0 left-0 w-full h-full bg-gradient-to-br from-[var(--accent-color)]/5 via-transparent to-transparent pointer-events-none" />
             <Text className="text-5xl font-black text-[var(--accent-color)] tracking-tightest mb-2 italic">{formatDuration(scheduleData.totalFreeMinutes)}</Text>
-            <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em] opacity-60 italic">Architected Capacity</Text>
+            <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em] opacity-60 italic">Available Free Time</Text>
           </View>
         </View>
 
         <View className="px-6">
           <View className="flex-row justify-between items-center mb-8 border-b border-[var(--border-color)] pb-4 text-left">
-            <Text className="text-2xl font-black text-[var(--text-primary)] uppercase italic tracking-tight">Allocated Path</Text>
+            <Text className="text-2xl font-black text-[var(--text-primary)] uppercase italic tracking-tight">Your Plan</Text>
             {selectedGoalIds.length > 0 && (
               <TouchableOpacity onPress={() => setSelectedGoalIds([])} className="bg-[var(--accent-color)]/10 px-3 py-1.5 rounded-lg border border-[var(--accent-color)]/20">
                 <Text className="text-[9px] font-black text-[var(--accent-color)] uppercase italic">Reset</Text>
@@ -290,7 +290,7 @@ export default function TodayPage() {
                     <View className="flex-row gap-3">
                       <TouchableOpacity onPress={() => handleStartMission(task)} className="flex-row items-center gap-2 px-5 py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl active:scale-95 transition-all">
                         <Ionicons name="play" size={14} color={colors.accent} />
-                        <Text className="text-[10px] font-black text-[var(--text-primary)] uppercase italic">Engage</Text>
+                        <Text className="text-[10px] font-black text-[var(--text-primary)] uppercase italic">Start</Text>
                       </TouchableOpacity>
                       <TouchableOpacity onPress={() => handleComplete(task)} className="w-12 h-12 bg-emerald-500/10 rounded-2xl items-center justify-center border border-emerald-500/20 active:scale-95 transition-all">
                         <Ionicons name="checkmark" size={24} color="#10b981" />
@@ -304,7 +304,7 @@ export default function TodayPage() {
             {scheduleData.allocated.length === 0 && (
               <View className="p-20 border-2 border-dashed border-[var(--border-color)] rounded-[3.5rem] items-center justify-center bg-[var(--bg-secondary)]/10 opacity-30">
                 <Ionicons name="flash-outline" size={48} color={colors.textSecondary} />
-                <Text className="text-[11px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em] mt-6 italic text-center leading-relaxed">Awaiting Neural Plan Deployment</Text>
+                <Text className="text-[11px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em] mt-6 italic text-center leading-relaxed">Ready to plan your day</Text>
               </View>
             )}
           </View>

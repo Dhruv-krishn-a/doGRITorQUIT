@@ -99,7 +99,7 @@ export function KanbanBoard({ units, onAction, onDragEnd }: KanbanBoardProps) {
                           >
                             <LayoutGrid size={32} strokeWidth={1} className={`mb-4 ${col.theme.text}`} />
                             {!isEmpty || snapshot.isDraggingOver ? (
-                              <span className={`text-[9px] font-black uppercase tracking-[0.2em] italic ${col.theme.text}`}>Deploy Vector</span>
+                              <span className={`text-[9px] font-black uppercase tracking-[0.2em] italic ${col.theme.text}`}>Add Step</span>
                             ) : (
                               <div className="flex flex-col gap-1 truncate w-full px-4">
                                 <span className={`text-[9px] font-black uppercase tracking-[0.2em] italic ${col.theme.text} truncate`}>Zero Neural Load</span>

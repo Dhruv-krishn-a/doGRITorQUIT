@@ -149,20 +149,20 @@ export default function ChecklistPage() {
         >
           <View className="mb-8 text-left">
             <Text className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--text-secondary)] mb-2 italic">
-              Daily Execution
+              Daily Habits
             </Text>
             <Text className="text-4xl font-black italic uppercase tracking-tighter text-[var(--text-primary)] leading-none">
-              Pulse
+              Checklist
             </Text>
           </View>
 
           <View className="rounded-[2.5rem] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 shadow-2xl mb-8">
             <View className="flex-row items-center justify-between mb-4">
               <Text className="text-[10px] font-black uppercase tracking-[0.25em] text-[var(--text-secondary)] italic">
-                Flow Status
+                Habit Status
               </Text>
               <Text className="text-[11px] font-black uppercase tracking-widest text-[var(--accent-color)] italic">
-                {completedCount}/{totalCount} Resolved
+                {completedCount}/{totalCount} Completed
               </Text>
             </View>
 
@@ -176,12 +176,12 @@ export default function ChecklistPage() {
             <View className="mt-6 flex-row items-center justify-between rounded-[2rem] bg-[var(--bg-secondary)]/40 p-5 border border-[var(--border-color)]">
               <View className="flex-1 mr-4 text-left">
                 <Text className="text-xs font-black uppercase tracking-wide text-[var(--text-primary)] italic">
-                  {remainingCount === 0 ? 'Resonance Achieved' : `${remainingCount} Vectors Pending`}
+                  {remainingCount === 0 ? 'All habits done!' : `${remainingCount} Habits Remaining`}
                 </Text>
                 <Text className="mt-1 text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-widest leading-tight italic">
                   {remainingCount === 0
-                    ? 'Flow state maintained. the system is stable.'
-                    : 'Maintain momentum. Complete the daily pulse.'}
+                    ? 'Excellent work. You are on track!'
+                    : 'Keep it up! Complete your habits.'}
                 </Text>
               </View>
               {remainingCount > 0 ? (
@@ -249,7 +249,7 @@ export default function ChecklistPage() {
               <View className="w-full items-center justify-center rounded-[2.5rem] border-2 border-dashed border-[var(--border-color)] bg-[var(--bg-secondary)]/10 p-12">
                 <Ionicons name="layers-outline" size={32} color={colors.textSecondary} style={{ opacity: 0.2, marginBottom: 12 }} />
                 <Text className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic opacity-40">
-                  Sector Neutral
+                  Nothing here
                 </Text>
               </View>
             )}
@@ -264,7 +264,7 @@ export default function ChecklistPage() {
               <TextInput
                 value={reflection}
                 onChangeText={setReflection}
-                placeholder="MISSION DEBRIEF..."
+                placeholder="How was your day?..."
                 placeholderTextColor={colors.textSecondary + '40'}
                 multiline
                 textAlignVertical="top"
@@ -290,18 +290,18 @@ export default function ChecklistPage() {
               className="rounded-t-[3.5rem] p-10 pb-16 border-t border-[var(--border-color)] shadow-2xl"
             >
               <View className="mb-10 flex-row items-center justify-between">
-                <Text className="text-3xl font-black italic uppercase tracking-tighter text-[var(--text-primary)]">Initialize Vector</Text>
+                <Text className="text-3xl font-black italic uppercase tracking-tighter text-[var(--text-primary)]">Add New Habit</Text>
                 <TouchableOpacity onPress={() => setModalVisible(false)} className="p-2 bg-[var(--bg-secondary)] rounded-full border border-[var(--border-color)]">
                   <Ionicons name="close" size={24} color={colors.textSecondary} />
                 </TouchableOpacity>
               </View>
 
               <View className="mb-8 text-left">
-                <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-4 ml-1">Mission Label</Text>
+                <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-4 ml-1">Habit Name</Text>
                 <TextInput
                   value={newHabitTitle}
                   onChangeText={setNewHabitTitle}
-                  placeholder="Designation..."
+                  placeholder="e.g. Daily Walk..."
                   placeholderTextColor={colors.textSecondary + '40'}
                   className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-6 text-lg font-black text-[var(--text-primary)] uppercase italic tracking-tight"
                   autoFocus
@@ -314,7 +314,7 @@ export default function ChecklistPage() {
                 className="items-center rounded-3xl bg-[var(--accent-color)] p-6 shadow-xl shadow-sky-500/30"
               >
                 <Text className="text-[11px] font-black uppercase tracking-[0.2em] text-[var(--bg-primary)] italic">
-                  Execute Initialization
+                  Add Habit
                 </Text>
               </TouchableOpacity>
             </View>
@@ -366,7 +366,7 @@ function HabitItem({
         {habit.title}
       </Text>
       <Text className={`mt-2 text-[9px] font-black uppercase tracking-widest italic ${done ? 'text-mint/60' : 'text-[var(--text-secondary)]'}`}>
-        {done ? 'Resolved' : 'Pending'}
+        {done ? 'Done' : 'Pending'}
       </Text>
     </TouchableOpacity>
   );

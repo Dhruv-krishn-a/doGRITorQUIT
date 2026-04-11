@@ -35,14 +35,14 @@ export function ProjectSettingsTab({ track, updateTrack }: ProjectSettingsTabPro
     >
       <div className="transform-gpu flex items-center gap-4 mb-10 px-2 leading-none italic">
         <Settings2 size={28} className="transform-gpu text-[var(--accent-color)]" />
-        <h2 className="transform-gpu text-2xl font-black text-[var(--text-primary)] uppercase tracking-tighter">Vector Settings</h2>
+        <h2 className="transform-gpu text-2xl font-black text-[var(--text-primary)] uppercase tracking-tighter">Step Settings</h2>
       </div>
       
       <div className="transform-gpu space-y-10 bg-[var(--bg-card)] border border-[var(--border-color)] shadow-2xl p-12 rounded-[3rem] relative overflow-hidden group">
          <div className="transform-gpu absolute top-0 right-0 w-64 h-64 bg-[var(--accent-color)]/5 rounded-full blur-3xl pointer-events-none group-hover:scale-150 transition-transform duration-1000" />
          
          <div className="transform-gpu space-y-4 relative z-10">
-            <label className="transform-gpu text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic opacity-40 ml-1">Vector Designation</label>
+            <label className="transform-gpu text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic opacity-40 ml-1">Step Designation</label>
             <input 
               type="text" 
               value={title}
@@ -52,7 +52,7 @@ export function ProjectSettingsTab({ track, updateTrack }: ProjectSettingsTabPro
          </div>
 
          <div className="transform-gpu space-y-4 relative z-10">
-            <label className="transform-gpu text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic opacity-40 ml-1">Mission Parameters</label>
+            <label className="transform-gpu text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic opacity-40 ml-1">Path Parameters</label>
             <textarea 
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -93,7 +93,7 @@ export function ProjectSettingsTab({ track, updateTrack }: ProjectSettingsTabPro
             >
               {isSaving ? <Loader2 size={18} className="transform-gpu animate-spin" /> : "Commit Changes"}
             </button>
-            <button className="transform-gpu px-8 py-5 bg-rose-500/10 text-rose-500 border border-rose-500/20 shadow-sm rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-rose-500 hover:text-white transition-all active:scale-95 italic">Purge Vector</button>
+            <button className="transform-gpu px-8 py-5 bg-rose-500/10 text-rose-500 border border-rose-500/20 shadow-sm rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-rose-500 hover:text-white transition-all active:scale-95 italic">Purge Step</button>
          </div>
       </div>
     </motion.div>

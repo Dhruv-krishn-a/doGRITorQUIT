@@ -58,7 +58,7 @@ export function ProjectTimelineTab({ phases, units }: Pick<ProjectContextProps, 
               <div key={phase.name} className="transform-gpu flex items-center gap-10 group/item">
                  <div className="transform-gpu w-40 shrink-0 text-left">
                     <div className="transform-gpu text-[11px] font-black text-[var(--text-primary)] uppercase tracking-tight italic truncate">{phase.name}</div>
-                    <div className="transform-gpu text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest mt-1.5 italic opacity-40">{phase.tasks} vectors • {phase.hours}h</div>
+                    <div className="transform-gpu text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest mt-1.5 italic opacity-40">{phase.tasks} steps • {phase.hours}h</div>
                  </div>
                  <div className="transform-gpu flex-1 h-12 bg-[var(--bg-secondary)] rounded-[1.5rem] relative shadow-inner border border-[var(--border-color)]/30">
                     <motion.div 

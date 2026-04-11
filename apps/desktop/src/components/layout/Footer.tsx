@@ -74,7 +74,7 @@ export default function Footer({ nav }: { nav: NavItem[] }) {
             <span className="text-(--text-secondary) text-[10px] font-bold uppercase tracking-widest">© {currentYear} grit.io</span>
             <div className="flex gap-4 text-[10px] font-bold uppercase tracking-widest">
               <Link to="/privacy" className="text-(--text-secondary) hover:text-(--text-primary) transition-colors">Privacy</Link>
-              <Link to="/terms" className="text-(--text-secondary) hover:text-(--text-primary) transition-colors">Terms</Link>
+              <Link to="/terms" className="text-(--text-secondary) hover:text-(--text-primary) transition-colors">Terms of Service</Link>
             </div>
           </div>
           

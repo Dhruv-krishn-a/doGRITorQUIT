@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 import { useAuth } from '../context/AuthContext';
 import { completeVector } from '../lib/execution-logic';
 
-export default function MissionMode() {
+export default function FocusMode() {
   const { id, title, type } = useLocalSearchParams();
   const { user } = useAuth();
   const router = useRouter();
@@ -64,13 +64,13 @@ export default function MissionMode() {
           <Ionicons name="shield-checkmark" size={24} color="#f43f5e" />
         </View>
         <Text className="text-[10px] font-black uppercase tracking-[0.5em] text-rose-500 animate-pulse">
-          Shadow Guardian Active
+          Focus Mode Active
         </Text>
       </View>
 
       <View className="items-center mb-12">
         <Text className="text-white/50 text-[10px] font-black uppercase tracking-[0.3em] mb-2">
-          Executing Vector
+          Focus Session
         </Text>
         <Text className="text-white text-3xl font-black italic uppercase text-center">
           {title}
@@ -88,20 +88,20 @@ export default function MissionMode() {
           onPress={handleComplete}
           className="w-full bg-emerald-500 p-6 rounded-[2rem] items-center shadow-lg shadow-emerald-900/50"
         >
-          <Text className="text-white font-black uppercase tracking-[0.2em]">Complete Vector</Text>
+          <Text className="text-white font-black uppercase tracking-[0.2em]">Complete Session</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={handleAbort}
           className="w-full bg-white/5 p-6 rounded-[2rem] items-center border border-white/10"
         >
-          <Text className="text-white/50 font-black uppercase tracking-[0.2em]">Abort Mission</Text>
+          <Text className="text-white/50 font-black uppercase tracking-[0.2em]">Stop Session</Text>
         </TouchableOpacity>
       </View>
 
       <View className="absolute bottom-12 items-center">
         <Text className="text-indigo-400 text-[10px] font-black uppercase tracking-[0.3em]">
-          Stay focused. Maintain the pulse.
+          Stay focused. Maintain the momentum.
         </Text>
       </View>
     </LinearGradient>

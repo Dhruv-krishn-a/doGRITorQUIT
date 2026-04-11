@@ -431,7 +431,7 @@ export function StudyView() {
          {isPaused ? <Play size={24} fill="currentColor" /> : <Pause size={24} fill="currentColor" />}
         </button>
         <div className="flex-1 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl flex flex-col items-center justify-center gap-1 py-4 shadow-inner">
-         <span className="text-[8px] font-black text-[var(--text-secondary)] uppercase vertical-text tracking-[0.3em] mb-4 italic">Neural Clock</span>
+         <span className="text-[8px] font-black text-[var(--text-secondary)] uppercase vertical-text tracking-[0.3em] mb-4 italic">Smart Clock</span>
          <span className="text-xl font-black text-[var(--accent-color)] font-mono rotate-90 italic tracking-tighter">{Math.floor(seconds / 60).toString().padStart(2,"0")}</span>
          <span className="text-xl font-black text-[var(--text-secondary)] font-mono rotate-90 italic tracking-tighter">{(seconds % 60).toString().padStart(2,"0")}</span>
         </div>

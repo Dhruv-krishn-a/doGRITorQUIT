@@ -80,6 +80,36 @@ export const sendVerificationEmail = async (email: string, token: string) => {
   });
 };
 
+export const sendFeedbackEmail = async (params: {
+  email: string;
+  message: string;
+  platform: string;
+  type: string;
+  metadata?: any;
+}) => {
+  const html = appFrame(
+    "New Feedback Received",
+    `
+      <p>A user has submitted feedback from the <strong>${params.platform}</strong> platform.</p>
+      <ul style="padding-left:18px">
+        <li><strong>From:</strong> ${params.email}</li>
+        <li><strong>Type:</strong> ${params.type}</li>
+        <li><strong>Platform:</strong> ${params.platform}</li>
+      </ul>
+      <p style="margin:20px 0; padding:15px; background:#f3f4f6; border-radius:8px; font-style:italic">
+        "${params.message}"
+      </p>
+      ${params.metadata ? `<p><strong>Technical Context:</strong> <pre style="font-size:10px">${JSON.stringify(params.metadata, null, 2)}</pre></p>` : ""}
+    `
+  );
+  await sendEmail({
+    to: "dogritorquit@gmail.com",
+    subject: `[${params.platform.toUpperCase()}] ${params.type}: New Feedback`,
+    html,
+    text: `Feedback from ${params.email} on ${params.platform}: ${params.message}`,
+  });
+};
+
 export const sendMagicLinkEmail = async (email: string, magicLink: string) => {
   const html = appFrame(
     "Sign In Link",

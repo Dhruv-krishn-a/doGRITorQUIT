@@ -139,7 +139,7 @@ export function TracksView({ initialPlans = [], isLimitReached = false, maxPlans
           <div className="transform-gpu space-y-2">
             <div className="transform-gpu flex items-center gap-3">
               <h1 className="transform-gpu text-4xl font-bold text-[var(--text-primary)] tracking-tighter uppercase italic">
-                Neural Hub <span className="text-[var(--text-secondary)] opacity-30">//</span> <span className="transform-gpu text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent-color)] to-sky-500">Projects</span>
+                Smart Hub <span className="text-[var(--text-secondary)] opacity-30">//</span> <span className="transform-gpu text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent-color)] to-sky-500">Paths</span>
               </h1>
               <span className="transform-gpu bg-[var(--bg-secondary)] text-[var(--accent-color)] text-[10px] font-black px-3 py-1 rounded-full border border-[var(--border-color)] shadow-sm">V3.0</span>
             </div>
@@ -341,7 +341,7 @@ export function TracksView({ initialPlans = [], isLimitReached = false, maxPlans
           <section className="transform-gpu flex flex-col mt-4">
             <div className="transform-gpu flex items-center gap-3 mb-4 ml-1">
               <div className="transform-gpu w-1.5 h-4 bg-[var(--accent-color)] rounded-full shadow-[0_0_10px_var(--accent-color)]" />
-              <h2 className="transform-gpu text-[11px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em]">Neural Revision Pipeline</h2>
+              <h2 className="transform-gpu text-[11px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em]">Smart Revision Pipeline</h2>
             </div>
             <div className="transform-gpu flex-1 bg-[var(--bg-card)]/30 backdrop-blur-xl border border-[var(--border-color)] shadow-2xl rounded-[3.5rem] p-8 relative overflow-hidden">
               <div className="transform-gpu absolute top-6 right-8 px-4 py-2 bg-[var(--accent-color)]/10 border border-[var(--accent-color)]/20 rounded-full">
@@ -359,7 +359,7 @@ export function TracksView({ initialPlans = [], isLimitReached = false, maxPlans
               <div className="transform-gpu p-3 bg-[var(--bg-secondary)] text-[var(--accent-color)] rounded-2xl shadow-sm border border-[var(--border-color)] flex items-center justify-center">
                 <LayoutGrid size={20} />
               </div>
-              <h2 className="transform-gpu text-2xl font-bold text-[var(--text-primary)] tracking-tighter uppercase italic">Active Vectors</h2>
+              <h2 className="transform-gpu text-2xl font-bold text-[var(--text-primary)] tracking-tighter uppercase italic">Active Tasks</h2>
             </div>
             
             <div className="transform-gpu flex items-center">

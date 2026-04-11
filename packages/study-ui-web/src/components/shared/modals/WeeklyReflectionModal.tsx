@@ -160,7 +160,7 @@ export function WeeklyReflectionModal() {
                <Battery size={24} />
              </div>
              <div>
-               <p className="transform-gpu text-[10px] font-bold uppercase tracking-[0.3em] text-emerald-600 mb-1">Weekly Vector</p>
+               <p className="transform-gpu text-[10px] font-bold uppercase tracking-[0.3em] text-emerald-600 mb-1">Weekly Step</p>
                <p className="transform-gpu text-sm font-bold text-emerald-900 leading-snug">Setting a singular focus optimizes neural retention for the days ahead.</p>
              </div>
           </div>

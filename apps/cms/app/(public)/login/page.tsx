@@ -53,7 +53,7 @@ export default function CMSLoginPage() {
                 <Sparkles size={32} />
               </div>
               <h1 className="text-3xl font-bold text-slate-900 tracking-tighter uppercase mb-2">CMS ENGINE</h1>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">Neural Interface Access</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">Management Portal Access</p>
             </div>
 
             {error && (

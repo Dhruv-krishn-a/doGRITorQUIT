@@ -28,7 +28,7 @@ export function CreateTrackModal() {
           <header className="transform-gpu flex justify-between items-center mb-12">
             <div>
               <h2 className="transform-gpu text-3xl font-bold text-rose-50 tracking-tight uppercase">Initialize Track</h2>
-              <p className="transform-gpu text-rose-400/60 font-bold text-xs uppercase tracking-[0.2em] mt-1">Select your vector type</p>
+              <p className="transform-gpu text-rose-400/60 font-bold text-xs uppercase tracking-[0.2em] mt-1">Select your step type</p>
             </div>
             <button onClick={closeModal} className="transform-gpu p-3 bg-[#1c0510] text-rose-400/50 hover:text-rose-400 border border-rose-900/50 hover:border-rose-500/50 rounded-xl transition-all">
               <X size={20} />

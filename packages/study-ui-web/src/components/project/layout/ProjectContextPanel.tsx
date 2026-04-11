@@ -65,7 +65,7 @@ export function ProjectContextPanel({
             <h4 className="transform-gpu text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic opacity-60">Project Brief</h4>
           </div>
           <p className="transform-gpu text-sm font-black text-[var(--text-primary)] leading-relaxed bg-[var(--bg-secondary)] border border-[var(--border-color)] shadow-inner p-8 rounded-[2.5rem] italic uppercase tracking-tight">
-            {track.description || 'No description provided for this vector.'}
+            {track.description || 'No description provided for this step.'}
           </p>
         </section>
 
@@ -87,14 +87,14 @@ export function ProjectContextPanel({
           <div className="transform-gpu flex items-center justify-between">
             <div className="transform-gpu flex items-center gap-4">
               <div className="transform-gpu p-2.5 bg-[var(--accent-color)]/10 text-[var(--accent-color)] rounded-xl border border-[var(--accent-color)]/20 shadow-sm"><MessageSquare size={18} /></div>
-              <h4 className="transform-gpu text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic opacity-60">Global Ledger</h4>
+              <h4 className="transform-gpu text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic opacity-60">Global Notes</h4>
             </div>
             <Plus size={18} className="transform-gpu text-[var(--accent-color)] hover:scale-125 transition-transform cursor-pointer" strokeWidth={3} />
           </div>
           <div className="transform-gpu bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[2.5rem] p-8 text-xs text-[var(--text-secondary)] font-black italic min-h-[250px] flex items-center justify-center text-center shadow-inner group">
             <div className="transform-gpu flex flex-col items-center gap-6">
                <FileText size={48} strokeWidth={1} className="transform-gpu text-[var(--text-secondary)] opacity-20 group-hover:opacity-40 transition-opacity" />
-               <span className="transform-gpu opacity-40 uppercase tracking-widest leading-relaxed">Initialize ledger sync to coordinate vector intelligence...</span>
+               <span className="transform-gpu opacity-40 uppercase tracking-widest leading-relaxed">Initialize notes sync to coordinate step intelligence...</span>
             </div>
           </div>
         </section>

@@ -87,7 +87,7 @@ export function StudyDashboardHUD({ data }: StudyDashboardHUDProps) {
             </div>
             
             <div className="transform-gpu text-left sm:text-right shrink-0">
-              <p className="transform-gpu text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Neural Status</p>
+              <p className="transform-gpu text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Smart Status</p>
               <div className="transform-gpu flex items-center gap-2 justify-start sm:justify-end bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100">
                 <Activity size={16} className="transform-gpu text-emerald-500 animate-pulse" />
                 <span className="transform-gpu text-sm md:text-lg font-bold font-mono text-emerald-600 tracking-tighter">SYNCED</span>
@@ -138,7 +138,7 @@ export function StudyDashboardHUD({ data }: StudyDashboardHUDProps) {
                  <span className="transform-gpu text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Daily Load</span>
               </div>
            </div>
-           <h4 className="transform-gpu text-xs font-bold text-slate-900 uppercase tracking-[0.2em] mb-2">Neural Capacity</h4>
+           <h4 className="transform-gpu text-xs font-bold text-slate-900 uppercase tracking-[0.2em] mb-2">Smart Capacity</h4>
            <p className="transform-gpu text-[11px] text-slate-400 font-bold max-w-50 leading-relaxed wrap-break-word">
              Optimized based on your 14-day velocity trajectory.
            </p>
@@ -171,7 +171,7 @@ export function StudyDashboardHUD({ data }: StudyDashboardHUDProps) {
               </div>
 
               <h2 className="transform-gpu text-3xl md:text-5xl font-bold tracking-tight mb-6 leading-[1.05] max-w-lg drop-shadow-sm wrap-break-word">
-                {data.globalNextUnit?.title || "Neural engine idle. Initialize a learning vector."}
+                {data.globalNextUnit?.title || "Smart engine idle. Initialize a learning vector."}
               </h2>
               
               <p className="transform-gpu text-pink-100 font-bold text-sm md:text-base max-w-md line-clamp-3 leading-relaxed tracking-wide opacity-90 wrap-break-word">
@@ -200,13 +200,13 @@ export function StudyDashboardHUD({ data }: StudyDashboardHUDProps) {
           </div>
         </motion.div>
 
-        {/* Neural Decay (Review) */}
+        {/* Smart Decay (Review) */}
         <motion.div variants={item} className="transform-gpu lg:col-span-5 flex flex-col gap-8">
            <div className="transform-gpu bg-white rounded-[3.5rem] border border-slate-100 p-8 md:p-10 shadow-xl shadow-slate-200/20 flex-1 flex flex-col relative overflow-hidden min-h-75 max-h-112.5">
               <div className="transform-gpu flex items-center justify-between mb-8 px-2 relative z-10 shrink-0">
                 <h3 className="transform-gpu text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-[0.4em] flex items-center gap-3">
                   <History size={18} className="transform-gpu text-indigo-500 shrink-0" />
-                  <span>Neural Decay</span>
+                  <span>Smart Decay</span>
                 </h3>
                 <span className="transform-gpu bg-indigo-50 text-indigo-600 text-[10px] font-bold px-3 py-1.5 rounded-xl border border-indigo-100 shadow-sm shrink-0 whitespace-nowrap">
                   {data.dueRevisions?.length || 0} Modules

@@ -105,7 +105,7 @@ export function LoadGauge({ loadPercentage, breakdown }: LoadGaugeProps) {
                    <div className="transform-gpu p-2.5 bg-indigo-50 rounded-xl shadow-sm text-indigo-500 group-hover/item:scale-110 transition-transform">
                     <Layers size={16} />
                    </div>
-                   <span className="transform-gpu text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-slate-400 group-hover/item:text-slate-500 transition-colors">Active Vectors</span>
+                   <span className="transform-gpu text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-slate-400 group-hover/item:text-slate-500 transition-colors">Active Steps</span>
                  </div>
                  <span className="transform-gpu font-bold text-slate-800 text-sm md:text-base">{breakdown.contextSwitches} Tracks</span>
                </motion.div>
