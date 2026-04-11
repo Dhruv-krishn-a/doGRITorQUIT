@@ -23,7 +23,7 @@ export default function VerifyRequestPage() {
         </h1>
 
         <p className="text-[var(--text-secondary)] font-medium mb-8">
-          We've sent a verification link to your email address. Please click the link to activate your account.
+          We&apos;ve sent a verification link to your email address. Please click the link to activate your account.
         </p>
 
         <div className="space-y-4">

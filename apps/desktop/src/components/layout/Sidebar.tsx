@@ -19,7 +19,8 @@ import {
   Zap,
   BookOpen,
   RefreshCw,
-  LayoutDashboard
+  LayoutDashboard,
+  MessageSquare
 } from "lucide-react";
 
 import { GritioLogo } from '@gritorquit/dashboard-ui-web';

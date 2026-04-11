@@ -4,11 +4,10 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
   Sparkles, CheckCircle2, 
-  Quote, Briefcase, BookOpen, Clock, Zap, Target, Activity, Play
+  Quote, Briefcase, BookOpen, Clock, Zap, Activity, Play
 } from "lucide-react";
 import { Task as BaseTask } from "@/types/plan";
 import { useStudy, Unit } from "@gritorquit/study-core";
-import { motion } from "framer-motion";
 
 export interface ExtendedTask extends BaseTask {
   timeSpentMinutes?: number;

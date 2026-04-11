@@ -5,8 +5,8 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   CheckCircle2, Clock, Calendar, ArrowRight, Target,
-  Trophy, MoreHorizontal, Plus, Brain, Flame,
-  Play, BarChart3, TrendingUp, Activity
+  Plus, Brain, Flame,
+  TrendingUp, Activity
 } from "lucide-react";
 
 // --- Types ---
@@ -26,8 +26,7 @@ type DashboardData = {
 };
 
 export default function DashboardUI({ data }: { data: DashboardData }) {
-  const [quickTask, setQuickTask] = useState("");
-  const { user, stats, activePlan, habits, todaysTasks, upcomingEvents } = data;
+  const { user, stats, activePlan, habits, todaysTasks } = data;
 
   const hours = Math.floor(stats.focusMinutes / 60);
   const mins = stats.focusMinutes % 60;

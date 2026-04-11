@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { 
-  ArrowLeft, Settings, Trash2, RefreshCw, Loader2, 
+  ArrowLeft, Trash2, RefreshCw, Loader2, 
   LayoutGrid, List, Play, Pause, RotateCcw, Save, Brain,
-  Activity, Clock, Youtube, Target, TrendingUp, AlertCircle,
+  Activity, Clock, TrendingUp, AlertCircle,
   Star, PieChart, Zap
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';

@@ -87,7 +87,7 @@ export default function PublicTermsPage() {
                <h2 className="text-xl font-black uppercase italic tracking-tight">4. Liability & Disclaimers</h2>
             </div>
             <p className="text-[var(--text-secondary)] leading-relaxed text-sm">
-              THE SERVICE IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND. TO THE MAXIMUM EXTENT PERMITTED BY LAW, DHRUV KRISHNA (DEVELOPER) DISCLAIMS ALL LIABILITY FOR INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING FROM YOUR USE OF THE APP.
+              THE SERVICE IS PROVIDED &quot;AS IS&quot; WITHOUT WARRANTIES OF ANY KIND. TO THE MAXIMUM EXTENT PERMITTED BY LAW, DHRUV KRISHNA (DEVELOPER) DISCLAIMS ALL LIABILITY FOR INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING FROM YOUR USE OF THE APP.
             </p>
           </section>
 

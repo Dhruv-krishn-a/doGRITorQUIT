@@ -21,7 +21,8 @@ import {
   BookOpen,
   Zap,
   RefreshCw,
-  ListTodo
+  ListTodo,
+  MessageSquare
 } from "lucide-react";
 
 import { GritioLogo } from '@gritorquit/dashboard-ui-web';
