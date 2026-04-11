@@ -24,6 +24,22 @@ export async function createManualPath(params: {
   });
 }
 
+export async function batchCreateUnits(trackId: string, units: Array<{ title: string, duration?: number, phase?: string }>) {
+  return await database.write(async () => {
+    const creations = units.map((u, idx) => {
+      return database.get<StudyUnit>('study_units').prepareCreate(unit => {
+        unit.trackId = trackId;
+        unit.title = u.title;
+        unit.durationMinutes = u.duration || 30;
+        unit.orderIndex = idx + 1;
+        unit.status = 'PENDING';
+        unit.metadata = JSON.stringify({ phase: u.phase || 'Default' });
+      });
+    });
+    await database.batch(...creations);
+  });
+}
+
 export async function ingestYoutubePlaylist(playlistUrl: string) {
   const session = await getStoredSession();
   if (!session) throw new Error("Authentication required");
@@ -41,9 +57,6 @@ export async function ingestYoutubePlaylist(playlistUrl: string) {
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || "Failed to import playlist");
 
-  // The backend created the track and units. 
-  // We need to wait for the next sync to see them in WatermelonDB,
-  // or we can manually return the expected object if needed.
   return data; 
 }
 

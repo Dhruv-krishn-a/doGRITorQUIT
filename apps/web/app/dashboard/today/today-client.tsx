@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
   Sparkles, CheckCircle2, 
-  Quote, Briefcase, BookOpen, Clock, Zap, Target, Activity
+  Quote, Briefcase, BookOpen, Clock, Zap, Target, Activity, Play
 } from "lucide-react";
 import { Task as BaseTask } from "@/types/plan";
 import { useStudy, Unit } from "@gritorquit/study-core";
@@ -27,7 +27,7 @@ const QUOTES = [
   "Discipline is choosing between what you want now and what you want most.",
   "Atomic habits lead to massive results.",
   "Smart Command Center: READY_FOR_EXECUTION",
-  "Stay on the vector. Maintain the pulse."
+  "Stay focused. Maintain the momentum."
 ];
 
 export default function TodayClientPage({ initialTasks, initialUnits }: TodayClientPageProps) {
@@ -93,7 +93,7 @@ export default function TodayClientPage({ initialTasks, initialUnits }: TodayCli
           
           {/* Header Section */}
           <header className="transform-gpu flex flex-col md:flex-row justify-between md:items-end gap-8 border-b border-slate-800 pb-8">
-            <div className="transform-gpu space-y-1">
+            <div className="transform-gpu space-y-1 text-left">
               <div className="transform-gpu flex items-center gap-3">
                 <h1 className="transform-gpu text-4xl font-black text-white italic uppercase tracking-tighter">Command Center</h1>
                 <span className="transform-gpu bg-sky-500/10 text-sky-focus text-[10px] font-black px-3 py-1 rounded-full border border-sky-500/20 shadow-lg shadow-sky-500/10 uppercase tracking-widest">Active Task</span>
@@ -121,9 +121,9 @@ export default function TodayClientPage({ initialTasks, initialUnits }: TodayCli
               <div className="transform-gpu absolute top-0 right-0 p-8 opacity-5 text-sky-focus group-hover:scale-110 transition-transform duration-700 group-hover:opacity-10 pointer-events-none">
                 <Quote size={120} />
               </div>
-              <div className="transform-gpu relative z-10 space-y-4">
+              <div className="transform-gpu relative z-10 space-y-4 text-left">
                 <div className="transform-gpu flex items-center gap-2 text-slate-500 font-black text-[10px] uppercase tracking-[0.4em]">
-                  <Sparkles size={12} /> Smart Inspiration
+                  <Sparkles size={12} /> Daily Motivation
                 </div>
                 <h2 className="transform-gpu text-2xl md:text-3xl font-black text-white leading-tight italic uppercase tracking-tight">
                   &quot;{quote}&quot;
@@ -148,17 +148,17 @@ export default function TodayClientPage({ initialTasks, initialUnits }: TodayCli
                 {tasks.length === 0 && units.length === 0 ? (
                   <div className="transform-gpu bg-slate-800/10 border border-dashed border-slate-800 rounded-[3rem] p-20 text-center">
                     <CheckCircle2 className="transform-gpu mx-auto text-slate-800 mb-4" size={48} />
-                    <p className="transform-gpu text-slate-600 font-black uppercase tracking-widest text-xs italic">All neural vectors resolved.</p>
+                    <p className="transform-gpu text-slate-600 font-black uppercase tracking-widest text-xs italic">All tasks resolved.</p>
                   </div>
                 ) : (
                   <div className="transform-gpu grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {/* Render Plan Tasks */}
                     {tasks.map(task => (
                       <div key={task.id} className="transform-gpu bg-slate-surface/20 border border-slate-800 rounded-[2rem] p-8 hover:border-sky-focus/30 transition-all shadow-xl flex flex-col justify-between group">
-                         <div>
+                         <div className="text-left">
                             <div className="transform-gpu flex items-center gap-2 text-slate-500 mb-6">
                                <CheckCircle2 size={16} className="transform-gpu text-sky-focus" />
-                               <span className="transform-gpu text-[9px] font-black uppercase tracking-widest">Task</span>
+                               <span className="transform-gpu text-[9px] font-black uppercase tracking-widest">General Task</span>
                             </div>
                             <h3 className="transform-gpu text-lg font-black text-white uppercase italic tracking-tight mb-3 group-hover:text-sky-focus transition-colors leading-tight">{task.title}</h3>
                             {task.description && <p className="transform-gpu text-[11px] font-bold text-slate-500 line-clamp-2 uppercase tracking-wide leading-relaxed">{task.description}</p>}
@@ -175,7 +175,7 @@ export default function TodayClientPage({ initialTasks, initialUnits }: TodayCli
                               }}
                               className="transform-gpu px-6 py-3 bg-white text-obsidian rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-sky-focus transition-all active:scale-95 shadow-lg"
                             >
-                              Action
+                              Complete
                             </button>
                          </div>
                       </div>
@@ -186,7 +186,7 @@ export default function TodayClientPage({ initialTasks, initialUnits }: TodayCli
                       const isCourse = unit.track?.type === 'COURSE' || unit.track?.type === 'PLAYLIST';
                       return (
                         <div key={unit.id} className={`bg-slate-surface/20 border ${isCourse ? 'border-slate-800 hover:border-sky-focus/30' : 'border-slate-800 hover:border-mint/30'} rounded-[2rem] p-8 transition-all shadow-xl flex flex-col justify-between group`}>
-                           <div>
+                           <div className="text-left">
                               <div className={`flex items-center gap-2 mb-6 ${isCourse ? 'text-sky-focus/50' : 'text-mint/50'}`}>
                                  {isCourse ? <BookOpen size={16} className="transform-gpu text-sky-focus" /> : <Briefcase size={16} className="transform-gpu text-mint" />}
                                  <span className="transform-gpu text-[9px] font-black uppercase tracking-widest">{isCourse ? 'Lesson' : 'Step'}</span>
@@ -204,9 +204,10 @@ export default function TodayClientPage({ initialTasks, initialUnits }: TodayCli
                               </div>
                               <button 
                                 onClick={() => handleUnitAction('SESSION', unit)}
-                                className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-95 shadow-lg ${isCourse ? 'bg-sky-focus text-obsidian hover:bg-white' : 'bg-mint text-obsidian hover:bg-white'}`}
+                                className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-95 shadow-lg flex items-center gap-2 ${isCourse ? 'bg-sky-focus text-obsidian hover:bg-white' : 'bg-mint text-obsidian hover:bg-white'}`}
                               >
-                                {isCourse ? 'Sync' : 'Execute'}
+                                <Play size={12} fill="currentColor" />
+                                Start
                               </button>
                            </div>
                         </div>

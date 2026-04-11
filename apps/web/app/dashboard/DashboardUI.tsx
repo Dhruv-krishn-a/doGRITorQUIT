@@ -76,12 +76,12 @@ export default function DashboardUI({ data }: { data: DashboardData }) {
            </div>
         </div>
 
-        {/* Resolved Vectors */}
+        {/* Resolved Tasks */}
         <div className="transform-gpu bg-slate-surface/30 p-6 rounded-[2.5rem] border border-slate-800 shadow-sm relative overflow-hidden group">
            <CheckCircle2 size={40} className="absolute -right-2 -top-2 text-mint/5 group-hover:text-mint/10 transition-colors" />
            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Resolved</p>
            <span className="text-3xl font-black text-white italic">{stats.completedTasks}</span>
-           <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mt-1">Vectors Today</p>
+           <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mt-1">Tasks Today</p>
         </div>
 
         {/* Streak */}
@@ -104,16 +104,16 @@ export default function DashboardUI({ data }: { data: DashboardData }) {
       {/* --- Main Arena Grid --- */}
       <div className="transform-gpu grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
         
-        {/* Active Mission & Habits (Left 2 Columns) */}
+        {/* Active Path & Habits (Left 2 Columns) */}
         <div className="transform-gpu lg:col-span-2 space-y-8">
            
-           {/* Active Mission Card */}
+           {/* Active Path Card */}
            <div className="transform-gpu bg-slate-800/40 rounded-[3rem] p-8 border border-slate-800 relative overflow-hidden">
               <div className="relative z-10">
                  <div className="flex items-center gap-2 text-sky-focus text-[10px] font-black uppercase tracking-widest mb-4">
-                    <Target size={14} /> Current Mission
+                    <Target size={14} /> Current Path
                  </div>
-                 <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter mb-8">{activePlan?.title || "No Active Mission"}</h3>
+                 <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter mb-8">{activePlan?.title || "No Active Path"}</h3>
                  
                  {activePlan ? (
                     <div>
@@ -147,7 +147,7 @@ export default function DashboardUI({ data }: { data: DashboardData }) {
               </div>
            </div>
 
-           {/* Habit Pulse Grid */}
+           {/* Habit Grid */}
            <div>
               <div className="flex items-center justify-between mb-4 ml-1">
                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Habits</p>

@@ -1,6 +1,7 @@
 // apps/web/app/layout.tsx
 import "./globals.css";
 import { ToastProvider } from "@shared/components/ToastProvider";
+import { NotificationManager } from "@shared/components/NotificationManager";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="transform-gpu bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans antialiased">
+        <NotificationManager />
         <ToastProvider>{children}</ToastProvider>
         <div id="study-view-root" />
         <div id="study-modal-root" />

@@ -1,5 +1,6 @@
 import { HabitsOfflineStorage, HabitData, Habit, HabitLog, DailyNote } from "@gritorquit/habits-core";
 import { getDb, queueAction } from "./db";
+import { NotificationService } from "./notifications";
 
 export const sqliteHabitsBridge: HabitsOfflineStorage = {
   isOffline: () => !navigator.onLine,
@@ -55,6 +56,10 @@ export const sqliteHabitsBridge: HabitsOfflineStorage = {
       "INSERT OR REPLACE INTO habit_logs (id, habitId, date, completed, updatedAt) VALUES (?, ?, ?, ?, ?)",
       [log.id, log.habitId, log.date, log.completed ? 1 : 0, new Date().toISOString()]
     );
+
+    if (log.completed) {
+      NotificationService.send("Habit Completed", "Progress has been synchronized to your local ledger.");
+    }
   },
 
   deleteHabitLog: async (habitId: string, date: string) => {

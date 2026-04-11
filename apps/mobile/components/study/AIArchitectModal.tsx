@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ActivityIndicator, ScrollView, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
@@ -10,22 +10,46 @@ interface AIArchitectModalProps {
   onGenerate: (prompt: string, type: string) => void;
 }
 
+const LOADING_TIPS = [
+  "Analyzing neural patterns...",
+  "Mapping optimal learning vectors...",
+  "Structuring curriculum modules...",
+  "Synthesizing high-density insights...",
+  "Optimizing for maximum retention...",
+  "Architecting your growth roadmap...",
+  "Aligning with industry standards...",
+  "Calculating temporal requirements..."
+];
+
 export const AIArchitectModal: React.FC<AIArchitectModalProps> = ({ isVisible, onClose, onGenerate }) => {
   const { colors } = useTheme();
   const [prompt, setPrompt] = useState('');
   const [type, setType] = useState('COURSE');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [tipIndex, setTipIndex] = useState(0);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isGenerating) {
+      interval = setInterval(() => {
+        setTipIndex((prev) => (prev + 1) % LOADING_TIPS.length);
+      }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [isGenerating]);
 
   const handleGenerate = () => {
     if (!prompt.trim()) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setIsGenerating(true);
     onGenerate(prompt, type);
-    // Simulation of generation delay
+    // Simulation of generation delay for UX testing, 
+    // the actual API call is handled by the parent component.
+    // In production, the parent should reset isGenerating when done.
     setTimeout(() => {
       setIsGenerating(false);
       onClose();
-    }, 3000);
+    }, 15000); // 15 seconds simulation
   };
 
   return (
@@ -47,16 +71,27 @@ export const AIArchitectModal: React.FC<AIArchitectModalProps> = ({ isVisible, o
                </View>
                <Text className="text-2xl font-black italic uppercase tracking-tighter text-[var(--text-primary)]">AI Architect</Text>
             </View>
-            <TouchableOpacity onPress={onClose} className="p-2 bg-[var(--bg-secondary)] rounded-full border border-[var(--border-color)]">
-              <Ionicons name="close" size={20} color={colors.textSecondary} />
-            </TouchableOpacity>
+            {!isGenerating && (
+              <TouchableOpacity onPress={onClose} className="p-2 bg-[var(--bg-secondary)] rounded-full border border-[var(--border-color)]">
+                <Ionicons name="close" size={20} color={colors.textSecondary} />
+              </TouchableOpacity>
+            )}
           </View>
 
           {isGenerating ? (
             <View className="py-20 items-center justify-center">
                <ActivityIndicator size="large" color={colors.accent} />
-               <Text className="text-lg font-black text-[var(--text-primary)] italic uppercase tracking-tighter mt-8">Building your path...</Text>
-               <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest mt-2 opacity-40">Mapping neural steps</Text>
+               <Text className="text-xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter mt-8">Architecting...</Text>
+               
+               <View className="mt-6 bg-[var(--bg-secondary)]/50 px-6 py-4 rounded-2xl border border-[var(--border-color)] w-full">
+                  <Text className="text-[10px] font-black text-[var(--accent-color)] uppercase tracking-[0.2em] mb-1 italic">Process Signal</Text>
+                  <Text className="text-xs font-black text-[var(--text-primary)] uppercase italic tracking-tight">{LOADING_TIPS[tipIndex]}</Text>
+               </View>
+
+               <View className="mt-10 w-full h-1 bg-[var(--bg-secondary)] rounded-full overflow-hidden">
+                  <View className="h-full bg-[var(--accent-color)] animate-pulse" style={{ width: '60%' }} />
+               </View>
+               <Text className="text-[8px] font-black text-[var(--text-secondary)] uppercase tracking-widest mt-4 opacity-40 italic">Deep neural synthesis in progress</Text>
             </View>
           ) : (
             <View className="space-y-8">
