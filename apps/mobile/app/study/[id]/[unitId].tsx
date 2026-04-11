@@ -12,6 +12,7 @@ import * as Haptics from 'expo-haptics';
 import YoutubePlayer from 'react-native-youtube-iframe';
 import { PerspectiveWrapper } from '../../(drawer)/_layout';
 import { updateUnitNotes, toggleUnitCompletion } from '../../../lib/study-logic';
+import { sendImmediateNotification } from '../../../lib/notifications';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -218,6 +219,7 @@ const UnitSession: React.FC<UnitSessionProps> = ({ track, unit }) => {
                     onPress={async () => {
                       await handleSaveNotes();
                       await toggleUnitCompletion(unit.id);
+                      sendImmediateNotification("Mission Success 🏁", `Sector "${unit.title}" has been resolved.`);
                       router.back();
                     }}
                     className="h-10 px-5 bg-[var(--text-primary)] rounded-xl items-center justify-center shadow-md"

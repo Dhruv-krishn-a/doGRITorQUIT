@@ -35,14 +35,27 @@ if (typeof window !== "undefined" && "__TAURI_INTERNALS__" in window) {
   };
 }
 
+import { DesktopBootSplash } from "./components/layout/DesktopBootSplash";
+
 initGlobalErrorLogging();
 logger.info("app.bootstrap");
 SyncEngine.start();
 
+function Root() {
+  const [showSplash, setShowSplash] = React.useState(true);
+
+  return (
+    <>
+      {showSplash && <DesktopBootSplash onComplete={() => setShowSplash(false)} />}
+      <App />
+    </>
+  );
+}
+
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <QueryProvider>
-      <App />
+      <Root />
     </QueryProvider>
   </React.StrictMode>,
 );

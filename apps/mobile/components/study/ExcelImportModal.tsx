@@ -5,6 +5,7 @@ import { useTheme } from '../../context/ThemeContext';
 import * as Haptics from 'expo-haptics';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 import Papa from 'papaparse';
 import { createManualPath, batchCreateUnits } from '../../lib/path-creation';
 import { useRouter } from 'expo-router';
@@ -20,6 +21,18 @@ export const ExcelImportModal: React.FC<ExcelImportModalProps> = ({ isVisible, o
   const router = useRouter();
   const [file, setFile] = useState<any>(null);
   const [isImporting, setIsImporting] = useState(false);
+
+  const handleDownloadTemplate = async () => {
+    try {
+      const template = "Title,Duration,Phase\nSetup Environment,30,Planning\nImplement UI Components,120,Frontend\nConfigure API Endpoints,90,Backend";
+      const fileUri = FileSystem.documentDirectory + "grit_path_template.csv";
+      await FileSystem.writeAsStringAsync(fileUri, template);
+      await Sharing.shareAsync(fileUri);
+    } catch (err) {
+      console.error(err);
+      Alert.alert("Error", "Failed to generate template.");
+    }
+  };
 
   const pickDocument = async () => {
     try {
@@ -135,9 +148,13 @@ export const ExcelImportModal: React.FC<ExcelImportModalProps> = ({ isVisible, o
               </TouchableOpacity>
 
               <View className="p-6 bg-emerald-500/5 rounded-2xl border border-emerald-500/10 text-left">
-                 <Text className="text-[8px] font-black text-emerald-500/60 uppercase tracking-widest leading-relaxed italic">
-                   System supports standard CSV exports. Ensure your headers include "Title", "Duration", and "Phase".
+                 <Text className="text-[8px] font-black text-emerald-500/60 uppercase tracking-widest leading-relaxed italic mb-4">
+                   System requires headers: "Title", "Duration", and "Phase".
                  </Text>
+                 <TouchableOpacity onPress={handleDownloadTemplate} className="flex-row items-center gap-2">
+                    <Ionicons name="download-outline" size={14} color="#10b981" />
+                    <Text className="text-[10px] font-black text-emerald-500 uppercase tracking-widest border-b border-emerald-500/30">Download CSV Template</Text>
+                 </TouchableOpacity>
               </View>
 
               <TouchableOpacity 

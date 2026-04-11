@@ -64,6 +64,19 @@ export async function registerForPushNotificationsAsync() {
   }
 }
 
+export async function sendImmediateNotification(title: string, body: string, data = {}) {
+  try {
+    const ready = await ensureLocalNotificationsReady();
+    if (!ready) return;
+    await Notifications.scheduleNotificationAsync({
+      content: { title, body, data },
+      trigger: null,
+    });
+  } catch (error) {
+    console.warn('Immediate notification failed:', error);
+  }
+}
+
 export async function scheduleDailyReminder() {
   try {
     await cancelScheduledByTag(DAILY_BRIEFING_TAG);

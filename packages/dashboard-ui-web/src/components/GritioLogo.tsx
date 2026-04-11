@@ -12,12 +12,12 @@ interface GritioLogoProps {
 export function GritioLogo({ className = '', size = 'md', withText = true }: GritioLogoProps) {
   const [scope, animate] = useAnimate();
 
-  // Size mappings
+  // Size mappings - Increased dot sizes and adjusted alignment
   const sizes = {
-    sm: { text: 'text-lg', dotSize: 4, gap: 'gap-1' },
-    md: { text: 'text-2xl', dotSize: 6, gap: 'gap-1.5' },
-    lg: { text: 'text-4xl', dotSize: 8, gap: 'gap-2' },
-    xl: { text: 'text-6xl', dotSize: 12, gap: 'gap-3' },
+    sm: { text: 'text-lg', dotSize: 6, gap: 'gap-1.5' },
+    md: { text: 'text-2xl', dotSize: 8, gap: 'gap-2' },
+    lg: { text: 'text-4xl', dotSize: 12, gap: 'gap-3' },
+    xl: { text: 'text-6xl', dotSize: 18, gap: 'gap-4' },
   };
 
   const s = sizes[size];
@@ -62,7 +62,7 @@ export function GritioLogo({ className = '', size = 'md', withText = true }: Gri
         if (!isMounted || !scope.current) break;
 
         // Frame 4: Shift Forward (All dots shift left, first disappears, new hollow appears at end)
-        const shiftAmount = -(s.dotSize + (size === 'sm' ? 4 : size === 'md' ? 6 : size === 'lg' ? 8 : 12));
+        const shiftAmount = -(s.dotSize + (size === 'sm' ? 6 : size === 'md' ? 8 : size === 'lg' ? 12 : 16));
         
         await Promise.all([
           animate(".dot-1", { x: shiftAmount, opacity: 0 }, { duration: 0.5, ease: "easeInOut" }),
@@ -81,15 +81,15 @@ export function GritioLogo({ className = '', size = 'md', withText = true }: Gri
   }, [animate, s.dotSize, size, scope]);
 
   return (
-    <div ref={scope} className={`flex items-center gap-3 cursor-pointer group ${className}`}>
+    <div ref={scope} className={`flex items-center gap-4 cursor-pointer group ${className}`}>
       {withText && (
-        <span className={`font-black ${s.text} tracking-tighter text-[var(--text-primary)] italic uppercase group-hover:text-[var(--accent-color)] transition-colors leading-none`}>
+        <span className={`font-black ${s.text} tracking-tighter text-[var(--text-primary)] italic uppercase group-hover:text-[var(--accent-color)] transition-colors leading-none self-center`}>
           grit.io
         </span>
       )}
       
       {/* Container must hide overflow during the shift left phase */}
-      <div className={`flex items-center ${s.gap} overflow-hidden py-1 px-0.5`}>
+      <div className={`flex items-center ${s.gap} overflow-hidden py-2 px-0.5 self-center`}>
         <motion.div 
           style={{ width: s.dotSize, height: s.dotSize }}
           className="dot-1 rounded-full shrink-0 border border-transparent" 
