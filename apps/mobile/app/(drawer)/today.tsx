@@ -4,7 +4,6 @@ import { useToday } from '../../hooks/useToday';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../context/ThemeContext';
-import { PerspectiveWrapper } from './_layout';
 import SmartTimeline from '../../components/today/SmartTimeline';
 
 const DAY_START_HOUR = 23; // 11 PM
@@ -159,7 +158,7 @@ export default function TodayPage() {
   }
 
   return (
-    <PerspectiveWrapper>
+    <View className="flex-1 bg-[var(--bg-primary)]">
       <Modal visible={showAddBlock} transparent animationType="slide">
         <View className="flex-1 justify-end bg-black/60">
           <View 
@@ -310,6 +309,6 @@ export default function TodayPage() {
           </View>
         </View>
       </ScrollView>
-    </PerspectiveWrapper>
+    </View>
   );
 }

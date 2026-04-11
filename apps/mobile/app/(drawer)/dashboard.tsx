@@ -48,10 +48,9 @@ export default function MobileHome() {
   };
 
   return (
-    <PerspectiveWrapper>
-      <View className="flex-1 bg-[var(--bg-primary)]">
-        
-        {/* Unified Header */}
+    <View className="flex-1 bg-[var(--bg-primary)]">
+      
+      {/* Unified Header */}
         <View className="px-6 pt-16 pb-4 bg-[var(--bg-card)] border-b border-[var(--border-color)] shadow-sm">
           <View className="flex-row justify-between items-center mb-8">
              <View className="text-left">

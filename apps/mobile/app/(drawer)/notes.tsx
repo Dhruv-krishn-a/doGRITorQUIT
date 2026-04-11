@@ -6,7 +6,6 @@ import { useRouter } from 'expo-router';
 import { database } from '../../db';
 import { Q } from '@nozbe/watermelondb';
 import Note from '../../db/models/Note';
-import { PerspectiveWrapper } from './_layout';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function NotesPage() {
@@ -83,8 +82,7 @@ export default function NotesPage() {
   );
 
   return (
-    <PerspectiveWrapper>
-      <View className="flex-1 bg-[var(--bg-primary)]">
+    <View className="flex-1 bg-[var(--bg-primary)]">
         <View className="p-6 pb-0">
           <View className="flex-row items-center justify-between mb-8">
             <View>
@@ -153,6 +151,5 @@ export default function NotesPage() {
           )}
         </ScrollView>
       </View>
-    </PerspectiveWrapper>
   );
 }

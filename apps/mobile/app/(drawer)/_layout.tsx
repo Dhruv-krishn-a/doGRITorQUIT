@@ -71,27 +71,20 @@ function CustomDrawerContent(props: any) {
   );
 }
 
-// Perspective Wrapper Component
-export const PerspectiveWrapper = ({ children }: { children: React.ReactNode }) => {
-  let progress: Animated.SharedValue<number>;
-  
-  try {
-    progress = useDrawerProgress() as Animated.SharedValue<number>;
-  } catch (e) {
-    // Fallback if used outside of drawer context
-    progress = useSharedValue(0);
-  }
+// Custom Scene Component to apply perspective animation
+function CustomScene(props: any) {
+  const progress = useDrawerProgress() as Animated.SharedValue<number>;
   
   const animatedStyle = useAnimatedStyle(() => {
     const val = progress?.value ?? 0;
-    const scale = interpolate(val, [0, 1], [1, 0.85], Extrapolation.CLAMP);
-    const borderRadius = interpolate(val, [0, 1], [0, 40], Extrapolation.CLAMP);
-    const rotateY = interpolate(val, [0, 1], [0, -10], Extrapolation.CLAMP);
-    const translateX = interpolate(val, [0, 1], [0, 20], Extrapolation.CLAMP);
+    const scale = interpolate(val, [0, 1], [1, 0.82], Extrapolation.CLAMP);
+    const borderRadius = interpolate(val, [0, 1], [0, 48], Extrapolation.CLAMP);
+    const rotateY = interpolate(val, [0, 1], [0, -12], Extrapolation.CLAMP);
+    const translateX = interpolate(val, [0, 1], [0, 25], Extrapolation.CLAMP);
 
     return {
       transform: [
-        { perspective: 1000 },
+        { perspective: 1200 },
         { scale },
         { rotateY: `${rotateY}deg` },
         { translateX }
@@ -102,14 +95,11 @@ export const PerspectiveWrapper = ({ children }: { children: React.ReactNode }) 
   });
 
   return (
-    <Animated.View 
-      className="flex-1 bg-[var(--bg-primary)]" 
-      style={animatedStyle}
-    >
-      {children}
+    <Animated.View style={[{ flex: 1 }, animatedStyle]}>
+      {props.children}
     </Animated.View>
   );
-};
+}
 
 export default function DrawerLayout() {
   const { session, loading } = useAuth();
@@ -153,7 +143,7 @@ export default function DrawerLayout() {
           },
           drawerActiveTintColor: colors.accent,
           drawerInactiveTintColor: colors.textSecondary,
-          drawerActiveBackgroundColor: `${colors.accent}15`, // Adding some transparency
+          drawerActiveBackgroundColor: `${colors.accent}15`, 
           drawerLabelStyle: {
             fontWeight: "900",
             fontSize: 12,
@@ -171,7 +161,13 @@ export default function DrawerLayout() {
               <Ionicons name="apps" size={size} color={color} />
             ),
           }}
-        />
+        >
+          {(props) => (
+            <CustomScene>
+              <props.component {...props} />
+            </CustomScene>
+          )}
+        </Drawer.Screen>
         <Drawer.Screen
           name="today"
           options={{
@@ -181,7 +177,13 @@ export default function DrawerLayout() {
               <Ionicons name="flash" size={size} color={color} />
             ),
           }}
-        />
+        >
+          {(props) => (
+            <CustomScene>
+              <props.component {...props} />
+            </CustomScene>
+          )}
+        </Drawer.Screen>
         <Drawer.Screen
           name="notes"
           options={{
@@ -191,7 +193,13 @@ export default function DrawerLayout() {
               <Ionicons name="journal" size={size} color={color} />
             ),
           }}
-        />
+        >
+          {(props) => (
+            <CustomScene>
+              <props.component {...props} />
+            </CustomScene>
+          )}
+        </Drawer.Screen>
         <Drawer.Screen
           name="study"
           options={{
@@ -201,7 +209,13 @@ export default function DrawerLayout() {
               <Ionicons name="rocket" size={size} color={color} />
             ),
           }}
-        />
+        >
+          {(props) => (
+            <CustomScene>
+              <props.component {...props} />
+            </CustomScene>
+          )}
+        </Drawer.Screen>
         <Drawer.Screen
           name="checklist"
           options={{
@@ -211,7 +225,13 @@ export default function DrawerLayout() {
               <Ionicons name="checkmark-circle" size={size} color={color} />
             ),
           }}
-        />
+        >
+          {(props) => (
+            <CustomScene>
+              <props.component {...props} />
+            </CustomScene>
+          )}
+        </Drawer.Screen>
         <Drawer.Screen
           name="settings"
           options={{
@@ -221,7 +241,13 @@ export default function DrawerLayout() {
               <Ionicons name="settings" size={size} color={color} />
             ),
           }}
-        />
+        >
+          {(props) => (
+            <CustomScene>
+              <props.component {...props} />
+            </CustomScene>
+          )}
+        </Drawer.Screen>
         <Drawer.Screen
           name="subscriptions"
           options={{
@@ -231,7 +257,13 @@ export default function DrawerLayout() {
               <Ionicons name="card" size={size} color={color} />
             ),
           }}
-        />
+        >
+          {(props) => (
+            <CustomScene>
+              <props.component {...props} />
+            </CustomScene>
+          )}
+        </Drawer.Screen>
         <Drawer.Screen
           name="feedback"
           options={{
@@ -241,11 +273,15 @@ export default function DrawerLayout() {
               <Ionicons name="people" size={size} color={color} />
             ),
           }}
-        />
+        >
+          {(props) => (
+            <CustomScene>
+              <props.component {...props} />
+            </CustomScene>
+          )}
+        </Drawer.Screen>
         
         {/* Hidden internal screens */}
-        <Drawer.Screen name="insights" options={{ drawerItemStyle: { display: 'none' } }} />
-        <Drawer.Screen name="analytics" options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name="profile" options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name="planner" options={{ drawerItemStyle: { display: 'none' } }} />
       </Drawer>

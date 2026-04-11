@@ -7,7 +7,6 @@ import withObservables from '@nozbe/with-observables';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import * as Haptics from 'expo-haptics';
-import { PerspectiveWrapper } from './_layout';
 
 interface PlannerProps {
   tasks: Task[];
@@ -89,9 +88,8 @@ const Planner: React.FC<PlannerProps> = ({ tasks }) => {
   );
 
   return (
-    <PerspectiveWrapper>
-      <View className="flex-1 bg-[var(--bg-primary)]">
-        <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+    <View className="flex-1 bg-[var(--bg-primary)]">
+      <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
           <View className="mb-10 text-left">
             <Text className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--text-secondary)] mb-2 italic">Neural Planner</Text>
             <Text className="text-4xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter leading-none">
@@ -130,7 +128,6 @@ const Planner: React.FC<PlannerProps> = ({ tasks }) => {
           )}
         </ScrollView>
       </View>
-    </PerspectiveWrapper>
   );
 };
 

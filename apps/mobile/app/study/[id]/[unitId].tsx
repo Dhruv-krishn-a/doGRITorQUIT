@@ -10,7 +10,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../../context/ThemeContext';
 import * as Haptics from 'expo-haptics';
 import YoutubePlayer from 'react-native-youtube-iframe';
-import { PerspectiveWrapper } from '../../(drawer)/_layout';
 import { updateUnitNotes, toggleUnitCompletion } from '../../../lib/study-logic';
 import { sendImmediateNotification } from '../../../lib/notifications';
 
@@ -160,9 +159,8 @@ const UnitSession: React.FC<UnitSessionProps> = ({ track, unit }) => {
   }
 
   return (
-    <PerspectiveWrapper>
-      <View className="flex-1 bg-[var(--bg-primary)]">
-        {/* Fixed Video Player Header */}
+    <View className="flex-1 bg-[var(--bg-primary)]">
+      {/* Fixed Video Player Header */}
         <View className="bg-black aspect-video w-full z-20 relative shadow-2xl">
           {youtubeId ? (
             <YoutubePlayer
@@ -297,7 +295,6 @@ const UnitSession: React.FC<UnitSessionProps> = ({ track, unit }) => {
           </View>
         </KeyboardAvoidingView>
       </View>
-    </PerspectiveWrapper>
   );
 };
 

@@ -3,7 +3,6 @@ import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator,
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
-import { PerspectiveWrapper } from './_layout';
 import * as Haptics from 'expo-haptics';
 import Constants from 'expo-constants';
 
@@ -71,9 +70,8 @@ export default function MobileDeveloperHub() {
   );
 
   return (
-    <PerspectiveWrapper>
-      <View className="flex-1 bg-[var(--bg-primary)]">
-        {/* Header */}
+    <View className="flex-1 bg-[var(--bg-primary)]">
+      {/* Header */}
         <View className="px-6 pt-16 pb-4 bg-[var(--bg-card)] border-b border-[var(--border-color)] shadow-sm">
           <View className="mb-8">
             <Text className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--text-secondary)] mb-1 italic">Community Stream</Text>
@@ -169,6 +167,5 @@ export default function MobileDeveloperHub() {
           )}
         </ScrollView>
       </View>
-    </PerspectiveWrapper>
   );
 }

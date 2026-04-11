@@ -18,7 +18,6 @@ import { database } from '../../db';
 import Note from '../../db/models/Note';
 import Habit from '../../db/models/Habit';
 import { scheduleChecklistNudgeSoon, scheduleChecklistRemainingReminder } from '../../lib/notifications';
-import { PerspectiveWrapper } from './_layout';
 
 type HabitFilter = 'ALL' | 'PENDING' | 'DONE';
 
@@ -140,13 +139,12 @@ export default function ChecklistPage() {
   };
 
   return (
-    <PerspectiveWrapper>
-      <View className="flex-1 bg-[var(--bg-primary)]">
-        <ScrollView
-          className="flex-1"
-          contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 80 }}
-          showsVerticalScrollIndicator={false}
-        >
+    <View className="flex-1 bg-[var(--bg-primary)]">
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 80 }}
+        showsVerticalScrollIndicator={false}
+      >
           <View className="mb-8 text-left">
             <Text className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--text-secondary)] mb-2 italic">
               Daily Habits
@@ -321,7 +319,6 @@ export default function ChecklistPage() {
           </View>
         </Modal>
       </View>
-    </PerspectiveWrapper>
   );
 }
 

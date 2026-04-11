@@ -3,7 +3,6 @@ import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'rea
 import { useStudyHub } from '../../hooks/useStudyHub';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { PerspectiveWrapper } from './_layout';
 import { useTheme } from '../../context/ThemeContext';
 import { PathCreationManager } from '../../components/study/PathCreationManager';
 
@@ -61,13 +60,12 @@ export default function StudyHubPage() {
   };
 
   return (
-    <PerspectiveWrapper>
-      <View className="flex-1 bg-[var(--bg-primary)]">
-        <ScrollView 
-          className="flex-1" 
-          contentContainerStyle={{ padding: 24 }}
-          showsVerticalScrollIndicator={false}
-        >
+    <View className="flex-1 bg-[var(--bg-primary)]">
+      <ScrollView 
+        className="flex-1" 
+        contentContainerStyle={{ padding: 24 }}
+        showsVerticalScrollIndicator={false}
+      >
           <View className="mb-10 text-left">
             <Text className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--text-secondary)] mb-2 italic">Your Journey</Text>
             <Text className="text-4xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter leading-none">
@@ -123,6 +121,5 @@ export default function StudyHubPage() {
           onRefresh={refreshTracks}
         />
       </View>
-    </PerspectiveWrapper>
   );
 }

@@ -5,7 +5,6 @@ import { useSync } from '../../context/SyncContext';
 import { useTheme } from '../../context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { PerspectiveWrapper } from './_layout';
 
 export default function SettingsPage() {
   const { user, signOut } = useAuth();
@@ -75,8 +74,7 @@ export default function SettingsPage() {
   );
 
   return (
-    <PerspectiveWrapper>
-      <ScrollView className="flex-1 bg-[var(--bg-primary)]" contentContainerStyle={{ padding: 24 }}>
+    <ScrollView className="flex-1 bg-[var(--bg-primary)]" contentContainerStyle={{ padding: 24 }}>
         <View className="mb-10">
           <Text className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--text-secondary)] mb-2">System Config</Text>
           <Text className="text-4xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter">Settings</Text>
@@ -165,6 +163,5 @@ export default function SettingsPage() {
           System Version 1.0.4 // grit.io
         </Text>
       </ScrollView>
-    </PerspectiveWrapper>
   );
 }

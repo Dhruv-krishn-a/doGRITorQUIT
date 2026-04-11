@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, FlatList, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useBilling, Product } from '../../hooks/useBilling';
-import { PerspectiveWrapper } from './_layout';
 import { useTheme } from '../../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
@@ -14,11 +13,9 @@ export default function SubscriptionsPage() {
 
   if (loading && !data) {
     return (
-      <PerspectiveWrapper>
-        <View className="flex-1 items-center justify-center bg-[var(--bg-primary)]">
-          <ActivityIndicator size="large" color={colors.accent} />
-        </View>
-      </PerspectiveWrapper>
+      <View className="flex-1 items-center justify-center bg-[var(--bg-primary)]">
+        <ActivityIndicator size="large" color={colors.accent} />
+      </View>
     );
   }
 
@@ -98,13 +95,12 @@ export default function SubscriptionsPage() {
   };
 
   return (
-    <PerspectiveWrapper>
-      <View className="flex-1 bg-[var(--bg-primary)]">
-        <ScrollView 
-          className="flex-1" 
-          contentContainerStyle={{ paddingTop: 24, paddingBottom: 40 }}
-          showsVerticalScrollIndicator={false}
-        >
+    <View className="flex-1 bg-[var(--bg-primary)]">
+      <ScrollView 
+        className="flex-1" 
+        contentContainerStyle={{ paddingTop: 24, paddingBottom: 40 }}
+        showsVerticalScrollIndicator={false}
+      >
           <View className="px-6 mb-8 text-left">
             <Text className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--text-secondary)] mb-2 italic">Your Plan</Text>
             <Text className="text-4xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter leading-none">Usage</Text>
@@ -207,6 +203,5 @@ export default function SubscriptionsPage() {
           )}
         </ScrollView>
       </View>
-    </PerspectiveWrapper>
   );
 }
