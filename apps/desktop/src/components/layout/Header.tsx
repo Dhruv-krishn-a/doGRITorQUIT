@@ -11,6 +11,8 @@ import {
  LogOut, Settings, ChevronDown, Sparkles, Menu, X, CreditCard, PlusCircle, Palette
 } from "lucide-react";
 
+import { GritioLogo } from '@gritorquit/dashboard-ui-web';
+
 type Props = {
  nav: NavItem[];
 };
@@ -114,13 +116,7 @@ export default function Header({ nav }: Props) {
      <div className="transform-gpu flex items-center gap-10">
       {/* Logo area */}
       <Link to="/" className="transform-gpu group flex items-center gap-3 select-none" onClick={() => setMobileMenuOpen(false)}>
-       <div className="transform-gpu relative flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--bg-secondary)] text-[var(--accent-color)] border border-[var(--border-color)] shadow-lg group-hover:scale-105 transition-all duration-300">
-        <Sparkles size={20} className="transform-gpu absolute group-hover:rotate-12 transition-transform duration-300" />
-       </div>
-       <div className="transform-gpu flex flex-col leading-none">
-        <span className="transform-gpu font-black text-xl tracking-tighter text-[var(--text-primary)] italic uppercase group-hover:text-[var(--accent-color)] transition-colors">DO GRIT</span>
-        <span className="transform-gpu text-[9px] font-bold text-[var(--text-secondary)] tracking-[0.2em] uppercase transition-colors">OK QUIT</span>
-       </div>
+       <GritioLogo size="sm" withText={true} />
       </Link>
 
       {/* Desktop Navigation */}

@@ -96,7 +96,7 @@ export function useBilling() {
         currency: order.currency,
         key: order.keyId,
         amount: order.amount,
-        name: 'DO GRIT',
+        name: 'grit.io',
         order_id: order.orderId,
         prefill: {
           email: session.user.email ?? undefined,

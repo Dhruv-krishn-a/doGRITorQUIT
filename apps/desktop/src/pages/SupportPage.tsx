@@ -111,7 +111,7 @@ export default function SupportPage() {
               </div>
 
               <div className="transform-gpu text-[9px] text-[var(--text-secondary)] font-black uppercase tracking-[0.3em]">
-                © 2026 DO GRIT OK QUIT
+                © {new Date().getFullYear()} grit.io
               </div>
             </div>
 

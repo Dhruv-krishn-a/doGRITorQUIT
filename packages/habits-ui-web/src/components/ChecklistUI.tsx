@@ -427,7 +427,7 @@ export const ChecklistUI: React.FC<ChecklistUIProps> = ({
                     dataKey="name" 
                     axisLine={false} 
                     tickLine={false} 
-                    tick={{fontSize: 8, fontWeight: 900, fill: 'var(--text-secondary)', textTransform: 'uppercase'}} 
+                    tick={{fontSize: 8, fontWeight: 900, fill: 'var(--text-secondary)'}} 
                     dy={10}
                     interval={analyticsRange === '30d' ? 4 : 0}
                   />
@@ -450,7 +450,7 @@ export const ChecklistUI: React.FC<ChecklistUIProps> = ({
                     baseValue={0}
                     connectNulls
                     dot={{ r: 5, fill: 'var(--accent-color)', strokeWidth: 2, stroke: 'var(--bg-card)' }}
-                    activeDot={{ r: 7, fill: 'var(--accent-color)', strokeWidth: 3, stroke: 'var(--bg-card)', shadow: '0 0 10px var(--accent-color)' }}
+                    activeDot={{ r: 7, fill: 'var(--accent-color)', strokeWidth: 3, stroke: 'var(--bg-card)' }}
                   />
                 </AreaChart>
               </ResponsiveContainer>

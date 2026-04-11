@@ -38,7 +38,7 @@ function appFrame(title: string, body: string) {
       <h2 style="font-size:24px;line-height:1.2;margin:0 0 12px;font-weight:800;text-transform:uppercase">${title}</h2>
       <div style="font-size:15px;line-height:1.6;color:#374151">${body}</div>
       <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0" />
-      <p style="font-size:11px;color:#9ca3af;letter-spacing:1px;text-transform:uppercase;margin:0">© 2026 DO GRIT OK QUIT</p>
+      <p style="font-size:11px;color:#9ca3af;letter-spacing:1px;text-transform:uppercase;margin:0;font-weight:900;font-style:italic">© 2026 grit.io</p>
     </div>
   `;
 }

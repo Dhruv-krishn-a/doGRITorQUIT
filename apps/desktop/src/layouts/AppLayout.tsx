@@ -44,7 +44,7 @@ export function AppLayout() {
                    </div>
 
                    <div className="mt-auto relative z-10 py-6 text-center text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">
-                     © {new Date().getFullYear()} DO GRIT OK QUIT
+                     © {new Date().getFullYear()} grit.io
                    </div>
 
                    </div>

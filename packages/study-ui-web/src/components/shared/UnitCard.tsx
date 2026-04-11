@@ -107,41 +107,41 @@ function UnitCardContent({
       initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -1 }}
-      className={`group relative w-full bg-white border border-slate-100 rounded-xl p-2.5 transition-all duration-300 flex flex-col gap-1.5 ${isDone ? 'opacity-50 grayscale-[0.3]' : 'shadow-sm hover:shadow-md hover:border-rose-200'}`}
+      className={`group relative w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-3 transition-all duration-300 flex flex-col gap-2 ${isDone ? 'opacity-40 grayscale-[0.5]' : 'shadow-sm hover:shadow-xl hover:shadow-[var(--accent-color)]/10 hover:border-[var(--accent-color)]/30'}`}
     >
-      <div className="flex items-start gap-2">
+      <div className="flex items-start gap-3">
         {/* Icon */}
-        <div className={`w-6 h-6 rounded flex items-center justify-center shrink-0 transition-colors ${isDone ? 'text-emerald-500' : 'text-slate-400 group-hover:text-rose-500 bg-slate-50 group-hover:bg-rose-50'}`}>
-          {isDone ? <CheckCircle size={14} /> : isRevision ? <Zap size={14} /> : <Youtube size={14} />}
+        <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all ${isDone ? 'bg-emerald-500/10 text-emerald-500' : 'text-[var(--text-secondary)] group-hover:text-[var(--accent-color)] bg-[var(--bg-secondary)] group-hover:bg-[var(--accent-color)]/10 border border-[var(--border-color)] group-hover:border-[var(--accent-color)]/20 shadow-inner'}`}>
+          {isDone ? <CheckCircle size={16} /> : isRevision ? <Zap size={16} /> : <Youtube size={16} />}
         </div>
         
         {/* Title & Metadata */}
-        <div className="flex-1 min-w-0 flex flex-col">
-          <div className="flex items-start gap-1.5">
-            <span className="shrink-0 mt-0.5 px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-black rounded-md border border-slate-200 leading-none">
+        <div className="flex-1 min-w-0 flex flex-col text-left">
+          <div className="flex items-start gap-2">
+            <span className="shrink-0 mt-0.5 px-2 py-0.5 bg-[var(--bg-secondary)] text-[var(--text-secondary)] text-[8px] font-black rounded-lg border border-[var(--border-color)] leading-none italic uppercase tracking-tighter">
               {displayIndex + 1}
             </span>
-            <h3 className={`text-[11px] font-bold leading-tight line-clamp-2 ${isDone ? 'text-slate-400 line-through' : 'text-slate-800'}`}>
+            <h3 className={`text-[11px] font-black leading-tight line-clamp-2 uppercase italic tracking-tighter ${isDone ? 'text-[var(--text-secondary)] line-through' : 'text-[var(--text-primary)]'}`}>
               {unit.title}
             </h3>
           </div>
-          <div className="flex items-center gap-1.5 mt-0.5 ml-[26px]">
-            <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">
-              {unit.durationMinutes || 0}m
+          <div className="flex items-center gap-2 mt-1.5 ml-[2px]">
+            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic opacity-40">
+              {unit.durationMinutes || 0} MIN
             </span>
             {watchPercentage > 0 && !isDone && (
               <>
-                <span className="w-1 h-1 rounded-full bg-slate-200" />
-                <span className="text-[8px] font-bold uppercase tracking-widest text-rose-500">
-                  {Math.round(watchPercentage)}%
+                <span className="w-1 h-1 rounded-full bg-[var(--border-color)]" />
+                <span className="text-[8px] font-black uppercase tracking-[0.2em] text-[var(--accent-color)] italic">
+                  {Math.round(watchPercentage)}% COMPLETE
                 </span>
               </>
             )}
             {isDone && isNotConfident && (
               <>
-                <span className="w-1 h-1 rounded-full bg-slate-200" />
-                <span className="text-[8px] font-bold uppercase tracking-widest text-amber-500">
-                  Review
+                <span className="w-1 h-1 rounded-full bg-[var(--border-color)]" />
+                <span className="text-[8px] font-black uppercase tracking-[0.2em] text-amber-500 italic">
+                  NEURAL REVIEW REQ.
                 </span>
               </>
             )}
@@ -150,47 +150,47 @@ function UnitCardContent({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-between mt-1 pt-1.5 border-t border-slate-50/80">
-        <div className="flex items-center gap-1">
+      <div className="flex items-center justify-between mt-2 pt-2 border-t border-[var(--border-color)]/50">
+        <div className="flex items-center gap-2">
           {!isDone ? (
             <>
               <button
                 onClick={() => onAction('SESSION', unit)}
-                className="flex items-center gap-1 px-2.5 py-1 bg-rose-50 text-rose-600 rounded text-[9px] font-bold uppercase tracking-widest hover:bg-rose-100 hover:text-rose-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-color)]/10 text-[var(--accent-color)] border border-[var(--accent-color)]/20 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-[var(--accent-color)] hover:text-[var(--bg-primary)] transition-all active:scale-95 italic"
               >
                 <Play size={10} fill="currentColor" />
-                Start
+                ENGAGE
               </button>
               <button 
                 onClick={() => onAction('COMPLETE', unit)}
-                className="p-1 text-slate-300 hover:text-emerald-500 hover:bg-emerald-50 rounded transition-colors"
+                className="p-2 text-[var(--text-secondary)] opacity-40 hover:opacity-100 hover:text-emerald-500 hover:bg-emerald-500/10 rounded-xl transition-all active:scale-95"
                 title="Mark Complete"
               >
-                <CheckCircle size={14} />
+                <CheckCircle size={16} />
               </button>
             </>
           ) : (
             <button
               onClick={() => onAction('SESSION', unit)}
-              className="flex items-center gap-1 px-2.5 py-1 bg-slate-50 text-slate-500 rounded text-[9px] font-bold uppercase tracking-widest hover:bg-slate-100 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border-color)] rounded-xl text-[9px] font-black uppercase tracking-widest hover:text-[var(--text-primary)] hover:border-[var(--text-secondary)] transition-all italic"
             >
-              Review Notes
+              ACCESS LEDGER
             </button>
           )}
         </div>
         
-        <button className="p-1 text-slate-300 hover:text-slate-600 transition-colors rounded hover:bg-slate-50">
-          <MoreVertical size={12} />
+        <button className="p-2 text-[var(--text-secondary)] opacity-20 hover:opacity-100 hover:text-[var(--text-primary)] transition-all rounded-xl hover:bg-[var(--bg-secondary)]">
+          <MoreVertical size={14} />
         </button>
       </div>
       
       {/* Progress Bar (Compact) */}
       {!isDone && watchPercentage > 0 && (
-        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-slate-100 rounded-b-xl overflow-hidden">
+        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[var(--bg-secondary)] rounded-b-xl overflow-hidden">
           <motion.div 
             initial={{ width: 0 }}
             animate={{ width: `${watchPercentage}%` }}
-            className="h-full bg-rose-400"
+            className="h-full bg-[var(--accent-color)]"
           />
         </div>
       )}

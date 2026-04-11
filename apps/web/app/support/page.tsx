@@ -100,8 +100,8 @@ export default function SupportPage() {
               </div>
             </div>
 
-            <div className="transform-gpu text-[9px] text-[var(--text-secondary)] font-black uppercase tracking-[0.3em]">
-              © 2026 DO GRIT OK QUIT
+            <div className="transform-gpu text-[9px] text-[var(--text-secondary)] font-black uppercase tracking-[0.3em] italic">
+              © 2026 grit.io
             </div>
           </div>
 

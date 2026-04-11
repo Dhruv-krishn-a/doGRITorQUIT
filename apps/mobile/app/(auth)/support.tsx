@@ -180,9 +180,7 @@ export default function Support() {
           )}
         </Animated.View>
 
-        <Text className="text-center text-[8px] font-black text-[var(--text-secondary)] uppercase tracking-[0.4em] mt-8 opacity-50">
-          © 2026 DO GRIT OK QUIT
-        </Text>
+        <Text className="text-center text-[8px] font-black text-[var(--text-secondary)] uppercase tracking-[0.4em] mt-8 opacity-50 italic">© 2026 grit.io</Text>
       </ScrollView>
     </KeyboardAvoidingView>
   );

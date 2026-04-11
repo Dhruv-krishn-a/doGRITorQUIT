@@ -7,7 +7,7 @@ import Animated, {
   withDelay,
   withTiming,
 } from "react-native-reanimated";
-import BrandLogo from "./BrandLogo";
+import { GritioLogo } from "./GritioLogo";
 
 export default function BootSplash() {
   const fade = useSharedValue(0);
@@ -90,7 +90,7 @@ export default function BootSplash() {
         </View>
 
         <View style={{ marginTop: 22, alignItems: "center" }}>
-          <BrandLogo size="md" />
+          <GritioLogo size="xl" withText={true} />
         </View>
       </Animated.View>
     </View>

@@ -19,13 +19,15 @@ export function ProjectNotesTab({ track, metadata, projectNotes, setProjectNotes
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      className="transform-gpu p-8 space-y-6 h-full flex flex-col"
+      className="transform-gpu p-8 space-y-6 h-full flex flex-col text-left"
     >
-       <div className="transform-gpu bg-white border border-slate-200 shadow-sm rounded-[2.5rem] p-10 space-y-8 flex-1 flex flex-col">
-          <div className="transform-gpu flex items-center justify-between border-b border-slate-100 pb-6">
-            <div>
-              <h3 className="transform-gpu text-2xl font-bold text-slate-900 uppercase tracking-tight flex items-center gap-3"><FileText className="transform-gpu text-rose-500" /> Project Documentation</h3>
-              <p className="transform-gpu text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Global knowledge base for this vector</p>
+       <div className="transform-gpu bg-[var(--bg-card)] border border-[var(--border-color)] shadow-2xl rounded-[3rem] p-12 space-y-10 flex-1 flex flex-col relative overflow-hidden group">
+          <div className="transform-gpu absolute top-0 right-0 w-64 h-64 bg-[var(--accent-color)]/5 rounded-full blur-3xl pointer-events-none group-hover:scale-150 transition-transform duration-1000" />
+          
+          <div className="transform-gpu flex flex-col md:flex-row md:items-center justify-between border-b border-[var(--border-color)] pb-8 gap-6 relative z-10">
+            <div className="text-left">
+              <h3 className="transform-gpu text-2xl font-black text-[var(--text-primary)] uppercase tracking-tighter flex items-center gap-4 italic leading-none"><FileText size={28} className="transform-gpu text-[var(--accent-color)]" /> Project Documentation</h3>
+              <p className="transform-gpu text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em] mt-3 italic opacity-40">Global intelligence base for this vector</p>
             </div>
             <button 
               onClick={async () => {
@@ -39,16 +41,16 @@ export function ProjectNotesTab({ track, metadata, projectNotes, setProjectNotes
                   setIsSaving(false);
                 }
               }}
-              className="transform-gpu flex items-center gap-2 px-6 py-3 bg-rose-500 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-rose-600 transition-all shadow-lg shadow-rose-200 active:scale-95"
+              className="transform-gpu flex items-center justify-center gap-3 px-8 py-4 bg-[var(--accent-color)] text-[var(--bg-primary)] rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-[var(--accent-color)]/20 hover:opacity-90 transition-all active:scale-95 italic"
             >
-              {isSaving ? <Loader2 size={14} className="transform-gpu animate-spin" /> : <Save size={14} />}
-              Save Notes
+              {isSaving ? <Loader2 size={16} className="transform-gpu animate-spin" /> : <Save size={16} />}
+              Sync Ledger
             </button>
           </div>
           
           <textarea 
-            className="transform-gpu flex-1 w-full bg-slate-50/50 border border-slate-200/60 rounded-3xl p-10 font-medium text-slate-700 text-lg focus:border-rose-300 focus:bg-white focus:ring-4 focus:ring-rose-50 transition-all outline-none resize-none placeholder:text-slate-300 custom-scrollbar"
-            placeholder="Capture high-level project specs, architecture decisions, and important links..."
+            className="transform-gpu flex-1 w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[2rem] p-10 font-black text-[var(--text-primary)] text-lg focus:border-[var(--accent-color)]/50 focus:ring-4 focus:ring-[var(--accent-color)]/5 transition-all outline-none resize-none placeholder:text-[var(--text-secondary)]/20 italic uppercase tracking-tighter custom-scrollbar shadow-inner relative z-10"
+            placeholder="Initialize neural recording for project parameters, architecture, and core protocols..."
             value={projectNotes}
             onChange={(e) => setProjectNotes(e.target.value)}
           />

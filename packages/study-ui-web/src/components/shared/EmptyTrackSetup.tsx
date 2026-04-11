@@ -61,66 +61,64 @@ export const EmptyTrackSetup: React.FC<EmptyTrackSetupProps> = ({ trackId, onRef
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="transform-gpu max-w-5xl mx-auto py-16 space-y-16 transform-gpu antialiased font-sans relative z-10"
+      className="transform-gpu max-w-5xl mx-auto py-16 space-y-16 transform-gpu antialiased font-sans relative z-10 text-left"
     >
       {/* Background Soft Glow to ground the view */}
-      <div className="transform-gpu absolute top-0 left-1/2 -translate-x-1/2 w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] bg-rose-100/40 rounded-full blur-[120px] pointer-events-none -z-10 animate-[pulse_4s_cubic-bezier(0.4,0,0.6,1)_infinite]" />
+      <div className="transform-gpu absolute top-0 left-1/2 -translate-x-1/2 w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] bg-[var(--accent-color)]/5 rounded-full blur-[120px] pointer-events-none -z-10 animate-[pulse_4s_cubic-bezier(0.4,0,0.6,1)_infinite]" />
 
       {/* Header Section */}
-      <motion.div variants={itemVariants} className="transform-gpu text-center space-y-6">
+      <motion.div variants={itemVariants} className="transform-gpu text-center space-y-8">
         <motion.div 
           animate={{ 
             rotate: [0, 5, -5, 0],
             scale: [1, 1.05, 1]
           }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          className="transform-gpu inline-flex p-6 bg-white border border-rose-100 text-rose-500 rounded-[2.5rem] shadow-[0_8px_30px_rgba(244,63,94,0.15)] mb-2"
+          className="transform-gpu inline-flex p-8 bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--accent-color)] rounded-[3rem] shadow-2xl mb-4 relative group"
         >
-          <Cpu size={56} strokeWidth={1.5} className="transform-gpu drop-shadow-sm" />
+          <div className="transform-gpu absolute inset-0 bg-[var(--accent-color)]/5 rounded-[3rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Cpu size={64} strokeWidth={1.5} className="transform-gpu drop-shadow-sm relative z-10" />
         </motion.div>
-        <h2 className="transform-gpu text-5xl md:text-6xl font-bold text-slate-900 tracking-tighter leading-none uppercase drop-shadow-sm">
+        <h2 className="transform-gpu text-5xl md:text-7xl font-black text-[var(--text-primary)] tracking-tighter leading-none uppercase drop-shadow-sm italic">
           Empty Vector
         </h2>
-        <p className="transform-gpu text-slate-400 text-lg font-bold max-w-lg mx-auto leading-relaxed tracking-tight">
-          This neural track requires content. Import a syllabus or quick-add lessons to initiate tracking.
+        <p className="transform-gpu text-[var(--text-secondary)] text-xl font-black max-w-lg mx-auto leading-relaxed tracking-tight uppercase italic opacity-40">
+          Neural track requires content. Import syllabus or quick-add lessons to initiate tracking.
         </p>
       </motion.div>
 
-      <div className="transform-gpu grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+      <div className="transform-gpu grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
         
         {/* Option A: Import Syllabus */}
         <motion.div 
           variants={itemVariants}
           whileHover={{ y: -8 }}
-          className="transform-gpu bg-white/60 backdrop-blur-xl p-10 md:p-12 rounded-[3.5rem] border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-10 group hover:shadow-xl hover:shadow-indigo-100/50 hover:border-indigo-100 transition-all duration-500 relative overflow-hidden flex flex-col"
+          className="transform-gpu bg-[var(--bg-card)]/60 backdrop-blur-xl p-10 md:p-14 rounded-[4rem] border border-[var(--border-color)] shadow-2xl space-y-12 group hover:shadow-[var(--accent-color)]/5 hover:border-[var(--accent-color)]/30 transition-all duration-500 relative overflow-hidden flex flex-col"
         >
-          {/* Subtle Hover Gradient */}
-          <div className="transform-gpu absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-br from-indigo-50/50 via-white to-purple-50/50 bg-[length:200%_200%] animate-gradient-xy transition-opacity duration-700 pointer-events-none -z-10" />
+          <div className="transform-gpu absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-[60px] -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-1000 pointer-events-none" />
           
-          <div className="transform-gpu absolute top-0 right-0 w-48 h-48 bg-indigo-200/20 rounded-full blur-[40px] -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-1000 opacity-0 group-hover:opacity-100 pointer-events-none" />
-          
-          <div className="transform-gpu space-y-4 relative z-10">
-            <div className="transform-gpu p-4 bg-indigo-50 border border-indigo-100 text-indigo-600 rounded-[1.5rem] inline-block shadow-sm group-hover:rotate-12 transition-transform duration-500">
-              <Layout size={28} />
+          <div className="transform-gpu space-y-6 relative z-10 text-left">
+            <div className="transform-gpu p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-sky-500 rounded-[1.5rem] inline-block shadow-sm group-hover:rotate-12 transition-transform duration-500">
+              <Layout size={32} />
             </div>
-            <h3 className="transform-gpu text-3xl font-bold text-slate-900 uppercase tracking-tighter">Import Syllabus</h3>
-            <p className="transform-gpu text-[11px] text-indigo-500 font-bold uppercase tracking-[0.2em]">Batch Ingestion Process</p>
+            <h3 className="transform-gpu text-4xl font-black text-[var(--text-primary)] uppercase tracking-tighter italic leading-none">Import Syllabus</h3>
+            <p className="transform-gpu text-[11px] text-sky-500 font-black uppercase tracking-[0.3em] italic opacity-80">Batch Ingestion Process</p>
           </div>
           
-          <div className="transform-gpu space-y-5 relative z-10 flex-1">
-            <button className="transform-gpu w-full flex items-center justify-center gap-4 p-8 bg-white/80 rounded-[2.5rem] border-2 border-dashed border-slate-200 text-slate-400 group-hover:border-indigo-300 group-hover:text-indigo-500 group-hover:bg-indigo-50/50 transition-all duration-300 shadow-sm hover:shadow-md">
-              <PlusCircle size={28} className="transform-gpu group-hover:scale-110 transition-transform" />
-              <span className="transform-gpu text-sm font-bold uppercase tracking-widest mt-0.5">Select Files</span>
+          <div className="transform-gpu space-y-6 relative z-10 flex-1">
+            <button className="transform-gpu w-full flex flex-col items-center justify-center gap-6 p-12 bg-[var(--bg-secondary)]/50 rounded-[3rem] border-2 border-dashed border-[var(--border-color)] text-[var(--text-secondary)] group-hover:border-[var(--accent-color)]/30 group-hover:text-[var(--text-primary)] group-hover:bg-[var(--bg-secondary)] transition-all duration-300 shadow-inner group-hover:shadow-xl">
+              <PlusCircle size={36} className="transform-gpu group-hover:scale-110 group-hover:text-[var(--accent-color)] transition-all" strokeWidth={1.5} />
+              <span className="transform-gpu text-[11px] font-black uppercase tracking-[0.3em] mt-0.5 italic opacity-40 group-hover:opacity-100">Select Files</span>
             </button>
-            <p className="transform-gpu text-[10px] text-slate-400 font-bold leading-relaxed italic uppercase tracking-widest opacity-80 text-center">
-              Coming soon: Auto-extraction from PDF/CSV.
+            <p className="transform-gpu text-[10px] text-[var(--text-secondary)] font-black leading-relaxed italic uppercase tracking-widest opacity-20 text-center">
+              System expansion: PDF/CSV extraction pending.
             </p>
           </div>
 
           <motion.button 
             whileTap={{ scale: 0.98 }}
             disabled
-            className="transform-gpu w-full py-5 bg-slate-100 text-slate-400 rounded-2xl font-bold uppercase tracking-[0.3em] text-[10px] transition-all border border-slate-200 cursor-not-allowed relative z-10"
+            className="transform-gpu w-full py-6 bg-[var(--bg-secondary)] text-[var(--text-secondary)] rounded-2xl font-black uppercase tracking-[0.4em] text-[10px] transition-all border border-[var(--border-color)] cursor-not-allowed relative z-10 opacity-20 italic"
           >
             Module Offline
           </motion.button>
@@ -130,41 +128,38 @@ export const EmptyTrackSetup: React.FC<EmptyTrackSetupProps> = ({ trackId, onRef
         <motion.div 
           variants={itemVariants}
           whileHover={{ y: -8 }}
-          className="transform-gpu bg-white/60 backdrop-blur-xl p-10 md:p-12 rounded-[3.5rem] border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-10 group hover:shadow-xl hover:shadow-rose-100/50 hover:border-rose-100 transition-all duration-500 relative overflow-hidden flex flex-col"
+          className="transform-gpu bg-[var(--bg-card)]/60 backdrop-blur-xl p-10 md:p-14 rounded-[4rem] border border-[var(--border-color)] shadow-2xl space-y-12 group hover:shadow-[var(--accent-color)]/5 hover:border-[var(--accent-color)]/30 transition-all duration-500 relative overflow-hidden flex flex-col"
         >
-          {/* Subtle Hover Gradient */}
-          <div className="transform-gpu absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-br from-rose-50/50 via-white to-pink-50/50 bg-[length:200%_200%] animate-gradient-xy transition-opacity duration-700 pointer-events-none -z-10" />
-
-          <div className="transform-gpu absolute top-0 right-0 w-48 h-48 bg-rose-200/30 rounded-full blur-[40px] -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-1000 opacity-0 group-hover:opacity-100 pointer-events-none" />
+          <div className="transform-gpu absolute top-0 right-0 w-64 h-64 bg-[var(--accent-color)]/5 rounded-full blur-[60px] -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-1000 pointer-events-none" />
           
-          <div className="transform-gpu space-y-4 relative z-10">
-            <div className="transform-gpu p-4 bg-gradient-to-br from-rose-500 to-pink-500 text-white rounded-[1.5rem] inline-block shadow-[0_8px_20px_rgba(244,63,94,0.3)] group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500">
-              <Zap size={28} fill="currentColor" />
+          <div className="transform-gpu space-y-6 relative z-10 text-left">
+            <div className="transform-gpu p-4 bg-[var(--accent-color)]/10 text-[var(--accent-color)] rounded-[1.5rem] border border-[var(--accent-color)]/20 inline-block shadow-lg group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500">
+              <Zap size={32} fill="currentColor" />
             </div>
-            <h3 className="transform-gpu text-3xl font-bold text-slate-900 uppercase tracking-tighter">Quick Add</h3>
-            <p className="transform-gpu text-[11px] text-rose-500 font-bold uppercase tracking-[0.2em]">Manual Data Entry</p>
+            <h3 className="transform-gpu text-4xl font-black text-[var(--text-primary)] uppercase tracking-tighter italic leading-none">Quick Add</h3>
+            <p className="transform-gpu text-[11px] text-[var(--accent-color)] font-black uppercase tracking-[0.3em] italic opacity-80">Manual Data Entry</p>
           </div>
 
-          <form onSubmit={handleQuickAdd} className="transform-gpu space-y-5 relative z-10 flex-1 flex flex-col justify-center">
-            <div className="transform-gpu space-y-2">
-              <label className="transform-gpu text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-4">Lesson Title</label>
+          <form onSubmit={handleQuickAdd} className="transform-gpu space-y-8 relative z-10 flex-1 flex flex-col justify-center">
+            <div className="transform-gpu space-y-3 text-left">
+              <label className="transform-gpu text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em] ml-6 italic opacity-40">Lesson Title</label>
               <input 
                 type="text"
-                placeholder="e.g. Introduction to Neural Networks"
-                className="transform-gpu w-full bg-white/80 border border-slate-200 rounded-[2rem] py-5 px-6 font-bold text-slate-800 placeholder:text-slate-300 focus:border-rose-400 focus:ring-4 focus:ring-rose-100/50 outline-none transition-all shadow-inner text-sm"
+                placeholder="NEURAL NETWORK INTRODUCTION..."
+                className="transform-gpu w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[2.5rem] py-6 px-8 font-black text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/20 focus:border-[var(--accent-color)] focus:ring-4 focus:ring-[var(--accent-color)]/5 outline-none transition-all shadow-inner text-sm uppercase italic tracking-tighter"
                 value={newUnit.title}
                 onChange={e => setNewUnit({...newUnit, title: e.target.value})}
               />
             </div>
             
-            <div className="transform-gpu flex flex-col sm:flex-row gap-5 pt-2">
-              <div className="transform-gpu w-full sm:w-1/3 space-y-2 relative">
-                <label className="transform-gpu text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-4">Duration</label>
+            <div className="transform-gpu flex flex-col sm:flex-row gap-6 pt-2">
+              <div className="transform-gpu w-full sm:w-1/3 space-y-3 relative text-left">
+                <label className="transform-gpu text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em] ml-6 italic opacity-40">Temporal</label>
                 <div className="transform-gpu relative">
-                  <Clock className="transform-gpu absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <Clock className="transform-gpu absolute left-6 top-1/2 -translate-y-1/2 text-[var(--accent-color)]" size={20} />
                   <input 
                     type="number"
-                    className="transform-gpu w-full bg-white/80 border border-slate-200 rounded-2xl py-4 pl-12 pr-4 font-bold text-slate-800 outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-100/50 transition-all shadow-inner text-sm"
+                    className="transform-gpu w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl py-5 pl-14 pr-6 font-black text-[var(--text-primary)] outline-none focus:border-[var(--accent-color)] focus:ring-4 focus:ring-[var(--accent-color)]/5 transition-all shadow-inner text-sm italic"
                     value={newUnit.durationMinutes}
                     onChange={e => setNewUnit({...newUnit, durationMinutes: parseInt(e.target.value) || 0})}
                   />
@@ -176,19 +171,17 @@ export const EmptyTrackSetup: React.FC<EmptyTrackSetupProps> = ({ trackId, onRef
                   whileTap={{ scale: 0.95 }}
                   type="submit"
                   disabled={loading || !newUnit.title}
-                  className="transform-gpu w-full h-[54px] bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-400 hover:to-pink-400 text-white rounded-2xl font-bold uppercase tracking-[0.2em] text-[10px] transition-all shadow-[0_8px_20px_rgba(244,63,94,0.25)] hover:shadow-[0_12px_25px_rgba(244,63,94,0.4)] disabled:opacity-50 disabled:grayscale relative overflow-hidden group/btn flex items-center justify-center gap-2"
+                  className="transform-gpu w-full h-[64px] bg-[var(--accent-color)] text-[var(--bg-primary)] rounded-3xl font-black uppercase tracking-[0.3em] text-[11px] transition-all shadow-xl shadow-[var(--accent-color)]/20 hover:opacity-90 disabled:opacity-20 disabled:grayscale relative overflow-hidden group/btn flex items-center justify-center gap-3 italic"
                 >
-                   {/* CSS Shimmer/Glass Reflection Effect inside Button */}
-                   <div className="transform-gpu absolute inset-0 -translate-x-full group-hover/btn:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12" />
-                   <span className="transform-gpu relative z-10 pt-0.5">Initialize Lesson</span>
-                   <ArrowRight size={14} className="transform-gpu relative z-10 group-hover/btn:translate-x-1 transition-transform" />
+                   <span className="transform-gpu relative z-10">Initialize Vector</span>
+                   <ArrowRight size={16} strokeWidth={3} className="transform-gpu relative z-10 group-hover/btn:translate-x-2 transition-transform" />
                 </motion.button>
               </div>
             </div>
           </form>
 
-          <p className="transform-gpu text-[9px] text-slate-400 font-bold uppercase tracking-[0.3em] text-center relative z-10">
-            Metrics update upon task completion.
+          <p className="transform-gpu text-[9px] text-[var(--text-secondary)] font-black uppercase tracking-[0.4em] text-center relative z-10 italic opacity-20">
+            Metrics sync upon resolution.
           </p>
         </motion.div>
       </div>

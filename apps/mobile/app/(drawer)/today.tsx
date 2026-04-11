@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, TextInput,
 import { useToday } from '../../hooks/useToday';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useTheme } from '../../context/ThemeContext';
 import { PerspectiveWrapper } from './_layout';
 import SmartTimeline from '../../components/today/SmartTimeline';
 

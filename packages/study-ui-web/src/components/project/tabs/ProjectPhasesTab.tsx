@@ -70,10 +70,10 @@ export function ProjectPhasesTab({ track, phases, metadata, updateTrack }: Proje
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="transform-gpu p-8 h-full flex flex-col"
+      className="transform-gpu p-8 h-full flex flex-col text-left"
     >
-      <div className="transform-gpu flex items-center justify-between mb-8">
-        <h2 className="transform-gpu text-2xl font-bold text-slate-900 uppercase tracking-tight">Phase Editor</h2>
+      <div className="transform-gpu flex items-center justify-between mb-10 px-2">
+        <h2 className="transform-gpu text-2xl font-black text-[var(--text-primary)] uppercase tracking-tighter italic">Phase Editor</h2>
         <button 
           onClick={() => {
             const name = prompt("Enter new phase name:");
@@ -82,44 +82,46 @@ export function ProjectPhasesTab({ track, phases, metadata, updateTrack }: Proje
               handleAddPhase();
             }
           }}
-          className="transform-gpu flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-lg hover:bg-slate-800 transition-all active:scale-95"
+          className="transform-gpu flex items-center gap-3 px-8 py-4 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl hover:opacity-90 transition-all active:scale-95 italic"
         >
-          <Plus size={16} /> Add Root Phase
+          <Plus size={18} strokeWidth={3} /> Add Root Phase
         </button>
       </div>
 
       <div className="transform-gpu flex-1 flex gap-12 overflow-hidden">
          <div className="transform-gpu w-80 space-y-4 overflow-y-auto no-scrollbar pr-4">
             {phaseList.map((phase, i) => (
-              <div key={phase} className="transform-gpu p-5 bg-white border border-slate-200 shadow-sm rounded-2xl hover:border-rose-300 hover:shadow-md cursor-pointer transition-all flex items-center justify-between group">
-                 <div className="transform-gpu flex items-center gap-4">
-                    <Layers size={16} className="transform-gpu text-rose-500" />
-                    <span className="transform-gpu text-sm font-bold text-slate-800 uppercase">{phase}</span>
+              <div key={phase} className="transform-gpu p-6 bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm rounded-[2rem] hover:border-[var(--accent-color)]/30 hover:shadow-xl cursor-pointer transition-all flex items-center justify-between group">
+                 <div className="transform-gpu flex items-center gap-5">
+                    <Layers size={18} className="transform-gpu text-[var(--accent-color)]" />
+                    <span className="transform-gpu text-sm font-black text-[var(--text-primary)] uppercase italic tracking-tight">{phase}</span>
                  </div>
-                 <button onClick={() => handleDeletePhase(phase)} className="transform-gpu text-red-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                    Delete
+                 <button onClick={() => handleDeletePhase(phase)} className="transform-gpu text-rose-500/40 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all font-black text-[10px] uppercase tracking-widest italic">
+                    Purge
                  </button>
               </div>
             ))}
          </div>
 
-         <div className="transform-gpu flex-1 bg-white border border-slate-200 shadow-sm rounded-[3rem] p-10 space-y-10 overflow-y-auto no-scrollbar">
-            <div className="transform-gpu space-y-6">
-               <h3 className="transform-gpu text-[10px] font-bold uppercase tracking-widest text-rose-500">Phase Configuration</h3>
-               <div className="transform-gpu grid grid-cols-2 gap-8">
-                  <div className="transform-gpu space-y-3">
-                     <label className="transform-gpu text-[9px] font-bold uppercase text-slate-500">New Phase Name</label>
+         <div className="transform-gpu flex-1 bg-[var(--bg-card)] border border-[var(--border-color)] shadow-2xl rounded-[3rem] p-12 space-y-12 overflow-y-auto no-scrollbar relative">
+            <div className="transform-gpu absolute top-0 right-0 w-64 h-64 bg-[var(--accent-color)]/5 rounded-full blur-3xl pointer-events-none" />
+            
+            <div className="transform-gpu space-y-8 relative z-10">
+               <h3 className="transform-gpu text-[11px] font-black uppercase tracking-[0.3em] text-[var(--accent-color)] italic">Phase Configuration</h3>
+               <div className="transform-gpu grid grid-cols-2 gap-10">
+                  <div className="transform-gpu space-y-4">
+                     <label className="transform-gpu text-[9px] font-black uppercase text-[var(--text-secondary)] tracking-[0.2em] italic opacity-40 ml-1">New Phase Designation</label>
                      <input 
                        type="text" 
                        value={newPhaseName}
                        onChange={e => setNewPhaseName(e.target.value)}
-                       placeholder="e.g., QA Testing..." 
-                       className="transform-gpu w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:border-rose-400 focus:bg-white focus:shadow-sm outline-none transition-all" 
+                       placeholder="e.g., QA TESTING..." 
+                       className="transform-gpu w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl px-5 py-4 text-sm font-black text-[var(--text-primary)] focus:border-[var(--accent-color)] focus:ring-4 focus:ring-[var(--accent-color)]/5 outline-none transition-all italic uppercase tracking-tighter shadow-inner" 
                      />
                   </div>
-                  <div className="transform-gpu space-y-3">
-                     <label className="transform-gpu text-[9px] font-bold uppercase text-slate-500">Type</label>
-                     <select className="transform-gpu w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:border-rose-400 focus:bg-white focus:shadow-sm outline-none appearance-none transition-all">
+                  <div className="transform-gpu space-y-4">
+                     <label className="transform-gpu text-[9px] font-black uppercase text-[var(--text-secondary)] tracking-[0.2em] italic opacity-40 ml-1">Architectural Type</label>
+                     <select className="transform-gpu w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl px-5 py-4 text-sm font-black text-[var(--text-primary)] focus:border-[var(--accent-color)] outline-none transition-all italic uppercase tracking-tighter shadow-inner appearance-none cursor-pointer">
                         <option>Requirements</option>
                         <option>Design</option>
                         <option>Development</option>
@@ -129,13 +131,13 @@ export function ProjectPhasesTab({ track, phases, metadata, updateTrack }: Proje
                </div>
             </div>
 
-            <div className="transform-gpu pt-10 border-t border-slate-100 flex gap-4">
+            <div className="transform-gpu pt-12 border-t border-[var(--border-color)] flex gap-6 relative z-10">
                <button 
                  onClick={handleAddPhase}
                  disabled={isSaving || !newPhaseName.trim()}
-                 className="transform-gpu flex-1 py-4 flex items-center justify-center gap-2 bg-emerald-500 text-white rounded-2xl font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-emerald-200 hover:bg-emerald-600 transition-all active:scale-95 disabled:opacity-50"
+                 className="transform-gpu flex-1 py-5 flex items-center justify-center gap-3 bg-emerald-500 text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-emerald-500/20 hover:bg-emerald-600 transition-all active:scale-95 disabled:opacity-50 italic"
                >
-                 {isSaving ? <Loader2 size={16} className="transform-gpu animate-spin" /> : "Save New Phase"}
+                 {isSaving ? <Loader2 size={18} className="transform-gpu animate-spin" /> : "Commit New Phase"}
                </button>
             </div>
          </div>

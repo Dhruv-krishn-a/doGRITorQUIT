@@ -29,9 +29,9 @@ export function TrackHeader({ track, stats, currentEnergy, onEnergySelect, onOpt
   const { openModal } = useStudy();
 
   const energyLevels: { level: EnergyLevel; label: string; activeClass: string; tooltip: string; icon: any }[] = [
-    { level: 'HIGH', label: 'Intense', activeClass: 'bg-rose-500 text-white shadow-sm', tooltip: "1.5x study load", icon: Zap },
-    { level: 'MEDIUM', label: 'Normal', activeClass: 'bg-rose-400 text-white shadow-sm', tooltip: "Standard pace", icon: Activity },
-    { level: 'LOW', label: 'Light', activeClass: 'bg-amber-400 text-white shadow-sm', tooltip: "0.6x study load", icon: Clock }
+    { level: 'HIGH', label: 'Hyper-Focus', activeClass: 'bg-rose-500 text-white shadow-xl shadow-rose-500/20', tooltip: "Intense session", icon: Zap },
+    { level: 'MEDIUM', label: 'Flow State', activeClass: 'bg-sky-500 text-white shadow-xl shadow-sky-500/20', tooltip: "Standard pace", icon: Activity },
+    { level: 'LOW', label: 'Maintenance', activeClass: 'bg-[var(--text-secondary)] text-[var(--bg-primary)] shadow-xl shadow-black/10', tooltip: "Light session", icon: Clock }
   ];
 
   const totalVideos = track.units?.length || 0;
@@ -56,49 +56,62 @@ export function TrackHeader({ track, stats, currentEnergy, onEnergySelect, onOpt
     return `${h}h ${m}m`;
   };
 
+  const formatDate = (dateInput: string | number | Date | undefined | null) => {
+    if (!dateInput) return '---';
+    try {
+      const d = new Date(dateInput);
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+    } catch (e) {
+      return '---';
+    }
+  };
+
   const isBehind = stats?.status === 'BEHIND';
   const isAhead = stats?.status === 'AHEAD';
   const hasStarted = watchTimeMins > 0 || completedVideos > 0;
 
   return (
-    <div className="space-y-8 w-full max-w-full overflow-hidden antialiased font-sans">
+    <div className="space-y-8 w-full max-w-full overflow-hidden antialiased font-sans text-left">
       {/* Main Stats Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* --- Card 1: Progress & Energy --- */}
-        <div className="lg:col-span-2 bg-white rounded-3xl p-6 border border-slate-100 shadow-sm flex flex-col justify-between relative">
-          <div className="flex flex-col md:flex-row justify-between items-start gap-8 relative z-10">
-            <div className="space-y-6 flex-1 w-full">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-rose-50 text-rose-500 rounded-xl">
-                  <Sparkles size={20} />
+        <div className="lg:col-span-2 bg-[var(--bg-card)] rounded-[3rem] p-8 border border-[var(--border-color)] shadow-2xl flex flex-col justify-between relative overflow-hidden group">
+          <div className="transform-gpu absolute top-0 right-0 w-64 h-64 bg-[var(--accent-color)]/5 rounded-full blur-[100px] pointer-events-none" />
+          
+          <div className="flex flex-col md:flex-row justify-between items-start gap-10 relative z-10">
+            <div className="space-y-8 flex-1 w-full">
+              <div className="flex items-center gap-5">
+                <div className="p-4 bg-[var(--accent-color)]/10 text-[var(--accent-color)] rounded-2xl border border-[var(--accent-color)]/20 shadow-sm">
+                  <Sparkles size={24} />
                 </div>
                 <div>
-                  <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Course Progress</h3>
-                  <div className="flex items-baseline gap-3">
-                    <span className="text-4xl font-bold text-slate-800 tracking-tight">{Math.round(track.progressPercentage)}%</span>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{completedVideos} / {totalVideos} Lessons</span>
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] italic opacity-40">System Progress</h3>
+                  <div className="flex items-baseline gap-4 mt-1">
+                    <span className="text-5xl font-black text-[var(--text-primary)] italic tracking-tighter">{Math.round(track.progressPercentage)}%</span>
+                    <span className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] italic opacity-60">{completedVideos} / {totalVideos} Vectors</span>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+              <div className="space-y-4">
+                <div className="h-2.5 w-full bg-[var(--bg-secondary)] rounded-full overflow-hidden border border-[var(--border-color)]/50 p-0.5">
                   <div 
                     style={{ width: `${track.progressPercentage}%` }}
-                    className="h-full bg-rose-500 rounded-full transition-all duration-1000 ease-out"
+                    className="h-full bg-gradient-to-r from-[var(--accent-color)] to-sky-500 rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_var(--accent-color)]"
                   />
                 </div>
-                <p className="text-[10px] font-bold text-rose-500 uppercase tracking-widest flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                  {track.progressPercentage === 100 ? "Completed" : "In Progress"}
+                <p className="text-[9px] font-black text-[var(--accent-color)] uppercase tracking-[0.3em] flex items-center gap-2 italic">
+                  <span className="w-2 h-2 rounded-full bg-[var(--accent-color)] animate-pulse" />
+                  {track.progressPercentage === 100 ? "MISSION RESOLVED" : "VECTOR ACTIVE"}
                 </p>
               </div>
             </div>
 
-            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 w-full md:w-auto">
-              <h3 className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-4 px-1 text-center md:text-left">Study Intensity</h3>
-              <div className="flex flex-col gap-2 min-w-[200px]">
+            <div className="bg-[var(--bg-secondary)] p-6 rounded-[2rem] border border-[var(--border-color)] w-full md:w-auto shadow-inner">
+              <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] mb-5 px-1 text-center md:text-left italic opacity-40">Load Intensity</h3>
+              <div className="flex flex-col gap-2.5 min-w-[220px]">
                 {energyLevels.map((cfg) => {
                   const isActive = currentEnergy === cfg.level;
                   return (
@@ -106,13 +119,13 @@ export function TrackHeader({ track, stats, currentEnergy, onEnergySelect, onOpt
                       key={cfg.level}
                       onClick={() => onEnergySelect(cfg.level)}
                       title={cfg.tooltip}
-                      className={`flex items-center gap-3 p-3 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-colors duration-200 ${
+                      className={`flex items-center gap-4 p-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 italic ${
                         isActive 
                           ? cfg.activeClass
-                          : 'bg-white text-slate-500 border border-slate-200 hover:border-rose-200 hover:text-rose-500 hover:bg-rose-50'
+                          : 'bg-[var(--bg-card)] text-[var(--text-secondary)] border border-[var(--border-color)] hover:border-[var(--accent-color)]/30 hover:text-[var(--text-primary)]'
                       }`}
                     >
-                      <cfg.icon size={14} />
+                      <cfg.icon size={16} />
                       {cfg.label}
                     </button>
                   )
@@ -120,92 +133,97 @@ export function TrackHeader({ track, stats, currentEnergy, onEnergySelect, onOpt
               </div>
               <button 
                 onClick={onOptimize}
-                className="mt-4 w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-bold text-[10px] uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
+                className="mt-6 w-full py-4 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all hover:opacity-90 flex items-center justify-center gap-3 shadow-xl active:scale-95 italic"
               >
-                <TrendingUp size={14} />
-                Plan Today's Session
+                <TrendingUp size={16} strokeWidth={3} />
+                Optimize Execution
               </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8 pt-6 border-t border-slate-100 relative z-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-10 pt-8 border-t border-[var(--border-color)] relative z-10">
             <MetricItem 
-              icon={<Youtube size={14} className="text-rose-500" />}
-              label="Course Duration"
+              icon={<Youtube size={16} className="text-rose-500" />}
+              label="Vector Mass"
               value={formatMins(track.totalDurationMinutes)}
             />
             <MetricItem 
-              icon={<PlayCircleIcon size={14} className="text-emerald-500" />}
-              label="Actual Watched"
+              icon={<PlayCircleIcon size={16} className="text-emerald-500" />}
+              label="Processed"
               value={formatMins(watchTimeMins)}
             />
             <MetricItem 
-              icon={<Timer size={14} className="text-fuchsia-500" />}
-              label="Study Effort"
+              icon={<Timer size={16} className="text-fuchsia-500" />}
+              label="Integration"
               value={formatMins(studyTimeMins)}
             />
             <MetricItem 
-              icon={<Clock size={14} className="text-amber-500" />}
-              label="Remaining"
+              icon={<Clock size={16} className="text-amber-500" />}
+              label="Temporal Debt"
               value={formatMins(track.remainingMinutes || 0)}
             />
           </div>
         </div>
 
         {/* --- Card 2: Timeline & Analytics --- */}
-        <div className="bg-white rounded-3xl p-6 flex flex-col justify-between border border-slate-100 shadow-sm relative">
-          <div className="relative z-10 space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-rose-50 rounded-lg text-rose-500">
-                 <Target size={14} />
+        <div className="bg-[var(--bg-card)] rounded-[3rem] p-8 flex flex-col justify-between border border-[var(--border-color)] shadow-2xl relative overflow-hidden group">
+          <div className="transform-gpu absolute top-0 left-0 w-full h-full bg-gradient-to-br from-sky-500/5 via-transparent to-transparent pointer-events-none" />
+          
+          <div className="relative z-10 space-y-8">
+            <div className="flex items-center gap-4 leading-none">
+              <div className="p-3 bg-sky-500/10 rounded-xl text-sky-500 border border-sky-500/20 shadow-sm">
+                 <Target size={18} />
               </div>
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Timeline Analysis</h3>
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] italic opacity-40">Timeline Topology</h3>
             </div>
 
-            <div className="space-y-4">
-              <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Expected Finish</p>
+            <div className="space-y-5">
+              <div className="p-6 bg-[var(--bg-secondary)] rounded-[2rem] border border-[var(--border-color)] shadow-inner">
+                <p className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-3 italic opacity-40">Calculated Horizon</p>
                 {hasStarted ? (
                   <>
-                    <p className="text-2xl font-bold tracking-tight text-slate-800">
-                      {stats?.estCompletionDate ? new Date(stats.estCompletionDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '---'}
+                    <p className="text-2xl font-black tracking-tight text-[var(--text-primary)] italic uppercase leading-none">
+                      {stats?.estCompletionDate ? formatDate(stats.estCompletionDate) : '---'}
                     </p>
-                    <div className="flex items-center gap-2 mt-3">
-                      <div className={`px-2 py-1 rounded border flex items-center gap-1.5 ${
-                        isBehind ? 'bg-rose-50 border-rose-200 text-rose-600' : 
-                        isAhead ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 
-                        'bg-indigo-50 border-indigo-200 text-indigo-600'
+                    <div className="flex items-center gap-3 mt-4">
+                      <div className={`px-3 py-1.5 rounded-lg border flex items-center gap-2 ${
+                        isBehind ? 'bg-rose-500/10 border-rose-500/20 text-rose-500' : 
+                        isAhead ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' : 
+                        'bg-sky-500/10 border-sky-500/20 text-sky-500'
                       }`}>
-                        <div className={`w-1.5 h-1.5 rounded-full ${isBehind ? 'bg-rose-500' : isAhead ? 'bg-emerald-500' : 'bg-indigo-500'}`} />
-                        <span className="text-[8px] font-bold uppercase tracking-widest">
+                        <div className={`w-2 h-2 rounded-full ${isBehind ? 'bg-rose-500 shadow-[0_0_8px_rose-500]' : isAhead ? 'bg-emerald-500 shadow-[0_0_8px_emerald-500]' : 'bg-sky-500 shadow-[0_0_8px_sky-500]'}`} />
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] italic">
                           {isBehind ? `${stats.daysDiff}D BEHIND` : isAhead ? `${stats.daysDiff}D AHEAD` : 'ON TARGET'}
                         </span>
                       </div>
                     </div>
                   </>
                 ) : (
-                  <p className="text-xs font-medium text-slate-500 mt-2">
-                    No session data to calculate expected time. Start studying!
-                  </p>
+                  <div className="flex flex-col items-center py-4 opacity-30 italic">
+                    <Activity size={24} className="mb-2" />
+                    <p className="text-[10px] font-black uppercase tracking-widest text-center leading-relaxed">
+                      Awaiting initial ingestion data to project horizon.
+                    </p>
+                  </div>
                 )}
               </div>
 
-              <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Target Finish Date</p>
-                <p className="text-xl font-bold tracking-tight text-slate-800 mb-1">
-                  {track.targetDate ? new Date(track.targetDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Not Set'}
+              <div className="p-6 bg-[var(--bg-secondary)] rounded-[2rem] border border-[var(--border-color)] shadow-inner">
+                <p className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-3 italic opacity-40">Target Convergence</p>
+                <p className="text-xl font-black tracking-tight text-[var(--text-primary)] italic uppercase leading-none">
+                  {track.targetDate ? formatDate(track.targetDate) : 'NOT SET'}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="relative z-10 pt-6 mt-auto">
+          <div className="relative z-10 pt-8 mt-auto">
             <button 
               onClick={() => openModal('COMMIT')}
-              className="w-full py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2"
+              className="w-full py-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all hover:border-[var(--accent-color)] hover:text-[var(--accent-color)] shadow-sm flex items-center justify-center gap-3 active:scale-95 italic"
             >
-              <Settings size={14} />
-              {track.targetDate ? 'Recalibrate Plan' : 'Calibrate Plan'}
+              <Settings size={16} />
+              {track.targetDate ? 'Recalibrate Path' : 'Set Mission Path'}
             </button>
           </div>
         </div>
@@ -216,12 +234,12 @@ export function TrackHeader({ track, stats, currentEnergy, onEnergySelect, onOpt
 
 function MetricItem({ icon, label, value }: { icon: any, label: string, value: string }) {
   return (
-    <div className="space-y-1.5">
-      <div className="flex items-center gap-1.5">
+    <div className="space-y-2 text-left">
+      <div className="flex items-center gap-2">
         {icon}
-        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none">{label}</span>
+        <span className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] leading-none italic opacity-40">{label}</span>
       </div>
-      <p className="text-xl font-bold text-slate-800 tracking-tight">{value}</p>
+      <p className="text-xl font-black text-[var(--text-primary)] tracking-tighter italic leading-none">{value}</p>
     </div>
   );
 }

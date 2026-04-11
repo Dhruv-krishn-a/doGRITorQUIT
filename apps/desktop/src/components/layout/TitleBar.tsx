@@ -34,8 +34,7 @@ export const TitleBar: React.FC = () => {
             <Sparkles size={12} className="text-[var(--accent-color)]" />
           </div>
           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-primary)] italic">
-            DO GRIT
-          </span>
+            grit.io          </span>
         </div>
 
         {!isOnline && (

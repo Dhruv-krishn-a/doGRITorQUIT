@@ -79,7 +79,7 @@ export function CommitmentModal() {
         watchTimePerDay,
         studyTimePerDay: dailyStudyMinutes,
         days: requiredDays,
-        estDate: estDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }),
+        estDate: estDate.toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' }),
         formattedWatch: formatDuration(watchTimePerDay),
         formattedStudy: formatDuration(dailyStudyMinutes)
       };

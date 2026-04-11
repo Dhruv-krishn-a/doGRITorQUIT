@@ -5,9 +5,21 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>gritorquit - Master Your Tracks</title>
+    <script>
+      (function() {
+        try {
+          var savedTheme = localStorage.getItem('theme');
+          if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+          } else {
+            document.documentElement.setAttribute('data-theme', 'noir');
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
 
-  <body class="bg-slate-50">
+  <body class="bg-[var(--bg-primary)] text-[var(--text-primary)]">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

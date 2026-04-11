@@ -25,26 +25,26 @@ export function KanbanBoard({ units, onAction, onDragEnd }: KanbanBoardProps) {
 
   // Premium Theme Mapping for the glassmorphic look
   const themeStyles = {
-    slate: { bg: 'bg-slate-50/60', border: 'border-slate-200/60', text: 'text-slate-800', textMuted: 'text-slate-400', dragBg: 'bg-slate-100/90 border-slate-300 shadow-[0_0_30px_rgba(148,163,184,0.2)]', dot: 'bg-slate-400 shadow-slate-400/40' },
-    indigo: { bg: 'bg-indigo-50/60', border: 'border-indigo-200/60', text: 'text-indigo-800', textMuted: 'text-indigo-400', dragBg: 'bg-indigo-100/90 border-indigo-300 shadow-[0_0_30px_rgba(99,102,241,0.2)]', dot: 'bg-indigo-400 shadow-indigo-400/40' },
-    fuchsia: { bg: 'bg-fuchsia-50/60', border: 'border-fuchsia-200/60', text: 'text-fuchsia-800', textMuted: 'text-fuchsia-400', dragBg: 'bg-fuchsia-100/90 border-fuchsia-300 shadow-[0_0_30px_rgba(217,70,239,0.2)]', dot: 'bg-fuchsia-400 shadow-fuchsia-400/40' },
-    rose: { bg: 'bg-rose-50/60', border: 'border-rose-200/60', text: 'text-rose-800', textMuted: 'text-rose-400', dragBg: 'bg-rose-100/90 border-rose-300 shadow-[0_0_30px_rgba(244,63,94,0.2)]', dot: 'bg-rose-400 shadow-rose-400/40' },
-    amber: { bg: 'bg-amber-50/60', border: 'border-amber-200/60', text: 'text-amber-800', textMuted: 'text-amber-400', dragBg: 'bg-amber-100/90 border-amber-300 shadow-[0_0_30px_rgba(245,158,11,0.2)]', dot: 'bg-amber-400 shadow-amber-400/40' },
-    emerald: { bg: 'bg-emerald-50/60', border: 'border-emerald-200/60', text: 'text-emerald-800', textMuted: 'text-emerald-400', dragBg: 'bg-emerald-100/90 border-emerald-300 shadow-[0_0_30px_rgba(16,185,129,0.2)]', dot: 'bg-emerald-400 shadow-emerald-400/40' }
+    backlog: { bg: 'bg-[var(--bg-secondary)]/30', border: 'border-[var(--border-color)]', text: 'text-[var(--text-secondary)]', textMuted: 'text-[var(--text-secondary)]/40', dragBg: 'bg-[var(--bg-secondary)]/80 border-[var(--accent-color)]/30 shadow-[0_0_30px_rgba(99,102,241,0.1)]', dot: 'bg-[var(--text-secondary)]/40' },
+    thisWeek: { bg: 'bg-sky-500/5', border: 'border-sky-500/20', text: 'text-sky-500', textMuted: 'text-sky-500/40', dragBg: 'bg-sky-500/10 border-sky-500/30 shadow-[0_0_30px_rgba(14,165,233,0.1)]', dot: 'bg-sky-500 shadow-[0_0_10px_rgba(14,165,233,0.5)]' },
+    today: { bg: 'bg-[var(--accent-color)]/5', border: 'border-[var(--accent-color)]/20', text: 'text-[var(--accent-color)]', textMuted: 'text-[var(--accent-color)]/40', dragBg: 'bg-[var(--accent-color)]/10 border-[var(--accent-color)]/30 shadow-[0_0_30px_rgba(99,102,241,0.15)]', dot: 'bg-[var(--accent-color)] shadow-[0_0_10px_var(--accent-color)]' },
+    active: { bg: 'bg-indigo-500/5', border: 'border-indigo-500/20', text: 'text-indigo-400', textMuted: 'text-indigo-400/40', dragBg: 'bg-indigo-500/10 border-indigo-500/30 shadow-[0_0_30px_rgba(99,102,241,0.1)]', dot: 'bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]' },
+    review: { bg: 'bg-amber-500/5', border: 'border-amber-500/20', text: 'text-amber-500', textMuted: 'text-amber-500/40', dragBg: 'bg-amber-500/10 border-amber-500/30 shadow-[0_0_30px_rgba(245,158,11,0.1)]', dot: 'bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]' },
+    done: { bg: 'bg-emerald-500/5', border: 'border-emerald-500/20', text: 'text-emerald-500', textMuted: 'text-emerald-500/40', dragBg: 'bg-emerald-500/10 border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.1)]', dot: 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' }
   };
 
   const columnConfigs = [
-    { id: 'LEFT', label: 'Backlog', theme: themeStyles.slate },
-    { id: 'THIS_WEEK', label: 'This Week', theme: themeStyles.indigo },
-    { id: 'TODAY', label: 'Today', theme: themeStyles.fuchsia },
-    { id: 'STUDYING', label: 'Active', theme: themeStyles.rose },
-    { id: 'REVISE', label: 'Review', theme: themeStyles.amber },
-    { id: 'DONE', label: 'Mastered', theme: themeStyles.emerald }
+    { id: 'LEFT', label: 'Backlog', theme: themeStyles.backlog },
+    { id: 'THIS_WEEK', label: 'Week', theme: themeStyles.thisWeek },
+    { id: 'TODAY', label: 'Today', theme: themeStyles.today },
+    { id: 'STUDYING', label: 'Active', theme: themeStyles.active },
+    { id: 'REVISE', label: 'Review', theme: themeStyles.review },
+    { id: 'DONE', label: 'Resolved', theme: themeStyles.done }
   ];
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="flex flex-col md:flex-row gap-2 items-start w-full overflow-hidden">
+      <div className="flex flex-col md:flex-row gap-4 items-start w-full overflow-hidden text-left">
         {columnConfigs.map((col) => {
           const allColUnits = (columns as any)[col.id] as Unit[];
           const isEmpty = allColUnits.length === 0;
@@ -52,17 +52,17 @@ export function KanbanBoard({ units, onAction, onDragEnd }: KanbanBoardProps) {
           return (
             <div 
               key={col.id} 
-              className={`flex flex-col h-[70vh] min-h-[500px] transition-all duration-300 ${isEmpty ? 'flex-[0.5] md:flex-[0.8]' : 'flex-1 md:flex-[1.5]'} min-w-0`}
+              className={`flex flex-col h-[70vh] min-h-[550px] transition-all duration-300 ${isEmpty ? 'flex-[0.5] md:flex-[0.8]' : 'flex-1 md:flex-[1.5]'} min-w-0`}
             >
               
               {/* Column Header */}
-              <div className="flex items-center justify-between mb-2 px-2 shrink-0 group">
-                <div className="flex items-center gap-2 min-w-0">
-                  <div className={`w-2 h-2 shrink-0 rounded-full ${col.theme.dot} shadow-sm transition-all duration-300`} />
-                  <h3 className={`text-[10px] font-bold ${col.theme.text} uppercase tracking-widest truncate`}>{col.label}</h3>
+              <div className="flex items-center justify-between mb-4 px-2 shrink-0 group">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={`w-1.5 h-4 shrink-0 rounded-full ${col.theme.dot} transition-all duration-300`} />
+                  <h3 className={`text-[10px] font-black ${col.theme.text} uppercase tracking-[0.2em] truncate italic`}>{col.label}</h3>
                 </div>
-                <div className={`flex shrink-0 items-center justify-center min-w-[20px] h-[20px] px-1.5 rounded-md border ${col.theme.border} bg-white/60 backdrop-blur-sm shadow-sm`}>
-                  <span className={`text-[9px] font-bold ${col.theme.textMuted}`}>
+                <div className={`flex shrink-0 items-center justify-center min-w-[24px] h-[24px] px-2 rounded-lg border ${col.theme.border} bg-[var(--bg-card)] shadow-sm`}>
+                  <span className={`text-[10px] font-black ${col.theme.text} italic`}>
                     {allColUnits.length}
                   </span>
                 </div>
@@ -74,13 +74,13 @@ export function KanbanBoard({ units, onAction, onDragEnd }: KanbanBoardProps) {
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className={`flex flex-col flex-1 rounded-2xl p-2 transition-all duration-300 border backdrop-blur-md overflow-y-auto custom-scrollbar ${
+                    className={`flex flex-col flex-1 rounded-[2.5rem] p-3 transition-all duration-300 border backdrop-blur-md overflow-y-auto no-scrollbar ${
                       snapshot.isDraggingOver 
                         ? col.theme.dragBg 
-                        : `${col.theme.bg} ${col.theme.border} shadow-sm`
+                        : `${col.theme.bg} ${col.theme.border} shadow-inner`
                     }`}
                   >
-                    <div className="flex-1 flex flex-col gap-2">
+                    <div className="flex-1 flex flex-col gap-3">
                       <AnimatePresence mode="popLayout">
                         {allColUnits.length > 0 ? (
                           allColUnits.map((unit: Unit, index: number) => (
@@ -95,15 +95,15 @@ export function KanbanBoard({ units, onAction, onDragEnd }: KanbanBoardProps) {
                           /* Empty State Placeholder */
                           <motion.div 
                             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                            className="h-full flex flex-col items-center justify-center text-center p-2 opacity-60"
+                            className="h-full flex flex-col items-center justify-center text-center p-6 opacity-20"
                           >
-                            <span className="text-xl mb-1">📭</span>
+                            <LayoutGrid size={32} strokeWidth={1} className={`mb-4 ${col.theme.text}`} />
                             {!isEmpty || snapshot.isDraggingOver ? (
-                              <span className={`text-[8px] font-bold uppercase tracking-widest ${col.theme.textMuted}`}>Drop Here</span>
+                              <span className={`text-[9px] font-black uppercase tracking-[0.2em] italic ${col.theme.text}`}>Deploy Vector</span>
                             ) : (
-                              <div className="flex flex-col gap-0.5 truncate w-full px-2">
-                                <span className={`text-[9px] font-bold uppercase tracking-widest ${col.theme.textMuted} truncate`}>No lessons</span>
-                                <span className={`text-[7px] font-medium uppercase tracking-widest ${col.theme.textMuted} opacity-60 truncate`}>Drag here</span>
+                              <div className="flex flex-col gap-1 truncate w-full px-4">
+                                <span className={`text-[9px] font-black uppercase tracking-[0.2em] italic ${col.theme.text} truncate`}>Zero Neural Load</span>
+                                <span className={`text-[7px] font-black uppercase tracking-[0.3em] italic ${col.theme.text} opacity-60 truncate`}>Awaiting Sequence</span>
                               </div>
                             )}
                           </motion.div>

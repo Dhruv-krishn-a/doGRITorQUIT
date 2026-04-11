@@ -20,33 +20,33 @@ export function ProjectBoardTab({ units, viewMode, setViewMode, handleAction, ha
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="transform-gpu h-full flex flex-col p-8"
+      className="transform-gpu h-full flex flex-col p-8 text-left"
     >
-      <div className="transform-gpu flex items-center justify-between mb-8">
-        <div className="transform-gpu flex items-center gap-4">
-          <h2 className="transform-gpu text-2xl font-bold text-slate-900 uppercase tracking-tight">Project Board</h2>
-          <div className="transform-gpu flex bg-white border border-slate-200 p-1.5 rounded-2xl shadow-sm">
+      <div className="transform-gpu flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+        <div className="transform-gpu flex items-center gap-6">
+          <h2 className="transform-gpu text-2xl font-black text-[var(--text-primary)] uppercase tracking-tighter italic">Project Board</h2>
+          <div className="transform-gpu flex bg-[var(--bg-secondary)] border border-[var(--border-color)] p-1 rounded-xl shadow-inner">
             <button 
               onClick={() => setViewMode('KANBAN')}
-              className={`p-2.5 rounded-xl transition-all ${viewMode === 'KANBAN' ? 'bg-rose-500 text-white shadow-md shadow-rose-200' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-50'}`}
+              className={`p-2.5 rounded-lg transition-all ${viewMode === 'KANBAN' ? 'bg-[var(--accent-color)] text-[var(--bg-primary)] shadow-sm' : 'text-[var(--text-secondary)]/40 hover:text-[var(--text-secondary)]'}`}
             >
-              <LayoutGrid size={16} />
+              <LayoutGrid size={18} />
             </button>
             <button 
               onClick={() => setViewMode('LIST')}
-              className={`p-2.5 rounded-xl transition-all ${viewMode === 'LIST' ? 'bg-rose-500 text-white shadow-md shadow-rose-200' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-50'}`}
+              className={`p-2.5 rounded-lg transition-all ${viewMode === 'LIST' ? 'bg-[var(--accent-color)] text-[var(--bg-primary)] shadow-sm' : 'text-[var(--text-secondary)]/40 hover:text-[var(--text-secondary)]'}`}
             >
-              <List size={16} />
+              <List size={18} />
             </button>
           </div>
         </div>
         
-        <div className="transform-gpu flex items-center gap-3">
-          <div className="transform-gpu relative group">
-            <Search size={14} className="transform-gpu absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-rose-500 transition-colors" />
-            <input type="text" placeholder="Filter tasks..." className="transform-gpu bg-white border border-slate-200 shadow-sm rounded-xl pl-10 pr-4 py-2.5 text-xs font-bold text-slate-800 focus:border-rose-300 focus:shadow-md outline-none transition-all placeholder:text-slate-400" />
+        <div className="transform-gpu flex items-center gap-4">
+          <div className="transform-gpu relative group flex-1 md:flex-none">
+            <Search size={14} className="transform-gpu absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]/40 group-focus-within:text-[var(--accent-color)] transition-colors" />
+            <input type="text" placeholder="FILTER VECTORS..." className="transform-gpu w-full md:w-64 bg-[var(--bg-secondary)] border border-[var(--border-color)] shadow-inner rounded-xl pl-11 pr-4 py-3 text-[10px] font-black text-[var(--text-primary)] focus:border-[var(--accent-color)] focus:ring-4 focus:ring-[var(--accent-color)]/5 outline-none transition-all placeholder:text-[var(--text-secondary)]/20 italic tracking-widest" />
           </div>
-          <button className="transform-gpu p-2.5 bg-white border border-slate-200 shadow-sm rounded-xl text-slate-500 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition-colors"><Filter size={18} /></button>
+          <button className="transform-gpu p-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] shadow-sm rounded-xl text-[var(--text-secondary)] hover:text-[var(--accent-color)] hover:border-[var(--accent-color)]/30 transition-all active:scale-95"><Filter size={20} /></button>
         </div>
       </div>
 

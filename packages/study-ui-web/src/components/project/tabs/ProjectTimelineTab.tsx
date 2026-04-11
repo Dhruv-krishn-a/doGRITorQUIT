@@ -40,45 +40,50 @@ export function ProjectTimelineTab({ phases, units }: Pick<ProjectContextProps, 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="transform-gpu p-8 h-full flex flex-col"
+      className="transform-gpu p-8 h-full flex flex-col text-left"
     >
       <div className="transform-gpu flex items-center justify-between mb-8">
-        <h2 className="transform-gpu text-2xl font-bold text-slate-900 uppercase tracking-tight">Waterfall Timeline</h2>
-        <div className="transform-gpu flex bg-white border border-slate-200 p-1.5 rounded-2xl shadow-sm gap-1">
-          <button className="transform-gpu px-5 py-2 rounded-xl text-slate-500 hover:bg-slate-50 text-[10px] font-bold uppercase tracking-widest transition-colors">Phase</button>
-          <button className="transform-gpu px-5 py-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl text-[10px] font-bold uppercase tracking-widest shadow-sm">Effort</button>
+        <h2 className="transform-gpu text-2xl font-black text-[var(--text-primary)] uppercase tracking-tighter italic">Waterfall Timeline</h2>
+        <div className="transform-gpu flex bg-[var(--bg-secondary)] border border-[var(--border-color)] p-1.5 rounded-2xl shadow-inner gap-1">
+          <button className="transform-gpu px-5 py-2 rounded-xl text-[var(--text-secondary)]/40 hover:text-[var(--text-secondary)] text-[10px] font-black uppercase tracking-widest transition-all italic">Phase</button>
+          <button className="transform-gpu px-5 py-2 bg-[var(--accent-color)] text-[var(--bg-primary)] rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm italic">Effort</button>
         </div>
       </div>
 
-      <div className="transform-gpu flex-1 bg-white border border-slate-200 shadow-sm rounded-[2.5rem] p-10 relative overflow-y-auto custom-scrollbar">
-         <div className="transform-gpu flex flex-col gap-8 pb-10">
+      <div className="transform-gpu flex-1 bg-[var(--bg-card)] border border-[var(--border-color)] shadow-2xl rounded-[3rem] p-12 relative overflow-y-auto no-scrollbar group">
+         <div className="transform-gpu absolute top-0 right-0 w-64 h-64 bg-[var(--accent-color)]/5 rounded-full blur-3xl pointer-events-none group-hover:scale-150 transition-transform duration-1000" />
+         
+         <div className="transform-gpu flex flex-col gap-10 pb-10 relative z-10">
             {phaseTimelines.map((phase, i) => (
-              <div key={phase.name} className="transform-gpu flex items-center gap-10 group">
-                 <div className="transform-gpu w-32 shrink-0">
-                    <div className="transform-gpu text-[10px] font-bold text-slate-700 uppercase tracking-widest truncate">{phase.name}</div>
-                    <div className="transform-gpu text-[8px] font-bold text-slate-400 uppercase">{phase.tasks} tasks • {phase.hours}h</div>
+              <div key={phase.name} className="transform-gpu flex items-center gap-10 group/item">
+                 <div className="transform-gpu w-40 shrink-0 text-left">
+                    <div className="transform-gpu text-[11px] font-black text-[var(--text-primary)] uppercase tracking-tight italic truncate">{phase.name}</div>
+                    <div className="transform-gpu text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest mt-1.5 italic opacity-40">{phase.tasks} vectors • {phase.hours}h</div>
                  </div>
-                 <div className="transform-gpu flex-1 h-10 bg-slate-100 rounded-2xl relative shadow-inner">
+                 <div className="transform-gpu flex-1 h-12 bg-[var(--bg-secondary)] rounded-[1.5rem] relative shadow-inner border border-[var(--border-color)]/30">
                     <motion.div 
                       initial={{ width: 0, opacity: 0 }}
                       animate={{ width: `${Math.min(phase.width, 100 - phase.left)}%`, opacity: 1 }}
                       transition={{ duration: 1, delay: i * 0.1, ease: "easeOut" }}
-                      className={`absolute h-full rounded-2xl shadow-md flex items-center px-4 overflow-hidden border ${
+                      className={`absolute h-full rounded-[1.5rem] shadow-xl flex items-center px-6 overflow-hidden border ${
                         phase.isDone 
-                        ? 'bg-emerald-100 border-emerald-300 text-emerald-700 shadow-emerald-100' 
-                        : 'bg-gradient-to-r from-rose-500 to-pink-500 border-rose-400 text-white shadow-rose-200'
+                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500 shadow-emerald-500/10' 
+                        : 'bg-[var(--accent-color)] border-[var(--accent-color)]/30 text-[var(--bg-primary)] shadow-[var(--accent-color)]/20'
                       }`}
                       style={{ left: `${phase.left}%` }}
                     >
-                       <span className="transform-gpu text-[8px] font-bold uppercase whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                         {phase.isDone ? 'Completed' : 'Active Phase'}
+                       <span className="transform-gpu text-[9px] font-black uppercase tracking-widest whitespace-nowrap opacity-0 group-hover/item:opacity-100 transition-opacity italic">
+                         {phase.isDone ? 'RECOGNIZED' : 'ACTIVE FREQUENCY'}
                        </span>
                     </motion.div>
                  </div>
               </div>
             ))}
             {phaseTimelines.length === 0 && (
-               <div className="transform-gpu text-center text-slate-400 text-sm font-bold pt-10">No phases to display. Add tasks to see the timeline.</div>
+               <div className="transform-gpu text-center py-20 opacity-20 flex flex-col items-center">
+                  <div className="text-4xl mb-4">⏳</div>
+                  <div className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em] italic">No temporal mapping available.</div>
+               </div>
             )}
          </div>
       </div>

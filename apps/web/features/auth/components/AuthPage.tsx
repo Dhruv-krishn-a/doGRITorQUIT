@@ -14,6 +14,8 @@ interface AuthPageProps {
   view: "login" | "signup" | "forgot-password" | "reset-password";
 }
 
+import { GritioLogo } from '@gritorquit/dashboard-ui-web';
+
 export default function AuthPage({ view: initialView }: AuthPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -179,13 +181,7 @@ export default function AuthPage({ view: initialView }: AuthPageProps) {
              <div className="transform-gpu absolute top-[-10%] right-[-10%] w-64 h-64 bg-[var(--accent-color)]/10 rounded-full blur-3xl" />
              
              <Link href="/" className="transform-gpu relative z-10 flex items-center gap-3 group w-fit">
-                <div className="transform-gpu w-10 h-10 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl flex items-center justify-center group-hover:scale-105 transition-all">
-                  <Sparkles size={20} className="text-[var(--accent-color)]" />
-                </div>
-                <div className="flex flex-col leading-none">
-                  <span className="transform-gpu font-black tracking-tighter text-xl italic uppercase">DO GRIT</span>
-                  <span className="transform-gpu text-[9px] font-bold text-[var(--text-secondary)] tracking-[0.2em] uppercase">OK QUIT</span>
-                </div>
+                <GritioLogo size="sm" withText={true} />
              </Link>
 
              <div className="transform-gpu relative z-10 space-y-6">
@@ -217,7 +213,7 @@ export default function AuthPage({ view: initialView }: AuthPageProps) {
              </div>
 
              <div className="transform-gpu relative z-10 text-[10px] text-[var(--text-secondary)] font-black uppercase tracking-[0.3em]">
-               © 2026 DO GRIT OK QUIT
+               © {new Date().getFullYear()} grit.io
              </div>
           </div>
 

@@ -1,30 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { database } from '../../db';
 import Note from '../../db/models/Note';
 import withObservables from '@nozbe/with-observables';
 import { Ionicons } from '@expo/vector-icons';
 import Markdown from 'react-native-markdown-display';
+import { useTheme } from '../../context/ThemeContext';
 
 interface NoteEditorProps {
-  note: Note;
+  note: Note | null;
+  id: string;
 }
 
-const NoteEditor: React.FC<NoteEditorProps> = ({ note }) => {
+const NoteEditor: React.FC<NoteEditorProps> = ({ note, id }) => {
   const router = useRouter();
-  const [title, setTitle] = useState(note.title || '');
-  const [content, setContent] = useState(note.content || '');
+  const { colors } = useTheme();
+  const [title, setTitle] = useState(note?.title || '');
+  const [content, setContent] = useState(note?.content || '');
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    setTitle(note.title || '');
-    setContent(note.content || '');
+    if (note) {
+      setTitle(note.title || '');
+      setContent(note.content || '');
+    }
   }, [note]);
 
   const categories = ['GENERAL', 'YOUTUBE', 'COURSE', 'PROJECT', 'OTHER'];
 
   const handleSave = async () => {
+    if (!note) return;
     await database.write(async () => {
       await note.update(n => {
         n.title = title;
@@ -35,6 +41,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note }) => {
   };
 
   const updateCategory = async (cat: string) => {
+    if (!note) return;
     await database.write(async () => {
       await note.update(n => {
         n.category = cat;
@@ -43,6 +50,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note }) => {
   };
 
   const handleDelete = async () => {
+    if (!note) return;
     await database.write(async () => {
       await note.markAsDeleted();
       await note.destroyPermanently();
@@ -50,15 +58,31 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note }) => {
     router.back();
   };
 
+  if (!note) {
+    return (
+      <View className="flex-1 items-center justify-center bg-[var(--bg-primary)] p-10">
+        <Ionicons name="alert-circle-outline" size={64} color={colors.textSecondary} />
+        <Text className="text-[var(--text-primary)] text-xl font-black italic uppercase mt-6">Archive Lost</Text>
+        <Text className="text-[var(--text-secondary)] text-center mt-2 uppercase tracking-widest text-[10px]">Record notes#{id} not found in local sync.</Text>
+        <TouchableOpacity 
+          onPress={() => router.back()}
+          className="mt-8 px-8 py-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl"
+        >
+          <Text className="text-[var(--text-primary)] font-black uppercase tracking-widest text-[10px]">Return to Repository</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-      style={{ flex: 1, backgroundColor: colors.paper }}
+      style={{ flex: 1, backgroundColor: colors.primary }}
     >
       {/* Top Bar */}
-      <div className={`p-6 pt-12 border-b border-[var(--border-color)]`}>
+      <View className="p-6 pt-16 border-b border-[var(--border-color)] bg-[var(--bg-card)]">
         <View className="flex-row items-center justify-between mb-6">
-          <TouchableOpacity onPress={() => router.back()} className="w-10 h-10 items-center justify-center bg-[var(--bg-secondary)] rounded-xl">
+          <TouchableOpacity onPress={() => router.back()} className="w-10 h-10 items-center justify-center bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)]">
             <Ionicons name="chevron-back" size={24} color={colors.textSecondary} />
           </TouchableOpacity>
           
@@ -95,16 +119,16 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note }) => {
             </TouchableOpacity>
           ))}
         </ScrollView>
-      </div>
+      </View>
 
-      <ScrollView className="flex-1 p-6" showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1 bg-[var(--bg-primary)]" contentContainerStyle={{ padding: 24, paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
         {isEditing ? (
           <>
             <TextInput
               value={title}
               onChangeText={setTitle}
               placeholder="Archive Title..."
-              placeholderTextColor={colors.textSecondary}
+              placeholderTextColor={`${colors.textSecondary}40`}
               className="text-3xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter mb-6"
               multiline
             />
@@ -112,8 +136,8 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note }) => {
               value={content}
               onChangeText={setContent}
               placeholder="Begin drafting neural data..."
-              placeholderTextColor={colors.textSecondary}
-              className="text-lg text-[var(--text-secondary)] leading-relaxed min-h-[400px]"
+              placeholderTextColor={`${colors.textSecondary}40`}
+              className="text-lg text-[var(--text-secondary)] leading-relaxed min-h-[400px] italic font-black uppercase tracking-tighter"
               multiline
               textAlignVertical="top"
               autoFocus
@@ -167,17 +191,29 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ note }) => {
       {isEditing && (
         <TouchableOpacity 
           onPress={handleSave}
-          className="absolute bottom-10 right-6 bg-[var(--accent-color)] px-8 py-4 rounded-[2rem] shadow-lg shadow-[var(--accent-color)]/20"
+          className="absolute bottom-10 right-6 bg-[var(--accent-color)] px-8 py-4 rounded-[2rem] shadow-xl shadow-[var(--accent-color)]/30 active:scale-95"
         >
-          <Text className="text-[var(--bg-primary)] font-black uppercase tracking-widest">Seal Archive</Text>
+          <Text className="text-[var(--bg-primary)] font-black uppercase tracking-widest italic">Seal Archive</Text>
         </TouchableOpacity>
       )}
     </KeyboardAvoidingView>
   );
 };
 
-const enhance = withObservables(['id'], ({ id }) => ({
+const EnhancedNoteEditor = withObservables(['id'], ({ id }) => ({
   note: database.get<Note>('notes').findAndObserve(id),
-}));
+}))(NoteEditor);
 
-export default enhance(NoteEditor);
+export default function NotePage() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  
+  if (!id) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#050505' }}>
+        <Text style={{ color: 'white' }}>Missing Archive ID</Text>
+      </View>
+    );
+  }
+
+  return <EnhancedNoteEditor id={id} />;
+}

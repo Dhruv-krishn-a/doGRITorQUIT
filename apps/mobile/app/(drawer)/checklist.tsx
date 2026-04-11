@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Q } from '@nozbe/watermelondb';
 
+import { useTheme } from '../../context/ThemeContext';
 import { useChecklist } from '../../hooks/useChecklist';
 import { database } from '../../db';
 import Note from '../../db/models/Note';

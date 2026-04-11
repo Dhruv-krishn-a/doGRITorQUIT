@@ -155,8 +155,8 @@ export default function SettingsPage() {
           <SettingRow icon="log-out" label="Logout" danger onPress={handleSignOut} />
         </View>
 
-        <Text className="text-center text-[8px] font-black text-[var(--text-secondary)] uppercase tracking-[0.4em] mb-10">
-          System Version 1.0.4 // DO GRIT OK QUIT
+        <Text className="text-center text-[8px] font-black text-[var(--text-secondary)] uppercase tracking-[0.4em] mb-10 italic">
+          System Version 1.0.4 // grit.io
         </Text>
       </ScrollView>
     </PerspectiveWrapper>

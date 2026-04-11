@@ -16,6 +16,8 @@ import * as Haptics from "expo-haptics";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 
+import { GritioLogo } from "../../components/GritioLogo";
+
 function CustomDrawerContent(props: any) {
   const [expanded, setExpanded] = useState(true);
   const width = useSharedValue(280);
@@ -37,8 +39,7 @@ function CustomDrawerContent(props: any) {
         <View style={{ padding: 20, paddingTop: 40, paddingBottom: 40, alignItems: expanded ? 'flex-start' : 'center' }}>
           {expanded ? (
             <View>
-              <Text style={{ color: colors.text, fontSize: 24, fontWeight: '900', fontStyle: 'italic' }}>DO GRIT</Text>
-              <Text style={{ color: colors.accent, fontSize: 10, fontWeight: 'bold', letterSpacing: 2 }}>OK QUIT</Text>
+              <GritioLogo size="lg" withText={true} />
             </View>
           ) : (
             <Ionicons name="sparkles" size={24} color={colors.accent} />
@@ -72,13 +73,21 @@ function CustomDrawerContent(props: any) {
 
 // Perspective Wrapper Component
 export const PerspectiveWrapper = ({ children }: { children: React.ReactNode }) => {
-  const progress = useDrawerProgress() as Animated.SharedValue<number>;
+  let progress: Animated.SharedValue<number>;
+  
+  try {
+    progress = useDrawerProgress() as Animated.SharedValue<number>;
+  } catch (e) {
+    // Fallback if used outside of drawer context
+    progress = useSharedValue(0);
+  }
   
   const animatedStyle = useAnimatedStyle(() => {
-    const scale = interpolate(progress.value, [0, 1], [1, 0.85], Extrapolation.CLAMP);
-    const borderRadius = interpolate(progress.value, [0, 1], [0, 40], Extrapolation.CLAMP);
-    const rotateY = interpolate(progress.value, [0, 1], [0, -10], Extrapolation.CLAMP);
-    const translateX = interpolate(progress.value, [0, 1], [0, 20], Extrapolation.CLAMP);
+    const val = progress?.value ?? 0;
+    const scale = interpolate(val, [0, 1], [1, 0.85], Extrapolation.CLAMP);
+    const borderRadius = interpolate(val, [0, 1], [0, 40], Extrapolation.CLAMP);
+    const rotateY = interpolate(val, [0, 1], [0, -10], Extrapolation.CLAMP);
+    const translateX = interpolate(val, [0, 1], [0, 20], Extrapolation.CLAMP);
 
     return {
       transform: [

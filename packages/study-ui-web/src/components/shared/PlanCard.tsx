@@ -43,8 +43,9 @@ export function PlanCard({ plan, onView, onDelete }: PlanCardProps) {
 
   const formatDate = (dateInput: string | Date) => {
     try {
-        const dateStr = typeof dateInput === 'string' ? dateInput : dateInput.toISOString();
-        return new Date(dateStr).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        const d = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${months[d.getMonth()]} ${d.getDate()}`;
     } catch (e) {
         return String(dateInput);
     }

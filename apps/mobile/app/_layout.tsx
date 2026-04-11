@@ -1,10 +1,11 @@
 // apps/mobile/app/_layout.tsx
 import { Stack } from "expo-router";
 import { useEffect, useState } from "react";
+import { View } from "react-native";
 import "../global.css";
 import { AuthProvider } from "../context/AuthContext";
 import { SyncProvider } from "../context/SyncContext";
-import { AppThemeProvider } from "../context/ThemeContext";
+import { AppThemeProvider, useTheme } from "../context/ThemeContext";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import * as Notifications from 'expo-notifications';
 import { registerForPushNotificationsAsync, scheduleDailyReminder } from '../lib/notifications';
@@ -20,6 +21,7 @@ Notifications.setNotificationHandler({
 
 function RootLayoutNav() {
   const [booting, setBooting] = useState(true);
+  const { theme } = useTheme();
 
   useEffect(() => {
     (async () => {
@@ -41,7 +43,11 @@ function RootLayoutNav() {
     return <BootSplash />;
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <View className={`flex-1 theme-${theme}`}>
+      <Stack screenOptions={{ headerShown: false }} />
+    </View>
+  );
 }
 
 export default function RootLayout() {

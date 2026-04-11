@@ -135,20 +135,20 @@ export function ProjectDetailView() {
   if (!mounted) return null;
 
   if (loading && !activeTrack) return (
-    <div className="transform-gpu flex items-center justify-center min-h-[60vh] bg-[#fdfbfb] w-full">
-      <div className="transform-gpu flex flex-col items-center gap-4">
-        <Loader2 className="transform-gpu w-8 h-8 text-rose-500 animate-spin drop-shadow-[0_0_10px_rgba(244,63,94,0.5)]" />
-        <div className="transform-gpu text-rose-500 font-bold uppercase tracking-widest text-xs">Loading Project Vector...</div>
+    <div className="transform-gpu flex items-center justify-center min-h-[60vh] bg-[var(--bg-primary)] w-full">
+      <div className="transform-gpu flex flex-col items-center gap-4 text-left">
+        <Loader2 className="transform-gpu w-10 h-10 text-[var(--accent-color)] animate-spin drop-shadow-[0_0_10px_var(--accent-color)]" />
+        <div className="transform-gpu text-[var(--accent-color)] font-black uppercase tracking-[0.3em] text-[10px] italic">Syncing Project Vector...</div>
       </div>
     </div>
   );
 
   if (!activeTrack || !track) return (
-    <div className="transform-gpu flex flex-col items-center justify-center min-h-[60vh] gap-6 bg-[#fdfbfb] w-full">
-      <div className="transform-gpu text-slate-400 font-bold uppercase tracking-widest text-sm">Vector not found.</div>
+    <div className="transform-gpu flex flex-col items-center justify-center min-h-[60vh] gap-8 bg-[var(--bg-primary)] w-full text-left">
+      <div className="transform-gpu text-[var(--text-secondary)] font-black uppercase tracking-[0.2em] text-sm italic opacity-40">Vector link severed.</div>
       <button 
         onClick={() => router.push('/dashboard/study')} 
-        className="transform-gpu px-8 py-4 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-2xl font-bold text-xs uppercase tracking-widest shadow-[0_4px_15px_rgba(244,63,94,0.3)] hover:shadow-[0_6px_20px_rgba(244,63,94,0.4)] transition-all active:scale-95"
+        className="transform-gpu px-10 py-5 bg-[var(--accent-color)] text-[var(--bg-primary)] rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-[var(--accent-color)]/20 hover:opacity-90 transition-all active:scale-95 italic"
       >
         Return to Command Center
       </button>
@@ -166,10 +166,10 @@ export function ProjectDetailView() {
   };
 
   return (
-    <div className="transform-gpu flex flex-col w-full h-full flex-1 min-h-[calc(100vh-80px)] bg-[#fdfbfb] text-slate-800 overflow-hidden font-sans selection:bg-rose-100 selection:text-rose-900 relative rounded-tl-3xl">
+    <div className="transform-gpu flex flex-col w-full h-full flex-1 min-h-[calc(100vh-80px)] bg-[var(--bg-primary)] text-[var(--text-primary)] overflow-hidden font-sans selection:bg-[var(--accent-color)]/30 relative rounded-tl-3xl">
       {/* --- BACKGROUND GLOW --- */}
-      <div className="transform-gpu absolute top-0 left-1/2 w-[60rem] h-[40rem] bg-rose-200/30 rounded-full blur-[120px] -translate-x-1/2 pointer-events-none -z-10" />
-      <div className="transform-gpu absolute bottom-0 right-0 w-[40rem] h-[40rem] bg-fuchsia-200/20 rounded-full blur-[120px] pointer-events-none -z-10" />
+      <div className="transform-gpu absolute top-0 left-1/2 w-[60rem] h-[40rem] bg-[var(--accent-color)]/5 rounded-full blur-[120px] -translate-x-1/2 pointer-events-none -z-10" />
+      <div className="transform-gpu absolute bottom-0 right-0 w-[40rem] h-[40rem] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none -z-10" />
 
       {/* --- STICKY TOP BAR --- */}
       <ProjectHeader 

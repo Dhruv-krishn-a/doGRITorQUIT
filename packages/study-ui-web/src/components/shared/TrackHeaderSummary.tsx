@@ -239,7 +239,7 @@ export const TrackHeaderSummary: React.FC<TrackHeaderSummaryProps> = ({
              <div className="transform-gpu space-y-1 text-right group/foot">
                 <p className="transform-gpu text-[9px] font-bold text-slate-400 uppercase tracking-[0.3em] group-hover/foot:text-rose-500 transition-colors">Est. Finish</p>
                 <p className="transform-gpu text-2xl font-bold text-slate-800 tracking-tighter">
-                  {new Date(stats.estCompletionDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                  {new Date(stats.estCompletionDate).toLocaleDateString("en-US", { month: 'short', day: 'numeric' })}
                   <span className="transform-gpu text-[10px] text-slate-300 ml-1.5 font-bold uppercase tracking-widest">{new Date(stats.estCompletionDate).getFullYear()}</span>
                 </p>
              </div>

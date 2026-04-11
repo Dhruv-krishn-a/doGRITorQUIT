@@ -162,7 +162,7 @@ export function TrackCard({ track, onDelete }: TrackCardProps) {
           <div className="transform-gpu flex items-center gap-1.5 bg-[var(--bg-secondary)] px-3 py-1.5 rounded-full border border-[var(--border-color)] shadow-sm">
             <Calendar size={10} className="transform-gpu text-[var(--text-secondary)]"/> 
             <span className="transform-gpu text-[7px] sm:text-[8px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">
-              Sync: {new Date(track.targetDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+              Sync: {new Date(track.targetDate).toLocaleDateString("en-US", { month: 'short', day: 'numeric' })}
             </span>
           </div>
         )}

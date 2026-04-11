@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import Animated, { FadeInDown, FadeIn, FadeOut } from 'react-native-reanimated';
-import BrandLogo from '../../components/BrandLogo';
+import { GritioLogo } from '../../components/GritioLogo';
 
 export default function Login() {
   const [authMode, setAuthMode] = useState<'email' | 'phone'>('email');
@@ -109,7 +109,7 @@ export default function Login() {
           {/* Header */}
           <View className="mb-8">
             <View className="mb-6">
-              <BrandLogo size="sm" />
+              <GritioLogo size="lg" withText={true} />
             </View>
             <Text className="text-3xl font-black tracking-tighter" style={{ color: '#0f1115' }}>Sign In</Text>
             <View className="flex-row items-center mt-2">
@@ -329,9 +329,7 @@ export default function Login() {
           </View>
         </Animated.View>
 
-        <Text className="text-center text-[8px] font-black text-[var(--text-secondary)] uppercase tracking-[0.4em] mt-8 opacity-50">
-          © 2026 DO GRIT OK QUIT
-        </Text>
+        <Text className="text-center text-[8px] font-black text-[var(--text-secondary)] uppercase tracking-[0.4em] mt-8 opacity-50 italic">© 2026 grit.io</Text>
       </ScrollView>
     </KeyboardAvoidingView>
   );

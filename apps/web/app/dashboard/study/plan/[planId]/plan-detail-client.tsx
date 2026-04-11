@@ -54,7 +54,10 @@ const normalizeDate = (date: Date | string): string => {
 
 const formatDateReadable = (dateStr: string) => {
     if (dateStr === "Unscheduled") return "Unscheduled";
-    return new Date(dateStr).toLocaleDateString("en-US", { weekday: 'short', month: 'short', day: 'numeric' });
+    const d = new Date(dateStr);
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}`;
 };
 
 // --- 3. Custom Hook (Logic Unchanged) ---
@@ -225,7 +228,6 @@ function TaskForm({ initialData, onSubmit, onCancel, isCreating }: {
     </div>
   );
 }
-}
 
 import { TaskCard } from "@gritorquit/dashboard-ui-web";
 
@@ -308,58 +310,58 @@ export default function PlanDetailClient({ initialPlan }: { initialPlan: Extende
   const currentDayTasks = tasksByDate[selectedDate] || [];
 
   return (
-    <div className="transform-gpu bg-slate-50 min-h-screen pb-20 font-sans text-slate-900">
+    <div className="transform-gpu bg-[var(--bg-primary)] min-h-screen pb-20 font-sans text-[var(--text-primary)]">
       
       {/* Loading Overlay */}
       {loadingAction && (
-        <div className="transform-gpu fixed inset-0 bg-white/60 z-modal flex items-center justify-center backdrop-blur-sm">
-            <div className="transform-gpu bg-white px-8 py-4 rounded-full shadow-2xl border border-purple-100 flex items-center gap-4 animate-in zoom-in-95">
-                <div className="transform-gpu w-5 h-5 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"/>
-                <span className="transform-gpu text-sm font-bold text-purple-900">{loadingAction}</span>
+        <div className="transform-gpu fixed inset-0 bg-black/40 z-modal flex items-center justify-center backdrop-blur-sm">
+            <div className="transform-gpu bg-[var(--bg-card)] border border-[var(--border-color)] px-8 py-4 rounded-full shadow-2xl flex items-center gap-4 animate-in zoom-in-95">
+                <div className="transform-gpu w-5 h-5 border-2 border-[var(--accent-color)] border-t-transparent rounded-full animate-spin"/>
+                <span className="transform-gpu text-sm font-black text-[var(--text-primary)] uppercase tracking-[0.2em] italic">{loadingAction}</span>
             </div>
         </div>
       )}
 
       {/* --- Header Section (Matching Screenshot) --- */}
-      <header className="transform-gpu bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+      <header className="transform-gpu bg-[var(--bg-card)]/80 backdrop-blur-xl border-b border-[var(--border-color)] sticky top-0 z-30 shadow-sm">
         <div className="transform-gpu max-w-7xl mx-auto px-4 md:px-8 py-5">
-            <div className="transform-gpu flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="transform-gpu flex flex-col md:flex-row md:items-center justify-between gap-6 text-left">
                 <div>
                      <div className="transform-gpu flex items-center gap-3 mb-2">
-                        <Button variant="ghost" onClick={() => router.back()} className="transform-gpu text-slate-400 hover:text-slate-600 p-0 h-auto">←</Button>
-                        <h1 className="transform-gpu text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">{plan.title}</h1>
-                        <span className="transform-gpu bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">AI Plan</span>
+                        <Button variant="ghost" onClick={() => router.back()} className="transform-gpu text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-0 h-auto">←</Button>
+                        <h1 className="transform-gpu text-2xl md:text-3xl font-black text-[var(--text-primary)] tracking-tighter uppercase italic">{plan.title}</h1>
+                        <span className="transform-gpu bg-[var(--accent-color)]/10 text-[var(--accent-color)] border border-[var(--accent-color)]/20 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest italic shadow-sm">AI Plan</span>
                      </div>
-                     <div className="transform-gpu flex items-center gap-8 text-sm text-slate-500 font-medium">
+                     <div className="transform-gpu flex items-center gap-8 text-sm text-[var(--text-secondary)] font-black">
                          <div className="transform-gpu w-64">
-                             <div className="transform-gpu flex justify-between text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
+                             <div className="transform-gpu flex justify-between text-xs font-black uppercase tracking-widest text-[var(--text-secondary)] mb-1 italic opacity-60">
                                  <span>Overall Progress</span>
-                                 <span className="transform-gpu text-purple-600">{progressStats.percent}%</span>
+                                 <span className="transform-gpu text-[var(--accent-color)]">{progressStats.percent}%</span>
                              </div>
-                             <div className="transform-gpu h-2 bg-slate-100 rounded-full overflow-hidden">
-                                 <div className="transform-gpu h-full bg-purple-600 rounded-full transition-all duration-1000 ease-out" style={{ width: `${progressStats.percent}%` }}></div>
+                             <div className="transform-gpu h-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-full overflow-hidden p-0.5">
+                                 <div className="transform-gpu h-full bg-gradient-to-r from-[var(--accent-color)] to-sky-500 rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_var(--accent-color)]" style={{ width: `${progressStats.percent}%` }}></div>
                              </div>
                          </div>
                      </div>
                 </div>
 
-                <div className="transform-gpu flex items-center gap-6 divide-x divide-slate-100">
+                <div className="transform-gpu flex items-center gap-6 divide-x divide-[var(--border-color)]">
                     <div className="transform-gpu flex flex-col items-center px-4">
-                        <span className="transform-gpu text-xs font-bold text-slate-400 uppercase tracking-wider">Total Tasks</span>
-                        <span className="transform-gpu text-lg font-bold text-slate-800">{progressStats.totalTasks}</span>
+                        <span className="transform-gpu text-xs font-black text-[var(--text-secondary)] uppercase tracking-widest italic opacity-60">Total Tasks</span>
+                        <span className="transform-gpu text-lg font-black text-[var(--text-primary)] italic">{progressStats.totalTasks}</span>
                     </div>
                     <div className="transform-gpu flex flex-col items-center px-4">
-                        <span className="transform-gpu text-xs font-bold text-slate-400 uppercase tracking-wider">Days Left</span>
-                        <span className="transform-gpu text-lg font-bold text-slate-800">{progressStats.daysLeft > 0 ? progressStats.daysLeft : 0}</span>
+                        <span className="transform-gpu text-xs font-black text-[var(--text-secondary)] uppercase tracking-widest italic opacity-60">Days Left</span>
+                        <span className="transform-gpu text-lg font-black text-[var(--text-primary)] italic">{progressStats.daysLeft > 0 ? progressStats.daysLeft : 0}</span>
                     </div>
                      <div className="transform-gpu flex flex-col items-center px-4">
-                        <span className="transform-gpu text-xs font-bold text-slate-400 uppercase tracking-wider">Done</span>
-                        <span className="transform-gpu text-lg font-bold text-slate-800">{progressStats.completedCount}</span>
+                        <span className="transform-gpu text-xs font-black text-[var(--text-secondary)] uppercase tracking-widest italic opacity-60">Done</span>
+                        <span className="transform-gpu text-lg font-black text-[var(--text-primary)] italic">{progressStats.completedCount}</span>
                     </div>
                 </div>
                 
                 <div className="transform-gpu ml-auto">
-                     <button className="transform-gpu flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors">
+                     <button className="transform-gpu flex items-center gap-2 px-6 py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] shadow-sm rounded-xl text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all active:scale-95 italic">
                         <Pencil size={14} /> Edit Plan
                      </button>
                 </div>
@@ -369,16 +371,17 @@ export default function PlanDetailClient({ initialPlan }: { initialPlan: Extende
 
       {/* --- Main Content Grid --- */}
       <main className="transform-gpu max-w-7xl mx-auto px-4 md:px-8 py-8">
-         <div className="transform-gpu grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+         <div className="transform-gpu grid grid-cols-1 lg:grid-cols-12 gap-8 items-start text-left">
              
              {/* --- Left Column: Timeline Sidebar --- */}
              <div className="transform-gpu lg:col-span-4 space-y-4">
                 <div className="transform-gpu flex items-center justify-between mb-2">
-                    <h2 className="transform-gpu text-lg font-bold text-slate-900">Timeline</h2>
-                    <button onClick={() => { /* Expand/Collapse logic could go here */ }} className="transform-gpu text-xs font-medium text-purple-600 hover:text-purple-700">Collapse All</button>
+                    <h2 className="transform-gpu text-lg font-black text-[var(--text-primary)] uppercase tracking-tight italic">Timeline</h2>
+                    <button onClick={() => { /* Expand/Collapse logic could go here */ }} className="transform-gpu text-[10px] font-black text-[var(--accent-color)] uppercase tracking-widest hover:underline italic">Collapse All</button>
                 </div>
 
-                <div className="transform-gpu bg-white rounded-2xl shadow-sm border border-slate-200 p-2 overflow-hidden">
+                <div className="transform-gpu bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[2rem] shadow-xl p-3 overflow-hidden relative">
+                    <div className="transform-gpu absolute top-0 right-0 w-32 h-32 bg-[var(--accent-color)]/5 rounded-full blur-3xl pointer-events-none" />
                     {displayDates.map((dateKey, index) => {
                         const isSelected = selectedDate === dateKey;
                         const isToday = normalizeDate(new Date()) === dateKey;
@@ -390,52 +393,52 @@ export default function PlanDetailClient({ initialPlan }: { initialPlan: Extende
                             <div key={dateKey} className="transform-gpu relative">
                                 {/* Connector Line */}
                                 {index !== displayDates.length - 1 && (
-                                    <div className="transform-gpu absolute left-6 top-10 bottom-0 w-[2px] bg-slate-100 z-0"></div>
+                                    <div className="transform-gpu absolute left-6 top-10 bottom-0 w-[2px] bg-[var(--border-color)]/30 z-0"></div>
                                 )}
                                 
                                 <button 
                                     onClick={() => setSelectedDate(dateKey)}
-                                    className={`relative z-10 w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left group ${isSelected ? "bg-purple-50 ring-1 ring-purple-200" : "hover:bg-slate-50"}`}
+                                    className={`relative z-10 w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left group ${isSelected ? "bg-[var(--accent-color)]/10 ring-1 ring-[var(--accent-color)]/30 shadow-sm" : "hover:bg-[var(--bg-secondary)]/50"}`}
                                 >
                                     {/* Status Icon */}
-                                    <div className={`w-5 h-5 rounded-full flex items-center justify-center border-2 shrink-0 ${
-                                        isSelected ? "border-purple-600 bg-white" : 
-                                        isPast ? "border-purple-400 bg-purple-400" :
-                                        isToday ? "border-purple-600 animate-pulse" :
-                                        "border-slate-300"
+                                    <div className={`w-5 h-5 rounded-full flex items-center justify-center border-2 shrink-0 transition-colors ${
+                                        isSelected ? "border-[var(--accent-color)] bg-[var(--bg-card)] shadow-[0_0_10px_var(--accent-color)]" : 
+                                        isPast ? "border-emerald-500/50 bg-emerald-500/20" :
+                                        isToday ? "border-[var(--accent-color)]/50 animate-pulse" :
+                                        "border-[var(--border-color)]"
                                     }`}>
-                                        {isPast && <CheckCircle2 size={12} className="transform-gpu text-white" />}
-                                        {isSelected && !isPast && <div className="transform-gpu w-2 h-2 rounded-full bg-purple-600" />}
+                                        {isPast && <CheckCircle2 size={12} className="transform-gpu text-emerald-500" />}
+                                        {isSelected && !isPast && <div className="transform-gpu w-2 h-2 rounded-full bg-[var(--accent-color)]" />}
                                     </div>
 
                                     {/* Text Content */}
                                     <div className="transform-gpu flex-1">
                                         <div className="transform-gpu flex items-center justify-between">
-                                            <span className={`text-xs font-bold uppercase tracking-wider ${isSelected ? "text-purple-600" : "text-slate-400"}`}>
+                                            <span className={`text-[9px] font-black uppercase tracking-[0.2em] italic ${isSelected ? "text-[var(--accent-color)]" : "text-[var(--text-secondary)] opacity-60"}`}>
                                                 {isUnscheduled ? "Backlog" : `Day ${index + 1}`}
-                                                {isToday && <span className="transform-gpu ml-2 bg-purple-600 text-white px-1.5 py-[1px] rounded text-[9px]">TODAY</span>}
+                                                {isToday && <span className="transform-gpu ml-2 bg-[var(--accent-color)] text-[var(--bg-primary)] px-2 py-0.5 rounded-md text-[8px] tracking-widest shadow-sm">TODAY</span>}
                                             </span>
                                             {/* Insert Day Hover Action */}
                                             {!isUnscheduled && (
                                                 <div 
                                                     onClick={(e) => { e.stopPropagation(); actions.insertDay(dateKey); }} 
-                                                    className="transform-gpu opacity-0 group-hover:opacity-100 p-1 hover:bg-purple-100 text-purple-600 rounded transition-all"
+                                                    className="transform-gpu opacity-0 group-hover:opacity-100 p-1.5 hover:bg-[var(--accent-color)]/20 text-[var(--accent-color)] rounded-lg transition-all"
                                                     title="Insert Day After"
                                                 >
-                                                    <Plus size={12} />
+                                                    <Plus size={14} strokeWidth={3} />
                                                 </div>
                                             )}
                                         </div>
-                                        <div className={`font-semibold ${isSelected ? "text-slate-900" : "text-slate-600"}`}>
+                                        <div className={`font-black uppercase tracking-tight italic ${isSelected ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"}`}>
                                             {formatDateReadable(dateKey)}
                                         </div>
-                                        <div className="transform-gpu text-xs text-slate-400 mt-0.5">
-                                            {tasksCount} tasks
+                                        <div className="transform-gpu text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest mt-0.5 opacity-40 italic">
+                                            {tasksCount} vectors
                                         </div>
                                     </div>
 
                                     {/* Active Arrow */}
-                                    {isSelected && <ChevronRight size={16} className="transform-gpu text-purple-600" />}
+                                    {isSelected && <ChevronRight size={18} className="transform-gpu text-[var(--accent-color)]" strokeWidth={3} />}
                                 </button>
                             </div>
                         )
@@ -446,20 +449,21 @@ export default function PlanDetailClient({ initialPlan }: { initialPlan: Extende
              {/* --- Right Column: Day Detail View --- */}
              <div className="transform-gpu lg:col-span-8">
                  {/* Day Header */}
-                 <div className="transform-gpu bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-6">
-                     <div className="transform-gpu flex items-start justify-between">
+                 <div className="transform-gpu bg-[var(--bg-card)] rounded-[3rem] shadow-2xl border border-[var(--border-color)] p-8 mb-6 relative overflow-hidden group">
+                     <div className="transform-gpu absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[var(--accent-color)]/5 to-transparent rounded-full blur-3xl pointer-events-none group-hover:scale-110 transition-transform duration-1000" />
+                     <div className="transform-gpu flex items-start justify-between relative z-10">
                         <div>
-                            <h2 className="transform-gpu text-2xl font-extrabold text-slate-900 mb-2">
-                                {selectedDate === "Unscheduled" ? "Unscheduled Tasks" : formatDateReadable(selectedDate)}
+                            <h2 className="transform-gpu text-3xl font-black text-[var(--text-primary)] uppercase tracking-tighter mb-2 italic">
+                                {selectedDate === "Unscheduled" ? "Unscheduled Vectors" : formatDateReadable(selectedDate)}
                             </h2>
-                            <p className="transform-gpu text-slate-500 leading-relaxed">
+                            <p className="transform-gpu text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest leading-relaxed opacity-60 italic">
                                 {currentDayTasks.length > 0 
                                     ? "Focus on completing the modules below. Mark them as done to track progress." 
                                     : "No tasks scheduled for this day yet."}
                             </p>
                         </div>
                         {selectedDate !== "Unscheduled" && (
-                            <button onClick={() => actions.deleteDay(selectedDate)} className="transform-gpu text-slate-300 hover:text-red-500 p-2 hover:bg-red-50 rounded-lg transition-colors" title="Delete Entire Day">
+                            <button onClick={() => actions.deleteDay(selectedDate)} className="transform-gpu text-[var(--text-secondary)] hover:text-rose-500 p-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:border-rose-500/30 rounded-2xl transition-all shadow-sm active:scale-95" title="Delete Entire Day">
                                 <Trash2 size={20} />
                             </button>
                         )}
@@ -467,13 +471,13 @@ export default function PlanDetailClient({ initialPlan }: { initialPlan: Extende
                  </div>
 
                  {/* Tasks List */}
-                 <div className="transform-gpu flex items-center gap-2 mb-4">
-                    <CheckCircle2 size={18} className="transform-gpu text-purple-600" />
-                    <h3 className="transform-gpu text-lg font-bold text-slate-800">Tasks</h3>
-                    <span className="transform-gpu text-xs font-medium text-slate-400 ml-auto">{currentDayTasks.filter(t => t.status === "completed" || t.status === "Completed").length}/{currentDayTasks.length} Completed</span>
+                 <div className="transform-gpu flex items-center gap-3 mb-6 ml-2">
+                    <div className="w-1.5 h-5 bg-[var(--accent-color)] rounded-full shadow-[0_0_10px_var(--accent-color)]" />
+                    <h3 className="transform-gpu text-xl font-black text-[var(--text-primary)] uppercase tracking-tight italic">Mission Vectors</h3>
+                    <span className="transform-gpu text-[9px] font-black text-[var(--text-secondary)] bg-[var(--bg-secondary)] border border-[var(--border-color)] px-3 py-1.5 rounded-full uppercase tracking-widest ml-auto italic shadow-sm">{currentDayTasks.filter(t => t.status === "completed" || t.status === "Completed").length}/{currentDayTasks.length} Resolved</span>
                  </div>
 
-                 <div className="transform-gpu space-y-4">
+                 <div className="transform-gpu space-y-6">
                      {currentDayTasks.map(task => 
                         editingTaskId === task.id ? (
                             <TaskForm key={task.id} initialData={task} onSubmit={(data) => actions.updateTask(task.id, data)} onCancel={() => setEditingTaskId(null)} />
@@ -495,35 +499,35 @@ export default function PlanDetailClient({ initialPlan }: { initialPlan: Extende
                      ) : (
                         <button 
                             onClick={() => setCreatingTaskDate(selectedDate)}
-                            className="transform-gpu w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-medium hover:border-purple-300 hover:text-purple-600 hover:bg-purple-50/50 transition-all flex items-center justify-center gap-2 group"
+                            className="transform-gpu w-full py-10 border-2 border-dashed border-[var(--border-color)] rounded-[3rem] text-[var(--text-secondary)] hover:border-[var(--accent-color)]/50 hover:text-[var(--accent-color)] hover:bg-[var(--bg-secondary)]/30 transition-all flex flex-col items-center justify-center gap-4 group shadow-sm hover:shadow-xl active:scale-[0.99]"
                         >
-                            <div className="transform-gpu w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center group-hover:border-purple-300 text-slate-300 group-hover:text-purple-500 transition-colors shadow-sm">
-                                <Plus size={16} />
+                            <div className="transform-gpu w-12 h-12 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] flex items-center justify-center group-hover:border-[var(--accent-color)] text-[var(--text-secondary)] group-hover:text-[var(--bg-primary)] group-hover:bg-[var(--accent-color)] transition-all shadow-sm group-hover:shadow-[0_0_15px_var(--accent-color)] group-hover:rotate-90 duration-500">
+                                <Plus size={24} strokeWidth={3} />
                             </div>
-                            <span>Add New Task</span>
+                            <span className="text-[11px] font-black uppercase tracking-[0.3em] italic">Initialize New Vector</span>
                         </button>
                      )}
                  </div>
 
                  {/* Simulated Resources Section (Visual only, to match screenshot layout feel, purely static) */}
-                 <div className="transform-gpu mt-10 pt-8 border-t border-slate-200">
-                    <div className="transform-gpu flex items-center gap-2 mb-4 opacity-50">
-                        <BarChart3 size={18} className="transform-gpu text-slate-400" />
-                        <h3 className="transform-gpu text-lg font-bold text-slate-800">Resources (Placeholder)</h3>
+                 <div className="transform-gpu mt-16 pt-10 border-t border-[var(--border-color)]">
+                    <div className="transform-gpu flex items-center gap-3 mb-6 ml-2 opacity-40">
+                        <div className="p-2.5 bg-[var(--bg-secondary)] text-[var(--text-secondary)] rounded-xl border border-[var(--border-color)] shadow-sm"><BarChart3 size={18} /></div>
+                        <h3 className="transform-gpu text-xl font-black text-[var(--text-primary)] uppercase tracking-tight italic">Mission Intelligence</h3>
                     </div>
-                    <div className="transform-gpu grid grid-cols-1 md:grid-cols-2 gap-4 opacity-50 pointer-events-none grayscale">
-                        <div className="transform-gpu border border-slate-200 rounded-xl p-4 flex items-center gap-3">
-                            <div className="transform-gpu w-10 h-10 bg-blue-50 text-blue-500 rounded-lg flex items-center justify-center"><Layout size={20}/></div>
+                    <div className="transform-gpu grid grid-cols-1 md:grid-cols-2 gap-6 opacity-30 pointer-events-none grayscale">
+                        <div className="transform-gpu border border-[var(--border-color)] bg-[var(--bg-card)] shadow-sm rounded-[2.5rem] p-6 flex items-center gap-5">
+                            <div className="transform-gpu w-12 h-12 bg-blue-500/10 text-blue-500 rounded-2xl flex items-center justify-center border border-blue-500/20"><Layout size={20}/></div>
                             <div>
-                                <div className="transform-gpu text-sm font-bold text-slate-800">Documentation</div>
-                                <div className="transform-gpu text-xs text-slate-400">Official Guide</div>
+                                <div className="transform-gpu text-sm font-black text-[var(--text-primary)] uppercase tracking-tight italic">Documentation</div>
+                                <div className="transform-gpu text-[9px] font-black uppercase tracking-widest text-[var(--text-secondary)] mt-1">Official Guide</div>
                             </div>
                         </div>
-                         <div className="transform-gpu border border-slate-200 rounded-xl p-4 flex items-center gap-3">
-                            <div className="transform-gpu w-10 h-10 bg-red-50 text-red-500 rounded-lg flex items-center justify-center"><AlertCircle size={20}/></div>
+                         <div className="transform-gpu border border-[var(--border-color)] bg-[var(--bg-card)] shadow-sm rounded-[2.5rem] p-6 flex items-center gap-5">
+                            <div className="transform-gpu w-12 h-12 bg-rose-500/10 text-rose-500 rounded-2xl flex items-center justify-center border border-rose-500/20"><AlertCircle size={20}/></div>
                             <div>
-                                <div className="transform-gpu text-sm font-bold text-slate-800">Video Tutorial</div>
-                                <div className="transform-gpu text-xs text-slate-400">15 min watch</div>
+                                <div className="transform-gpu text-sm font-black text-[var(--text-primary)] uppercase tracking-tight italic">Video Tutorial</div>
+                                <div className="transform-gpu text-[9px] font-black uppercase tracking-widest text-[var(--text-secondary)] mt-1">15 min watch</div>
                             </div>
                         </div>
                     </div>

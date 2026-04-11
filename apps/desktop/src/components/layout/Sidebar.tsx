@@ -22,6 +22,8 @@ import {
   LayoutDashboard
 } from "lucide-react";
 
+import { GritioLogo } from '@gritorquit/dashboard-ui-web';
+
 export interface SidebarPermissions {
   canViewToday: boolean;
   canViewNotes: boolean;
@@ -105,10 +107,9 @@ export default function Sidebar({ permissions }: { permissions?: SidebarPermissi
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
-                className="flex items-center gap-2 font-black text-xl text-[var(--text-primary)] tracking-tighter uppercase italic"
+                className="transform-gpu flex items-center"
               >
-                <span>DO GRIT</span>
-                <Sparkles size={14} className="text-[var(--accent-color)] animate-pulse" />
+                <GritioLogo size="sm" withText={true} />
               </motion.div>
             )}
           </AnimatePresence>
