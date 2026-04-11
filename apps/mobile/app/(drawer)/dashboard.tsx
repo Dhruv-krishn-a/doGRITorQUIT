@@ -7,7 +7,6 @@ import { useAuth } from '../../context/AuthContext';
 import { useDashboardStats } from '../../hooks/useDashboardStats';
 import { useSync } from '../../context/SyncContext';
 import { Ionicons } from '@expo/vector-icons';
-import { PerspectiveWrapper } from './_layout';
 import { useTheme } from '../../context/ThemeContext';
 import Svg, { Line, Polyline, Circle } from 'react-native-svg';
 import { getWeeklyStats } from '../../lib/analytics-logic';
@@ -102,7 +101,6 @@ export default function MobileHome() {
           )}
         </ScrollView>
       </View>
-    </PerspectiveWrapper>
   );
 }
 
@@ -182,7 +180,7 @@ function InsightsSection({ stats, loading, colors }: any) {
               <Line 
                 key={p} 
                 x1="0" y1={CHART_HEIGHT * p} x2={CHART_WIDTH} y2={CHART_HEIGHT * p} 
-                stroke={colors.borderColor} strokeWidth="1" opacity={0.1}
+                stroke={colors.border} strokeWidth="1" opacity={0.1}
               />
             ))}
             

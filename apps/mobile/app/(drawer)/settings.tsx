@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Switch, Alert, Linking } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { useSync } from '../../context/SyncContext';
 import { useTheme } from '../../context/ThemeContext';

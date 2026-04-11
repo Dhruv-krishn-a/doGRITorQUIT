@@ -3,11 +3,9 @@ import { Drawer } from "expo-router/drawer";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
 import { View, Text, TouchableOpacity, useWindowDimensions } from "react-native";
-import { DrawerContentScrollView, DrawerItemList, useDrawerProgress } from "@react-navigation/drawer";
+import { DrawerContentScrollView, DrawerItemList } from "@react-navigation/drawer";
 import Animated, { 
-  useAnimatedStyle, 
-  interpolate, 
-  Extrapolation,
+  useAnimatedStyle,
   withSpring,
   useSharedValue,
 } from "react-native-reanimated";
@@ -67,36 +65,6 @@ function CustomDrawerContent(props: any) {
           />
         </TouchableOpacity>
       </DrawerContentScrollView>
-    </Animated.View>
-  );
-}
-
-// Custom Scene Component to apply perspective animation
-function CustomScene(props: any) {
-  const progress = useDrawerProgress() as Animated.SharedValue<number>;
-  
-  const animatedStyle = useAnimatedStyle(() => {
-    const val = progress?.value ?? 0;
-    const scale = interpolate(val, [0, 1], [1, 0.82], Extrapolation.CLAMP);
-    const borderRadius = interpolate(val, [0, 1], [0, 48], Extrapolation.CLAMP);
-    const rotateY = interpolate(val, [0, 1], [0, -12], Extrapolation.CLAMP);
-    const translateX = interpolate(val, [0, 1], [0, 25], Extrapolation.CLAMP);
-
-    return {
-      transform: [
-        { perspective: 1200 },
-        { scale },
-        { rotateY: `${rotateY}deg` },
-        { translateX }
-      ],
-      borderRadius,
-      overflow: 'hidden',
-    };
-  });
-
-  return (
-    <Animated.View style={[{ flex: 1 }, animatedStyle]}>
-      {props.children}
     </Animated.View>
   );
 }
@@ -161,13 +129,7 @@ export default function DrawerLayout() {
               <Ionicons name="apps" size={size} color={color} />
             ),
           }}
-        >
-          {(props) => (
-            <CustomScene>
-              <props.component {...props} />
-            </CustomScene>
-          )}
-        </Drawer.Screen>
+        />
         <Drawer.Screen
           name="today"
           options={{
@@ -177,13 +139,7 @@ export default function DrawerLayout() {
               <Ionicons name="flash" size={size} color={color} />
             ),
           }}
-        >
-          {(props) => (
-            <CustomScene>
-              <props.component {...props} />
-            </CustomScene>
-          )}
-        </Drawer.Screen>
+        />
         <Drawer.Screen
           name="notes"
           options={{
@@ -193,13 +149,7 @@ export default function DrawerLayout() {
               <Ionicons name="journal" size={size} color={color} />
             ),
           }}
-        >
-          {(props) => (
-            <CustomScene>
-              <props.component {...props} />
-            </CustomScene>
-          )}
-        </Drawer.Screen>
+        />
         <Drawer.Screen
           name="study"
           options={{
@@ -209,13 +159,7 @@ export default function DrawerLayout() {
               <Ionicons name="rocket" size={size} color={color} />
             ),
           }}
-        >
-          {(props) => (
-            <CustomScene>
-              <props.component {...props} />
-            </CustomScene>
-          )}
-        </Drawer.Screen>
+        />
         <Drawer.Screen
           name="checklist"
           options={{
@@ -225,13 +169,7 @@ export default function DrawerLayout() {
               <Ionicons name="checkmark-circle" size={size} color={color} />
             ),
           }}
-        >
-          {(props) => (
-            <CustomScene>
-              <props.component {...props} />
-            </CustomScene>
-          )}
-        </Drawer.Screen>
+        />
         <Drawer.Screen
           name="settings"
           options={{
@@ -241,13 +179,7 @@ export default function DrawerLayout() {
               <Ionicons name="settings" size={size} color={color} />
             ),
           }}
-        >
-          {(props) => (
-            <CustomScene>
-              <props.component {...props} />
-            </CustomScene>
-          )}
-        </Drawer.Screen>
+        />
         <Drawer.Screen
           name="subscriptions"
           options={{
@@ -257,13 +189,7 @@ export default function DrawerLayout() {
               <Ionicons name="card" size={size} color={color} />
             ),
           }}
-        >
-          {(props) => (
-            <CustomScene>
-              <props.component {...props} />
-            </CustomScene>
-          )}
-        </Drawer.Screen>
+        />
         <Drawer.Screen
           name="feedback"
           options={{
@@ -273,13 +199,7 @@ export default function DrawerLayout() {
               <Ionicons name="people" size={size} color={color} />
             ),
           }}
-        >
-          {(props) => (
-            <CustomScene>
-              <props.component {...props} />
-            </CustomScene>
-          )}
-        </Drawer.Screen>
+        />
         
         {/* Hidden internal screens */}
         <Drawer.Screen name="profile" options={{ drawerItemStyle: { display: 'none' } }} />

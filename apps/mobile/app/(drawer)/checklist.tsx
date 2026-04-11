@@ -154,7 +154,7 @@ export default function ChecklistPage() {
             </Text>
           </View>
 
-          <View className="rounded-[2.5rem] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 shadow-2xl mb-8">
+          <View className="rounded-[2.5rem] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 mb-8">
             <View className="flex-row items-center justify-between mb-4">
               <Text className="text-[10px] font-black uppercase tracking-[0.25em] text-[var(--text-secondary)] italic">
                 Habit Status
@@ -166,7 +166,7 @@ export default function ChecklistPage() {
 
             <View className="h-3 overflow-hidden rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)]/50">
               <View
-                className="h-full rounded-full bg-[var(--accent-color)] shadow-lg shadow-sky-500/50"
+                className="h-full rounded-full bg-[var(--accent-color)]"
                 style={{ width: `${Math.min(progress, 100)}%` }}
               />
             </View>
@@ -185,7 +185,7 @@ export default function ChecklistPage() {
               {remainingCount > 0 ? (
                 <TouchableOpacity
                   onPress={handleRemindMe}
-                  className="rounded-xl bg-[var(--accent-color)] px-5 py-2.5 shadow-lg shadow-sky-500/20"
+                  className="rounded-xl bg-[var(--accent-color)] px-5 py-2.5"
                 >
                   <Text className="text-[10px] font-black uppercase tracking-widest text-[var(--bg-primary)]">
                     Nudge
@@ -207,7 +207,7 @@ export default function ChecklistPage() {
                   <TouchableOpacity
                     key={item}
                     onPress={() => setFilter(item)}
-                    className={`rounded-full px-5 py-2.5 border ${active ? 'bg-[var(--accent-color)] border-[var(--accent-color)] shadow-lg shadow-sky-500/20' : 'bg-[var(--bg-secondary)] border-[var(--border-color)]'}`}
+                    className={`rounded-full px-5 py-2.5 border ${active ? 'bg-[var(--accent-color)] border-[var(--accent-color)]' : 'bg-[var(--bg-secondary)] border-[var(--border-color)]'}`}
                   >
                     <Text
                       className={`text-[9px] font-black uppercase tracking-widest ${
@@ -223,7 +223,7 @@ export default function ChecklistPage() {
 
             <TouchableOpacity
               onPress={() => setModalVisible(true)}
-              className="h-12 w-12 items-center justify-center rounded-2xl bg-[var(--text-primary)] shadow-xl"
+              className="h-12 w-12 items-center justify-center rounded-2xl bg-[var(--text-primary)]"
             >
               <Ionicons name="add" size={28} color={colors.primary} />
             </TouchableOpacity>
@@ -258,7 +258,7 @@ export default function ChecklistPage() {
                <View className="w-1 h-4 bg-[var(--accent-color)] rounded-full" />
                <Text className="text-[11px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)]">Daily Reflection</Text>
             </View>
-            <View className="rounded-[2.5rem] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 shadow-2xl">
+            <View className="rounded-[2.5rem] border border-[var(--border-color)] bg-[var(--bg-card)] p-6">
               <TextInput
                 value={reflection}
                 onChangeText={setReflection}
@@ -271,7 +271,7 @@ export default function ChecklistPage() {
               />
               <TouchableOpacity
                 onPress={saveReflection}
-                className="mt-6 items-center rounded-2xl bg-[var(--accent-color)] py-4 shadow-lg shadow-sky-500/20"
+                className="mt-6 items-center rounded-2xl bg-[var(--accent-color)] py-4"
               >
                 <Text className="text-[10px] font-black uppercase tracking-widest text-[var(--bg-primary)] italic">
                   Log Reflection
@@ -285,7 +285,7 @@ export default function ChecklistPage() {
           <View className="flex-1 justify-end bg-black/60">
             <View 
               style={{ backgroundColor: colors.card }}
-              className="rounded-t-[3.5rem] p-10 pb-16 border-t border-[var(--border-color)] shadow-2xl"
+              className="rounded-t-[3.5rem] p-10 pb-16 border-t border-[var(--border-color)]"
             >
               <View className="mb-10 flex-row items-center justify-between">
                 <Text className="text-3xl font-black italic uppercase tracking-tighter text-[var(--text-primary)]">Add New Habit</Text>
@@ -309,7 +309,7 @@ export default function ChecklistPage() {
               <TouchableOpacity
                 onPress={handleCreateHabit}
                 activeOpacity={0.9}
-                className="items-center rounded-3xl bg-[var(--accent-color)] p-6 shadow-xl shadow-sky-500/30"
+                className="items-center rounded-3xl bg-[var(--accent-color)] p-6"
               >
                 <Text className="text-[11px] font-black uppercase tracking-[0.2em] text-[var(--bg-primary)] italic">
                   Add Habit
@@ -338,14 +338,14 @@ function HabitItem({
       activeOpacity={0.8}
       className={`mb-5 w-[48%] rounded-[2rem] border p-6 ${
         done
-          ? 'border-mint/30 bg-mint/10 shadow-lg shadow-mint/10'
-          : 'border-[var(--border-color)] bg-[var(--bg-secondary)]/40 shadow-sm'
+          ? 'border-mint/30 bg-mint/10'
+          : 'border-[var(--border-color)] bg-[var(--bg-secondary)]/40'
       }`}
     >
       <View className="flex-row items-start justify-between">
         <View
           className={`h-12 w-12 items-center justify-center rounded-2xl border ${
-            done ? 'bg-mint/20 border-mint/30' : 'bg-[var(--bg-card)] border-[var(--border-color)] shadow-sm'
+            done ? 'bg-mint/20 border-mint/30' : 'bg-[var(--bg-card)] border-[var(--border-color)]'
           }`}
         >
           <Ionicons

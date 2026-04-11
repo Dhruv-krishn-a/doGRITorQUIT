@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../context/ThemeContext';
 import SmartTimeline from '../../components/today/SmartTimeline';
+import * as Haptics from 'expo-haptics';
 
 const DAY_START_HOUR = 23; // 11 PM
 
@@ -34,7 +35,7 @@ export default function TodayPage() {
   const { 
     actionStream, loading, 
     toggleHabit, refreshAll,
-    toggleTaskComplete, toggleUnitComplete, createScheduledTask
+    toggleTaskComplete, toggleUnitComplete
   } = useToday();
   const router = useRouter();
   const { colors } = useTheme();
@@ -136,10 +137,32 @@ export default function TodayPage() {
   };
 
   const handleStartMission = (item: any) => {
-    router.push({
-      pathname: '/study/[id]',
-      params: { id: item.id }
-    });
+    if (item.type === 'YOUTUBE' || item.type === 'COURSE') {
+      const trackId = item.metadata?.trackId as string | undefined;
+      if (trackId) {
+        router.push(`/study/${trackId}/${item.id}` as any);
+        return;
+      }
+      router.push('/(drawer)/study');
+      return;
+    }
+
+    if (item.type === 'PROJECT') {
+      const planId = item.metadata?.planId as string | undefined;
+      if (planId) {
+        router.push(`/study/plan/${planId}` as any);
+      } else {
+        router.push('/(drawer)/planner');
+      }
+      return;
+    }
+
+    if (item.type === 'HABIT') {
+      router.push('/(drawer)/checklist');
+      return;
+    }
+
+    router.push('/(drawer)/study');
   };
 
   const handleComplete = (item: any) => {

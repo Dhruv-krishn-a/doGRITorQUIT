@@ -9,6 +9,7 @@ import { TodayActionItem, TodayStats, EnergyLevel } from '../types/today';
 import { Q } from '@nozbe/watermelondb';
 import { useAuth } from '../context/AuthContext';
 import { scheduleTaskReminderSeries, cancelTaskReminderSeries, scheduleTodayMotivationalReminders } from '../lib/notifications';
+import { performSyncOnce } from '../services/SyncServices';
 
 export function useToday() {
   const { user } = useAuth();
@@ -19,6 +20,12 @@ export function useToday() {
   const [studyUnits, setStudyUnits] = useState<StudyUnit[]>([]);
   const [loading, setLoading] = useState(true);
   const [energy, setEnergy] = useState<EnergyLevel>('MEDIUM');
+
+  const syncInBackground = useCallback(() => {
+    performSyncOnce().catch((error) => {
+      console.warn('Today sync failed:', error);
+    });
+  }, []);
 
   const refreshAll = useCallback(async () => {
     if (!user?.id) return;
@@ -177,6 +184,8 @@ export function useToday() {
         });
       }
     });
+
+    syncInBackground();
   };
 
   const toggleTaskComplete = async (taskId: string, currentlyDone: boolean) => {
@@ -190,6 +199,8 @@ export function useToday() {
     if (!currentlyDone) {
       await cancelTaskReminderSeries(taskId);
     }
+
+    syncInBackground();
   };
 
   const toggleUnitComplete = async (unitId: string, currentlyDone: boolean) => {
@@ -209,6 +220,8 @@ export function useToday() {
         t.progressPercentage = Math.round((doneUnits / allUnits.length) * 100);
       });
     });
+
+    syncInBackground();
   };
 
   const createScheduledTask = async (input: {
@@ -253,6 +266,7 @@ export function useToday() {
     }
 
     await refreshAll();
+    syncInBackground();
     return created;
   };
 

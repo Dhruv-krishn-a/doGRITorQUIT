@@ -4,12 +4,19 @@ import Habit from '../db/models/Habit';
 import HabitLog from '../db/models/HabitLog';
 import { Q } from '@nozbe/watermelondb';
 import { useAuth } from '../context/AuthContext';
+import { performSyncOnce } from '../services/SyncServices';
 
 export function useChecklist() {
   const { user } = useAuth();
   const [habits, setHabits] = useState<Habit[]>([]);
   const [logs, setLogs] = useState<HabitLog[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const syncInBackground = useCallback(() => {
+    performSyncOnce().catch((error) => {
+      console.warn('Checklist sync failed:', error);
+    });
+  }, []);
 
   const fetchChecklist = useCallback(async () => {
     if (!user?.id) return;
@@ -70,11 +77,13 @@ export function useChecklist() {
         });
       }
     });
+
+    syncInBackground();
   };
 
   const createHabit = async (title: string, icon: string = 'ellipse-outline', color: string = '#6366f1') => {
     if (!user?.id) return;
-    return await database.write(async () => {
+    const createdHabit = await database.write(async () => {
       return await database.get<Habit>('habits').create(h => {
         h.title = title;
         h.icon = icon;
@@ -84,6 +93,9 @@ export function useChecklist() {
         h.userId = user.id;
       });
     });
+
+    syncInBackground();
+    return createdHabit;
   };
 
   return {

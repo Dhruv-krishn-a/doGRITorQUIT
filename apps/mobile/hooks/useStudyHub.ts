@@ -35,6 +35,7 @@ export function useStudyHub() {
       youtube: tracks.filter(t => t.type === 'PLAYLIST'),
       course: tracks.filter(t => t.type === 'COURSE'),
       project: tracks.filter(t => t.type === 'PROJECT'),
+      plan: tracks.filter(t => t.type === 'PLAN'),
     };
   }, [tracks]);
 

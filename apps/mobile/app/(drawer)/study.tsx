@@ -31,9 +31,9 @@ export default function StudyHubPage() {
         <View className="flex-row items-center">
           <View className={`w-16 h-16 rounded-3xl items-center justify-center bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm`}>
             <Ionicons 
-              name={track.type === 'PLAYLIST' ? 'logo-youtube' : track.type === 'COURSE' ? 'school' : 'rocket'} 
+              name={track.type === 'PLAYLIST' ? 'logo-youtube' : track.type === 'COURSE' ? 'school' : track.type === 'PLAN' ? 'map' : 'rocket'} 
               size={28} 
-              color={track.type === 'PLAYLIST' ? '#f43f5e' : track.type === 'COURSE' ? '#d946ef' : colors.accent} 
+              color={track.type === 'PLAYLIST' ? '#f43f5e' : track.type === 'COURSE' ? '#d946ef' : track.type === 'PLAN' ? '#38bdf8' : colors.accent} 
             />
           </View>
           <View className="ml-5 flex-1">
@@ -44,11 +44,11 @@ export default function StudyHubPage() {
                     className="h-full rounded-full shadow-lg" 
                     style={{ 
                       width: `${track.progressPercentage}%`,
-                      backgroundColor: track.type === 'PLAYLIST' ? '#f43f5e' : track.type === 'COURSE' ? '#d946ef' : colors.accent
+                      backgroundColor: track.type === 'PLAYLIST' ? '#f43f5e' : track.type === 'COURSE' ? '#d946ef' : track.type === 'PLAN' ? '#38bdf8' : colors.accent
                     }} 
                   />
                </View>
-               <Text className={`ml-4 text-xs font-black italic tracking-tighter`} style={{ color: track.type === 'PLAYLIST' ? '#f43f5e' : track.type === 'COURSE' ? '#d946ef' : colors.accent }}>
+               <Text className={`ml-4 text-xs font-black italic tracking-tighter`} style={{ color: track.type === 'PLAYLIST' ? '#f43f5e' : track.type === 'COURSE' ? '#d946ef' : track.type === 'PLAN' ? '#38bdf8' : colors.accent }}>
                  {Math.round(track.progressPercentage)}%
                </Text>
             </View>
@@ -93,6 +93,7 @@ export default function StudyHubPage() {
               {[
                 { key: 'PLAYLIST', data: categorizedTracks.youtube, label: 'Media Paths', color: '#f43f5e' },
                 { key: 'COURSE', data: categorizedTracks.course, label: 'Learning Paths', color: '#d946ef' },
+                { key: 'PLAN', data: categorizedTracks.plan, label: 'AI Roadmaps', color: '#38bdf8' },
                 { key: 'PROJECT', data: categorizedTracks.project, label: 'Project Paths', color: colors.accent }
               ].map((section) => (
                 <View key={section.key} className="mb-10">
