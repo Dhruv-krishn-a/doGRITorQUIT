@@ -1,4 +1,6 @@
 const allowedSchemes = [
+  "gritio://",
+  "com.gritio.app://",
   "gritorquit://",
   "grit.io://",
   "grit-io://",
