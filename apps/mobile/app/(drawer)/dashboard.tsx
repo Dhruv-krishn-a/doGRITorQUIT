@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, Pressable, Dimensions } from 'react-native';
 import { cssInterop } from 'nativewind';
 import { LinearGradient } from 'expo-linear-gradient'; 
 import { BlurView } from 'expo-blur';
@@ -65,15 +65,38 @@ export default function MobileHome() {
 
           {/* Segmented Control */}
           <View className="bg-[var(--bg-secondary)] p-1 rounded-2xl border border-[var(--border-color)] flex-row relative h-12">
-            {(['OVERVIEW', 'INSIGHTS'] as const).map(tab => (
-              <TouchableOpacity 
-                key={tab}
-                onPress={() => { setActiveTab(tab); }}
-                className={`flex-1 items-center justify-center rounded-xl ${activeTab === tab ? 'bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm' : ''}`}
-              >
-                <Text className={`text-[9px] font-black uppercase tracking-widest ${activeTab === tab ? 'text-[var(--accent-color)]' : 'text-[var(--text-secondary)]'}`}>{tab}</Text>
-              </TouchableOpacity>
-            ))}
+            {(['OVERVIEW', 'INSIGHTS'] as const).map(tab => {
+              const isActive = activeTab === tab;
+              return (
+                <Pressable
+                  key={tab}
+                  cssInterop={false}
+                  onPress={() => {
+                    setActiveTab(tab);
+                  }}
+                  style={{
+                    flex: 1,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 12,
+                    backgroundColor: isActive ? colors.card : 'transparent',
+                    borderWidth: isActive ? 1 : 0,
+                    borderColor: colors.border,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 9,
+                      fontWeight: '900',
+                      letterSpacing: 1.4,
+                      color: isActive ? colors.accent : colors.textSecondary,
+                    }}
+                  >
+                    {tab}
+                  </Text>
+                </Pressable>
+              );
+            })}
           </View>
         </View>
 

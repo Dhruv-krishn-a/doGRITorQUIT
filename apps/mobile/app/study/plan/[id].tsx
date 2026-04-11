@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useMemo, useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { database } from '../../../db';
 import StudyTrack from '../../../db/models/StudyTrack';
@@ -113,5 +113,57 @@ const EnhancedPlanDetail = withObservables(['id'], ({ id }) => ({
 
 export default function PlanPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const { colors } = useTheme();
+  const [exists, setExists] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    if (!id) {
+      setExists(false);
+      return;
+    }
+
+    database
+      .get<StudyTrack>('study_tracks')
+      .find(id)
+      .then(() => {
+        if (active) setExists(true);
+      })
+      .catch(() => {
+        if (active) setExists(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [id]);
+
+  if (exists === null) {
+    return (
+      <View className="flex-1 items-center justify-center bg-[var(--bg-primary)]">
+        <ActivityIndicator size="large" color={colors.accent} />
+      </View>
+    );
+  }
+
+  if (!exists || !id) {
+    return (
+      <View className="flex-1 items-center justify-center bg-[var(--bg-primary)] px-8">
+        <Text className="text-[11px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] text-center">
+          This roadmap is not available in local study tracks.
+        </Text>
+        <TouchableOpacity
+          onPress={() => router.replace('/(drawer)/planner')}
+          className="mt-6 bg-[var(--accent-color)] px-6 py-4 rounded-2xl"
+        >
+          <Text className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--bg-primary)]">
+            Open Planner
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return <EnhancedPlanDetail id={id} />;
 }

@@ -19,17 +19,17 @@ export default function StudyHubPage() {
       if (track.type === 'PLAYLIST') return `/study/youtube/${track.id}`;
       if (track.type === 'COURSE') return `/study/course/${track.id}`;
       if (track.type === 'PROJECT') return `/study/project/${track.id}`;
-      if (track.type === 'PLAN') return `/study/plan/${track.id}`;
+      if (track.type === 'PLAN') return track.isRemotePlan ? '/(drawer)/planner' : `/study/plan/${track.id}`;
       return `/study/${track.id}`;
     };
 
     return (
       <TouchableOpacity 
         onPress={() => router.push(getRoute() as any)}
-        className="bg-[var(--bg-secondary)]/40 rounded-[2.5rem] p-6 border border-[var(--border-color)] mb-5 shadow-sm active:scale-[0.98] transition-all"
+        className="bg-[var(--bg-secondary)]/40 rounded-[2.5rem] p-6 border border-[var(--border-color)] mb-5 active:scale-[0.98] transition-all"
       >
         <View className="flex-row items-center">
-          <View className={`w-16 h-16 rounded-3xl items-center justify-center bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm`}>
+          <View className={`w-16 h-16 rounded-3xl items-center justify-center bg-[var(--bg-card)] border border-[var(--border-color)]`}>
             <Ionicons 
               name={track.type === 'PLAYLIST' ? 'logo-youtube' : track.type === 'COURSE' ? 'school' : track.type === 'PLAN' ? 'map' : 'rocket'} 
               size={28} 
@@ -41,7 +41,7 @@ export default function StudyHubPage() {
             <View className="flex-row items-center mt-3">
                <View className="flex-1 h-2 bg-[var(--bg-secondary)] rounded-full overflow-hidden border border-[var(--border-color)]/50">
                   <View 
-                    className="h-full rounded-full shadow-lg" 
+                    className="h-full rounded-full" 
                     style={{ 
                       width: `${track.progressPercentage}%`,
                       backgroundColor: track.type === 'PLAYLIST' ? '#f43f5e' : track.type === 'COURSE' ? '#d946ef' : track.type === 'PLAN' ? '#38bdf8' : colors.accent
@@ -61,8 +61,8 @@ export default function StudyHubPage() {
 
   return (
     <View className="flex-1 bg-[var(--bg-primary)]">
-      <ScrollView 
-        className="flex-1" 
+      <ScrollView
+        className="flex-1"
         contentContainerStyle={{ padding: 24 }}
         showsVerticalScrollIndicator={false}
       >
@@ -74,20 +74,29 @@ export default function StudyHubPage() {
           </View>
 
           <View className="flex-row gap-5 mb-12">
-            <View className="flex-1 bg-[var(--bg-card)]/50 p-6 rounded-[2.5rem] border border-[var(--border-color)] items-center justify-center shadow-sm">
+            <View className="flex-1 bg-[var(--bg-card)]/50 p-6 rounded-[2.5rem] border border-[var(--border-color)] items-center justify-center">
                <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-2 italic">Active Paths</Text>
-               <Text className="text-3xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter">{Object.values(categorizedTracks).flat().length}</Text>
+               <Text className="text-3xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter">
+                 {
+                   categorizedTracks.youtube.length +
+                   categorizedTracks.course.length +
+                   categorizedTracks.project.length +
+                   categorizedTracks.plan.length
+                 }
+               </Text>
             </View>
             <TouchableOpacity 
               onPress={() => setCreationVisible(true)}
-              className="w-24 h-24 bg-[var(--accent-color)] rounded-[3rem] items-center justify-center shadow-xl shadow-sky-500/20 active:scale-95 transition-all"
+              className="w-24 h-24 bg-[var(--accent-color)] rounded-[3rem] items-center justify-center active:scale-95 transition-all"
             >
               <Ionicons name="add" size={40} color={colors.primary} />
             </TouchableOpacity>
           </View>
 
-          {loading && Object.values(categorizedTracks).every(arr => arr.length === 0) ? (
-            <ActivityIndicator size="large" color={colors.accent} className="mt-10" />
+          {loading ? (
+            <View className="py-12 items-center">
+              <ActivityIndicator size="large" color={colors.accent} />
+            </View>
           ) : (
             <>
               {[

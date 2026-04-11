@@ -11,6 +11,7 @@ export function usePlans() {
   const fetchPlans = useCallback(async () => {
     if (!user || !session) return;
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch(buildApiUrl('/plans'), {
         headers: {
@@ -24,7 +25,14 @@ export function usePlans() {
       }
 
       const data = await res.json();
-      setPlans(data.plans || []);
+      const normalizedPlans = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.plans)
+          ? data.plans
+          : Array.isArray(data?.data?.plans)
+            ? data.data.plans
+            : [];
+      setPlans(normalizedPlans);
     } catch (err: any) {
       console.error(err);
       setError(err.message);

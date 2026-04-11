@@ -17,7 +17,7 @@ import { useAuth } from '../../auth/hooks/useAuth';
 export function DesktopTracksView() {
  const navigate = useNavigate();
  const { tracks, dashboard, loading, fetchDashboard, openModal, deleteTrack } = useStudy();
- const { plans, refreshPlans } = usePlans();
+ const { plans, loading: plansLoading, refreshPlans } = usePlans();
  const { entitlements } = useEntitlements();
  const { session } = useAuth();
 
@@ -105,7 +105,7 @@ export function DesktopTracksView() {
   return { progress, count: youtube.length, timeSpent: Math.round(timeSpent / 60) };
  }, [tracks]);
 
- if (loading && !dashboard) return (
+ if (loading || plansLoading) return (
   <div className="flex items-center justify-center min-h-[60vh] w-full bg-[var(--bg-primary)]">
    <div className="flex flex-col items-center gap-4">
     <Loader2 className="w-8 h-8 text-[var(--accent-color)] animate-spin" />
@@ -347,7 +347,7 @@ export function DesktopTracksView() {
        <div className="p-3 bg-[var(--bg-secondary)] text-[var(--accent-color)] rounded-2xl shadow-sm border border-[var(--border-color)] flex items-center justify-center">
         <LayoutGrid size={20} />
        </div>
-       <h2 className="text-2xl font-bold text-[var(--text-primary)] tracking-tighter uppercase italic">Active Tasks</h2>
+       <h2 className="text-2xl font-bold text-[var(--text-primary)] tracking-tighter uppercase italic">Active Paths</h2>
       </div>
 
       <div className="flex items-center">

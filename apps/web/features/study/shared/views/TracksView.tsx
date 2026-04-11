@@ -116,7 +116,7 @@ export function TracksView({ initialPlans = [], isLimitReached = false, maxPlans
     return { progress, count: youtube.length, timeSpent: Math.round(timeSpent / 60) };
   }, [tracks]);
 
-  if (loading && !dashboard) return (
+  if (loading) return (
     <div className="transform-gpu flex items-center justify-center min-h-[60vh] bg-[var(--bg-primary)] w-full">
       <div className="transform-gpu flex flex-col items-center gap-4">
         <Loader2 className="transform-gpu w-8 h-8 text-[var(--accent-color)] animate-spin" />
@@ -359,7 +359,7 @@ export function TracksView({ initialPlans = [], isLimitReached = false, maxPlans
               <div className="transform-gpu p-3 bg-[var(--bg-secondary)] text-[var(--accent-color)] rounded-2xl shadow-sm border border-[var(--border-color)] flex items-center justify-center">
                 <LayoutGrid size={20} />
               </div>
-              <h2 className="transform-gpu text-2xl font-bold text-[var(--text-primary)] tracking-tighter uppercase italic">Active Tasks</h2>
+              <h2 className="transform-gpu text-2xl font-bold text-[var(--text-primary)] tracking-tighter uppercase italic">Active Paths</h2>
             </div>
             
             <div className="transform-gpu flex items-center">
