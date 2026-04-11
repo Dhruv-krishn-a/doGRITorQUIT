@@ -15,7 +15,7 @@ config.resolver.disableHierarchicalLookup = true;
 config.resolver.extraNodeModules = {
   ...config.resolver.extraNodeModules,
   "better-sqlite3": path.resolve(__dirname, "./db/mocks/better-sqlite3.js"),
-  "react-native-web-webview": path.resolve(__dirname, "node_modules/react-native-webview"),
+  "react-native-web-webview": require.resolve("react-native-webview"),
 };
 
 // Force Metro to resolve Expo's asset hashing plugin from the mobile app scope.
