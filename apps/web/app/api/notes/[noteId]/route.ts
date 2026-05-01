@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@gritorquit/db";
 import { getServerUser } from "@/lib/auth-server";
-import { sanitizeText, sanitizeJson } from "@/lib/sanitize";
 import { billing } from "@gritorquit/domain";
 
 export async function GET(
@@ -59,10 +58,10 @@ export async function PATCH(
     const note = await prisma.note.update({
       where: { id: existingNote.id },
       data: {
-        title: data.title !== undefined ? sanitizeText(data.title) : undefined,
-        content: data.content !== undefined ? sanitizeJson(data.content) : undefined,
+        title: data.title !== undefined ? data.title : undefined,
+        content: data.content !== undefined ? data.content : undefined,
         category: data.category,
-        metadata: data.metadata !== undefined ? sanitizeJson(data.metadata) : undefined,
+        metadata: data.metadata !== undefined ? data.metadata : undefined,
       },
     });
     return NextResponse.json(note);

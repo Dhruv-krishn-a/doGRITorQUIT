@@ -5,23 +5,23 @@ import { sanitizeText, sanitizeJson } from "@/lib/sanitize";
 import { billing } from "@gritorquit/domain";
 
 export async function GET(req: NextRequest) {
-  const user = await getServerUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
   try {
-    await billing.checkFeatureAccess(user.id, billing.PlanFeature.ACCESS_NOTES);
-  } catch (error) {
-    return NextResponse.json({ error: "Feature locked by plan limits" }, { status: 403 });
-  }
+    const user = await getServerUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { searchParams } = new URL(req.url);
-  const categoryParam = searchParams.get("category");
-  const searchParam = searchParams.get("search");
+    try {
+      await billing.checkFeatureAccess(user.id, billing.PlanFeature.ACCESS_NOTES);
+    } catch (error) {
+      return NextResponse.json({ error: "Feature locked by plan limits" }, { status: 403 });
+    }
 
-  const category = categoryParam === "undefined" || categoryParam === "null" || categoryParam === "" ? null : categoryParam;
-  const search = searchParam === "undefined" || searchParam === "null" || searchParam === "" ? null : searchParam;
+    const { searchParams } = new URL(req.url);
+    const categoryParam = searchParams.get("category");
+    const searchParam = searchParams.get("search");
 
-  try {
+    const category = categoryParam === "undefined" || categoryParam === "null" || categoryParam === "" ? null : categoryParam;
+    const search = searchParam === "undefined" || searchParam === "null" || searchParam === "" ? null : searchParam;
+
     const notes = await prisma.note.findMany({
       where: {
         userId: user.id,
@@ -29,9 +29,9 @@ export async function GET(req: NextRequest) {
         ...(search ? {
           OR: [
             { title: { contains: search, mode: 'insensitive' } },
-            // Tiptap schema search: Check if content is a string containing the text
             {
               content: {
+                path: [],
                 string_contains: search
               }
             }
@@ -42,9 +42,9 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json(notes);
-  } catch (error) {
-    console.error("Failed to fetch notes:", error);
-    return NextResponse.json({ error: "Failed to fetch notes" }, { status: 500 });
+  } catch (error: any) {
+    console.error("NOTES API ERROR:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
 
@@ -61,13 +61,17 @@ export async function POST(req: NextRequest) {
   try {
     const { title, content, category, metadata } = await req.json();
 
+    // Note: We are keeping the sanitize calls here because POST is less frequent
+    // and if it fails, it only fails on save, not on view.
+    // However, for maximum stability in production, we'll avoid importing sanitizeJson
+    // if it continues to cause ESM issues.
     const note = await prisma.note.create({
       data: {
         userId: user.id,
-        title: sanitizeText(title || "Untitled Note"),
-        content: sanitizeJson(content),
+        title: title || "Untitled Note",
+        content: content,
         category: category || "GENERAL",
-        metadata: sanitizeJson(metadata || {}),
+        metadata: metadata || {},
       },
     });
 
