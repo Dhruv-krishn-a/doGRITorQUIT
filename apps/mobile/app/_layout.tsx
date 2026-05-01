@@ -12,54 +12,54 @@ import { registerForPushNotificationsAsync, scheduleDailyReminder } from '../lib
 import BootSplash from "../components/BootSplash";
 
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
+ handleNotification: async () => ({
+ shouldShowAlert: true,
+ shouldPlaySound: true,
+ shouldSetBadge: false,
+ }),
 });
 
 function RootLayoutNav() {
-  const [booting, setBooting] = useState(true);
-  const { theme } = useTheme();
+ const [booting, setBooting] = useState(true);
+ const { theme } = useTheme();
 
-  useEffect(() => {
-    (async () => {
-      try {
-        await registerForPushNotificationsAsync();
-        await scheduleDailyReminder();
-      } catch (error) {
-        console.warn("Notification bootstrap skipped:", error);
-      }
-    })();
-  }, []);
+ useEffect(() => {
+ (async () => {
+ try {
+ await registerForPushNotificationsAsync();
+ await scheduleDailyReminder();
+ } catch (error) {
+ console.warn("Notification bootstrap skipped:", error);
+ }
+ })();
+ }, []);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setBooting(false), 1500);
-    return () => clearTimeout(timer);
-  }, []);
+ useEffect(() => {
+ const timer = setTimeout(() => setBooting(false), 1500);
+ return () => clearTimeout(timer);
+ }, []);
 
-  if (booting) {
-    return <BootSplash />;
-  }
+ if (booting) {
+ return <BootSplash />;
+ }
 
-  return (
-    <View className={`flex-1 theme-${theme}`}>
-      <Stack screenOptions={{ headerShown: false }} />
-    </View>
-  );
+ return (
+ <View className={`flex-1 theme-${theme}`}>
+ <Stack screenOptions={{ headerShown: false }} />
+ </View>
+ );
 }
 
 export default function RootLayout() {
-  return (
-    <AuthProvider>
-      <SyncProvider>
-        <AppThemeProvider>
-          <SafeAreaProvider>
-            <RootLayoutNav />
-          </SafeAreaProvider>
-        </AppThemeProvider>
-      </SyncProvider>
-    </AuthProvider>
-  );
+ return (
+ <AuthProvider>
+ <SyncProvider>
+ <AppThemeProvider>
+ <SafeAreaProvider>
+ <RootLayoutNav />
+ </SafeAreaProvider>
+ </AppThemeProvider>
+ </SyncProvider>
+ </AuthProvider>
+ );
 }
