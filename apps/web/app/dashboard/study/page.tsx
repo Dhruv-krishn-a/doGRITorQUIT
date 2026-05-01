@@ -25,10 +25,6 @@ export default async function TracksPage() {
   }
 
   return (
-    <TracksView 
-      initialPlans={userPlans} 
-      isLimitReached={isLimitReached} 
-      maxPlans={maxPlans} 
-    />
+    <TracksView />
   );
 }

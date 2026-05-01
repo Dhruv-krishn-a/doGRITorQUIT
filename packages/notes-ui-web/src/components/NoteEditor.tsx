@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import debounce from "lodash.debounce";
 import {
   ArrowLeft,
@@ -9,6 +10,7 @@ import {
   PenTool,
   LayoutTemplate,
   Download,
+  Settings,
   Eraser,
   Square,
   Circle,
@@ -16,6 +18,10 @@ import {
   MousePointer2,
   Type,
   Grid3X3,
+  ZoomIn,
+  ZoomOut,
+  Maximize,
+  ChevronDown,
 } from "lucide-react";
 import {
   buildSaveSnapshot,
@@ -375,8 +381,11 @@ export function NoteEditor({
   const [title, setTitle] = useState(initialTitle);
   const [isDrawingMode, setIsDrawingMode] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [zoom, setZoom] = useState(1);
 
-  const serializedInitialContent = useMemo(() => JSON.stringify(initialContent ?? null), [initialContent]);
+  const serializedInitialContent = useMemo(() => {
+    return JSON.stringify(initialContent ?? null);
+  }, [initialContent]);
   const initialDoc = useMemo(() => parseDocument(initialContent), [serializedInitialContent]);
 
   const [layoutMode, setLayoutMode] = useState<"continuous" | "paged">(initialDoc.layoutMode || "continuous");
@@ -395,6 +404,7 @@ export function NoteEditor({
   const titleRef = useRef(title);
   const onSaveRef = useRef(onSave);
   const lastSavedSnapshotRef = useRef("");
+  const lastSaveTimeRef = useRef(0);
 
   useEffect(() => {
     titleRef.current = title;
@@ -407,10 +417,17 @@ export function NoteEditor({
     setBackgroundPattern(initialDoc.backgroundPattern || "blank");
     setPage(initialDoc.page);
     strokesRef.current = initialDoc.content.strokes || [];
+    
+    // CRITICAL: Initialize snapshot with the loaded content to prevent "empty clobbering"
+    lastSavedSnapshotRef.current = buildSaveSnapshot(initialTitle, initialDoc);
   }, [initialTitle, initialDoc]);
 
   const emitSave = useCallback(
     (isAutoSave: boolean, force = false) => {
+      // Throttle saves to at most once per 500ms
+      const now = Date.now();
+      if (!force && now - lastSaveTimeRef.current < 500) return;
+
       const blocks = editorRef.current?.document || initialDoc.content.blocks || [{ type: "paragraph" }];
       const doc: HybridDocument = {
         hybrid: true,
@@ -427,6 +444,7 @@ export function NoteEditor({
       const snapshot = buildSaveSnapshot(titleRef.current, doc);
       if (!force && snapshot === lastSavedSnapshotRef.current) return;
 
+      lastSaveTimeRef.current = now;
       lastSavedSnapshotRef.current = snapshot;
       onSaveRef.current(titleRef.current, doc, isAutoSave);
     },
@@ -485,6 +503,16 @@ export function NoteEditor({
     debouncedSave();
   };
 
+  const fitToWidth = () => {
+    const container = document.getElementById('editor-scroll-container');
+    if (container) {
+      const containerWidth = container.clientWidth - 80; // subtracting some padding
+      const pageWidthPx = (page.widthMm * 96) / 25.4;
+      const newZoom = containerWidth / pageWidthPx;
+      setZoom(Math.min(2, Math.max(0.3, newZoom)));
+    }
+  };
+
   const updatePageSetting = (key: keyof PageSettings, value: number) => {
     const safe = Number.isFinite(value) ? Math.max(0, value) : 0;
     setPage((prev) => ({ ...prev, [key]: safe }));
@@ -537,21 +565,34 @@ export function NoteEditor({
   const printableWidthMm = Math.max(0, page.widthMm - page.marginMm * 2);
   const printableHeightMm = Math.max(0, page.heightMm - page.marginMm * 2 - page.headerMm - page.footerMm);
 
+  const [showPageSettings, setShowPageSettings] = useState(false);
+  const settingsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
+        setShowPageSettings(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <div className="flex h-full min-h-0 w-full flex-col bg-[var(--bg-primary)] text-[var(--text-primary)]">
       <div
-        className={`flex items-center justify-between border-b border-[var(--border-color)] bg-[var(--bg-primary)]/80 backdrop-blur-md z-50 relative ${
-          mode === "SPLIT" ? "px-3 py-3" : "px-4 py-4 md:px-6"
+        className={`flex items-center justify-between border-b border-[var(--border-color)] bg-[var(--bg-primary)]/80 backdrop-blur-md z-[100] relative ${
+          mode === "SPLIT" ? "px-3 py-3" : "px-4 py-3 md:py-4 md:px-6"
         }`}
       >
-        <div className="flex items-center gap-4 overflow-hidden">
+        <div className="flex items-center gap-2 md:gap-4 overflow-hidden">
           {onBack && (
             <button
               onClick={() => {
                 debouncedSave.flush();
                 onBack();
               }}
-              className="p-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-secondary)] rounded-2xl hover:text-[var(--text-primary)] hover:border-[var(--accent-color)] transition-all shadow-sm shrink-0"
+              className="p-2.5 md:p-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-secondary)] rounded-2xl hover:text-[var(--text-primary)] hover:border-[var(--accent-color)] transition-all shadow-sm shrink-0"
             >
               <ArrowLeft size={16} />
             </button>
@@ -562,46 +603,49 @@ export function NoteEditor({
               value={title}
               onChange={handleTitleChange}
               placeholder="Archive Title..."
-              className={`${mode === "SPLIT" ? "text-xl" : "text-4xl"} font-black italic uppercase bg-transparent border-none outline-none text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/30 w-full truncate tracking-tighter`}
+              className={`${mode === "SPLIT" ? "text-lg md:text-xl" : "text-xl md:text-4xl"} font-black italic uppercase bg-transparent border-none outline-none text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/30 w-full truncate tracking-tighter`}
             />
-            <span className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest mt-1">
+            <span className="text-[8px] md:text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest mt-1 opacity-40">
               {page.widthMm}x{page.heightMm} MM // {printableWidthMm}x{printableHeightMm} PRINTABLE
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0 select-none">
-          <button
-            onClick={handleExportPdf}
-            disabled={isExporting}
-            className={`flex items-center gap-2.5 ${mode === "SPLIT" ? "px-4 py-3" : "px-6 py-4"} bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border-color)] rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:text-[var(--text-primary)] hover:border-[var(--text-secondary)] transition-all active:scale-95 disabled:opacity-50`}
-            title="Export to PDF"
-          >
-            {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
-            {mode === "FULL" && (isExporting ? "Exporting..." : "Export")}
-          </button>
-
-          <button
-            onClick={cycleBackground}
-            className={`flex items-center gap-2.5 ${mode === "SPLIT" ? "px-4 py-3" : "px-6 py-4"} bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border-color)] rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:text-[var(--text-primary)] hover:border-[var(--text-secondary)] transition-all active:scale-95`}
-            title="Toggle Background"
-          >
-            <Grid3X3 size={14} />
-            {bgLabels[backgroundPattern]}
-          </button>
-
-          <button
-            onClick={cycleLayout}
-            className={`flex items-center gap-2.5 ${mode === "SPLIT" ? "px-4 py-3" : "px-6 py-4"} bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border-color)] rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:text-[var(--text-primary)] hover:border-[var(--text-secondary)] transition-all active:scale-95`}
-            title="Toggle Layout"
-          >
-            <LayoutTemplate size={14} />
-            {layoutLabels[layoutMode]}
-          </button>
+        <div className="flex items-center gap-2 md:gap-3 shrink-0 select-none">
+          <div className="hidden lg:flex items-center bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[1.25rem] overflow-hidden">
+            <button
+              onClick={() => setZoom(prev => Math.max(0.5, prev - 0.1))}
+              className="p-3 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all"
+              title="Zoom Out"
+            >
+              <ZoomOut size={14} />
+            </button>
+            <button
+              onClick={() => setZoom(1)}
+              className="px-2 text-[10px] font-black text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all min-w-[50px] text-center"
+              title="Reset Zoom"
+            >
+              {Math.round(zoom * 100)}%
+            </button>
+            <button
+              onClick={() => setZoom(prev => Math.min(2.5, prev + 0.1))}
+              className="p-3 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all"
+              title="Zoom In"
+            >
+              <ZoomIn size={14} />
+            </button>
+            <button
+              onClick={fitToWidth}
+              className="p-3 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all border-l border-[var(--border-color)]"
+              title="Fit to Width"
+            >
+              <Maximize size={14} />
+            </button>
+          </div>
 
           <button
             onClick={() => setIsDrawingMode(!isDrawingMode)}
-            className={`flex items-center gap-2.5 ${mode === "SPLIT" ? "px-4 py-3" : "px-6 py-4"} rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 border ${
+            className={`flex items-center justify-center gap-2.5 h-10 md:h-12 ${mode === "SPLIT" ? "w-10 md:w-auto md:px-4" : "w-10 md:w-auto md:px-6"} rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 border ${
               isDrawingMode
                 ? "bg-[var(--accent-color)]/10 text-[var(--accent-color)] border-[var(--accent-color)]/30 shadow-inner"
                 : "bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-[var(--border-color)] hover:border-[var(--text-secondary)]"
@@ -609,39 +653,57 @@ export function NoteEditor({
             title="Toggle Draw Mode"
           >
             <PenTool size={14} />
-            {isDrawingMode ? "Drawing" : "Annotate"}
+            <span className="hidden md:inline">{isDrawingMode ? "Drawing" : "Annotate"}</span>
+          </button>
+
+          <button
+            onClick={() => {
+              console.log("Export button clicked");
+              handleExportPdf();
+            }}
+            disabled={isExporting}
+            className={`flex items-center justify-center gap-2.5 h-10 md:h-12 ${mode === "SPLIT" ? "w-10 md:w-auto md:px-4" : "w-10 md:w-auto md:px-6"} bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border-color)] rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:text-[var(--text-primary)] hover:border-[var(--text-secondary)] transition-all active:scale-95 disabled:opacity-50 cursor-pointer`}
+            title="Export to PDF"
+          >
+            {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+            <span className="hidden md:inline">{mode === "FULL" && (isExporting ? "Exporting..." : "Export")}</span>
           </button>
 
           {onSync ? (
             <button
               onClick={() => void onSync()}
               disabled={isSyncing || isSaving}
-              className={`flex items-center gap-2.5 ${mode === "SPLIT" ? "px-4 py-3" : "px-6 py-4"} bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border-color)] rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:text-[var(--text-primary)] transition-all active:scale-95 disabled:opacity-50`}
+              className={`flex items-center justify-center gap-2.5 h-10 md:h-12 ${mode === "SPLIT" ? "w-10 md:w-auto md:px-4" : "w-10 md:w-auto md:px-6"} bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border-color)] rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:text-[var(--text-primary)] transition-all active:scale-95 disabled:opacity-50`}
             >
               <RefreshCw size={14} className={isSyncing ? "animate-spin" : ""} />
-              {isSyncing ? "Syncing..." : "Sync"}
+              <span className="hidden md:inline">Sync</span>
             </button>
           ) : null}
+
           <button
             onClick={() => {
               debouncedSave.cancel();
               emitSave(false, true);
             }}
             disabled={isSaving}
-            className={`flex items-center gap-2.5 ${mode === "SPLIT" ? "px-5 py-3" : "px-8 py-4"} bg-[var(--accent-color)] text-[var(--bg-primary)] rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition-all shadow-lg shadow-[var(--accent-color)]/20 active:scale-95 disabled:opacity-50`}
+            className={`flex items-center justify-center gap-2.5 h-10 md:h-12 ${mode === "SPLIT" ? "w-10 md:w-auto md:px-5" : "w-10 md:w-auto md:px-8"} bg-[var(--accent-color)] text-[var(--bg-primary)] rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-[var(--accent-color)]/20`}
           >
-            {isSaving ? <Loader2 size={16} className="animate-spin text-[var(--bg-primary)]" /> : null}
-            {isSaving ? "Saving..." : "Seal Archive"}
+            {isSaving ? <Loader2 size={16} className="animate-spin text-[var(--bg-primary)]" /> : (
+              <>
+                <RefreshCw size={14} className="md:hidden" />
+                <span>{isSaving ? "Saving..." : "Seal Archive"}</span>
+              </>
+            )}
           </button>
         </div>
       </div>
 
-      <div className="border-b border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 md:px-6">
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="border-b border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-2 md:px-6 relative z-40 shadow-sm flex items-center justify-between">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
           <select
             value={page.preset}
             onChange={(e) => applyPreset(e.target.value as PagePreset)}
-            className="h-10 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 text-[10px] font-black uppercase tracking-wider text-[var(--text-secondary)] focus:border-[var(--accent-color)]/50 outline-none"
+            className="h-8 md:h-10 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 text-[10px] font-black uppercase tracking-wider text-[var(--text-secondary)] focus:border-[var(--accent-color)]/50 outline-none"
           >
             {Object.entries(PAGE_PRESETS).map(([key, value]) => (
               <option key={key} value={key}>
@@ -650,60 +712,125 @@ export function NoteEditor({
             ))}
           </select>
 
-          {page.preset === "custom" && (
-            <>
-              <input
-                type="number"
-                value={page.widthMm}
-                min={100}
-                max={600}
-                onChange={(e) => updatePageSetting("widthMm", Number(e.target.value))}
-                className="h-10 w-24 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 text-xs font-bold text-[var(--text-primary)] outline-none focus:border-[var(--accent-color)]/50"
-                title="Width (mm)"
-              />
-              <input
-                type="number"
-                value={page.heightMm}
-                min={100}
-                max={800}
-                onChange={(e) => updatePageSetting("heightMm", Number(e.target.value))}
-                className="h-10 w-24 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 text-xs font-bold text-[var(--text-primary)] outline-none focus:border-[var(--accent-color)]/50"
-                title="Height (mm)"
-              />
-            </>
-          )}
+          <button
+            onClick={cycleLayout}
+            className="flex h-8 md:h-10 items-center gap-2 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all"
+          >
+            <LayoutTemplate size={14} />
+            <span className="hidden sm:inline">{layoutMode}</span>
+          </button>
 
-          <input
-            type="number"
-            value={page.marginMm}
-            min={0}
-            max={80}
-            onChange={(e) => updatePageSetting("marginMm", Number(e.target.value))}
-            className="h-10 w-24 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 text-xs font-bold text-[var(--text-primary)] outline-none focus:border-[var(--accent-color)]/50"
-            title="Margins (mm)"
-          />
-          <input
-            type="number"
-            value={page.headerMm}
-            min={0}
-            max={80}
-            onChange={(e) => updatePageSetting("headerMm", Number(e.target.value))}
-            className="h-10 w-24 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 text-xs font-bold text-[var(--text-primary)] outline-none focus:border-[var(--accent-color)]/50"
-            title="Header reserve (mm)"
-          />
-          <input
-            type="number"
-            value={page.footerMm}
-            min={0}
-            max={80}
-            onChange={(e) => updatePageSetting("footerMm", Number(e.target.value))}
-            className="h-10 w-24 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 text-xs font-bold text-[var(--text-primary)] outline-none focus:border-[var(--accent-color)]/50"
-            title="Footer reserve (mm)"
-          />
+          <button
+            onClick={cycleBackground}
+            className="flex h-8 md:h-10 items-center gap-2 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all"
+          >
+            <Grid3X3 size={14} />
+            <span className="hidden sm:inline">{backgroundPattern}</span>
+          </button>
+        </div>
+
+        <div className="relative" ref={settingsRef}>
+          <button
+            onClick={() => setShowPageSettings(!showPageSettings)}
+            className={`flex h-8 md:h-10 items-center gap-2 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 text-[10px] font-black uppercase tracking-widest transition-all ${showPageSettings ? 'text-[var(--accent-color)] border-[var(--accent-color)]/30' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+          >
+            <Settings size={14} />
+            <span className="hidden md:inline">Page Config</span>
+            <ChevronDown size={12} className={`transition-transform duration-300 ${showPageSettings ? 'rotate-180' : ''}`} />
+          </button>
+
+          <AnimatePresence>
+            {showPageSettings && (
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                className="absolute right-0 mt-2 w-64 md:w-80 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl shadow-2xl z-[110] p-4 flex flex-col gap-4 overflow-hidden"
+              >
+                <div className="flex flex-col gap-1 mb-2">
+                  <p className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em]">Format Engine</p>
+                  <p className="text-[8px] font-bold text-[var(--text-secondary)]/50 uppercase tracking-widest">Adjust physical geometry</p>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-[var(--text-secondary)]">Width (MM)</label>
+                    <input
+                      type="number"
+                      value={page.widthMm}
+                      min={100}
+                      max={600}
+                      onChange={(e) => updatePageSetting("widthMm", Number(e.target.value))}
+                      className="h-9 w-full rounded-lg border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 text-xs font-bold text-[var(--text-primary)] outline-none focus:border-[var(--accent-color)]/50"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-[var(--text-secondary)]">Height (MM)</label>
+                    <input
+                      type="number"
+                      value={page.heightMm}
+                      min={100}
+                      max={800}
+                      onChange={(e) => updatePageSetting("heightMm", Number(e.target.value))}
+                      className="h-9 w-full rounded-lg border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 text-xs font-bold text-[var(--text-primary)] outline-none focus:border-[var(--accent-color)]/50"
+                    />
+                  </div>
+                </div>
+
+                <div className="h-px bg-[var(--border-color)]/50" />
+
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[8px] font-black uppercase tracking-widest text-[var(--text-secondary)]">Margin</label>
+                    <input
+                      type="number"
+                      value={page.marginMm}
+                      min={0}
+                      max={80}
+                      onChange={(e) => updatePageSetting("marginMm", Number(e.target.value))}
+                      className="h-8 w-full rounded-lg border border-[var(--border-color)] bg-[var(--bg-primary)] px-2 text-[10px] font-bold text-[var(--text-primary)] outline-none focus:border-[var(--accent-color)]/50"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[8px] font-black uppercase tracking-widest text-[var(--text-secondary)]">Header</label>
+                    <input
+                      type="number"
+                      value={page.headerMm}
+                      min={0}
+                      max={80}
+                      onChange={(e) => updatePageSetting("headerMm", Number(e.target.value))}
+                      className="h-8 w-full rounded-lg border border-[var(--border-color)] bg-[var(--bg-primary)] px-2 text-[10px] font-bold text-[var(--text-primary)] outline-none focus:border-[var(--accent-color)]/50"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[8px] font-black uppercase tracking-widest text-[var(--text-secondary)]">Footer</label>
+                    <input
+                      type="number"
+                      value={page.footerMm}
+                      min={0}
+                      max={80}
+                      onChange={(e) => updatePageSetting("footerMm", Number(e.target.value))}
+                      className="h-8 w-full rounded-lg border border-[var(--border-color)] bg-[var(--bg-primary)] px-2 text-[10px] font-bold text-[var(--text-primary)] outline-none focus:border-[var(--accent-color)]/50"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex lg:hidden flex-col gap-3 mt-2 pt-4 border-t border-[var(--border-color)]/50">
+                   <p className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em]">Visual Optics</p>
+                   <div className="flex items-center gap-2">
+                      <button onClick={() => setZoom(prev => Math.max(0.5, prev - 0.1))} className="flex-1 h-10 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)]"><ZoomOut size={16} /></button>
+                      <button onClick={() => setZoom(1)} className="flex-1 h-10 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-[10px] font-black text-[var(--text-secondary)]">{Math.round(zoom * 100)}%</button>
+                      <button onClick={() => setZoom(prev => Math.min(2.5, prev + 0.1))} className="flex-1 h-10 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)]"><ZoomIn size={16} /></button>
+                   </div>
+                   <button onClick={fitToWidth} className="w-full h-10 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest flex items-center justify-center gap-2"><Maximize size={14} /> Fit To View</button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar pt-8 pb-24 bg-[var(--bg-primary)] relative" id="editor-scroll-container">
+      <div className="flex-1 overflow-auto custom-scrollbar bg-[var(--bg-primary)] relative" id="editor-scroll-container">
         {isDrawingMode && (
           <div className="sticky top-6 z-50 flex justify-center mb-8 pointer-events-none">
             <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] shadow-2xl p-2 rounded-2xl flex items-center gap-2 pointer-events-auto">
@@ -761,23 +888,35 @@ export function NoteEditor({
           </div>
         )}
 
-        <div className="w-full px-4 md:px-6 lg:px-10" style={{ minHeight: layoutMode === "continuous" ? `${page.heightMm * 1.3}mm` : `${page.heightMm}mm` }}>
-          <PageEditor
-            key={serializedInitialContent}
-            blocks={initialDoc.content.blocks}
-            strokes={initialDoc.content.strokes}
-            isDrawingMode={isDrawingMode}
-            backgroundPattern={backgroundPattern}
-            pageWidthMm={page.widthMm}
-            pageHeightMm={page.heightMm}
-            marginMm={page.marginMm}
-            headerMm={page.headerMm}
-            footerMm={page.footerMm}
-            onChange={handleDocumentChange}
-            tool={currentTool}
-            color={currentColor}
-            size={currentSize}
-          />
+        <div className="flex flex-col items-center pt-48 pb-32 min-h-full">
+          <div 
+            className="w-full flex flex-col items-center" 
+            style={{ 
+              zoom: zoom,
+              transition: 'zoom 0.2s ease-out',
+              WebkitFontSmoothing: 'antialiased',
+              MozOsxFontSmoothing: 'grayscale',
+            }}
+          >
+            <div className="w-full px-4 md:px-6 lg:px-10 flex flex-col items-center">
+              <PageEditor
+                key={serializedInitialContent}
+                blocks={initialDoc.content.blocks}
+                strokes={initialDoc.content.strokes}
+                isDrawingMode={isDrawingMode}
+                backgroundPattern={backgroundPattern}
+                pageWidthMm={page.widthMm}
+                pageHeightMm={page.heightMm}
+                marginMm={page.marginMm}
+                headerMm={page.headerMm}
+                footerMm={page.footerMm}
+                onChange={handleDocumentChange}
+                tool={currentTool}
+                color={currentColor}
+                size={currentSize}
+              />
+            </div>
+          </div>
         </div>
       </div>
 

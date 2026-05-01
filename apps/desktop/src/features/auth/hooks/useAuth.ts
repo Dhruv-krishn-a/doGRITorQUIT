@@ -69,9 +69,18 @@ export function useAuth() {
     offlineTokenFetchRef.current.lastAttemptMs = now;
 
     try {
+      let deviceId;
+      try {
+        deviceId = await invoke<string>('get_device_id');
+      } catch (err) {
+        console.warn("Failed to get hardware device ID from Tauri, falling back to static:", err);
+        deviceId = "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4"; // Fallback only if Tauri command fails
+      }
+
       const res = await fetch(buildApiUrl('/auth/offline-token'), {
         headers: {
           'Authorization': `Bearer ${currentSession.access_token}`,
+          'x-device-id': deviceId,
         }
       });
       if (res.ok) {
@@ -143,13 +152,22 @@ export function useAuth() {
 
   // Periodic offline token refresh (every hour) while online
   useEffect(() => {
-    if (!session || !navigator.onLine) return;
+    if (!session) return;
     
     const interval = setInterval(() => {
       if (navigator.onLine) fetchOfflineToken(session);
     }, 3600000);
 
-    return () => clearInterval(interval);
+    const handleOnline = () => {
+      fetchOfflineToken(session);
+    };
+
+    window.addEventListener('online', handleOnline);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('online', handleOnline);
+    };
   }, [session, fetchOfflineToken]);
 
   return { user, session, loading };

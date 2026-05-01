@@ -16,37 +16,31 @@ export async function GET() {
     // --- DEBUG LOGS ---
     console.log(`[BillingAPI] Loading data for User ID: ${user.id}`);
 
-    // 1. Fetch Subscription
-    const subData = await payment.getUserSubscription(user.id).catch(err => {
-      console.error("[BillingAPI] Subscription Fetch Failed:", err);
-      return null;
-    });
-
-    // 2. Fetch Usage (This is likely where it was failing)
-    let usageData = { used: 0, limit: 0, remaining: 0 };
-    try {
-      if (billing && typeof billing.getAIUsageStats === 'function') {
-        usageData = await billing.getAIUsageStats(user.id);
-        console.log("[BillingAPI] Usage Data:", usageData);
-      } else {
-        console.error("[BillingAPI] Critical: 'billing.getAIUsageStats' is not a function. Check packages/domain/index.ts export.");
-      }
-    } catch (err) {
-      console.error("[BillingAPI] Usage Fetch Failed:", err);
-    }
-
-    // 3. Fetch History
-    const history = await payment.getUserOrders(user.id).catch(err => {
-      console.error("[BillingAPI] Orders Fetch Failed:", err);
-      return [];
-    });
+    // Parallelize all data fetching
+    const [subData, usageStats, history] = await Promise.all([
+      payment.getUserSubscription(user.id).catch(err => {
+        console.error("[BillingAPI] Subscription Fetch Failed:", err);
+        return null;
+      }),
+      billing.getUserUsageStats(user.id).catch(err => {
+        console.error("[BillingAPI] Usage Fetch Failed:", err);
+        return null;
+      }),
+      payment.getUserOrders(user.id).catch(err => {
+        console.error("[BillingAPI] Orders Fetch Failed:", err);
+        return [];
+      })
+    ]);
 
     return NextResponse.json({
       activeSubscription: subData?.activeSubscription || null,
       usage: {
-        aiGenerated: usageData.used,
-        aiLimit: usageData.limit,
-        remaining: usageData.remaining
+        aiGenerated: usageStats?.ai?.used ?? 0,
+        aiLimit: usageStats?.ai?.limit ?? 5,
+        remaining: usageStats?.ai?.remaining ?? 5,
+        plans: usageStats?.plans ?? { used: 0, limit: 1 },
+        habits: usageStats?.habits ?? { used: 0, limit: 3 },
+        study: usageStats?.study ?? {}
       },
       history: history
     });

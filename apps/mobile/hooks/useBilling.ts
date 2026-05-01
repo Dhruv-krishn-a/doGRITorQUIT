@@ -40,8 +40,12 @@ export function useBilling() {
     try {
       setLoading(true);
       const session = await getStoredSession();
-      if (!session) return;
+      if (!session) {
+        setLoading(false);
+        return;
+      }
 
+      console.log("[useBilling] Fetching billing data...");
       const [prodRes, subRes] = await Promise.all([
         fetch(`${config.apiUrl}/api/billing/products`),
         fetch(`${config.apiUrl}/api/billing/subscription`, {
@@ -50,6 +54,10 @@ export function useBilling() {
           }
         })
       ]);
+
+      if (!prodRes.ok || !subRes.ok) {
+        throw new Error("Failed to fetch one or more billing endpoints");
+      }
 
       const products = await prodRes.json();
       const subscription = await subRes.json();

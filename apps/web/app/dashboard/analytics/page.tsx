@@ -33,5 +33,5 @@ async function AnalyticsContent({ userId }: { userId: string }) {
 
   const data: AnalyticsData = rawData;
 
-  return <AnalyticsClientPage data={data} />;
+  return <AnalyticsClientPage initialData={data} />;
 }

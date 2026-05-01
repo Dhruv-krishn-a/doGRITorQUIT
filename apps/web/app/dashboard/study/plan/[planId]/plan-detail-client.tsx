@@ -178,7 +178,7 @@ function TaskForm({ initialData, onSubmit, onCancel, isCreating }: {
         <div className="transform-gpu flex items-start gap-5 mb-6">
              <div className="transform-gpu p-3 bg-[var(--accent-color)]/10 rounded-xl text-[var(--accent-color)] shadow-sm"><Layout size={22}/></div>
              <div className="transform-gpu flex-1">
-                <input name="title" defaultValue={initialData?.title} className="transform-gpu w-full font-black text-2xl text-[var(--text-primary)] bg-transparent border-b border-[var(--border-color)] hover:border-[var(--text-secondary)] focus:border-[var(--accent-color)] focus:outline-none pb-2 italic uppercase tracking-tighter transition-colors" placeholder="Archive Title..." autoFocus required />
+                <input name="title" defaultValue={initialData?.title} className="transform-gpu w-full font-black text-2xl text-[var(--text-primary)] bg-transparent border-b border-[var(--border-color)] hover:border-[var(--text-secondary)] focus:border-[var(--accent-color)] focus:outline-none pb-2 italic uppercase tracking-tighter transition-colors" placeholder="Task Title..." autoFocus required />
              </div>
         </div>
         
@@ -195,12 +195,12 @@ function TaskForm({ initialData, onSubmit, onCancel, isCreating }: {
 
         <div className="transform-gpu pl-[60px] space-y-8">
             <div>
-              <label className="transform-gpu block text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-3 ml-1 italic opacity-60">Objective Scope</label>
-              <textarea name="description" defaultValue={initialData?.description || ""} className="transform-gpu w-full text-sm font-black text-[var(--text-primary)] bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-5 resize-none outline-none focus:bg-[var(--bg-card)] focus:ring-4 focus:ring-[var(--accent-color)]/5 focus:border-[var(--accent-color)] transition-all mb-2 italic uppercase tracking-tight" placeholder="Define the mission parameters..." rows={3} />
+              <label className="transform-gpu block text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-3 ml-1 italic opacity-60">Task Scope</label>
+              <textarea name="description" defaultValue={initialData?.description || ""} className="transform-gpu w-full text-sm font-black text-[var(--text-primary)] bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-5 resize-none outline-none focus:bg-[var(--bg-card)] focus:ring-4 focus:ring-[var(--accent-color)]/5 focus:border-[var(--accent-color)] transition-all mb-2 italic uppercase tracking-tight" placeholder="Define the task scope..." rows={3} />
             </div>
 
             <div>
-              <label className="transform-gpu block text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-4 ml-1 italic opacity-60">Sub-Vectors</label>
+              <label className="transform-gpu block text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-4 ml-1 italic opacity-60">Sub-Tasks</label>
               <div className="transform-gpu space-y-3 mb-4">
                   {subtasks.map((st, i) => (
                       <div key={i} className="transform-gpu flex items-center gap-4 p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl group shadow-sm">
@@ -214,7 +214,7 @@ function TaskForm({ initialData, onSubmit, onCancel, isCreating }: {
               </div>
               <div className="transform-gpu flex items-center gap-4 p-3 border-2 border-dashed border-[var(--border-color)] rounded-xl hover:border-[var(--accent-color)]/50 transition-all bg-[var(--bg-secondary)]/30 group">
                   <Plus size={18} className="transform-gpu text-[var(--text-secondary)] group-hover:text-[var(--accent-color)] transition-colors" />
-                  <input className="transform-gpu flex-1 text-[11px] font-black bg-transparent outline-none placeholder:text-[var(--text-secondary)]/20 uppercase italic tracking-tight" placeholder="Initialize sub-vector..." value={newSubtask} onChange={(e) => setNewSubtask(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), newSubtask.trim() && (setSubtasks([...subtasks, { title: newSubtask.trim() }]), setNewSubtask("")))} />
+                  <input className="transform-gpu flex-1 text-[11px] font-black bg-transparent outline-none placeholder:text-[var(--text-secondary)]/20 uppercase italic tracking-tight" placeholder="Add sub-task..." value={newSubtask} onChange={(e) => setNewSubtask(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), newSubtask.trim() && (setSubtasks([...subtasks, { title: newSubtask.trim() }]), setNewSubtask("")))} />
                   <button type="button" onClick={() => { if(newSubtask.trim()) { setSubtasks([...subtasks, { title: newSubtask.trim() }]); setNewSubtask(""); }}} className="transform-gpu text-[10px] font-black text-[var(--accent-color)] uppercase tracking-widest px-3 py-1 hover:underline">Add</button>
               </div>
             </div>
@@ -222,7 +222,7 @@ function TaskForm({ initialData, onSubmit, onCancel, isCreating }: {
 
         <div className="transform-gpu flex justify-end gap-4 pt-8 mt-10 border-t border-[var(--border-color)]">
             <button type="button" onClick={onCancel} className="transform-gpu px-6 py-3 text-[10px] font-black text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all uppercase tracking-widest italic">Standby</button>
-            <button type="submit" disabled={isSubmitting} className="transform-gpu px-8 py-3 bg-[var(--accent-color)] text-[var(--bg-primary)] rounded-xl text-[10px] font-black uppercase tracking-widest hover:opacity-90 flex items-center gap-3 shadow-xl shadow-[var(--accent-color)]/20 transition-all transform active:scale-95 italic"><Save size={16} /> {isCreating ? "Deploy Objective" : "Update Core"}</button>
+            <button type="submit" disabled={isSubmitting} className="transform-gpu px-8 py-3 bg-[var(--accent-color)] text-[var(--bg-primary)] rounded-xl text-[10px] font-black uppercase tracking-widest hover:opacity-90 flex items-center gap-3 shadow-xl shadow-[var(--accent-color)]/20 transition-all transform active:scale-95 italic"><Save size={16} /> {isCreating ? "Create Task" : "Update Task"}</button>
         </div>
       </form>
     </div>
@@ -433,7 +433,7 @@ export default function PlanDetailClient({ initialPlan }: { initialPlan: Extende
                                             {formatDateReadable(dateKey)}
                                         </div>
                                         <div className="transform-gpu text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest mt-0.5 opacity-40 italic">
-                                            {tasksCount} vectors
+                                            {tasksCount} tasks
                                         </div>
                                     </div>
 
@@ -454,11 +454,11 @@ export default function PlanDetailClient({ initialPlan }: { initialPlan: Extende
                      <div className="transform-gpu flex items-start justify-between relative z-10">
                         <div>
                             <h2 className="transform-gpu text-3xl font-black text-[var(--text-primary)] uppercase tracking-tighter mb-2 italic">
-                                {selectedDate === "Unscheduled" ? "Unscheduled Vectors" : formatDateReadable(selectedDate)}
+                                {selectedDate === "Unscheduled" ? "Unscheduled Tasks" : formatDateReadable(selectedDate)}
                             </h2>
                             <p className="transform-gpu text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest leading-relaxed opacity-60 italic">
                                 {currentDayTasks.length > 0 
-                                    ? "Focus on completing the modules below. Mark them as done to track progress." 
+                                    ? "Focus on completing the tasks below. Mark them as done to track progress." 
                                     : "No tasks scheduled for this day yet."}
                             </p>
                         </div>
@@ -473,8 +473,8 @@ export default function PlanDetailClient({ initialPlan }: { initialPlan: Extende
                  {/* Tasks List */}
                  <div className="transform-gpu flex items-center gap-3 mb-6 ml-2">
                     <div className="w-1.5 h-5 bg-[var(--accent-color)] rounded-full shadow-[0_0_10px_var(--accent-color)]" />
-                    <h3 className="transform-gpu text-xl font-black text-[var(--text-primary)] uppercase tracking-tight italic">Mission Vectors</h3>
-                    <span className="transform-gpu text-[9px] font-black text-[var(--text-secondary)] bg-[var(--bg-secondary)] border border-[var(--border-color)] px-3 py-1.5 rounded-full uppercase tracking-widest ml-auto italic shadow-sm">{currentDayTasks.filter(t => t.status === "completed" || t.status === "Completed").length}/{currentDayTasks.length} Resolved</span>
+                    <h3 className="transform-gpu text-xl font-black text-[var(--text-primary)] uppercase tracking-tight italic">Primary Goals</h3>
+                    <span className="transform-gpu text-[9px] font-black text-[var(--text-secondary)] bg-[var(--bg-secondary)] border border-[var(--border-color)] px-3 py-1.5 rounded-full uppercase tracking-widest ml-auto italic shadow-sm">{currentDayTasks.filter(t => t.status === "completed" || t.status === "Completed").length}/{currentDayTasks.length} Completed</span>
                  </div>
 
                  <div className="transform-gpu space-y-6">
@@ -504,7 +504,7 @@ export default function PlanDetailClient({ initialPlan }: { initialPlan: Extende
                             <div className="transform-gpu w-12 h-12 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] flex items-center justify-center group-hover:border-[var(--accent-color)] text-[var(--text-secondary)] group-hover:text-[var(--bg-primary)] group-hover:bg-[var(--accent-color)] transition-all shadow-sm group-hover:shadow-[0_0_15px_var(--accent-color)] group-hover:rotate-90 duration-500">
                                 <Plus size={24} strokeWidth={3} />
                             </div>
-                            <span className="text-[11px] font-black uppercase tracking-[0.3em] italic">Initialize New Vector</span>
+                            <span className="text-[11px] font-black uppercase tracking-[0.3em] italic">Add New Task</span>
                         </button>
                      )}
                  </div>
@@ -513,7 +513,7 @@ export default function PlanDetailClient({ initialPlan }: { initialPlan: Extende
                  <div className="transform-gpu mt-16 pt-10 border-t border-[var(--border-color)]">
                     <div className="transform-gpu flex items-center gap-3 mb-6 ml-2 opacity-40">
                         <div className="p-2.5 bg-[var(--bg-secondary)] text-[var(--text-secondary)] rounded-xl border border-[var(--border-color)] shadow-sm"><BarChart3 size={18} /></div>
-                        <h3 className="transform-gpu text-xl font-black text-[var(--text-primary)] uppercase tracking-tight italic">Mission Intelligence</h3>
+                        <h3 className="transform-gpu text-xl font-black text-[var(--text-primary)] uppercase tracking-tight italic">Project Insights</h3>
                     </div>
                     <div className="transform-gpu grid grid-cols-1 md:grid-cols-2 gap-6 opacity-30 pointer-events-none grayscale">
                         <div className="transform-gpu border border-[var(--border-color)] bg-[var(--bg-card)] shadow-sm rounded-[2.5rem] p-6 flex items-center gap-5">

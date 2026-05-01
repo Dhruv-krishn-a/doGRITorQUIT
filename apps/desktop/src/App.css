@@ -6,12 +6,10 @@
 @source "../../packages/study-core/src";
 @source "../../packages/notes-ui-web/src";
 
-/* Global Theme Transitions */
-* {
+/* Global Theme Transitions - Target specific properties on body/root or common containers instead of * */
+body, #root, .bg-transition {
   transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-              border-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-              color 0.3s ease-in-out,
-              box-shadow 0.5s ease-in-out;
+              border-color 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @theme {
@@ -87,11 +85,47 @@
   }
 }
 
-/* ... rest of App.css ... */
+/* Stronger, more stable backdrop blur */
+.modal-backdrop-blur {
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes ping-slow {
+  0% { transform: scale(1); opacity: 1; }
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+
+.animate-ping-slow {
+  animation: ping-slow 3s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 @layer utilities {
   .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 3px;
+    height: 3px;
   }
   .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
@@ -99,12 +133,21 @@
   .custom-scrollbar::-webkit-scrollbar-thumb {
     background: var(--border-color);
     border-radius: 10px;
+    opacity: 0.3;
   }
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-color);
   }
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+}
+
+/* Fix for white text boxes in dark themes */
+input, textarea, select {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+/* Reset for specific cases where transparency is needed */
+input.bg-transparent, textarea.bg-transparent {
+  background-color: transparent;
 }

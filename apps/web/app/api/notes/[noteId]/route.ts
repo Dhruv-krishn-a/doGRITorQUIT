@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@gritorquit/db";
 import { getServerUser } from "@/lib/auth-server";
 import { sanitizeText, sanitizeJson } from "@/lib/sanitize";
+import { billing } from "@gritorquit/domain";
 
 export async function GET(
   req: NextRequest,
@@ -9,6 +10,13 @@ export async function GET(
 ) {
   const user = await getServerUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    await billing.checkFeatureAccess(user.id, billing.PlanFeature.ACCESS_NOTES);
+  } catch (error) {
+    return NextResponse.json({ error: "Feature locked by plan limits" }, { status: 403 });
+  }
+
   const { noteId } = await params;
 
   try {
@@ -28,6 +36,13 @@ export async function PATCH(
 ) {
   const user = await getServerUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    await billing.checkFeatureAccess(user.id, billing.PlanFeature.ACCESS_NOTES);
+  } catch (error) {
+    return NextResponse.json({ error: "Feature locked by plan limits" }, { status: 403 });
+  }
+
   const { noteId } = await params;
 
   try {
@@ -62,6 +77,13 @@ export async function DELETE(
 ) {
   const user = await getServerUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    await billing.checkFeatureAccess(user.id, billing.PlanFeature.ACCESS_NOTES);
+  } catch (error) {
+    return NextResponse.json({ error: "Feature locked by plan limits" }, { status: 403 });
+  }
+
   const { noteId } = await params;
 
   try {
@@ -77,7 +99,6 @@ export async function DELETE(
     await prisma.note.delete({
       where: { id: existingNote.id },
     });
-
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: "Failed to delete note" }, { status: 500 });

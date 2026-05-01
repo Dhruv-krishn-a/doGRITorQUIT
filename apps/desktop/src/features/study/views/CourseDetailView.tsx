@@ -83,9 +83,9 @@ export function CourseDetailView() {
    try {
     await moveUnit(draggableId, newStatus, destination.index);
     if (trackId) fetchTrack(trackId);
-    toast.success("Curriculum updated");
+    toast.success("Path updated");
    } catch (error) {
-    console.error("Failed to update module status:", error);
+    console.error("Failed to update status:", error);
    }
   }
  };
@@ -110,7 +110,7 @@ export function CourseDetailView() {
 
  if (!activeTrack) return (
   <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 bg-[var(--bg-primary)] w-full">
-   <div className="text-[var(--text-secondary)] font-black uppercase tracking-widest text-sm italic">Course link severed.</div>
+   <div className="text-[var(--text-secondary)] font-black uppercase tracking-widest text-sm italic">Path link severed.</div>
    <button 
     onClick={() => navigate('/study')} 
     className="px-8 py-4 bg-gradient-to-r from-[var(--accent-color)] to-sky-600 text-[var(--bg-primary)] rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:opacity-90 transition-all active:scale-95 italic"
@@ -131,28 +131,28 @@ export function CourseDetailView() {
      <div className="flex flex-col md:flex-row md:items-center gap-8 w-full">
       <button 
        onClick={() => navigate('/study')} 
-       className="p-5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl text-[var(--text-secondary)] hover:text-[var(--accent-color)] hover:border-[var(--accent-color)]/30 transition-all active:scale-95 shrink-0 self-start"
+       className="p-5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all active:scale-95 shrink-0 self-start"
       >
        <ArrowLeft size={28} />
       </button>
       
-      <div className="flex-1 min-w-0 text-left">
+      <div className="flex-1 min-w-0 text-left italic">
         <div className="flex items-center gap-4 mb-2">
-         <h1 className="text-4xl md:text-5xl font-black text-[var(--text-primary)] tracking-tight truncate italic uppercase">
+         <h1 className="text-4xl md:text-5xl font-black text-[var(--text-primary)] tracking-tight truncate italic uppercase leading-none">
           {track.title}
          </h1>
-         <span className="text-[10px] font-black bg-[var(--accent-color)]/10 text-[var(--accent-color)] border border-[var(--accent-color)]/20 shadow-sm px-3 py-1 rounded-lg uppercase tracking-widest shrink-0 flex items-center gap-1.5 italic">
-          <BookOpen size={10} /> Course Vector
+         <span className="text-[10px] font-black bg-[var(--accent-color)]/10 text-[var(--accent-color)] border border-[var(--border-color)]/20 shadow-sm px-3 py-1 rounded-full uppercase tracking-widest shrink-0 flex items-center gap-1.5 italic">
+          <BookOpen size={10} /> Study Path
          </span>
         </div>
-        <p className="text-[var(--text-secondary)] font-black uppercase tracking-widest text-[10px] italic">
+        <p className="text-[var(--text-secondary)] font-bold uppercase tracking-widest text-[10px] opacity-60">
          {track.description || 'Structured cognitive acquisition track.'}
         </p>
       </div>
 
       <div className="flex items-center gap-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] p-2 rounded-2xl shadow-xl">
         <div className="px-4 py-2 border-r border-[var(--border-color)] text-left">
-         <p className="text-[8px] font-black uppercase text-[var(--text-secondary)] tracking-widest italic">Focus Duration</p>
+         <p className="text-[8px] font-black uppercase text-[var(--text-secondary)] tracking-widest italic opacity-40">Focus Duration</p>
          <p className="text-xl font-black text-[var(--text-primary)] font-mono tracking-tighter italic">{formatTime(seconds)}</p>
         </div>
         <div className="flex gap-1 pr-2">
@@ -199,7 +199,7 @@ export function CourseDetailView() {
         onClick={() => setActiveTab('NOTES')}
         className={`text-xl font-black uppercase tracking-tight flex items-center gap-3 transition-all italic ${activeTab === 'NOTES' ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]/30 hover:text-[var(--text-secondary)]/60'}`}
        >
-        <Brain size={20} className={activeTab === 'NOTES' ? 'text-[var(--accent-color)]' : ''} /> Course Ledger
+        <Brain size={20} className={activeTab === 'NOTES' ? 'text-[var(--accent-color)]' : ''} /> Study Notes
        </button>
       </div>
 
@@ -220,7 +220,7 @@ export function CourseDetailView() {
      </div>
 
      <main className="flex-1 relative overflow-hidden">
-      <div className="absolute inset-0 overflow-y-auto no-scrollbar p-8">
+      <div className="absolute inset-0 overflow-y-auto custom-scrollbar p-8">
        <AnimatePresence mode="wait">
         {activeTab === 'BOARD' && (
          <motion.div key="board" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
@@ -247,22 +247,22 @@ export function CourseDetailView() {
         )}
 
         {activeTab === 'NOTES' && (
-         <motion.div key="notes" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6 max-w-6xl mx-auto">
+         <motion.div key="notes" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6 max-w-6xl mx-auto italic">
            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[2.5rem] p-10 space-y-8 text-left shadow-2xl">
             <div className="flex items-center justify-between">
              <div>
-              <h3 className="text-2xl font-black text-[var(--text-primary)] uppercase tracking-tight italic">Curriculum Notes</h3>
-              <p className="text-[10px] font-black text-[var(--text-secondary)]/40 uppercase tracking-[0.2em] mt-1 italic">Syllabus-wide synthesis</p>
+              <h3 className="text-2xl font-black text-[var(--text-primary)] uppercase tracking-tight italic leading-none">Path Notes</h3>
+              <p className="text-[10px] font-black text-[var(--text-secondary)]/40 uppercase tracking-[0.2em] mt-2 italic">Plan-wide overview</p>
              </div>
              <button 
               onClick={async () => {
                setIsSaving(true);
-               setTimeout(() => { setIsSaving(false); toast.success("Ledger updated"); }, 800);
+               setTimeout(() => { setIsSaving(false); toast.success("Notes updated"); }, 800);
               }}
               className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[var(--accent-color)] to-sky-600 text-[var(--bg-primary)] rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl hover:opacity-90 italic"
              >
               {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-              Sync Ledger
+              Save Notes
              </button>
             </div>
             

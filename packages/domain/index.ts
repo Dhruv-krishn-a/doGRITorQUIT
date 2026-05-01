@@ -13,3 +13,8 @@ export * as analytics from "./analytics/service";
 export * as study from "./study/service";
 export * as youtube from "./study/youtube";
 export * as today from "./dashboard/unified";
+export * as githubProjects from "./github-projects/service";
+export * as githubProjectTypes from "./github-projects/types";
+export * as githubRepoService from "./github-projects/github.service";
+export * as githubAiService from "./github-projects/ai.service";
+export * as sdlc from "./github-projects/sdlc.config";

@@ -140,14 +140,14 @@ export function ProjectDetailView() {
   <div className="flex items-center justify-center min-h-[60vh] bg-[var(--bg-primary)] w-full">
    <div className="flex flex-col items-center gap-4">
     <Loader2 className="w-8 h-8 text-[var(--accent-color)] animate-spin drop-shadow-[0_0_10px_var(--accent-color)]" />
-    <div className="text-[var(--accent-color)] font-black uppercase tracking-widest text-xs italic">Loading Project Vector...</div>
+    <div className="text-[var(--accent-color)] font-black uppercase tracking-widest text-xs italic">Loading Study Path...</div>
    </div>
   </div>
  );
 
  if (!activeTrack || !track) return (
   <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 bg-[var(--bg-primary)] w-full text-left">
-   <div className="text-[var(--text-secondary)] font-black uppercase tracking-widest text-sm italic">Vector not found.</div>
+   <div className="text-[var(--text-secondary)] font-black uppercase tracking-widest text-sm italic">Path not found.</div>
    <button 
     onClick={() => navigate('/study')} 
     className="px-8 py-4 bg-gradient-to-r from-[var(--accent-color)] to-sky-600 text-[var(--bg-primary)] rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:opacity-90 transition-all active:scale-95 italic"

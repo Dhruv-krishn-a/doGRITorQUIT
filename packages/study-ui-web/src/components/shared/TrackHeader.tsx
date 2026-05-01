@@ -87,10 +87,10 @@ export function TrackHeader({ track, stats, currentEnergy, onEnergySelect, onOpt
                   <Sparkles size={24} />
                 </div>
                 <div>
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] italic opacity-40">System Progress</h3>
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] italic opacity-40">Path Progress</h3>
                   <div className="flex items-baseline gap-4 mt-1">
                     <span className="text-5xl font-black text-[var(--text-primary)] italic tracking-tighter">{Math.round(track.progressPercentage)}%</span>
-                    <span className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] italic opacity-60">{completedVideos} / {totalVideos} Steps</span>
+                    <span className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] italic opacity-60">{completedVideos} / {totalVideos} Lessons</span>
                   </div>
                 </div>
               </div>
@@ -110,10 +110,11 @@ export function TrackHeader({ track, stats, currentEnergy, onEnergySelect, onOpt
             </div>
 
             <div className="bg-[var(--bg-secondary)] p-6 rounded-[2rem] border border-[var(--border-color)] w-full md:w-auto shadow-inner">
-              <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] mb-5 px-1 text-center md:text-left italic opacity-40">Load Intensity</h3>
+              <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] mb-5 px-1 text-center md:text-left italic opacity-40">Session Intensity</h3>
               <div className="flex flex-col gap-2.5 min-w-[220px]">
                 {energyLevels.map((cfg) => {
                   const isActive = currentEnergy === cfg.level;
+                  const label = cfg.level === 'HIGH' ? 'Deep Focus' : cfg.level === 'MEDIUM' ? 'Standard Pace' : 'Light Session';
                   return (
                     <button
                       key={cfg.level}
@@ -126,7 +127,7 @@ export function TrackHeader({ track, stats, currentEnergy, onEnergySelect, onOpt
                       }`}
                     >
                       <cfg.icon size={16} />
-                      {cfg.label}
+                      {label}
                     </button>
                   )
                 })}
@@ -136,7 +137,7 @@ export function TrackHeader({ track, stats, currentEnergy, onEnergySelect, onOpt
                 className="mt-6 w-full py-4 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all hover:opacity-90 flex items-center justify-center gap-3 shadow-xl active:scale-95 italic"
               >
                 <TrendingUp size={16} strokeWidth={3} />
-                Optimize Execution
+                Update Schedule
               </button>
             </div>
           </div>
@@ -174,12 +175,12 @@ export function TrackHeader({ track, stats, currentEnergy, onEnergySelect, onOpt
               <div className="p-3 bg-sky-500/10 rounded-xl text-sky-500 border border-sky-500/20 shadow-sm">
                  <Target size={18} />
               </div>
-              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] italic opacity-40">Timeline Topology</h3>
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] italic opacity-40">Timeline Overview</h3>
             </div>
 
             <div className="space-y-5">
               <div className="p-6 bg-[var(--bg-secondary)] rounded-[2rem] border border-[var(--border-color)] shadow-inner">
-                <p className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-3 italic opacity-40">Calculated Horizon</p>
+                <p className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-3 italic opacity-40">Estimated Completion</p>
                 {hasStarted ? (
                   <>
                     <p className="text-2xl font-black tracking-tight text-[var(--text-primary)] italic uppercase leading-none">
@@ -202,14 +203,14 @@ export function TrackHeader({ track, stats, currentEnergy, onEnergySelect, onOpt
                   <div className="flex flex-col items-center py-4 opacity-30 italic">
                     <Activity size={24} className="mb-2" />
                     <p className="text-[10px] font-black uppercase tracking-widest text-center leading-relaxed">
-                      Awaiting initial ingestion data to project horizon.
+                      Awaiting learning data to project completion.
                     </p>
                   </div>
                 )}
               </div>
 
               <div className="p-6 bg-[var(--bg-secondary)] rounded-[2rem] border border-[var(--border-color)] shadow-inner">
-                <p className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-3 italic opacity-40">Target Convergence</p>
+                <p className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-3 italic opacity-40">Target Date</p>
                 <p className="text-xl font-black tracking-tight text-[var(--text-primary)] italic uppercase leading-none">
                   {track.targetDate ? formatDate(track.targetDate) : 'NOT SET'}
                 </p>

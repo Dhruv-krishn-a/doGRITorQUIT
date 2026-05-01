@@ -1,11 +1,13 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   CheckCircle2, Clock, Calendar, ArrowRight, Target,
-  Trophy, MoreHorizontal, Plus, Brain, Flame,
-  Play, Activity, TrendingUp
+  Plus, Brain, Flame,
+  Activity, TrendingUp
 } from "lucide-react";
+import { cn } from "../../../lib/utils";
+import { MiniAgenda } from "@gritorquit/dashboard-ui-web";
 
 // --- Types ---
 export type DashboardData = {
@@ -14,9 +16,9 @@ export type DashboardData = {
     focusMinutes: number;
     completedTasks: number;
     streakDays: number;
-    efficiencyScore: number; // e.g., 85%
+    efficiencyScore: number; 
   };
-  activityHeatmap: Array<{ date: string; count: number }>; // For the mini-graph
+  activityHeatmap: Array<{ date: string; count: number }>; 
   activePlan: { title: string; progress: number; totalDays: number; currentDay: number } | null;
   habits: Array<{ id: string; title: string; completedToday: boolean; streak: number }>;
   todaysTasks: Array<{ id: string; title: string; status: string; priority: string; time?: string }>;
@@ -24,185 +26,171 @@ export type DashboardData = {
 };
 
 export default function DashboardUI({ data }: { data: DashboardData }) {
-  const [quickTask, setQuickTask] = useState("");
-  const { user, stats, activePlan, habits, todaysTasks, upcomingEvents } = data;
+  const { user, stats, activePlan, habits } = data;
+  const navigate = useNavigate();
 
   const hours = Math.floor(stats.focusMinutes / 60);
   const mins = stats.focusMinutes % 60;
   const xpPercentage = Math.min(100, (user.xp / user.nextLevelXp) * 100);
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-8 pb-10"
-    >
-      {/* --- Header Section --- */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--text-secondary)] mb-2 text-left">Overview</p>
-          <h1 className="text-4xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter">
-            Insights
-          </h1>
-        </div>
-        
-        <div className="flex items-center gap-4 bg-[var(--bg-card)]/50 p-4 rounded-3xl border border-[var(--border-color)]">
-           <div className="text-right">
-              <p className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest">XP</p>
-              <p className="text-xs font-black text-[var(--text-primary)] uppercase tracking-tighter">Level {user.level}</p>
-           </div>
-           <div className="w-10 h-10 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center border border-[var(--border-color)]">
-              <Activity size={18} className="text-[var(--accent-color)]" />
-           </div>
-        </div>
+    <div className="transform-gpu space-y-8 md:space-y-10 pb-12 animate-in fade-in duration-500">
+      {/* Top Summary Row */}
+      <div className="transform-gpu grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
+        <MetricCard 
+            icon={Clock} 
+            label="Concentration" 
+            value={`${hours}H ${mins}M`} 
+            subtext={`${stats.efficiencyScore}% focus score`}
+            progress={stats.efficiencyScore}
+            accentColor="var(--accent-color)"
+        />
+
+        <MetricCard 
+            icon={CheckCircle2} 
+            label="Finished Tasks" 
+            value={stats.completedTasks.toString()} 
+            subtext="Items finished today"
+            accentColor="#10b981"
+        />
+
+        <MetricCard 
+            icon={Flame} 
+            label="Daily Streak" 
+            value={`${stats.streakDays} Days`} 
+            subtext="Consistency streak"
+            accentColor="#f59e0b"
+        />
+
+        <MetricCard 
+            icon={TrendingUp} 
+            label={`Level ${user.level}`} 
+            value={`${Math.round(xpPercentage)}%`} 
+            subtext="Next milestone"
+            progress={xpPercentage}
+            accentColor="var(--accent-color)"
+        />
       </div>
 
-      {/* --- ROW 1: Metrics Grid --- */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {/* Focus Time */}
-        <div className="bg-[var(--bg-card)]/40 p-6 rounded-[2.5rem] border border-[var(--border-color)] shadow-sm relative overflow-hidden group">
-           <Clock size={40} className="absolute -right-2 -top-2 text-[var(--accent-color)]/5 group-hover:text-[var(--accent-color)]/10 transition-colors" />
-           <p className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest mb-4">Focus Time</p>
-           <div className="flex items-baseline gap-1">
-              <span className="text-3xl font-black text-[var(--text-primary)] italic">{hours}H {mins}M</span>
-           </div>
-           <div className="mt-4 flex items-center gap-2">
-              <div className="flex-1 h-1 bg-[var(--bg-secondary)] rounded-full overflow-hidden">
-                 <div className="h-full bg-[var(--accent-color)]" style={{ width: `${stats.efficiencyScore}%` }} />
-              </div>
-              <span className="text-[9px] font-black text-[var(--accent-color)] italic">{stats.efficiencyScore}%</span>
-           </div>
-        </div>
-
-        {/* Resolved Vectors */}
-        <div className="bg-[var(--bg-card)]/40 p-6 rounded-[2.5rem] border border-[var(--border-color)] shadow-sm relative overflow-hidden group">
-           <CheckCircle2 size={40} className="absolute -right-2 -top-2 text-emerald-500/5 group-hover:text-emerald-500/10 transition-colors" />
-           <p className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest mb-4">Resolved</p>
-           <span className="text-3xl font-black text-[var(--text-primary)] italic">{stats.completedTasks}</span>
-           <p className="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-widest mt-1">Vectors Today</p>
-        </div>
-
-        {/* Streak */}
-        <div className="bg-[var(--bg-card)]/40 p-6 rounded-[2.5rem] border border-[var(--border-color)] shadow-sm relative overflow-hidden group">
-           <Flame size={40} className="absolute -right-2 -top-2 text-amber-500/5 group-hover:text-amber-500/10 transition-colors" />
-           <p className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest mb-4">Streak</p>
-           <span className="text-3xl font-black text-[var(--text-primary)] italic">{stats.streakDays}D</span>
-           <p className="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-widest mt-1">Consistency Cycles</p>
-        </div>
-
-        {/* XP Progress */}
-        <div className="bg-[var(--bg-card)]/40 p-6 rounded-[2.5rem] border border-[var(--border-color)] shadow-sm relative overflow-hidden group">
-           <TrendingUp size={40} className="absolute -right-2 -top-2 text-indigo-500/5 group-hover:text-indigo-500/10 transition-colors" />
-           <p className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest mb-4">Progress</p>
-           <span className="text-3xl font-black text-[var(--text-primary)] italic">{Math.round(xpPercentage)}%</span>
-           <p className="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-widest mt-1">Next Plan Tier</p>
-        </div>
-      </div>
-
-      {/* --- ROW 2: The Bento Grid --- */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 h-auto md:h-[500px]">
+      {/* Main Grid Section */}
+      <div className="transform-gpu grid grid-cols-1 xl:grid-cols-3 gap-8 lg:gap-10 items-stretch">
         
-        {/* COL 1 & 2: Active Plan & Habits (Wide Middle) */}
-        <div className="md:col-span-3 flex flex-col gap-6 h-full">
+        {/* Active Goal & Habits */}
+        <div className="transform-gpu xl:col-span-2 space-y-8 md:space-y-10">
            
-           {/* Active Plan */}
-           <div className="h-3/5 bg-[var(--bg-card)]/30 rounded-[3rem] border border-[var(--border-color)] p-10 flex flex-col justify-between relative overflow-hidden shadow-xl">
-              <div className="flex justify-between items-start z-10">
-                 <div>
-                    <div className="flex items-center gap-2 text-[var(--accent-color)] text-[10px] font-black uppercase tracking-widest mb-4 text-left">
-                       <Target size={14} /> Current Path
+           {/* Current Goal Card */}
+           <div className="transform-gpu bg-[var(--bg-card)] rounded-[2.5rem] md:rounded-[3rem] p-6 sm:p-10 md:p-12 border border-[var(--border-color)] relative overflow-hidden shadow-2xl">
+              <div className="relative z-10">
+                 <div className="flex items-center gap-2 sm:gap-3 text-[var(--accent-color)] text-[10px] sm:text-[11px] font-black uppercase tracking-[0.3em] mb-4 sm:mb-6">
+                    <Target size={14} className="sm:w-4 sm:h-4" /> Active Goal
+                 </div>
+                 <h3 className="text-2xl sm:text-4xl lg:text-5xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter mb-6 sm:mb-10 max-w-xl leading-[1] text-left">
+                    {activePlan?.title || "No active goal set"}
+                 </h3>
+                 
+                 {activePlan ? (
+                    <div className="space-y-6 text-left">
+                       <div className="flex justify-between items-end">
+                          <div className="text-left">
+                             <p className="text-[9px] sm:text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-1 sm:mb-2">Goal Progress</p>
+                             <p className="text-2xl sm:text-3xl md:text-4xl font-black text-[var(--text-primary)] italic leading-none">{activePlan.progress}%</p>
+                          </div>
+                          <div className="text-right">
+                             <p className="text-[9px] sm:text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-1 sm:mb-2">Timeline</p>
+                             <p className="text-lg sm:text-xl md:text-2xl font-black text-[var(--text-secondary)] italic leading-none opacity-60">Day {activePlan.currentDay} of {activePlan.totalDays}</p>
+                          </div>
+                       </div>
+                       <div className="w-full h-3 bg-[var(--bg-secondary)] rounded-full overflow-hidden border border-[var(--border-color)] p-0.5 shadow-inner">
+                          <motion.div 
+                             initial={{ width: 0 }}
+                             animate={{ width: `${activePlan.progress}%` }}
+                             transition={{ duration: 1.5, ease: "easeOut" }}
+                             className="transform-gpu h-full bg-[var(--accent-color)] rounded-full shadow-[0_0_12px_var(--accent-color)]/30" 
+                          />
+                       </div>
                     </div>
-                    <h3 className="text-4xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter">{activePlan?.title || "No Active Mission"}</h3>
-                 </div>
-                 <div className="text-right">
-                    <div className="text-4xl font-black text-[var(--text-secondary)]/30 italic">Day {activePlan?.currentDay || 0}</div>
-                    <div className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest">of {activePlan?.totalDays || 0}</div>
-                 </div>
+                 ) : (
+                    <Link to="/study" className="inline-flex items-center gap-3 sm:gap-4 px-6 sm:px-10 py-3 sm:py-4 bg-[var(--accent-color)] text-white rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-[11px] uppercase tracking-[0.2em] hover:opacity-90 transition-all shadow-xl shadow-[var(--accent-color)]/20">
+                       Start a new goal <Plus size={16} />
+                    </Link>
+                 )}
               </div>
-
-              {activePlan ? (
-                 <div className="z-10">
-                    <div className="flex justify-between items-end mb-4">
-                       <p className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest text-left">Path Progress</p>
-                       <p className="text-2xl font-black text-[var(--text-primary)] italic">{activePlan.progress}%</p>
-                    </div>
-                    <div className="w-full h-4 bg-[var(--bg-secondary)] rounded-full overflow-hidden border border-[var(--border-color)] p-1">
-                       <motion.div 
-                          initial={{ width: 0 }}
-                          animate={{ width: `${activePlan.progress}%` }}
-                          transition={{ duration: 1.5, ease: "easeOut" }}
-                          className="h-full bg-[var(--accent-color)] rounded-full shadow-lg shadow-[var(--accent-color)]/20" 
-                       />
-                    </div>
-                 </div>
-              ) : (
-                 <Link to="/study" className="z-10 inline-flex items-center gap-3 px-8 py-4 bg-[var(--accent-color)] text-[var(--bg-primary)] rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)] transition-all shadow-lg active:scale-95 w-fit">
-                    Start New Path <Plus size={16} />
-                 </Link>
-              )}
-              
-              <div className="absolute right-0 bottom-0 opacity-5 pointer-events-none translate-x-1/4 translate-y-1/4">
-                 <Brain size={400} className="text-[var(--text-primary)]" />
+              <div className="absolute right-0 bottom-0 opacity-[0.03] pointer-events-none translate-x-12 translate-y-12">
+                 <Brain size={400} className="w-[300px] h-[300px] sm:w-[400px] sm:h-[400px]" />
               </div>
            </div>
 
-           {/* Habits */}
-           <div className="h-2/5 flex flex-col">
-              <div className="flex items-center justify-between mb-4 ml-1">
-                 <p className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em]">Habits</p>
-                 <Link to="/daily-checklist" className="text-[9px] font-black text-[var(--accent-color)] uppercase tracking-widest hover:underline">Full Array &rarr;</Link>
+           {/* Habit Tracking */}
+           <div className="space-y-6">
+              <div className="flex items-center justify-between px-2 sm:px-4">
+                 <p className="text-[10px] sm:text-[11px] font-black text-[var(--text-secondary)] uppercase tracking-[0.4em] opacity-60">Daily Habits</p>
+                 <Link to="/daily-checklist" className="text-[9px] sm:text-[10px] font-black text-[var(--accent-color)] uppercase tracking-[0.2em] hover:underline flex items-center gap-2">View all <ArrowRight size={12} /></Link>
               </div>
-              <div className="grid grid-cols-3 gap-6 flex-1">
-                 {habits.slice(0, 3).map(h => (
-                    <div key={h.id} className="bg-[var(--bg-card)]/30 rounded-[2rem] border border-[var(--border-color)] p-6 flex flex-col justify-between group hover:border-[var(--accent-color)]/30 transition-all shadow-md">
-                       <div className="flex justify-between items-start">
-                          <div className={`w-10 h-10 rounded-xl border-2 flex items-center justify-center transition-all ${h.completedToday ? 'bg-emerald-500 border-emerald-400' : 'bg-[var(--bg-secondary)] border-[var(--border-color)]'}`}>
-                             {h.completedToday && <CheckCircle2 size={20} className="text-white" />}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                 {habits.slice(0, 4).map(h => (
+                    <div key={h.id} className="transform-gpu flex items-center justify-between p-5 sm:p-8 bg-[var(--bg-card)]/50 rounded-2xl sm:rounded-[2rem] border border-[var(--border-color)] hover:border-[var(--accent-color)]/40 transition-all group shadow-lg">
+                       <div className="flex items-center gap-4 sm:gap-6">
+                          <div className={cn(
+                              "w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl border-2 flex items-center justify-center transition-all duration-500 shadow-inner",
+                              h.completedToday 
+                                ? 'bg-[#10b981] border-[#10b981] shadow-[#10b981]/30 scale-110' 
+                                : 'bg-[var(--bg-secondary)] border-[var(--border-color)] group-hover:border-[var(--accent-color)]/30'
+                          )}>
+                             {h.completedToday && <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />}
                           </div>
-                          <span className="text-[10px] font-black text-[var(--text-secondary)] uppercase italic">{h.streak}X Streak</span>
+                          <span className={cn(
+                              "text-base sm:text-lg font-black uppercase italic tracking-tight transition-colors duration-300",
+                              h.completedToday ? 'text-[var(--text-secondary)] line-through opacity-40' : 'text-[var(--text-primary)]'
+                          )}>
+                            {h.title}
+                          </span>
                        </div>
-                       <p className={`text-lg font-black uppercase italic tracking-tight truncate ${h.completedToday ? 'text-[var(--text-secondary)]' : 'text-[var(--text-primary)]'}`}>{h.title}</p>
+                       <div className="flex flex-col items-end shrink-0">
+                           <span className="text-[10px] sm:text-xs font-black text-[var(--accent-color)] italic leading-none">{h.streak}D</span>
+                           <span className="text-[7px] sm:text-[8px] font-bold text-[var(--text-secondary)] uppercase tracking-widest mt-1.5 opacity-40">Streak</span>
+                       </div>
                     </div>
                  ))}
               </div>
            </div>
         </div>
 
-        {/* COL 3: Today's Agenda (Right Sidebar) */}
-        <div className="md:col-span-1 bg-[var(--bg-card)]/30 rounded-[3rem] border border-[var(--border-color)] shadow-2xl p-8 h-full flex flex-col overflow-hidden relative">
-           <div className="flex items-center justify-between mb-8">
-              <h3 className="text-xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter flex items-center gap-3">
-                 <Calendar size={20} className="text-[var(--accent-color)]" /> Agenda
-              </h3>
-              <div className="px-3 py-1 bg-[var(--bg-secondary)] rounded-full border border-[var(--border-color)] shadow-sm">
-                 <span className="text-[8px] font-black text-[var(--text-secondary)] uppercase tracking-widest">Today</span>
-              </div>
-           </div>
-
-           <div className="flex-1 overflow-y-auto pr-2 space-y-4 custom-scrollbar">
-              {todaysTasks.length === 0 && (
-                 <div className="p-10 border-2 border-dashed border-[var(--border-color)] rounded-[2.5rem] flex flex-col items-center justify-center text-center mt-10">
-                    <Activity size={24} className="text-[var(--text-secondary)]/30 mb-2" />
-                    <p className="text-[10px] font-black text-[var(--text-secondary)]/50 uppercase italic">Array Empty</p>
-                 </div>
-              )}
-              {todaysTasks.map((task) => (
-                 <div key={task.id} className="group flex gap-4 items-center p-4 bg-[var(--bg-secondary)]/40 rounded-2xl border border-[var(--border-color)] hover:border-[var(--accent-color)]/30 transition-all">
-                    <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${task.priority === 'HIGH' ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]' : task.priority === 'MEDIUM' ? 'bg-amber-500' : 'bg-sky-500'}`} />
-                    <div className="flex-1 min-w-0">
-                       <p className={`text-xs font-black uppercase tracking-tight truncate ${task.status === 'completed' ? 'text-[var(--text-secondary)] line-through' : 'text-[var(--text-primary)]'}`}>{task.title}</p>
-                       {task.time && <p className="text-[8px] font-black text-[var(--text-secondary)] uppercase tracking-widest mt-1 flex items-center gap-1"><Clock size={10} /> {task.time}</p>}
-                    </div>
-                 </div>
-              ))}
-           </div>
-
-           <Link to="/today" className="mt-8 group flex items-center justify-center gap-3 w-full py-4 rounded-2xl bg-[var(--text-primary)] text-[var(--bg-primary)] text-[10px] font-black uppercase tracking-[0.2em] hover:bg-[var(--accent-color)] transition-all shadow-lg active:scale-95">
-              Command Center <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-           </Link>
-        </div>
+        {/* Agenda Section */}
+        <MiniAgenda 
+          className="xl:col-span-1 min-h-[500px]" 
+          onHubClick={() => navigate("/today")} 
+        />
 
       </div>
-    </motion.div>
+    </div>
   );
+}
+
+function MetricCard({ icon: Icon, label, value, subtext, progress, accentColor }: { 
+    icon: any, label: string, value: string, subtext: string, progress?: number, accentColor: string 
+}) {
+    return (
+        <div className="transform-gpu bg-[var(--bg-card)] p-6 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border border-[var(--border-color)] shadow-2xl relative overflow-hidden group hover:border-[var(--accent-color)]/30 transition-all duration-500 text-left">
+           <Icon size={72} className="absolute -right-4 -top-4 opacity-[0.02] group-hover:opacity-[0.08] transition-all duration-1000 hidden sm:block" style={{ color: accentColor }} />
+           
+           <p className="text-[9px] sm:text-[11px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em] mb-4 sm:mb-10 opacity-50">{label}</p>
+           
+           <div className="space-y-1 sm:space-y-2">
+              <span className="text-2xl sm:text-4xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter leading-none">{value}</span>
+              <p className="text-[9px] sm:text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-[0.2em] mt-2 sm:mt-3 opacity-40 leading-none">{subtext}</p>
+           </div>
+
+           {progress !== undefined && (
+              <div className="mt-6 sm:mt-8 h-1 sm:h-1.5 w-full bg-[var(--bg-secondary)] rounded-full overflow-hidden shadow-inner border border-[var(--border-color)]/20">
+                 <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progress}%` }}
+                    transition={{ duration: 1.2, delay: 0.5, ease: "circOut" }}
+                    className="h-full rounded-full" 
+                    style={{ backgroundColor: accentColor, boxShadow: `0 0 10px ${accentColor}66` }}
+                 />
+              </div>
+           )}
+        </div>
+    );
 }

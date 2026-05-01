@@ -22,6 +22,7 @@ export async function GET() {
       description: p.description,
       price: p.price,
       currency: p.currency,
+      featuresList: p.productFeatures.map((pf) => pf.feature.description || pf.feature.key),
       features: p.productFeatures.map((pf) => ({
         key: pf.feature.key,
         value: pf.value,

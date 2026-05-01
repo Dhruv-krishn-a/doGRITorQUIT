@@ -108,9 +108,12 @@ export function StudyProvider({ children, offlineStorage }: { children: ReactNod
     }
 
     // Only show loading spinner if we have NO data at all
-    if (!hasLocalData) {
-      setState(s => ({ ...s, loading: true }));
-    }
+    setState(s => {
+      if (!hasLocalData && s.tracks.length === 0) {
+        return { ...s, loading: true };
+      }
+      return s;
+    });
 
     try {
       if (offlineStorage?.isOffline()) {
@@ -160,9 +163,12 @@ export function StudyProvider({ children, offlineStorage }: { children: ReactNod
       }
     }
 
-    if (!hasLocalData) {
-      setState(s => ({ ...s, loading: true }));
-    }
+    setState(s => {
+      if (!hasLocalData && s.activeTrack?.track.id !== trackId) {
+        return { ...s, loading: true };
+      }
+      return s;
+    });
 
     try {
       if (offlineStorage?.isOffline()) {

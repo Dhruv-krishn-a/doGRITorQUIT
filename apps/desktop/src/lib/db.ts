@@ -96,6 +96,11 @@ export async function getDb() {
         updatedAt TEXT NOT NULL,
         syncStatus TEXT DEFAULT 'SYNCED'
       );
+
+      CREATE TABLE IF NOT EXISTS sync_log (
+        id TEXT PRIMARY KEY,
+        lastPulledAt TEXT NOT NULL
+      );
     `);
 
     // Migrations

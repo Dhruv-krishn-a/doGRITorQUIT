@@ -151,7 +151,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             clientId: githubClientId,
             clientSecret: githubClientSecret,
             allowDangerousEmailAccountLinking: true,
-            authorization: { params: { prompt: "select_account" } },
+            authorization: { params: { prompt: "select_account", scope: "read:user user:email repo" } },
           }),
         ]
       : []),

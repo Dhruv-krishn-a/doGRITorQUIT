@@ -2,7 +2,7 @@
 "use client";
 import React from 'react';
 import { StudyProvider } from '@gritorquit/study-core';
-import { StudyUIProvider } from '@gritorquit/study-ui-web';
+import { StudyUIProvider, StudyModalManager } from '@gritorquit/study-ui-web';
 import { Link, useNavigate } from 'react-router-dom';
 import { OfflineProvider } from './OfflineProvider';
 import { sqliteOfflineBridge } from '../lib/offline-bridge';
@@ -18,6 +18,7 @@ export function StudyFeatureProvider({ children }: { children: React.ReactNode }
           navigate={(to) => navigate(to.replace('/dashboard', ''))}
         >
           {children}
+          <StudyModalManager />
         </StudyUIProvider>
       </StudyProvider>
     </OfflineProvider>

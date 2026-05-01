@@ -1,44 +1,44 @@
-//apps/web/features/plans/components/ai-architect/MessageBubble.tsx
-import React from "react";
-import { Bot, User } from "lucide-react";
+"use client";
 
-// ✅ FIX: Simple local utility to join class names (No external import needed)
-function cn(...classes: (string | undefined | null | false)[]) {
-  return classes.filter(Boolean).join(" ");
-}
+import React from "react";
+import { Sparkles, User } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface MessageBubbleProps {
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "system";
   content: string;
 }
 
 export function MessageBubble({ role, content }: MessageBubbleProps) {
-  // Strip out the JSON block for display purposes
-  const displayContent = content.replace(/```json[\s\S]*```/, "").trim();
-
-  // If the message was JUST json (empty after strip), don't render an empty bubble
-  if (!displayContent) return null;
-
   const isUser = role === "user";
+  const isSystem = role === "system";
+
+  if (isSystem) {
+      return (
+          <div className="transform-gpu flex justify-center my-4">
+              <span className="transform-gpu bg-[var(--bg-secondary)] text-[var(--text-secondary)] px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border border-[var(--border-color)] italic">
+                  {content}
+              </span>
+          </div>
+      );
+  }
 
   return (
-    <div className={cn("flex gap-4 mb-4", isUser ? "flex-row-reverse" : "flex-row")}>
-      {/* Avatar */}
+    <div className={cn("transform-gpu flex w-full mb-6 gap-3", isUser ? "flex-row-reverse" : "flex-row")}>
       <div className={cn(
-        "w-8 h-8 rounded-full flex items-center justify-center shrink-0 border shadow-sm mt-1",
-        isUser ? "bg-white border-indigo-100 text-indigo-600" : "bg-emerald-600 border-emerald-600 text-white"
+        "transform-gpu w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm border",
+        isUser ? "bg-[var(--bg-card)] border-[var(--border-color)] text-[var(--accent-color)]" : "bg-[var(--accent-color)] border-[var(--accent-color)] text-[var(--bg-primary)] shadow-[var(--accent-color)]/20"
       )}>
-        {isUser ? <User size={16} /> : <Bot size={16} />}
+        {isUser ? <User size={18} /> : <Sparkles size={18} />}
       </div>
-
-      {/* Bubble */}
+      
       <div className={cn(
-        "px-5 py-3.5 rounded-2xl text-sm leading-relaxed shadow-sm whitespace-pre-wrap max-w-[85%]",
+        "transform-gpu max-w-[85%] px-5 py-4 rounded-3xl text-sm font-bold shadow-sm italic leading-relaxed",
         isUser 
-          ? "bg-indigo-600 text-white rounded-tr-none" 
-          : "bg-white text-slate-700 border border-slate-200 rounded-tl-none"
+          ? "bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-tr-none" 
+          : "bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-tl-none"
       )}>
-        {displayContent}
+        {content}
       </div>
     </div>
   );

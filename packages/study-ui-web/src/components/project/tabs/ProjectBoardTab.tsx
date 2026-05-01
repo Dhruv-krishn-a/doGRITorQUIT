@@ -44,7 +44,7 @@ export function ProjectBoardTab({ units, viewMode, setViewMode, handleAction, ha
         <div className="transform-gpu flex items-center gap-4">
           <div className="transform-gpu relative group flex-1 md:flex-none">
             <Search size={14} className="transform-gpu absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]/40 group-focus-within:text-[var(--accent-color)] transition-colors" />
-            <input type="text" placeholder="FILTER VECTORS..." className="transform-gpu w-full md:w-64 bg-[var(--bg-secondary)] border border-[var(--border-color)] shadow-inner rounded-xl pl-11 pr-4 py-3 text-[10px] font-black text-[var(--text-primary)] focus:border-[var(--accent-color)] focus:ring-4 focus:ring-[var(--accent-color)]/5 outline-none transition-all placeholder:text-[var(--text-secondary)]/20 italic tracking-widest" />
+            <input type="text" placeholder="FILTER PATHS..." className="transform-gpu w-full md:w-64 bg-[var(--bg-secondary)] border border-[var(--border-color)] shadow-inner rounded-xl pl-11 pr-4 py-3 text-[10px] font-black text-[var(--text-primary)] focus:border-[var(--accent-color)] focus:ring-4 focus:ring-[var(--accent-color)]/5 outline-none transition-all placeholder:text-[var(--text-secondary)]/20 italic tracking-widest" />
           </div>
           <button className="transform-gpu p-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] shadow-sm rounded-xl text-[var(--text-secondary)] hover:text-[var(--accent-color)] hover:border-[var(--accent-color)]/30 transition-all active:scale-95"><Filter size={20} /></button>
         </div>

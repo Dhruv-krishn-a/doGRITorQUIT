@@ -131,47 +131,95 @@ fn clear_entitlements_cache(state: State<'_, AppState>) -> Result<(), String> {
 
 #[tauri::command]
 async fn save_pdf_with_dialog(
+    app: tauri::AppHandle,
     suggested_file_name: String,
     base64_data: String,
     initial_directory: Option<String>,
 ) -> Result<SavePdfResult, String> {
-    let mut file_name = if suggested_file_name.trim().is_empty() {
-        "Notes.pdf".to_string()
-    } else {
-        suggested_file_name
-    };
-
-    // Sanitize the file name to prevent path traversal
-    file_name = file_name.replace('/', "_").replace('\\', "_").replace("..", "");
-
-    // 1. OPEN DIALOG ON MAIN THREAD
-    // Standard FileDialog::new() from `rfd` must run on the UI thread on some Linux envs.
-    let mut dialog = rfd::FileDialog::new();
-    dialog = dialog.set_file_name(&file_name).add_filter("PDF", &["pdf"]);
+    println!("[Rust] Received save_pdf_with_dialog request");
     
-    if let Some(initial_dir) = initial_directory {
-        if !initial_dir.trim().is_empty() {
-            dialog = dialog.set_directory(initial_dir);
-        }
+    // 1. ULTRA-SAFE FILENAME (No spaces or special chars for Arch/Hyprland)
+    let mut file_name = suggested_file_name
+        .chars()
+        .filter(|c| c.is_alphanumeric() || *c == '-' || *c == '_')
+        .collect::<String>();
+
+    if file_name.len() > 40 {
+        file_name.truncate(40);
     }
+    
+    if file_name.is_empty() {
+        file_name = "Note".to_string();
+    }
+    file_name.push_str(".pdf");
+    
+    println!("[Rust] Final ultra-safe filename: {}", file_name);
 
-    let target = dialog.save_file();
+    // 2. OPEN DIALOG ON MAIN THREAD
+    let (tx, rx) = std::sync::mpsc::channel();
+    let f_name = file_name.clone();
+    
+    // Validate directory existence before passing it to RFD
+    let i_dir = initial_directory.and_then(|d| {
+        let p = Path::new(&d);
+        if p.exists() && p.is_dir() { Some(d) } else { None }
+    });
 
-    let Some(path) = target else {
-        return Ok(SavePdfResult {
-            saved: false,
-            path: None,
-        });
+    println!("[Rust] Scheduling dialog on main thread with dir: {:?}", i_dir);
+    
+    let f_name_for_thread = f_name.clone();
+    app.run_on_main_thread(move || {
+        println!("[Rust] Main thread: Opening RFD FileDialog");
+        let mut dialog = rfd::FileDialog::new();
+        dialog = dialog.set_file_name(&f_name_for_thread).add_filter("PDF", &["pdf"]);
+        
+        if let Some(dir) = i_dir {
+            if !dir.trim().is_empty() {
+                dialog = dialog.set_directory(dir);
+            }
+        }
+
+        let target = dialog.save_file();
+        println!("[Rust] Main thread: Dialog closed. Path: {:?}", target);
+        let _ = tx.send(target);
+    }).map_err(|e| {
+        println!("[Rust] Error scheduling on main thread: {}", e);
+        e.to_string()
+    })?;
+
+    let target = rx.recv().map_err(|_| {
+        println!("[Rust] Error: Failed to receive result from main thread");
+        "Failed to receive dialog result from main thread"
+    })?;
+
+    let path = match target {
+        Some(p) => p,
+        None => {
+            println!("[Rust] System dialog returned None. Attempting fallback to Downloads...");
+            // Fallback for Arch/Hyprland: Save directly to ~/Downloads
+            let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
+            let fallback_path = Path::new(&home).join("Downloads").join(&f_name);
+            
+            // Ensure Downloads exists
+            if !fallback_path.parent().map(|p| p.exists()).unwrap_or(false) {
+                 println!("[Rust] Downloads folder not found, using Home");
+                 Path::new(&home).join(&f_name)
+            } else {
+                 fallback_path
+            }
+        }
     };
 
-    // 2. DISK I/O ON BACKGROUND THREAD
+    println!("[Rust] Final path chosen: {:?}. Starting write...", path);
+    // 3. DISK I/O ON BACKGROUND THREAD
     tauri::async_runtime::spawn_blocking(move || {
         let bytes = STANDARD
             .decode(base64_data)
             .map_err(|e| format!("PDF decode failed: {e}"))?;
 
-        fs::write(&path, bytes).map_err(|e| format!("Failed to write PDF: {e}"))?;
+        fs::write(&path, &bytes).map_err(|e| format!("Failed to write PDF: {e}"))?;
         
+        println!("[Rust] Successfully wrote {} bytes to {:?}", bytes.len(), path);
         Ok(SavePdfResult {
             saved: true,
             path: Some(path.to_string_lossy().to_string()),
@@ -524,6 +572,7 @@ pub fn run() {
             entitlements_cache: Mutex::new(None),
         })
         .plugin(init())
+        .plugin(tauri_plugin_log::Builder::default().build())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_store::Builder::default().build())

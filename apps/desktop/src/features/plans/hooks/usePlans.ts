@@ -10,7 +10,10 @@ export function usePlans() {
 
   const fetchPlans = useCallback(async () => {
     if (!user || !session) return;
-    setLoading(true);
+    setPlans(prev => {
+      if (prev.length === 0) setLoading(true);
+      return prev;
+    });
     setError(null);
     try {
       const res = await fetch(buildApiUrl('/plans'), {

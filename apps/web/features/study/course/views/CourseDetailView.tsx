@@ -147,7 +147,7 @@ export function CourseDetailView() {
                  {track.title}
                </h1>
                <span className="transform-gpu text-[10px] font-bold bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30 shadow-[0_0_10px_rgba(217,70,239,0.2)] px-3 py-1 rounded-lg uppercase tracking-widest shrink-0 flex items-center gap-1.5">
-                 <BookOpen size={10} /> Course Vector
+                 <BookOpen size={10} /> Course Path
                </span>
              </div>
              <p className="transform-gpu text-rose-400/60 font-bold uppercase tracking-widest text-[10px]">
@@ -203,7 +203,7 @@ export function CourseDetailView() {
               onClick={() => setActiveTab('NOTES')}
               className={`text-xl font-bold uppercase tracking-tight flex items-center gap-3 transition-all ${activeTab === 'NOTES' ? 'text-rose-50' : 'text-rose-400/30 hover:text-rose-400/60'}`}
             >
-              <Brain size={20} className={activeTab === 'NOTES' ? 'text-fuchsia-500' : ''} /> Course Ledger
+              <Brain size={20} className={activeTab === 'NOTES' ? 'text-fuchsia-500' : ''} /> Study Notes
             </button>
           </div>
 
@@ -254,18 +254,18 @@ export function CourseDetailView() {
                  <div className="transform-gpu bg-[#14030b] border border-rose-900/40 rounded-[2.5rem] p-10 space-y-8">
                     <div className="transform-gpu flex items-center justify-between">
                       <div>
-                        <h3 className="transform-gpu text-2xl font-bold text-rose-50 uppercase tracking-tight">Curriculum Notes</h3>
-                        <p className="transform-gpu text-[10px] font-bold text-rose-400/40 uppercase tracking-widest mt-1">Syllabus-wide synthesis and core concepts</p>
+                        <h3 className="transform-gpu text-2xl font-bold text-rose-50 uppercase tracking-tight">Path Notes</h3>
+                        <p className="transform-gpu text-[10px] font-bold text-rose-400/40 uppercase tracking-widest mt-1">Plan-wide overview and core concepts</p>
                       </div>
                       <button 
                         onClick={async () => {
                           setIsSaving(true);
-                          setTimeout(() => { setIsSaving(false); toast.success("Ledger updated"); }, 800);
+                          setTimeout(() => { setIsSaving(false); toast.success("Notes updated"); }, 800);
                         }}
                         className="transform-gpu flex items-center gap-2 px-8 py-4 bg-linear-to-r from-fuchsia-600 to-purple-600 text-white rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:from-fuchsia-500 hover:to-purple-500 shadow-lg shadow-fuchsia-900/40"
                       >
                         {isSaving ? <Loader2 size={14} className="transform-gpu animate-spin" /> : <Save size={14} />}
-                        Sync Ledger
+                        Save Notes
                       </button>
                     </div>
                     

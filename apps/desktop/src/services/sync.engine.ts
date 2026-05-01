@@ -9,6 +9,19 @@ export class SyncEngine {
   private static isSyncing = false;
   private static dbLock = Promise.resolve(); // Sequential DB write queue
 
+  static emitEvent(name: string, detail?: any) {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent(name, { detail }));
+    }
+  }
+
+  static log(message: string, type: 'info' | 'error' | 'success' | 'warn' = 'info') {
+    this.emitEvent('sync:log', { message, type, timestamp: new Date().toISOString() });
+    if (type === 'error') console.error(`[SyncEngine] ${message}`);
+    else if (type === 'warn') console.warn(`[SyncEngine] ${message}`);
+    else console.info(`[SyncEngine] ${message}`);
+  }
+
   private static async safeDbExecute(query: string, params: any[]) {
     // Ensure only one DB write happens at a time to prevent SQLite Busy errors
     this.dbLock = this.dbLock.then(async () => {
@@ -78,13 +91,17 @@ export class SyncEngine {
               case 'CREATE_HABIT': await habitsApi.createHabit(payload); break;
               case 'DELETE_HABIT': await habitsApi.deleteHabit(payload.habitId).catch(err => { if (err.message?.includes('404')) return; throw err; }); break;
               case 'SAVE_CENTRAL_NOTE':
+                const noteData = typeof payload.data === 'string' ? JSON.parse(payload.data) : payload.data;
+                const safeCentralContent = typeof noteData.content === 'string' ? noteData.content : JSON.stringify(noteData.content);
+                const safeCentralMetadata = typeof noteData.metadata === 'string' ? noteData.metadata : JSON.stringify(noteData.metadata || {});
+
                 if (payload.isNew) {
-                  const remote = await api.post('/notes', payload.data);
+                  const remote = await api.post('/notes', { ...noteData, content: JSON.parse(safeCentralContent) });
                   await this.safeDbExecute("DELETE FROM notes WHERE id = ?", [payload.localId]);
                   await this.safeDbExecute(`INSERT OR REPLACE INTO notes (id, title, content, category, metadata, createdAt, updatedAt, syncStatus) VALUES (?, ?, ?, ?, ?, ?, ?, 'SYNCED')`,
                     [remote.id, remote.title, JSON.stringify(remote.content), remote.category, JSON.stringify(remote.metadata), String(remote.createdAt), String(remote.updatedAt)]);
                 } else {
-                  const remote = await api.patch(`/notes/${payload.remoteId || payload.id}`, payload.data);
+                  const remote = await api.patch(`/notes/${payload.remoteId || payload.id}`, { ...noteData, content: JSON.parse(safeCentralContent) });
                   await this.safeDbExecute(`INSERT OR REPLACE INTO notes (id, title, content, category, metadata, createdAt, updatedAt, syncStatus) VALUES (?, ?, ?, ?, ?, ?, ?, 'SYNCED')`,
                     [remote.id, remote.title, JSON.stringify(remote.content), remote.category, JSON.stringify(remote.metadata), String(remote.createdAt), String(remote.updatedAt)]);
                 }
@@ -129,7 +146,16 @@ export class SyncEngine {
             return;
           }
 
-          const payload = { title: row.title, content: JSON.parse(row.content || 'null'), category: row.category, metadata: JSON.parse(row.metadata || '{}') };
+          const safeContentObj = typeof row.content === 'string' ? JSON.parse(row.content || 'null') : row.content;
+          const safeMetadataObj = typeof row.metadata === 'string' ? JSON.parse(row.metadata || '{}') : row.metadata;
+          
+          const payload = { 
+            title: row.title, 
+            content: safeContentObj,
+            category: row.category, 
+            metadata: safeMetadataObj
+          };
+          
           const savedRemote = row.id.startsWith('local-') ? await api.post('/notes', payload) : await api.patch(`/notes/${row.id}`, payload);
           
           if (row.id.startsWith('local-')) await this.safeDbExecute("DELETE FROM notes WHERE id = ?", [row.id]);
@@ -148,17 +174,35 @@ export class SyncEngine {
 
     this.isSyncing = false;
     if (syncedCount > 0 && !options.silent) toast.success(`Synced ${syncedCount} changes`);
+    this.log(`Processed ${queue.length} items. Synced ${syncedCount} successfully. Failed: ${failed}`, failed ? 'warn' : 'success');
+    this.emitEvent('sync:end', { synced: syncedCount, failed });
     
-    // After pushing changes, pull fresh data to stay in sync
-    this.pullSync().catch(console.warn);
+    // After pushing changes, pull fresh data to stay in sync (but throttled)
+    this.pullSync({ forced: false }).catch(e => this.log(`Pull sync failed: ${e.message}`, 'error'));
 
     return { processed: queue.length, synced: syncedCount, remaining: 0, failed };
   }
 
-  static async pullSync() {
+  static async pullSync(options: { forced?: boolean } = {}) {
     if (!navigator.onLine) return;
     
+    const db = await getDb();
+    if (!db) return;
+
+    // Throttle pullSync to once every 5 minutes unless forced
+    if (!options.forced) {
+       const lastSync = await db.select<any[]>("SELECT lastPulledAt FROM sync_log WHERE id = 'MAIN'");
+       if (lastSync.length > 0) {
+          const lastTime = new Date(lastSync[0].lastPulledAt).getTime();
+          if (Date.now() - lastTime < 5 * 60 * 1000) {
+             return;
+          }
+       }
+    }
+    
     try {
+      this.emitEvent('sync:pull:start');
+      this.log("Starting pull sync...", 'info');
       // 1. Sync Study Tracks
       const tracks = await studyApi.getTracks();
       if (Array.isArray(tracks)) {
@@ -190,9 +234,12 @@ export class SyncEngine {
           }
         }
       }
-      console.info("Pull sync complete: Local database hydrated.");
-    } catch (error) {
-      console.warn("Pull sync failed:", error);
+      
+      await this.safeDbExecute("INSERT OR REPLACE INTO sync_log (id, lastPulledAt) VALUES ('MAIN', ?)", [new Date().toISOString()]);
+      this.log("Pull sync complete: Local database hydrated.", 'success');
+      this.emitEvent('sync:pull:end');
+    } catch (error: any) {
+      this.log(`Pull sync failed: ${error.message}`, 'error');
     }
   }
 
@@ -200,7 +247,7 @@ export class SyncEngine {
     setInterval(() => this.processQueue({ silent: true }), 30000);
     window.addEventListener('online', () => this.processQueue());
     
-    // Initial pull sync on boot
-    setTimeout(() => this.pullSync(), 2000);
+    // Initial pull sync on boot (forced)
+    setTimeout(() => this.pullSync({ forced: true }), 2000);
   }
 }

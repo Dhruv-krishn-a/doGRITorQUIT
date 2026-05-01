@@ -7,20 +7,28 @@ export default async function SettingsPage() {
   const user = await getServerUser();
   if (!user) redirect("/login");
 
-  const dbUser = await prisma.user.findUnique({
-    where: { id: user.id },
-    include: {
-      profile: true
-    }
-  });
+  let dbUser = null;
+  try {
+    dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      include: {
+        profile: true
+      }
+    });
+  } catch (err) {
+    console.error("Error fetching dbUser in SettingsPage:", err);
+  }
 
   const userData = {
     id: user.id,
     email: user.email ?? "", 
-    name: dbUser?.profile?.name ?? user.user_metadata?.full_name ?? "User",
+    name: dbUser?.profile?.name ?? (user as any).name ?? (user as any).user_metadata?.full_name ?? "User",
+    bio: dbUser?.profile?.bio ?? "",
+    timezone: dbUser?.profile?.timezone ?? "UTC",
+    locale: dbUser?.profile?.locale ?? "en",
     tier: dbUser?.tier ?? "Free",
     // We pass the provider just for info, but we won't rely on it for password logic
-    provider: user.app_metadata?.provider || "email",
+    provider: (user as any).app_metadata?.provider || "email",
   };
 
   return <SettingsClientPage user={userData} />;

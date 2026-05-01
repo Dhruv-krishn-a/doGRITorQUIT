@@ -32,11 +32,12 @@ export function GritioLogo({ className = '', size = 'md', withText = true }: Gri
         // Frame 1: Neutral State (● ● ● ○)
         if (!scope.current) break;
         // Reset without animating
+        // Fix: "transparent" is not animatable in some contexts, using rgba(0,0,0,0)
         await Promise.all([
           animate(".dot-1", { backgroundColor: "var(--text-primary)", opacity: 1, x: 0, scale: 1 }, { duration: 0 }),
           animate(".dot-2", { backgroundColor: "var(--text-primary)", opacity: 1, x: 0, scale: 1 }, { duration: 0 }),
           animate(".dot-3", { backgroundColor: "var(--text-primary)", opacity: 1, x: 0, scale: 1 }, { duration: 0 }),
-          animate(".dot-4", { backgroundColor: "transparent", borderColor: "var(--text-primary)", opacity: 1, x: 0, scale: 1 }, { duration: 0 })
+          animate(".dot-4", { backgroundColor: "rgba(0, 0, 0, 0)", borderColor: "var(--text-primary)", opacity: 1, x: 0, scale: 1 }, { duration: 0 })
         ]);
         
         await new Promise(r => setTimeout(r, 1200)); // Hold neutral
@@ -45,7 +46,7 @@ export function GritioLogo({ className = '', size = 'md', withText = true }: Gri
         // Frame 2: Activation (Last dot fills orange, slight pulse) (● ● ● 🟠)
         await animate(".dot-4", { 
           backgroundColor: "var(--accent-color)", 
-          borderColor: "transparent",
+          borderColor: "rgba(0, 0, 0, 0)",
           scale: [1, 1.2, 1]
         }, { duration: 0.6, ease: "easeInOut" });
         

@@ -1,7 +1,6 @@
-//apps/web/features/plans/components/CreatePlanModal.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AlertCircle } from "lucide-react";
 import Button from "../../../shared/components/ui/Button";
 import Modal from "../../../shared/components/ui/Modal";
@@ -24,8 +23,6 @@ export default function CreatePlanModal({
   const [endDate, setEndDate] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +50,6 @@ export default function CreatePlanModal({
 
     try {
       // 2. Prepare Payload
-      // Using 'null' for description ensures it is included in the JSON as null, not undefined
       const payload = {
         title: title.trim(),
         description: description.trim() || null,
@@ -70,7 +66,6 @@ export default function CreatePlanModal({
       const data = await res.json().catch(() => null);
       
       if (!res.ok) {
-        // Now that we updated the backend, this will show the REAL error
         throw new Error(data?.error || "Failed to create plan");
       }
       
@@ -96,28 +91,29 @@ export default function CreatePlanModal({
       onClose={onClose} 
       title="Create New Plan"
     >
-      <form onSubmit={handleSubmit} className="transform-gpu space-y-5">
+      <form onSubmit={handleSubmit} className="transform-gpu space-y-6">
         
         {/* Title */}
         <div>
-          <label className="transform-gpu block text-sm font-medium text-slate-700 mb-1">
-            Plan Title <span className="transform-gpu text-red-500">*</span>
+          <label className="transform-gpu block text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] mb-3 ml-1 italic opacity-40">
+            Plan Title *
           </label>
           <input 
-            className="transform-gpu w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-hidden placeholder:text-slate-400"
+            className="transform-gpu w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl px-6 py-4 font-black text-[var(--text-primary)] focus:border-[var(--accent-color)] outline-none transition-all placeholder:text-[var(--text-secondary)]/30 shadow-inner text-sm italic uppercase"
             value={title} 
             onChange={(e) => setTitle(e.target.value)} 
             placeholder="e.g. Q4 Marketing Strategy"
             required 
             disabled={loading}
+            autoFocus
           />
         </div>
 
         {/* Description */}
         <div>
-          <label className="transform-gpu block text-sm font-medium text-slate-700 mb-1">Description</label>
+          <label className="transform-gpu block text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] mb-3 ml-1 italic opacity-40">Description</label>
           <textarea 
-            className="transform-gpu w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-hidden resize-none placeholder:text-slate-400"
+            className="transform-gpu w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl px-6 py-4 font-black text-[var(--text-primary)] focus:border-[var(--accent-color)] outline-none transition-all placeholder:text-[var(--text-secondary)]/30 shadow-inner text-sm italic resize-none"
             value={description} 
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
@@ -127,14 +123,14 @@ export default function CreatePlanModal({
         </div>
 
         {/* Dates */}
-        <div className="transform-gpu grid grid-cols-2 gap-4">
+        <div className="transform-gpu grid grid-cols-2 gap-6">
           <div>
-            <label className="transform-gpu block text-sm font-medium text-slate-700 mb-1">
-              Start Date <span className="transform-gpu text-red-500">*</span>
+            <label className="transform-gpu block text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] mb-3 ml-1 italic opacity-40">
+              Start Date *
             </label>
             <input 
               type="date" 
-              className="transform-gpu w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-hidden text-slate-600"
+              className="transform-gpu w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl px-6 py-4 font-black text-[var(--text-primary)] focus:border-[var(--accent-color)] outline-none transition-all text-sm italic"
               value={startDate} 
               onChange={(e) => setStartDate(e.target.value)} 
               required 
@@ -142,12 +138,12 @@ export default function CreatePlanModal({
             />
           </div>
           <div>
-            <label className="transform-gpu block text-sm font-medium text-slate-700 mb-1">
-              End Date <span className="transform-gpu text-red-500">*</span>
+            <label className="transform-gpu block text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] mb-3 ml-1 italic opacity-40">
+              End Date *
             </label>
             <input 
               type="date" 
-              className="transform-gpu w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-hidden text-slate-600"
+              className="transform-gpu w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl px-6 py-4 font-black text-[var(--text-primary)] focus:border-[var(--accent-color)] outline-none transition-all text-sm italic"
               value={endDate} 
               onChange={(e) => setEndDate(e.target.value)} 
               required 
@@ -158,30 +154,29 @@ export default function CreatePlanModal({
 
         {/* Error Display */}
         {error && (
-            <div className="transform-gpu p-3 bg-red-50 text-red-700 text-sm rounded-lg flex items-start gap-2 animate-in fade-in slide-in-from-top-1">
-                <AlertCircle size={16} className="transform-gpu mt-0.5 shrink-0" />
+            <div className="transform-gpu p-4 bg-red-500/5 text-red-500 text-[10px] font-black uppercase tracking-widest rounded-2xl border border-red-500/20 flex items-start gap-3 animate-in fade-in slide-in-from-top-1 italic">
+                <AlertCircle size={16} className="transform-gpu shrink-0" />
                 <span>{error}</span>
             </div>
         )}
 
         {/* Actions */}
-        <div className="transform-gpu flex justify-end gap-3 pt-2">
-          <Button 
+        <div className="transform-gpu flex justify-end gap-4 pt-4 border-t border-[var(--border-color)]">
+          <button 
             type="button" 
-            variant="ghost" 
+            className="transform-gpu px-8 py-3.5 rounded-2xl bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border-color)] font-black text-[10px] uppercase tracking-widest hover:text-[var(--text-primary)] transition-all active:scale-95 italic"
             onClick={onClose} 
             disabled={loading}
           >
             Cancel
-          </Button>
-          <Button 
+          </button>
+          <button 
             type="submit" 
-            variant="primary" 
             disabled={loading}
-            className="transform-gpu min-w-25"
+            className="transform-gpu px-10 py-3.5 bg-[var(--accent-color)] text-[var(--bg-primary)] rounded-2xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 shadow-xl shadow-[var(--accent-color)]/20 transition-all active:scale-95 italic"
           >
             {loading ? "Creating..." : "Create Plan"}
-          </Button>
+          </button>
         </div>
       </form>
     </Modal>

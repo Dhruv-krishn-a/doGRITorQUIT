@@ -39,19 +39,24 @@ async function getUserFromLegacySupabaseToken(token: string): Promise<ServerAuth
     }
   );
 
-  const { data } = await supabase.auth.getUser(token);
-  if (!data?.user?.id) return null;
+  try {
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data?.user?.id) return null;
 
-  return {
-    id: data.user.id,
-    email: data.user.email,
-    user_metadata: {
-      full_name: (data.user.user_metadata as { full_name?: string } | undefined)?.full_name ?? null,
-    },
-    app_metadata: {
-      provider: (data.user.app_metadata as { provider?: string } | undefined)?.provider ?? null,
-    },
-  };
+    return {
+      id: data.user.id,
+      email: data.user.email,
+      user_metadata: {
+        full_name: (data.user.user_metadata as { full_name?: string } | undefined)?.full_name ?? null,
+      },
+      app_metadata: {
+        provider: (data.user.app_metadata as { provider?: string } | undefined)?.provider ?? null,
+      },
+    };
+  } catch (err) {
+    console.error("Legacy Supabase Token Error:", err);
+    return null;
+  }
 }
 
 export async function getServerUser(): Promise<ServerAuthUser | null> {

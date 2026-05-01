@@ -290,7 +290,7 @@ const NotesPanel = ({
             <div key={note.id || idx} className="transform-gpu bg-[var(--bg-secondary)] border border-[var(--border-color)] p-6 rounded-2xl group hover:border-[var(--accent-color)]/50 transition-all shadow-inner">
               <div className="transform-gpu flex justify-between items-start mb-4">
                 <span className="text-[9px] font-black px-3 py-1.5 rounded-lg bg-[var(--accent-color)]/10 text-[var(--accent-color)] uppercase tracking-[0.2em] border border-[var(--accent-color)]/20 shadow-sm italic">
-                  Timestamped Vector
+                  Timestamped Path
                 </span>
                 <button 
                   onClick={() => {
@@ -465,7 +465,7 @@ export function StudyView() {
         unitId as string,
         JSON.stringify({ freeform: nextFreeformNotes, questions: nextQuestions })
       );
-      toast.success("Ledger updated");
+      toast.success("Notes updated");
     } catch {
       toast.error("Sync failed");
     } finally {
@@ -476,7 +476,7 @@ export function StudyView() {
   if (!unit)
     return (
       <div className="transform-gpu p-20 text-center text-[var(--accent-color)] font-black animate-pulse uppercase tracking-[0.3em] italic bg-[var(--bg-primary)] h-screen">
-        Initializing Study Vector...
+        Initializing Study Path...
       </div>
     );
 
@@ -493,7 +493,7 @@ export function StudyView() {
               <Brain size={24} />
             </div>
             <div>
-              <p className="transform-gpu text-[10px] font-black text-[var(--accent-color)] uppercase tracking-[0.3em] leading-none mb-1.5 italic opacity-80">Studying Vector</p>
+              <p className="transform-gpu text-[10px] font-black text-[var(--accent-color)] uppercase tracking-[0.3em] leading-none mb-1.5 italic opacity-80">Studying Path</p>
               <h2 className="transform-gpu text-lg font-black text-[var(--text-primary)] tracking-tight leading-none uppercase italic">{unit?.title}</h2>
             </div>
           </div>

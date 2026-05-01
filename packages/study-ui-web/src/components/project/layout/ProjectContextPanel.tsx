@@ -134,7 +134,7 @@ export function ProjectContextPanel({
                  onChange={e => setLogTask(e.target.value)}
                  className="transform-gpu w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl px-5 py-4 text-[11px] font-black text-[var(--text-primary)] outline-none focus:border-[var(--accent-color)] focus:ring-4 focus:ring-[var(--accent-color)]/5 transition-all italic uppercase tracking-tighter shadow-inner appearance-none cursor-pointer"
                >
-                 <option value="" disabled>SELECT VECTOR...</option>
+                 <option value="" disabled>SELECT PATH...</option>
                  {units.map(u => <option key={u.id} value={u.id}>{u.title.toUpperCase()}</option>)}
                </select>
                <div className="transform-gpu flex gap-4">

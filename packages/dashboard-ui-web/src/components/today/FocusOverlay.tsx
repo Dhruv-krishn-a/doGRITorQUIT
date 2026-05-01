@@ -89,7 +89,7 @@ export function FocusOverlay({ item, onClose, onComplete }: FocusOverlayProps) {
 
   const content = (
     <div 
-      style={{ zIndex: 99999 }}
+      style={{ zIndex: 1000000 }}
       className="transform-gpu fixed inset-0 flex items-center justify-center p-4 md:p-10 pointer-events-none"
     >
       {/* Backdrop - High Z-index directly */}

@@ -1,6 +1,7 @@
-import Constants from "expo-constants";
+import { config } from "../config";
 
-const debuggerHost = Constants.expoConfig?.hostUri;
-const localhost = debuggerHost?.split(":")[0] || "localhost";
-
-export const API_URL = `http://${localhost}:3000`; // Points to 'web' app
+/**
+ * @deprecated Use `config.apiUrl` from `../config` instead.
+ * This is maintained for backward compatibility with some components.
+ */
+export const API_URL = config.apiUrl;

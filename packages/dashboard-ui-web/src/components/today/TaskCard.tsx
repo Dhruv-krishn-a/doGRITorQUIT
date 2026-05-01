@@ -63,7 +63,7 @@ export function TaskCard({ task, isCompact, onEdit, onDelete, onComplete, onPost
             {/* Title & Meta */}
             <div className="transform-gpu flex-1 min-w-0">
                 <div className="transform-gpu flex items-center gap-2 mb-0.5">
-                    {!isCompact && <span className="transform-gpu text-[10px] font-semibold uppercase tracking-widest text-[var(--text-secondary)]">{task.plan?.title || 'Inbox Vector'}</span>}
+                    {!isCompact && <span className="transform-gpu text-[10px] font-semibold uppercase tracking-widest text-[var(--text-secondary)]">{task.plan?.title || 'Plan Task'}</span>}
                     {task.priority && (
                         <span className={`text-[8px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-md ${getPriorityStyle(task.priority)}`}>
                             {task.priority}
@@ -79,10 +79,9 @@ export function TaskCard({ task, isCompact, onEdit, onDelete, onComplete, onPost
                     </div>
                     {task.subtasks && task.subtasks.length > 0 && (
                         <div className="transform-gpu flex items-center gap-1 text-[9px] font-semibold text-[var(--accent-color)]">
-                            {task.subtasks.filter((s:any) => s.completed).length}/{task.subtasks.length} Modules
+                            {task.subtasks.filter((s:any) => s.completed).length}/{task.subtasks.length} Steps
                         </div>
-                    )}
-                    {isCompact && <span className="transform-gpu text-[9px] font-semibold text-[var(--text-secondary)]/40">• {task.plan?.title || 'Inbox'}</span>}
+                    )}                    {isCompact && <span className="transform-gpu text-[9px] font-semibold text-[var(--text-secondary)]/40">• {task.plan?.title || 'Inbox'}</span>}
                 </div>
             </div>
 

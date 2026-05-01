@@ -173,7 +173,7 @@ export function ProjectSidebar({
             onChange={(e) => setQuickTask(e.target.value)}
             onKeyDown={handleQuickAdd}
             disabled={isAdding}
-            placeholder="ADD QUICK VECTOR..." 
+            placeholder="ADD QUICK TASK..." 
             className="transform-gpu w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl pl-12 pr-4 py-4 text-[10px] font-black text-[var(--text-primary)] focus:border-[var(--accent-color)] focus:ring-4 focus:ring-[var(--accent-color)]/5 outline-none transition-all placeholder:text-[var(--text-secondary)]/20 uppercase tracking-[0.2em] disabled:opacity-50 italic"
           />
         </div>

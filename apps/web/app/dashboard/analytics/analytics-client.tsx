@@ -1,319 +1,306 @@
-// apps/web/app/dashboard/analytics/analytics-client.tsx
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   LineChart, Line, PieChart, Pie, Cell, Legend
-} from "recharts";
-import { Loader2, TrendingUp, CheckCircle2, Clock } from "lucide-react";
-
-// --- Types ---
-interface DailyStat {
-  day: string;
-  focusMinutes: number;
-  completed: number;
-  total: number;
-  [key: string]: string | number; 
-}
-
-interface HabitStat {
-  name: string;
-  completed: number;
-  total: number;
-  rate: number;
-  [key: string]: string | number;
-}
-
-interface TaskDistribution {
-  name: string;
-  value: number;
-  [key: string]: string | number;
-}
+} from 'recharts';
+import { 
+  Clock, CheckCircle2, TrendingUp, Calendar, 
+  Youtube, Target, BookOpen, Brain, Activity, ArrowUpRight, Loader2, Sparkles, Github
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 export interface AnalyticsData {
-  dailyStats: DailyStat[];
-  habitStats: HabitStat[];
-  taskDistribution: TaskDistribution[];
+  dailyStats: any[];
+  habitStats: any[];
+  taskDistribution: any[];
 }
 
-interface AnalyticsClientProps {
-  data: AnalyticsData;
-}
+const COLORS = ['var(--accent-color)', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
-// ✅ FIX: Define explicit types for Recharts Tooltip props to avoid 'any'
-interface TooltipPayload {
-  name: string;
-  value: number | string;
-  color: string;
-  payload?: unknown;
-  dataKey?: string | number;
-}
+const TIME_RANGES = [
+  { label: 'This Week', value: 7 },
+  { label: 'This Month', value: 30 },
+  { label: 'Quarterly', value: 90 },
+];
 
-interface CustomTooltipProps {
-  active?: boolean;
-  payload?: TooltipPayload[];
-  label?: string;
-}
+const CATEGORIES = [
+  { label: 'All Growth', value: 'ALL', icon: Activity },
+  { label: 'Video Learning', value: 'YOUTUBE', icon: Youtube },
+  { label: 'Strategic Plans', value: 'PLAN', icon: Target },
+  { label: 'Structured Courses', value: 'COURSE', icon: BookOpen },
+  { label: 'Building Projects', value: 'PROJECT', icon: Github },
+];
 
-const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444']; 
+export default function AnalyticsClientPage({ initialData }: { initialData: AnalyticsData | null }) {
+  const [timeRange, setTimeRange] = useState(7);
+  const [category, setCategory] = useState('ALL');
+  const [data, setData] = useState<AnalyticsData | null>(initialData);
+  const [loading, setLoading] = useState(!initialData);
+  const [error, setError] = useState<string | null>(null);
 
-// --- Custom Tooltip ---
-const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
-  if (active && payload && payload.length) {
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      setError(null);
+      try {
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(endDate.getDate() - (timeRange - 1));
+        startDate.setHours(0, 0, 0, 0);
+
+        const params = new URLSearchParams({
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+          category: category
+        });
+
+        const res = await fetch(`/api/analytics?${params.toString()}`);
+        if (!res.ok) throw new Error("Failed to sync insights");
+        
+        const result = await res.json();
+        setData(result);
+      } catch (err: any) {
+        console.error("Analytics fetch error:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, [timeRange, category]);
+
+  const summary = useMemo(() => {
+    if (!data?.dailyStats) return { totalTasks: 0, totalHours: 0, growthXp: 0 };
+    const tasks = data.dailyStats.reduce((acc, curr) => acc + curr.completedTasks, 0);
+    const hours = data.dailyStats.reduce((acc, curr) => acc + curr.focusMinutes, 0) / 60;
+    return { totalTasks: tasks, totalHours: Math.round(hours), growthXp: tasks * 10 };
+  }, [data]);
+
+  if (loading && !data) {
     return (
-      <div className="transform-gpu bg-white p-3 border border-slate-100 shadow-xl rounded-lg text-sm">
-        <p className="transform-gpu font-semibold text-slate-700 mb-2">{label}</p>
-        {payload.map((entry, index) => (
-          <div key={index} className="transform-gpu flex items-center gap-2 text-slate-600">
-            <div className="transform-gpu w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
-            <span className="transform-gpu capitalize">{entry.name}:</span>
-            <span className="transform-gpu font-mono font-medium">{entry.value}</span>
-          </div>
-        ))}
-      </div>
+        <div className="flex flex-col items-center justify-center py-40 gap-6">
+            <div className="w-16 h-16 rounded-3xl bg-[var(--bg-secondary)] border border-[var(--border-color)] flex items-center justify-center">
+                <Loader2 size={32} className="text-[var(--accent-color)] animate-spin" />
+            </div>
+            <p className="text-[11px] font-black uppercase tracking-[0.4em] text-[var(--text-secondary)] italic">Analyzing your progress...</p>
+        </div>
     );
   }
-  return null;
-};
-
-export default function AnalyticsClientPage({ data }: AnalyticsClientProps) {
-  // ✅ FIX: No useEffect, No Loading State. Data is passed from Server.
-  
-  const totalFocus = data.dailyStats.reduce((acc, d) => acc + d.focusMinutes, 0);
-  const totalTasksDone = data.dailyStats.reduce((acc, d) => acc + d.completed, 0);
-  const avgHabitRate = data.habitStats.length > 0 
-    ? Math.round(data.habitStats.reduce((acc, h) => acc + h.rate, 0) / data.habitStats.length) 
-    : 0;
 
   return (
-    <div className="transform-gpu max-w-6xl mx-auto p-6 space-y-8 fade-in">
-      <div className="transform-gpu flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="transform-gpu text-2xl font-bold text-slate-900 tracking-tight">Performance Analytics</h1>
-          <p className="transform-gpu text-slate-500 text-sm mt-1">Insights for the last 7 days</p>
+    <div className="space-y-12 animate-in fade-in duration-700">
+      
+      {/* Header & Controls */}
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+        <div className="space-y-2">
+          <h1 className="text-4xl md:text-5xl font-black tracking-tightest uppercase italic">Your <span className="text-[var(--accent-color)]">Insights</span></h1>
+          <p className="text-[var(--text-secondary)] font-bold text-[10px] uppercase tracking-[0.3em] opacity-60">Look back at how far you've come.</p>
         </div>
-        <div className="transform-gpu px-3 py-1 bg-slate-100 rounded-full text-xs font-medium text-slate-600 self-start md:self-auto">
-          Last Updated: Just now
+
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex bg-[var(--bg-secondary)] p-1.5 rounded-2xl border border-[var(--border-color)]">
+            {TIME_RANGES.map((r) => (
+              <button
+                key={r.value}
+                onClick={() => setTimeRange(r.value)}
+                className={cn(
+                  "px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                  timeRange === r.value ? "bg-[var(--bg-card)] text-[var(--accent-color)] shadow-sm" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                )}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
         </div>
+      </header>
+
+      {/* Category Pills */}
+      <div className="flex items-center gap-3 overflow-x-auto pb-4 no-scrollbar">
+        {CATEGORIES.map((cat) => (
+          <button
+            key={cat.value}
+            onClick={() => setCategory(cat.value)}
+            className={cn(
+              "flex items-center gap-3 px-6 py-4 rounded-[1.5rem] border transition-all whitespace-nowrap",
+              category === cat.value 
+                ? "bg-[var(--accent-color)] text-[var(--bg-primary)] border-transparent shadow-xl shadow-[var(--accent-color)]/20" 
+                : "bg-[var(--bg-card)]/40 border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--accent-color)]/30 hover:text-[var(--text-primary)]"
+            )}
+          >
+            <cat.icon size={18} />
+            <span className="text-[10px] font-black uppercase tracking-widest">{cat.label}</span>
+          </button>
+        ))}
       </div>
 
-      {/* KPI Cards */}
-      <div className="transform-gpu grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="transform-gpu group bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200">
-          <div className="transform-gpu flex items-center justify-between mb-4">
-            <div className="transform-gpu p-2.5 bg-indigo-50 rounded-lg text-indigo-600 group-hover:scale-110 transition-transform">
-              <Clock size={22} />
+      {/* Quick Summary Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[
+          { label: 'Actions Completed', value: summary.totalTasks, icon: CheckCircle2, sub: '+12% from last period' },
+          { label: 'Focused Hours', value: summary.totalHours, icon: Clock, sub: 'High energy detected' },
+          { label: 'Growth Points', value: summary.growthXp, icon: Sparkles, sub: 'Leveling up fast' },
+        ].map((stat, i) => (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+            key={i} 
+            className="bg-[var(--bg-card)]/40 backdrop-blur-xl border border-[var(--border-color)] p-8 rounded-[2.5rem] relative overflow-hidden group hover:border-[var(--accent-color)]/30 transition-all shadow-sm"
+          >
+            <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-10 transition-opacity">
+              <stat.icon size={100} />
             </div>
-          </div>
-          <div className="transform-gpu space-y-1">
-            <p className="transform-gpu text-sm font-semibold text-slate-400 uppercase tracking-wide">Focus Time</p>
-            <p className="transform-gpu text-3xl font-bold text-slate-900">
-              {Math.floor(totalFocus / 60)}<span className="transform-gpu text-lg text-slate-400 font-normal">h</span> {totalFocus % 60}<span className="transform-gpu text-lg text-slate-400 font-normal">m</span>
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)] mb-4 flex items-center gap-2">
+              <stat.icon size={12} /> {stat.label}
+            </h3>
+            <div className="flex items-baseline gap-2">
+              <span className="text-4xl font-black italic tracking-tighter uppercase">{stat.value}</span>
+              {i === 1 && <span className="text-sm font-bold opacity-40">H</span>}
+            </div>
+            <p className="mt-4 text-[9px] font-black uppercase tracking-widest text-[var(--accent-color)] italic flex items-center gap-1">
+              <TrendingUp size={10} /> {stat.sub}
             </p>
-          </div>
-        </div>
-
-        <div className="transform-gpu group bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200">
-          <div className="transform-gpu flex items-center justify-between mb-4">
-            <div className="transform-gpu p-2.5 bg-emerald-50 rounded-lg text-emerald-600 group-hover:scale-110 transition-transform">
-              <CheckCircle2 size={22} />
-            </div>
-          </div>
-          <div className="transform-gpu space-y-1">
-            <p className="transform-gpu text-sm font-semibold text-slate-400 uppercase tracking-wide">Tasks Completed</p>
-            <p className="transform-gpu text-3xl font-bold text-slate-900">{totalTasksDone}</p>
-          </div>
-        </div>
-
-        <div className="transform-gpu group bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200">
-          <div className="transform-gpu flex items-center justify-between mb-4">
-            <div className="transform-gpu p-2.5 bg-amber-50 rounded-lg text-amber-600 group-hover:scale-110 transition-transform">
-              <TrendingUp size={22} />
-            </div>
-          </div>
-          <div className="transform-gpu space-y-1">
-            <p className="transform-gpu text-sm font-semibold text-slate-400 uppercase tracking-wide">Habit Consistency</p>
-            <p className="transform-gpu text-3xl font-bold text-slate-900">
-              {avgHabitRate}<span className="transform-gpu text-xl text-slate-400">%</span>
-            </p>
-          </div>
-        </div>
+          </motion.div>
+        ))}
       </div>
 
-      <div className="transform-gpu grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
-        {/* Focus Time Chart */}
-        <div className="transform-gpu bg-white p-6 rounded-xl border border-slate-200 shadow-sm h-96 flex flex-col">
-          <div className="transform-gpu mb-6 flex items-center justify-between">
-            <h3 className="transform-gpu font-bold text-slate-800">Daily Focus</h3>
-            <span className="transform-gpu text-xs text-slate-400 bg-slate-50 px-2 py-1 rounded">Minutes / Day</span>
-          </div>
-          <div className="transform-gpu flex-1 min-h-0">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.dailyStats} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis 
-                  dataKey="day" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{fill: '#94a3b8', fontSize: 12}} 
-                  dy={10}
-                />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{fill: '#94a3b8', fontSize: 12}} 
-                />
-                <Tooltip content={<CustomTooltip />} cursor={{fill: '#f8fafc'}} />
-                <Bar 
-                  dataKey="focusMinutes" 
-                  name="Focus Minutes" 
-                  fill="#6366f1" 
-                  radius={[4, 4, 0, 0]} 
-                  barSize={32} 
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+        {/* Momentum Chart */}
+        <div className="bg-[var(--bg-card)]/40 backdrop-blur-xl border border-[var(--border-color)] p-10 rounded-[3rem] space-y-8 shadow-xl">
+           <div>
+              <h3 className="text-xl font-black italic uppercase tracking-tight">Your Momentum</h3>
+              <p className="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-[0.2em] opacity-40 mt-1">Activity over {timeRange} days</p>
+           </div>
+           <div className="h-[350px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={data?.dailyStats}>
+                  <defs>
+                    <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--accent-color)" stopOpacity={0.8}/>
+                      <stop offset="100%" stopColor="var(--accent-color)" stopOpacity={0.2}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" opacity={0.5} />
+                  <XAxis 
+                    dataKey="date" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 9, fontWeight: 900, fill: 'var(--text-secondary)' }}
+                    dy={10}
+                    tickFormatter={(val) => new Date(val).toLocaleDateString(undefined, { weekday: 'short' })}
+                  />
+                  <YAxis hide />
+                  <Tooltip 
+                    cursor={{ fill: 'var(--bg-secondary)', opacity: 0.5 }}
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-4 rounded-2xl shadow-2xl backdrop-blur-xl">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)] mb-2">
+                              {new Date(payload[0].payload.date).toLocaleDateString(undefined, { dateStyle: 'long' })}
+                            </p>
+                            <div className="space-y-1">
+                              <p className="text-sm font-black italic text-[var(--accent-color)]">{payload[0].value} Actions Completed</p>
+                              <p className="text-[10px] font-bold uppercase text-[var(--text-secondary)]">{payload[0].payload.focusMinutes} Minutes Focused</p>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Bar dataKey="completedTasks" fill="url(#barGradient)" radius={[8, 8, 0, 0]} barSize={40} />
+                </BarChart>
+              </ResponsiveContainer>
+           </div>
         </div>
 
-        {/* Task Completion Chart */}
-        <div className="transform-gpu bg-white p-6 rounded-xl border border-slate-200 shadow-sm h-96 flex flex-col">
-          <div className="transform-gpu mb-6">
-            <h3 className="transform-gpu font-bold text-slate-800">Task Velocity</h3>
-          </div>
-          <div className="transform-gpu flex-1 min-h-0">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data.dailyStats} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis 
-                  dataKey="day" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{fill: '#94a3b8', fontSize: 12}} 
-                  dy={10}
-                />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{fill: '#94a3b8', fontSize: 12}} 
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
-                <Line 
-                  type="monotone" 
-                  dataKey="completed" 
-                  name="Completed" 
-                  stroke="#10b981" 
-                  strokeWidth={3} 
-                  dot={{r: 4, fill: '#10b981', strokeWidth: 0}} 
-                  activeDot={{r: 6}}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="total" 
-                  name="Planned" 
-                  stroke="#cbd5e1" 
-                  strokeWidth={2} 
-                  dot={{r: 3, fill: '#cbd5e1', strokeWidth: 0}} 
-                  strokeDasharray="4 4" 
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Status Distribution */}
-        <div className="transform-gpu bg-white p-6 rounded-xl border border-slate-200 shadow-sm h-80 flex flex-col">
-          <h3 className="transform-gpu font-bold text-slate-800 mb-2">Completion Rate</h3>
-          <div className="transform-gpu flex h-full items-center">
-            <div className="transform-gpu w-1/2 h-full relative">
-               <ResponsiveContainer width="100%" height="100%">
+        {/* Focus Distribution */}
+        <div className="bg-[var(--bg-card)]/40 backdrop-blur-xl border border-[var(--border-color)] p-10 rounded-[3rem] space-y-8 shadow-xl">
+           <div>
+              <h3 className="text-xl font-black italic uppercase tracking-tight">Time Distribution</h3>
+              <p className="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-[0.2em] opacity-40 mt-1">Where your energy goes</p>
+           </div>
+           <div className="h-[350px] w-full flex items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={data.taskDistribution}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={70}
-                    paddingAngle={4}
+                    data={data?.taskDistribution}
+                    innerRadius={80}
+                    outerRadius={120}
+                    paddingAngle={8}
                     dataKey="value"
-                    stroke="none"
                   >
-                    {data.taskDistribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    {data?.taskDistribution.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="transparent" />
                     ))}
                   </Pie>
-                  <Tooltip content={<CustomTooltip />} />
+                  <Tooltip 
+                     content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                           return (
+                              <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-4 rounded-2xl shadow-xl">
+                                 <p className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: payload[0].payload.fill }}>{payload[0].name}</p>
+                                 <p className="text-lg font-black italic">{payload[0].value} Tasks</p>
+                              </div>
+                           )
+                        }
+                        return null;
+                     }}
+                  />
+                  <Legend 
+                     verticalAlign="bottom" 
+                     align="center" 
+                     iconType="circle" 
+                     formatter={(value) => <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)]">{value}</span>}
+                  />
                 </PieChart>
               </ResponsiveContainer>
-              <div className="transform-gpu absolute inset-0 flex items-center justify-center pointer-events-none">
-                 <div className="transform-gpu text-center">
-                   <span className="transform-gpu block text-2xl font-bold text-slate-700">
-                     {data.taskDistribution.find(x => x.name === 'Completed')?.value || 0}
-                   </span>
-                   <span className="transform-gpu text-[10px] uppercase text-slate-400 font-semibold tracking-wider">Done</span>
-                 </div>
-              </div>
-            </div>
-            
-            <div className="transform-gpu w-1/2 pl-4 space-y-3">
-               {data.taskDistribution.map((entry, index) => (
-                 <div key={index} className="transform-gpu flex items-center justify-between group">
-                   <div className="transform-gpu flex items-center gap-2.5">
-                     <div 
-                       className="transform-gpu w-2.5 h-2.5 rounded-full ring-2 ring-transparent group-hover:ring-slate-100 transition-all" 
-                       style={{ backgroundColor: COLORS[index % COLORS.length] }} 
-                     />
-                     <span className="transform-gpu text-sm text-slate-600 font-medium">{entry.name}</span>
-                   </div>
-                   <span className="transform-gpu text-sm font-bold text-slate-800">{entry.value}</span>
-                 </div>
-               ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Habit Performance */}
-        <div className="transform-gpu bg-white p-6 rounded-xl border border-slate-200 shadow-sm h-80 flex flex-col">
-          <h3 className="transform-gpu font-bold text-slate-800 mb-6">Habit Adherence</h3>
-          <div className="transform-gpu flex-1 overflow-y-auto pr-2 space-y-5 custom-scrollbar">
-            {data.habitStats.map((h) => (
-              <div key={h.name}>
-                <div className="transform-gpu flex justify-between items-end mb-2">
-                  <span className="transform-gpu text-sm font-semibold text-slate-700">{h.name}</span>
-                  <div className="transform-gpu text-right">
-                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${
-                       h.rate >= 80 ? 'text-emerald-700 bg-emerald-50' : 
-                       h.rate >= 50 ? 'text-amber-700 bg-amber-50' : 
-                       'text-rose-700 bg-rose-50'
-                    }`}>
-                      {h.rate}%
-                    </span>
-                  </div>
-                </div>
-                <div className="transform-gpu w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                  <div 
-                    className={`h-full rounded-full transition-all duration-500 ease-out ${
-                      h.rate >= 80 ? 'bg-emerald-500' : h.rate >= 50 ? 'bg-amber-500' : 'bg-rose-500'
-                    }`} 
-                    style={{ width: `${h.rate}%` }} 
-                  />
-                </div>
-                <p className="transform-gpu text-xs text-slate-400 mt-1">{h.completed} of {h.total} days completed</p>
-              </div>
-            ))}
-            {data.habitStats.length === 0 && (
-              <div className="transform-gpu h-full flex flex-col items-center justify-center text-slate-400 text-sm border-2 border-dashed border-slate-100 rounded-lg">
-                <Loader2 className="transform-gpu mb-2 opacity-20" size={24} />
-                No active habits found.
-              </div>
-            )}
-          </div>
+           </div>
         </div>
 
       </div>
+
+      {/* Habit Consistency */}
+      <section className="bg-[var(--bg-card)]/40 backdrop-blur-xl border border-[var(--border-color)] p-10 rounded-[3rem] shadow-xl">
+        <div className="mb-10">
+          <h3 className="text-2xl font-black italic uppercase tracking-tight">Your Consistency</h3>
+          <p className="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-[0.2em] opacity-40 mt-1">Habit streaks and sticking power</p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {data?.habitStats?.map((habit: any, i: number) => (
+            <div key={i} className="p-6 rounded-[2rem] bg-[var(--bg-secondary)]/50 border border-[var(--border-color)] group hover:border-[var(--accent-color)]/30 transition-all">
+               <div className="flex justify-between items-center mb-4">
+                  <span className="text-2xl">{habit.icon || '🔥'}</span>
+                  <div className="flex items-center gap-1 text-[var(--accent-color)]">
+                     <TrendingUp size={12} />
+                     <span className="text-[10px] font-black">{habit.streak} DAY STREAK</span>
+                  </div>
+               </div>
+               <h4 className="text-sm font-black uppercase tracking-tight mb-2 truncate">{habit.title}</h4>
+               <div className="h-1.5 w-full bg-[var(--bg-card)] rounded-full overflow-hidden border border-[var(--border-color)]">
+                  <div className="h-full bg-[var(--accent-color)]" style={{ width: `${(habit.completedCount / timeRange) * 100}%` }} />
+               </div>
+               <p className="mt-3 text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-widest opacity-60">Consistency: {Math.round((habit.completedCount / timeRange) * 100)}%</p>
+            </div>
+          ))}
+          {(!data?.habitStats || data.habitStats.length === 0) && (
+            <div className="col-span-full py-10 text-center border-2 border-dashed border-[var(--border-color)] rounded-3xl opacity-30">
+               <Activity size={32} className="mx-auto mb-4" />
+               <p className="text-[10px] font-black uppercase tracking-widest">No habits tracked in this period</p>
+            </div>
+          )}
+        </div>
+      </section>
+
     </div>
   );
 }

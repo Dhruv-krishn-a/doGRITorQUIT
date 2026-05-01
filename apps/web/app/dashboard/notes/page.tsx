@@ -5,9 +5,10 @@ import {
   Plus, Search, Trash2,
   Loader2, Youtube,
   Briefcase, GraduationCap, StickyNote,
-  Calendar, BookOpen, Target,
-  Wifi, WifiOff, RefreshCw
-} from 'lucide-react';
+  Calendar, BookOpen, PenLine, Target,
+  Wifi, WifiOff, RefreshCw, LayoutGrid, List as ListIcon
+  } from 'lucide-react';
+
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import {
@@ -94,8 +95,63 @@ const NoteCard = ({ note, onClick, onDelete }: { note: Note | LocalNote, onClick
   );
 };
 
+const NoteListItem = ({ note, onClick, onDelete }: { note: Note | LocalNote, onClick: () => void, onDelete: () => void }) => {
+  const getIcon = () => {
+    switch (note.category) {
+      case NoteCategory.YOUTUBE: return <Youtube size={14} className="text-[var(--accent-color)]" />;
+      case NoteCategory.PROJECT: return <Briefcase size={14} className="text-[var(--accent-color)]" />;
+      case NoteCategory.COURSE: return <GraduationCap size={14} className="text-[var(--accent-color)]" />;
+      default: return <StickyNote size={14} className="text-[var(--accent-color)]" />;
+    }
+  };
+
+  const sourceTitle = note.metadata?.sourceTitle || note.metadata?.trackTitle;
+  const isPending = (note as LocalNote).syncStatus === 'PENDING';
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      onClick={onClick}
+      className="group flex items-center gap-6 p-4 bg-[var(--bg-card)]/30 hover:bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl transition-all cursor-pointer select-none shadow-sm hover:shadow-lg"
+    >
+      <div className="p-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] group-hover:border-[var(--accent-color)]/30 transition-colors shrink-0">
+        {getIcon()}
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <h3 className="text-sm font-bold text-[var(--text-primary)] uppercase tracking-tight truncate group-hover:text-[var(--accent-color)] transition-colors">
+          {note.title || "Untitled Note"}
+        </h3>
+        {sourceTitle && (
+          <p className="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-widest truncate mt-0.5 opacity-60">
+            {sourceTitle}
+          </p>
+        )}
+      </div>
+
+      <div className="hidden md:flex flex-col items-end gap-1 px-4 border-l border-[var(--border-color)]/50 min-w-[120px]">
+        <span className={`text-[8px] font-black uppercase tracking-[0.2em] ${isPending ? 'text-amber-500' : 'text-[var(--text-secondary)]'}`}>
+          {note.category}
+        </span>
+        <span className="text-[8px] font-bold text-[var(--text-secondary)] opacity-40 uppercase tracking-widest">
+          {new Date(note.updatedAt).toLocaleDateString()}
+        </span>
+      </div>
+
+      <button 
+        onClick={(e) => { e.stopPropagation(); onDelete(); }}
+        className="p-2 text-[var(--text-secondary)] hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
+      >
+        <Trash2 size={16} />
+      </button>
+    </motion.div>
+  );
+};
+
 export default function NotesPage() {
   const [view, setView] = useState<'LIST' | 'EDITOR'>('LIST');
+  const [displayMode, setDisplayMode] = useState<'GRID' | 'LIST'>(() => (typeof window !== 'undefined' ? (localStorage.getItem('notes_display_mode') as any) || 'GRID' : 'GRID'));
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isSyncingNotes, setIsSyncingNotes] = useState(false);
@@ -457,35 +513,46 @@ export default function NotesPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <div className="relative group">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] group-focus-within:text-[var(--accent-color)] transition-colors" size={18} />
-                  <input
-                    type="text"
-                    placeholder="Search neural archive..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="pl-12 pr-6 py-4 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl text-sm text-[var(--text-primary)] focus:outline-none focus:ring-4 focus:ring-[var(--accent-color)]/10 focus:border-[var(--accent-color)]/50 transition-all w-64 shadow-sm"
-                  />
+              <div className="flex flex-col gap-3 w-full">
+                <div className="flex items-center gap-2 w-full">
+                  <div className="relative group flex-1">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] group-focus-within:text-[var(--accent-color)] transition-colors" size={18} />
+                    <input type="text" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-12 pr-6 py-4 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl text-sm text-[var(--text-primary)] focus:outline-none focus:ring-4 focus:ring-[var(--accent-color)]/10 focus:border-[var(--accent-color)]/50 transition-all w-full shadow-sm" />
+                  </div>
+                  
+                  {/* View Switcher */}
+                  <div className="flex bg-[var(--bg-secondary)] border border-[var(--border-color)] p-1 rounded-2xl shadow-inner shrink-0">
+                    <button 
+                      onClick={() => { setDisplayMode('GRID'); localStorage.setItem('notes_display_mode', 'GRID'); }}
+                      className={`p-3 rounded-xl transition-all ${displayMode === 'GRID' ? 'bg-[var(--bg-primary)] text-[var(--accent-color)] shadow-md' : 'text-[var(--text-secondary)]'}`}
+                      title="Grid View"
+                    >
+                      <LayoutGrid size={18} />
+                    </button>
+                    <button 
+                      onClick={() => { setDisplayMode('LIST'); localStorage.setItem('notes_display_mode', 'LIST'); }}
+                      className={`p-3 rounded-xl transition-all ${displayMode === 'LIST' ? 'bg-[var(--bg-primary)] text-[var(--accent-color)] shadow-md' : 'text-[var(--text-secondary)]'}`}
+                      title="List View"
+                    >
+                      <ListIcon size={18} />
+                    </button>
+                  </div>
                 </div>
-                <button
-                  onClick={() => void handleManualSync()}
-                  disabled={isSyncingNotes}
-                  className="flex items-center gap-3 px-6 py-4 bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border-color)] rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:text-[var(--text-primary)] transition-all shadow-sm active:scale-95 disabled:opacity-50"
-                >
-                  <RefreshCw size={16} className={isSyncingNotes ? 'animate-spin' : ''} />
-                  {isSyncingNotes ? 'Syncing...' : 'Sync'}
-                </button>
-                <button
-                  onClick={() => {
-                    setEditingNote(null);
-                    setView('EDITOR');
-                  }}
-                  className="flex items-center gap-3 px-8 py-4 bg-[var(--accent-color)] text-[var(--bg-primary)] rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition-all shadow-lg shadow-[var(--accent-color)]/20 active:scale-95"
-                >
-                  <Plus size={16} />
-                  Initialize
-                </button>
+
+                <div className="flex items-center gap-2 w-full">
+                  <button
+                    onClick={() => void handleManualSync()}
+                    disabled={isSyncingNotes}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-4 bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border-color)] rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:text-[var(--text-primary)] transition-all shadow-sm active:scale-95 disabled:opacity-50"
+                  >
+                    <RefreshCw size={14} className={isSyncingNotes ? 'animate-spin' : ''} />
+                    <span>Sync</span>
+                  </button>
+                  <button onClick={() => { setEditingNote(null); setView('EDITOR'); }} className="flex-[2] flex items-center justify-center gap-2 px-6 py-4 bg-[var(--accent-color)] text-[var(--bg-primary)] rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition-all shadow-lg shadow-[var(--accent-color)]/20 active:scale-95">
+                    <Plus size={16} /> 
+                    <span>Initialize</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -511,20 +578,37 @@ export default function NotesPage() {
                   <Loader2 className="animate-spin text-sky-focus" size={40} />
                 </div>
               ) : filteredNotes.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {filteredNotes.map((note) => (
-                    <NoteCard
-                      key={note.id}
-                      note={note}
-                      onClick={() => {
-                        setEditingNote(note);
-                        setView('EDITOR');
-                      }}
-                      onDelete={() => handleDelete(note.id)}
-                    />
-                  ))}
-                </div>
+                displayMode === 'GRID' ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
+                    {filteredNotes.map((note) => (
+                      <NoteCard
+                        key={note.id}
+                        note={note}
+                        onClick={() => {
+                          setEditingNote(note as Note);
+                          setView('EDITOR');
+                        }}
+                        onDelete={() => handleDelete(note.id)}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    {filteredNotes.map((note) => (
+                      <NoteListItem
+                        key={note.id}
+                        note={note}
+                        onClick={() => {
+                          setEditingNote(note as Note);
+                          setView('EDITOR');
+                        }}
+                        onDelete={() => handleDelete(note.id)}
+                      />
+                    ))}
+                  </div>
+                )
               ) : (
+
                 <div className="h-full flex flex-col items-center justify-center text-center p-20 bg-[var(--bg-secondary)]/30 border border-dashed border-[var(--border-color)] rounded-[3rem]">
                   <div className="p-6 bg-[var(--bg-secondary)] rounded-full text-[var(--text-secondary)] mb-6">
                     <StickyNote size={48} />

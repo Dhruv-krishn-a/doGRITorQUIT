@@ -204,7 +204,7 @@ export function YoutubeDetailView() {
                      {track.title}
                    </h1>
                    <span className="text-[9px] font-black bg-rose-500/10 text-rose-500 border border-rose-500/20 px-2.5 py-1 rounded-md uppercase tracking-widest shrink-0 italic">
-                     YouTube Vector
+                     YouTube Path
                    </span>
                  </div>
                  <div className="flex items-center gap-3">
@@ -245,11 +245,11 @@ export function YoutubeDetailView() {
                 <button 
                   onClick={handleSync} disabled={isSyncing}
                   className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--accent-color)] transition-colors disabled:opacity-50"
-                  title="Sync Vectors"
+                  title="Sync Paths"
                 >
                   <RefreshCw size={16} className={isSyncing ? "animate-spin text-[var(--accent-color)]" : ""} />
                 </button>
-                <button onClick={async () => { await fetchTrack(track.id); openModal('DELETE'); }} className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-rose-500 hover:bg-rose-500/10 transition-colors" title="Delete Vector">
+                <button onClick={async () => { await fetchTrack(track.id); openModal('DELETE'); }} className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-rose-500 hover:bg-rose-500/10 transition-colors" title="Delete Path">
                   <Trash2 size={16} />
                 </button>
               </div>
@@ -270,13 +270,13 @@ export function YoutubeDetailView() {
                 onClick={() => setActiveTab('NOTES')}
                 className={`text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2 transition-colors italic ${activeTab === 'NOTES' ? 'text-[var(--accent-color)] border-b-2 border-[var(--accent-color)] pb-2 -mb-[18px]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] pb-2 -mb-[18px] opacity-60'}`}
               >
-                <Brain size={16} /> Smart Ledger
+                <Brain size={16} /> Study Notes
               </button>
               <button 
                 onClick={() => setActiveTab('ANALYTICS')}
                 className={`text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2 transition-colors italic ${activeTab === 'ANALYTICS' ? 'text-[var(--accent-color)] border-b-2 border-[var(--accent-color)] pb-2 -mb-[18px]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] pb-2 -mb-[18px] opacity-60'}`}
               >
-                <Activity size={16} /> Intelligence
+                <Activity size={16} /> Insights
               </button>
             </div>
 
@@ -346,24 +346,24 @@ export function YoutubeDetailView() {
                    <div className="bg-[var(--bg-card)] border border-[var(--border-color)] shadow-2xl rounded-[3rem] p-8 md:p-12 space-y-8 text-left">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div className="text-left">
-                          <h3 className="text-2xl font-black text-[var(--text-primary)] uppercase tracking-tight italic leading-none">Channel Synthesis</h3>
-                          <p className="text-[10px] font-black text-[var(--text-secondary)] mt-2 uppercase tracking-widest italic opacity-40">Cross-vector neural notes</p>
+                          <h3 className="text-2xl font-black text-[var(--text-primary)] uppercase tracking-tight italic leading-none">Path Notes</h3>
+                          <p className="text-[10px] font-black text-[var(--text-secondary)] mt-2 uppercase tracking-widest italic opacity-40">Course collection notes</p>
                         </div>
                         <button 
                           onClick={async () => {
                             setIsSaving(true);
-                            setTimeout(() => { setIsSaving(false); toast.success("Ledger updated"); }, 800);
+                            setTimeout(() => { setIsSaving(false); toast.success("Notes updated"); }, 800);
                           }}
                           className="flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-[var(--accent-color)] to-sky-600 text-[var(--bg-primary)] rounded-2xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition-all shadow-xl shadow-[var(--accent-color)]/20 italic"
                         >
                           {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                          Sync Ledger
+                          Save Notes
                         </button>
                       </div>
                       
                       <textarea 
                         className="w-full h-[500px] bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-[2rem] p-8 font-black text-[var(--text-primary)] text-lg focus:border-[var(--accent-color)]/50 transition-all outline-none resize-none placeholder:text-[var(--text-secondary)]/20 italic uppercase tracking-tighter custom-scrollbar shadow-inner"
-                        placeholder="Initialize neural recording for channel structure..."
+                        placeholder="Start taking notes for channel structure..."
                         value={globalNotes}
                         onChange={(e) => setGlobalNotes(e.target.value)}
                       />
@@ -392,7 +392,7 @@ export function YoutubeDetailView() {
                       <div className="flex items-center justify-between mb-10 relative z-10 text-left">
                         <div className="flex items-center gap-4">
                           <div className="p-3 bg-[var(--accent-color)]/10 text-[var(--accent-color)] rounded-xl border border-[var(--accent-color)]/20 shadow-sm"><Activity size={20} /></div>
-                          <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] italic">Smart Momentum</h3>
+                          <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] italic">Learning Momentum</h3>
                         </div>
                         <div className="text-right">
                           <span className="text-3xl font-black text-[var(--accent-color)] italic tracking-tighter leading-none">{momentum?.score || 0}%</span>
@@ -430,7 +430,7 @@ export function YoutubeDetailView() {
                     <div className="bg-[var(--bg-card)] p-8 rounded-[2.5rem] border border-[var(--border-color)] shadow-xl relative overflow-hidden group text-left">
                       <div className="flex items-center gap-4 mb-6">
                         <div className="p-3 bg-fuchsia-500/10 text-fuchsia-500 rounded-xl border border-fuchsia-500/20 shadow-sm"><TrendingUp size={20} /></div>
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic">Peak Engagement</h3>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic">Focus Session</h3>
                       </div>
                       {analytics?.longestUnit && (analytics.longestUnit.actualTimeSpentMinutes || 0) > 0 ? (
                         <>
@@ -446,7 +446,7 @@ export function YoutubeDetailView() {
                     <div className="bg-[var(--bg-card)] p-8 rounded-[2.5rem] border border-[var(--border-color)] shadow-xl relative overflow-hidden group text-left">
                       <div className="flex items-center gap-4 mb-6">
                         <div className="p-3 bg-amber-500/10 text-amber-500 rounded-xl border border-amber-500/20 shadow-sm"><AlertCircle size={20} /></div>
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic">Critical Vector</h3>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic">Priority Task</h3>
                       </div>
                       {analytics?.hardestUnit ? (
                         <>
@@ -462,7 +462,7 @@ export function YoutubeDetailView() {
                     <div className="bg-[var(--bg-card)] p-8 rounded-[2.5rem] border border-[var(--border-color)] shadow-xl relative overflow-hidden group text-left">
                       <div className="flex items-center gap-4 mb-6">
                         <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-xl border border-emerald-500/20 shadow-sm"><Star size={20} /></div>
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic">Smart Integration</h3>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic">Understanding Level</h3>
                       </div>
                       <p className="text-4xl font-black text-[var(--text-primary)] italic tracking-tighter leading-none">{analytics?.avgConfidence ? analytics.avgConfidence.toFixed(1) : "0.0"} <span className="text-xl text-[var(--text-secondary)] opacity-30 italic">/ 5</span></p>
                       <p className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest mt-4 opacity-40 italic">Avg comprehension across resolved units.</p>
@@ -472,21 +472,21 @@ export function YoutubeDetailView() {
                     <div className="bg-[var(--bg-card)] p-8 rounded-[2.5rem] border border-[var(--border-color)] shadow-xl relative overflow-hidden group text-left">
                       <div className="flex items-center gap-4 mb-6">
                         <div className="p-3 bg-indigo-500/10 text-indigo-500 rounded-xl border border-indigo-500/20 shadow-sm"><Zap size={20} /></div>
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic">Velocity Multiplier</h3>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic">Learning Speed</h3>
                       </div>
                       <p className="text-4xl font-black text-[var(--text-primary)] italic tracking-tighter leading-none">{analytics?.studyMultiplier}X</p>
-                      <p className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest mt-4 opacity-40 italic">Study duration relative to ingestion.</p>
+                      <p className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest mt-4 opacity-40 italic">Study vs Learning time.</p>
                     </div>
 
                     {/* Course Distribution */}
                     <div className="bg-[var(--bg-card)] p-8 rounded-[2.5rem] border border-[var(--border-color)] shadow-xl relative overflow-hidden group text-left">
                       <div className="flex items-center gap-4 mb-6">
                         <div className="p-3 bg-sky-500/10 text-sky-500 rounded-xl border border-sky-500/20 shadow-sm"><PieChart size={20} /></div>
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic">Sector Map</h3>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic">Category Map</h3>
                       </div>
                       {analytics?.counts && (
                         <>
-                           <p className="text-3xl font-black text-[var(--text-primary)] mb-3 italic uppercase tracking-tighter leading-none">{analytics.counts.completed} Resolved</p>
+                           <p className="text-3xl font-black text-[var(--text-primary)] mb-3 italic uppercase tracking-tighter leading-none">{analytics.counts.completed} Completed</p>
                            <div className="flex gap-5 text-[10px] font-black uppercase tracking-widest italic leading-none">
                              <span className="text-sky-500">{analytics.counts.active} Active</span>
                              <span className="text-[var(--text-secondary)] opacity-40">{analytics.counts.backlog} Queued</span>

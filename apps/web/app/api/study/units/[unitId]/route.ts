@@ -1,11 +1,17 @@
 // apps/web/app/api/study/units/[unitId]/route.ts
 import { NextResponse } from 'next/server';
 import { getServerUser } from '@/lib/auth-server';
-import { study } from '@gritorquit/domain';
+import { study, billing } from '@gritorquit/domain';
 
 export async function GET(req: Request, { params }: { params: Promise<{ unitId: string }> }) {
   const user = await getServerUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  try {
+    await billing.checkFeatureAccess(user.id, billing.PlanFeature.ACCESS_STUDY);
+  } catch (e) {
+    return NextResponse.json({ error: "Feature locked by plan limits" }, { status: 403 });
+  }
 
   try {
     const { unitId } = await params;
@@ -22,6 +28,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ unitId
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
+    await billing.checkFeatureAccess(user.id, billing.PlanFeature.ACCESS_STUDY);
+  } catch (e) {
+    return NextResponse.json({ error: "Feature locked by plan limits" }, { status: 403 });
+  }
+
+  try {
     const { unitId } = await params;
     const body = await req.json();
     const unit = await study.StudyService.updateUnit(user.id, unitId, body);
@@ -35,6 +47,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ unitId
 export async function DELETE(req: Request, { params }: { params: Promise<{ unitId: string }> }) {
   const user = await getServerUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  try {
+    await billing.checkFeatureAccess(user.id, billing.PlanFeature.ACCESS_STUDY);
+  } catch (e) {
+    return NextResponse.json({ error: "Feature locked by plan limits" }, { status: 403 });
+  }
 
   try {
     const { unitId } = await params;

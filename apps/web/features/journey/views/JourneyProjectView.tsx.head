@@ -1,0 +1,250 @@
+"use client";
+
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Github, Plus, Server, RefreshCw, ShieldCheck, Target, Loader2, CheckCircle2, Circle, Sparkles, Pencil, Trash2, Lock, RotateCcw } from "lucide-react";
+import { GithubProject, GithubFeature } from "@gritorquit/domain/github-projects/types";
+import { ProjectLifecycle, JourneyStage } from "@prisma/client";
+import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
+import { GithubEvidencePanel } from "../components/GithubEvidencePanel";
+import dynamic from "next/dynamic";
+
+const DynamicNoteEditor = dynamic(() =>
+  import("@gritorquit/notes-ui-web").then((mod) => mod.NoteEditor),
+  { ssr: false }
+);
+
+const STAGES = [
+  { id: JourneyStage.REQUIREMENTS, label: "Requirements" },
+  { id: JourneyStage.DESIGN, label: "Design" },
+  { id: JourneyStage.DEVELOPMENT, label: "Dev" },
+  { id: JourneyStage.TESTING, label: "Test" },
+  { id: JourneyStage.DEPLOYMENT, label: "Deploy" },
+  { id: JourneyStage.LEARNING, label: "Learn" },
+];
+
+export function JourneyProjectView({ initialProject }: { initialProject: GithubProject & { features: GithubFeature[], requirementsNote?: any } }) {
+  const router = useRouter();
+  const [project, setProject] = useState(initialProject);
+  const [activeFeatureId, setActiveFeatureId] = useState<string | null>(initialProject.features[0]?.id || null);
+  const [showPRD, setShowPRD] = useState(!initialProject.features.length);
+  
+  const [isCreatingFeature, setIsCreatingFeature] = useState(false);
+  const [newFeatureTitle, setNewFeatureTitle] = useState("");
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [isGeneratingFeatures, setIsGeneratingFeatures] = useState(false);
+  const [projectContext, setProjectContext] = useState("");
+
+  const [featureToDelete, setFeatureToDelete] = useState<string | null>(null);
+  const [featureToEdit, setFeatureToEdit] = useState<string | null>(null);
+  const [editFeatureTitle, setEditFeatureTitle] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+
+  const [isSavingNote, setIsSavingNote] = useState(false);
+  const [manageMode, setManageMode] = useState(false);
+  const [selectedFeatures, setSelectedFeatures] = useState<Set<string>>(new Set());
+
+  // Global Project State
+  const isGlobalRequirementsMode = showPRD || (!activeFeatureId && project.features.length === 0);
+  
+  const activeFeature = project.features.find(f => f.id === activeFeatureId) || null;
+
+  const handleBulkDelete = async () => {
+    if (selectedFeatures.size === 0) return;
+    setIsDeleting(true);
+    try {
+      await Promise.all(Array.from(selectedFeatures).map(id => 
+        fetch(`/api/github-projects/${project.id}/features/${id}`, { method: "DELETE" })
+      ));
+      
+      setProject(prev => ({
+        ...prev,
+        features: prev.features.filter(f => !selectedFeatures.has(f.id))
+      }));
+      
+      if (activeFeatureId && selectedFeatures.has(activeFeatureId)) {
+        setActiveFeatureId(null);
+      }
+      
+      setSelectedFeatures(new Set());
+      setManageMode(false);
+      toast.success(`${selectedFeatures.size} tasks removed`);
+    } catch (err: any) {
+      toast.error("Failed to delete some items");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleRegenerateFeatures = async () => {
+    if (!confirm("This will wipe your current roadmap and start fresh. Continue?")) return;
+    setIsGeneratingFeatures(true);
+    try {
+      await Promise.all(project.features.map(f => 
+        fetch(`/api/github-projects/${project.id}/features/${f.id}`, { method: "DELETE" })
+      ));
+      
+      const res = await fetch(`/api/github-projects/${project.id}/features/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description: projectContext })
+      });
+      
+      const newFeatures = await res.json();
+      setProject(prev => ({ ...prev, features: newFeatures }));
+      if (newFeatures.length > 0) setActiveFeatureId(newFeatures[0].id);
+      
+      toast.success("Roadmap regenerated");
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setIsGeneratingFeatures(false);
+    }
+  };
+    if (!project.requirementsNoteId) return;
+    setIsSavingNote(true);
+    try {
+      const res = await fetch(`/api/notes/${project.requirementsNoteId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, content })
+      });
+      if (!res.ok) throw new Error("Failed to save requirements");
+      toast.success("Requirements Updated");
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setIsSavingNote(false);
+    }
+  };
+
+  const handleDeleteFeature = async (featureId: string) => {
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/github-projects/${project.id}/features/${featureId}`, {
+        method: "DELETE"
+      });
+      if (!res.ok) throw new Error("Failed to delete feature");
+      
+      setProject(prev => ({
+        ...prev,
+        features: prev.features.filter(f => f.id !== featureId)
+      }));
+      
+      if (activeFeatureId === featureId) {
+        setActiveFeatureId(project.features.find(f => f.id !== featureId)?.id || null);
+      }
+      
+      setFeatureToDelete(null);
+      toast.success("Feature deleted");
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleEditFeature = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!featureToEdit || !editFeatureTitle.trim()) return;
+    
+    setIsEditing(true);
+    try {
+      const res = await fetch(`/api/github-projects/${project.id}/features/${featureToEdit}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: editFeatureTitle })
+      });
+      if (!res.ok) throw new Error("Failed to update feature");
+      
+      const updatedFeature = await res.json();
+      setProject(prev => ({
+        ...prev,
+        features: prev.features.map(f => f.id === featureToEdit ? updatedFeature : f)
+      }));
+      
+      setFeatureToEdit(null);
+      toast.success("Feature updated");
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setIsEditing(false);
+    }
+  };
+
+  const handleGenerateInitialFeatures = async () => {
+    setIsGeneratingFeatures(true);
+    try {
+      const res = await fetch(`/api/github-projects/${project.id}/features/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description: projectContext })
+      });
+      if (!res.ok) throw new Error(await res.text() || "Failed to generate features");
+      const newFeatures = await res.json();
+      setProject(prev => ({
+        ...prev,
+        features: [...prev.features, ...newFeatures]
+      }));
+      if (newFeatures.length > 0) {
+        setActiveFeatureId(newFeatures[0].id);
+      }
+      toast.success("Features auto-generated & mapped");
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setIsGeneratingFeatures(false);
+    }
+  };
+
+  const handleGenerateRetrospective = async (featureId: string) => {
+    setIsGeneratingAI(true);
+    try {
+      const res = await fetch(`/api/github-projects/${project.id}/features/${featureId}/retrospective`, {
+        method: "POST"
+      });
+      if (!res.ok) throw new Error(await res.text() || "Failed to generate retrospective");
+      const updatedFeature = await res.json();
+      setProject(prev => ({
+        ...prev,
+        features: prev.features.map(f => f.id === featureId ? updatedFeature : f)
+      }));
+      toast.success("AI Retrospective Generated");
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  };
+
+  const handleCreateFeature = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newFeatureTitle.trim()) return;
+    setIsCreatingFeature(true);
+    
+    try {
+      const res = await fetch(`/api/github-projects/${project.id}/features`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: newFeatureTitle })
+      });
+      if (!res.ok) throw new Error("Failed to create feature");
+      const feature = await res.json();
+      setProject(prev => ({ ...prev, features: [...prev.features, feature] }));
+      setNewFeatureTitle("");
+      if (!activeFeatureId) setActiveFeatureId(feature.id);
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setIsCreatingFeature(false);
+    }
+  };
+
+  const handleAdvanceStage = async (featureId: string, nextStage: JourneyStage) => {
+    try {
+      const res = await fetch(`/api/github-projects/${project.id}/features/${featureId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stage: nextStage })

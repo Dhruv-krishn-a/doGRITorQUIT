@@ -6,6 +6,8 @@ import { useAuth } from '../../context/AuthContext';
 import * as Haptics from 'expo-haptics';
 import Constants from 'expo-constants';
 
+import { config } from '../../config';
+
 type Tab = 'FEEDBACK' | 'ABOUT';
 
 export default function MobileDeveloperHub() {
@@ -21,7 +23,7 @@ export default function MobileDeveloperHub() {
     
     setIsSending(true);
     try {
-      const apiBaseUrl = process.env.EXPO_PUBLIC_API_URL || 'https://www.dogritorquit.in';
+      const apiBaseUrl = config.apiUrl;
       const response = await fetch(`${apiBaseUrl}/api/feedback`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

@@ -1,7 +1,8 @@
 import * as SecureStore from 'expo-secure-store'; // or your preferred storage
 import { getAccessToken } from '@/lib/nativeAuth';
+import { config as appConfig } from '../config';
 
-const API_URL = "https://your-production-url.com/api/v1/config";
+const API_URL = `${appConfig.apiUrl}/api/v1/mobile-config`;
 
 export interface AppConfig {
   isGuest: boolean;

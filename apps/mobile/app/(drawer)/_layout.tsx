@@ -23,18 +23,26 @@ function CustomDrawerContent(props: any) {
 
   const toggleExpand = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setExpanded(!expanded);
-    width.value = withSpring(expanded ? 80 : 280, { damping: 20, stiffness: 90 });
+    const nextExpanded = !expanded;
+    setExpanded(nextExpanded);
+    width.value = withSpring(nextExpanded ? 280 : 80, { damping: 20, stiffness: 90 });
   };
 
   const animatedStyle = useAnimatedStyle(() => ({
     width: width.value,
   }));
 
+  const logoContainerStyle = useAnimatedStyle(() => ({
+    alignItems: width.value > 150 ? 'flex-start' : 'center',
+    padding: 20,
+    paddingTop: 40,
+    paddingBottom: 40,
+  }));
+
   return (
     <Animated.View style={[{ flex: 1, backgroundColor: colors.card }, animatedStyle]}>
       <DrawerContentScrollView {...props} scrollEnabled={false} contentContainerStyle={{ flex: 1 }}>
-        <View style={{ padding: 20, paddingTop: 40, paddingBottom: 40, alignItems: expanded ? 'flex-start' : 'center' }}>
+        <Animated.View style={logoContainerStyle}>
           {expanded ? (
             <View>
               <GritioLogo size="lg" withText={true} />
@@ -42,7 +50,7 @@ function CustomDrawerContent(props: any) {
           ) : (
             <Ionicons name="sparkles" size={24} color={colors.accent} />
           )}
-        </View>
+        </Animated.View>
 
         <View style={{ flex: 1 }}>
           <DrawerItemList {...props} />
@@ -151,9 +159,19 @@ export default function DrawerLayout() {
           }}
         />
         <Drawer.Screen
+          name="tracker"
+          options={{
+            drawerLabel: "Project Tracker",
+            headerTitle: "Execution OS",
+            drawerIcon: ({ color, size }) => (
+              <Ionicons name="map" size={size} color={color} />
+            ),
+          }}
+        />
+        <Drawer.Screen
           name="study"
           options={{
-            drawerLabel: "Paths",
+            drawerLabel: "Study Paths",
             headerTitle: "Current Paths",
             drawerIcon: ({ color, size }) => (
               <Ionicons name="rocket" size={size} color={color} />

@@ -7,6 +7,7 @@ import { useEntitlements } from "../features/billing/hooks/useEntitlements";
 import { StudyFeatureProvider } from "../providers/StudyFeatureProvider";
 import { OfflineGuard } from "../components/guards/OfflineGuard";
 import { siteNav } from "../config/site";
+import { AdminDebugOverlay } from "../components/admin/AdminDebugOverlay";
 
 export function AppLayout() {
   const { entitlements } = useEntitlements();
@@ -14,6 +15,7 @@ export function AppLayout() {
   return (
     <StudyFeatureProvider>
       <OfflineGuard>
+        <AdminDebugOverlay />
         <div className="flex flex-col h-screen overflow-hidden bg-[var(--bg-primary)]">
           <TitleBar />
           

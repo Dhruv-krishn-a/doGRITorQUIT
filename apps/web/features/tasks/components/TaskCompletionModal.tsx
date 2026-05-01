@@ -35,7 +35,7 @@ export default function TaskCompletionModal({ isOpen, onClose, onConfirm, taskTi
           </div>
           <div className="transform-gpu flex-1 min-w-0">
             <h3 className="transform-gpu text-lg font-bold text-rose-50 truncate uppercase tracking-tight">{taskTitle}</h3>
-            <p className="transform-gpu text-[10px] font-bold text-rose-400/60 uppercase tracking-widest mt-0.5">Vector Optimization Complete</p>
+            <p className="transform-gpu text-[10px] font-bold text-rose-400/60 uppercase tracking-widest mt-0.5">Plan Optimization Complete</p>
           </div>
         </div>
 

@@ -39,7 +39,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
              <div className="transform-gpu absolute top-0 left-1/2 w-[60vw] h-[60vw] max-w-200 max-h-200 bg-[var(--accent-color)]/5 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 pointer-events-none -z-10" />
 
              {/* Content Wrapper */}
-             <div className="transform-gpu relative z-10 w-full mx-auto flex-1 flex flex-col min-h-[calc(100vh-80px)] @container">
+             <div className="transform-gpu relative z-10 w-full mx-auto flex-1 flex flex-col min-h-[calc(100vh-80px)] px-4 sm:px-0 @container">
                
                <div className="transform-gpu flex-1">
                  {children}

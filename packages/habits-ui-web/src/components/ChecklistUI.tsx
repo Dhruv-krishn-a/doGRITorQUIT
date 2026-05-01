@@ -267,7 +267,7 @@ export const ChecklistUI: React.FC<ChecklistUIProps> = ({
               className="transform-gpu bg-[var(--bg-card)] rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] border border-[var(--border-color)]"
             >
               <div className="transform-gpu p-8 border-b border-[var(--border-color)] flex justify-between items-center bg-[var(--bg-secondary)]/50">
-                <h3 className="transform-gpu text-2xl font-black text-[var(--text-primary)] italic uppercase tracking-tight">Initialize Vector</h3>
+                <h3 className="transform-gpu text-2xl font-black text-[var(--text-primary)] italic uppercase tracking-tight">Create Path</h3>
                 <button onClick={() => setIsModalOpen(false)} className="transform-gpu text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors bg-[var(--bg-primary)] p-3 rounded-2xl shadow-sm border border-[var(--border-color)]"><X size={20}/></button>
               </div>
               
@@ -386,7 +386,7 @@ export const ChecklistUI: React.FC<ChecklistUIProps> = ({
                     onChange={(e) => setSelectedHabitId(e.target.value)}
                     className="bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[10px] font-black uppercase tracking-wider text-[var(--text-primary)] rounded-xl px-3 py-2 outline-none cursor-pointer hover:border-[var(--text-secondary)] transition-colors italic"
                   >
-                    <option value="all">All Vectors</option>
+                    <option value="all">All Paths</option>
                     {habits.map(h => (
                       <option key={h.id} value={h.id}>{h.title}</option>
                     ))}
@@ -470,7 +470,7 @@ export const ChecklistUI: React.FC<ChecklistUIProps> = ({
                 <div className="transform-gpu absolute -right-4 -bottom-4 opacity-[0.03] text-indigo-500 group-hover:scale-110 transition-transform duration-700">
                   <Zap size={100} />
                 </div>
-                <div className="transform-gpu text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em] mb-2 italic">Prime Vector</div>
+                <div className="transform-gpu text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em] mb-2 italic">Primary Path</div>
                 <div className="transform-gpu text-xs font-black text-[var(--text-primary)] truncate uppercase italic leading-tight">{stats.topHabit}</div>
              </div>
           </div>
@@ -708,7 +708,7 @@ export const ChecklistUI: React.FC<ChecklistUIProps> = ({
           {[
             { title: "Neural Nudges", desc: "Adaptive notifications triggered by cognitive velocity patterns.", icon: Zap, color: 'text-amber-500' },
             { title: "Synapse Reports", desc: "Automated multidimensional performance synthesis delivered weekly.", icon: TrendingUp, color: 'text-[var(--accent-color)]' },
-            { title: "Vector Stacking", desc: "Sequential habit chaining for maximum mission efficiency.", icon: CheckCircle2, color: 'text-emerald-500' },
+            { title: "Path Stacking", desc: "Sequential habit chaining for maximum mission efficiency.", icon: CheckCircle2, color: 'text-emerald-500' },
             { title: "Hive Motivation", desc: "Asynchronous competitive protocols with fellow architects.", icon: Sparkles, color: 'text-fuchsia-500' }
           ].map((feat, i) => (
             <div key={i} className="transform-gpu p-8 bg-[var(--bg-card)]/40 backdrop-blur-md border border-[var(--border-color)] rounded-[2.5rem] shadow-sm hover:shadow-2xl hover:border-[var(--accent-color)]/20 transition-all group relative overflow-hidden">

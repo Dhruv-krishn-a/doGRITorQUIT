@@ -2,10 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma, NoteCategory } from "@gritorquit/db";
 import { getServerUser } from "@/lib/auth-server";
 import { sanitizeText, sanitizeJson } from "@/lib/sanitize";
+import { billing } from "@gritorquit/domain";
 
 export async function GET(req: NextRequest) {
   const user = await getServerUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    await billing.checkFeatureAccess(user.id, billing.PlanFeature.ACCESS_NOTES);
+  } catch (error) {
+    return NextResponse.json({ error: "Feature locked by plan limits" }, { status: 403 });
+  }
 
   const { searchParams } = new URL(req.url);
   const categoryParam = searchParams.get("category");
@@ -57,6 +64,12 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const user = await getServerUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    await billing.checkFeatureAccess(user.id, billing.PlanFeature.ACCESS_NOTES);
+  } catch (error) {
+    return NextResponse.json({ error: "Feature locked by plan limits" }, { status: 403 });
+  }
 
   try {
     const { title, content, category, metadata } = await req.json();

@@ -17,6 +17,7 @@
     "RAZORPAY_WEBHOOK_SECRET",
 
     "GEMINI_API_KEY",
+    "GRITio_ProjectSection_API_KEY",
     "AUTH_SECRET",
     "NEXTAUTH_SECRET",
     "NEXTAUTH_URL",

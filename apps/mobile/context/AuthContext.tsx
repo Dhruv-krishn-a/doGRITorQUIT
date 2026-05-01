@@ -163,46 +163,70 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signInWithEmail = async (email: string, password: string) => {
-    const res = await fetch(`${getApiBaseUrl()}/api/native-auth/credentials/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+    const url = `${getApiBaseUrl()}/api/native-auth/credentials/login`;
+    console.log(`[Auth] Attempting sign in at: ${url}`);
+    
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const payload = (await res.json()) as AuthResponse | { error?: string; message?: string };
-    if (!res.ok) {
-      const errPayload = payload as { error?: string; message?: string };
-      throw new Error(errPayload.message ?? errPayload.error ?? "Sign in failed");
+      const payload = (await res.json()) as AuthResponse | { error?: string; message?: string };
+      if (!res.ok) {
+        const errPayload = payload as { error?: string; message?: string };
+        throw new Error(errPayload.message ?? errPayload.error ?? "Sign in failed");
+      }
+
+      const authPayload = payload as AuthResponse;
+      await applyToken(authPayload.access_token, authPayload.expires_in);
+    } catch (error) {
+      console.error(`[Auth] Sign in request failed for ${url}:`, error);
+      throw error;
     }
-
-    const authPayload = payload as AuthResponse;
-    await applyToken(authPayload.access_token, authPayload.expires_in);
   };
 
   const requestMagicLink = async (email: string) => {
     const callbackUrl = Linking.createURL("auth/callback");
-    const res = await fetch(`${getApiBaseUrl()}/api/native-auth/magic-link/request`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, redirectUri: callbackUrl }),
-    });
+    const url = `${getApiBaseUrl()}/api/native-auth/magic-link/request`;
+    console.log(`[Auth] Requesting magic link at: ${url}`);
+    
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, redirectUri: callbackUrl }),
+      });
 
-    const payload = (await res.json()) as { error?: string; message?: string };
-    if (!res.ok) {
-      throw new Error(payload.error ?? payload.message ?? "Magic link sign-in is unavailable");
+      const payload = (await res.json()) as { error?: string; message?: string };
+      if (!res.ok) {
+        throw new Error(payload.error ?? payload.message ?? "Magic link sign-in is unavailable");
+      }
+    } catch (error) {
+      console.error(`[Auth] Magic link request failed for ${url}:`, error);
+      throw error;
     }
   };
 
   const signUpWithEmail = async (email: string, password: string, name?: string) => {
-    const res = await fetch(`${getApiBaseUrl()}/api/native-auth/credentials/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, name }),
-    });
+    const url = `${getApiBaseUrl()}/api/native-auth/credentials/register`;
+    console.log(`[Auth] Attempting sign up at: ${url}`);
+    
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, name }),
+      });
 
-    const payload = (await res.json()) as { error?: string; message?: string };
-    if (!res.ok) {
-      throw new Error(payload.error ?? "Sign up failed");
+      const payload = (await res.json()) as { error?: string; message?: string };
+      if (!res.ok) {
+        throw new Error(payload.error ?? "Sign up failed");
+      }
+    } catch (error) {
+      console.error(`[Auth] Sign up request failed for ${url}:`, error);
+      throw error;
     }
   };
 

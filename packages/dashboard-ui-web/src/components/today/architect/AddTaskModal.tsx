@@ -16,7 +16,7 @@ export function AddTaskModal({ onClose, onSubmit }: { onClose: () => void, onSub
   };
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 pointer-events-none">
+    <div className="fixed inset-0 z-[1000000] flex items-center justify-center p-4 pointer-events-none">
       <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onClick={onClose} className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto" />
       <motion.div initial={{scale:0.95, opacity:0, y:20}} animate={{scale:1, opacity:1, y:0}} exit={{scale:0.95, opacity:0, y:20}} className="w-full max-w-md bg-[var(--bg-card)] border border-[var(--border-color)] p-10 rounded-[3rem] shadow-2xl relative pointer-events-auto z-10">
         <button onClick={onClose} className="absolute top-8 right-8 opacity-50 hover:opacity-100"><X size={24} /></button>

@@ -136,7 +136,7 @@ export function AddBlockModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 md:p-10 pointer-events-none">
+    <div className="fixed inset-0 z-[1000000] flex items-center justify-center p-4 md:p-10 pointer-events-none">
       <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onClick={onClose} className="absolute inset-0 bg-black/40 backdrop-blur-md pointer-events-auto" />
       <motion.div initial={{scale:0.9, opacity:0}} animate={{scale:1, opacity:1}} exit={{scale:0.9, opacity:0}} className="w-full max-w-6xl bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[3rem] shadow-2xl relative pointer-events-auto flex flex-col md:flex-row overflow-hidden max-h-[90vh]">
         

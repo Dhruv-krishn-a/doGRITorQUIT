@@ -83,7 +83,7 @@ export function VitalityBar({ stats, energyLevel, onEnergyChange }: VitalityBarP
             </div>
             <div className="transform-gpu flex flex-col">
               <span className="transform-gpu text-xl md:text-2xl lg:text-3xl font-bold text-[var(--text-primary)] leading-tight">{stats.focusSessionsPlanned}</span>
-              <span className="transform-gpu text-[8px] md:text-[10px] font-semibold text-[var(--text-secondary)] mt-0.5 uppercase tracking-widest">Vectors</span>
+              <span className="transform-gpu text-[8px] md:text-[10px] font-semibold text-[var(--text-secondary)] mt-0.5 uppercase tracking-widest">Tasks</span>
             </div>
           </div>
 

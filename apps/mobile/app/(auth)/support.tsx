@@ -7,6 +7,8 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { useAuth } from '../../context/AuthContext';
 
+import { config } from '../../config';
+
 export default function Support() {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
@@ -23,11 +25,12 @@ export default function Support() {
     }
 
     setLoading(true);
-    
+
     try {
       // 1. Send to custom API directly
-      const apiBaseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+      const apiBaseUrl = config.apiUrl;
       const response = await fetch(`${apiBaseUrl}/api/support`, {
+
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

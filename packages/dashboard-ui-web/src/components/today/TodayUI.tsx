@@ -124,12 +124,15 @@ export default function TodayUI() {
 
   if (!mounted || (loading && !data)) return (<div className="flex items-center justify-center min-h-[60vh]"><div className="w-10 h-10 border-4 border-[var(--accent-color)] border-t-transparent rounded-full animate-spin" /></div>);
 
+  const portalTarget = typeof document !== 'undefined' ? (document.getElementById('root') || document.body) : null;
+
   return (
     <div className="w-full max-w-[1400px] mx-auto pb-16 text-[var(--text-primary)] px-6 sm:px-10 lg:px-12 relative pt-12">
-      {mounted && typeof document !== 'undefined' && createPortal(
-        <AnimatePresence>
+      {mounted && portalTarget && createPortal(
+        <AnimatePresence mode="wait">
           {showAddBlock && (
             <AddBlockModal 
+              key="add-block-modal"
               onClose={() => { setShowAddBlock(false); setSelectedStartTime(undefined); }} 
               onSaveAll={handleSaveBlocks}
               initialStartTime={selectedStartTime}
@@ -139,9 +142,16 @@ export default function TodayUI() {
               onToggleGoal={(id) => setSelectedGoalIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])}
             />
           )}
-          {showAddTask && <AddTaskModal onClose={() => setShowAddTask(false)} onSubmit={handleCreateTask} />}
+          {showAddTask && (
+            <AddTaskModal 
+              key="add-task-modal"
+              onClose={() => setShowAddTask(false)} 
+              onSubmit={handleCreateTask} 
+            />
+          )}
           {focusItem && (
             <FocusOverlay 
+              key="focus-overlay"
               item={focusItem} 
               onClose={() => { setFocusItem(null); refresh(); }} 
               onComplete={() => { handleComplete(focusItem.id, focusItem.type); setFocusItem(null); }}
@@ -150,15 +160,45 @@ export default function TodayUI() {
         </AnimatePresence>, 
         document.body
       )}
-      <header className="mb-8 flex items-end justify-between text-left">
-        <div><h1 className="text-4xl font-black tracking-tightest mb-1 italic uppercase">Today</h1><p className="text-[var(--text-secondary)] font-black text-base opacity-60 uppercase italic">Define your non-negotiable path.</p></div>
+      <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6 text-left">
+        <div>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tightest mb-2 italic uppercase">Today</h1>
+          <p className="text-[var(--text-secondary)] font-bold text-[10px] uppercase tracking-[0.2em] opacity-60">Your clear path for a balanced day.</p>
+        </div>
+        
+        {/* Day Balance / Burnout Meter */}
+        <div className="flex-1 max-w-md w-full">
+           <div className="bg-[var(--bg-card)]/40 border border-[var(--border-color)] rounded-3xl p-5 shadow-sm">
+              <div className="flex justify-between items-center mb-3">
+                 <span className="text-[9px] font-black uppercase tracking-widest text-[var(--text-secondary)]">Your Day Balance</span>
+                 <span className={`text-[9px] font-black uppercase tracking-widest ${scheduleData.allocated.length > 5 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                    {scheduleData.allocated.length > 5 ? 'Heavy Load' : 'Perfectly Balanced'}
+                 </span>
+              </div>
+              <div className="h-2 w-full bg-[var(--bg-secondary)] rounded-full overflow-hidden border border-[var(--border-color)]">
+                 <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(100, (scheduleData.allocated.length / 8) * 100)}%` }}
+                    className={`h-full ${scheduleData.allocated.length > 5 ? 'bg-rose-500' : 'bg-[var(--accent-color)]'}`} 
+                 />
+              </div>
+              <p className="mt-3 text-[10px] font-medium italic opacity-60">
+                 {scheduleData.allocated.length > 5 
+                    ? "Your day is quite full. Remember to take short breaks." 
+                    : "You have a great rhythm today. Keep going!"}
+              </p>
+           </div>
+        </div>
+
         <div className="flex flex-col items-end gap-3">
           {scheduleData.collisions.length > 0 && (
             <div className="flex items-center gap-2 px-3 py-1.5 bg-rose-500/10 text-rose-500 rounded-xl border border-rose-500/20 text-[9px] font-black uppercase tracking-widest italic">
-              <AlertTriangle size={10}/> Collision: {scheduleData.collisions.join(', ')}
+              <AlertTriangle size={10}/> Heads up: Overlap in {scheduleData.collisions.join(', ')}
             </div>
           )}
-          <button onClick={() => setShowAddBlock(true)} className="px-6 py-3 bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--accent-color)] text-[var(--text-primary)] rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-sm flex items-center gap-2 italic"><Plus size={16}/> Architect Day</button>
+          <button onClick={() => setShowAddBlock(true)} className="px-8 py-4 bg-[var(--accent-color)] text-[var(--bg-primary)] rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-[var(--accent-color)]/20 flex items-center gap-2 italic hover:-translate-y-0.5 active:scale-95">
+             <Plus size={16}/> Plan My Day
+          </button>
         </div>
       </header>
       <section className="mb-12">
@@ -186,25 +226,32 @@ export default function TodayUI() {
           <button onClick={()=>setShowAddBlock(true)} className="flex flex-col items-center justify-center gap-3 p-5 bg-[var(--bg-secondary)]/50 border-2 border-[var(--border-color)] border-dashed rounded-2xl text-[var(--text-secondary)] hover:text-[var(--accent-color)] hover:border-[var(--accent-color)]/50 transition-all min-h-[140px] italic"><Plus size={32} strokeWidth={3}/><span className="text-[9px] font-black uppercase tracking-widest">Add Pillar</span></button>
         </div>
       </section>
-      <section className="mb-12 p-8 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[2.5rem] flex flex-col lg:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden text-left">
+      <section className="mb-12 p-8 bg-[var(--bg-card)]/40 backdrop-blur-xl border border-[var(--border-color)] rounded-[3rem] flex flex-col lg:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden text-left">
         <div className="transform-gpu absolute top-0 left-0 w-full h-full bg-gradient-to-br from-[var(--accent-color)]/5 via-transparent to-transparent pointer-events-none" />
         <div className="relative z-10">
           <h2 className="text-6xl font-black text-[var(--accent-color)] tracking-tightest mb-2 italic uppercase">{formatDuration(scheduleData.totalFree)}</h2>
-          <p className="text-[var(--text-secondary)] font-black text-base opacity-60 uppercase italic tracking-tighter">Architected capacity for today.</p>
+          <p className="text-[var(--text-secondary)] font-bold text-[10px] uppercase tracking-[0.3em] opacity-60 italic">Free time available today</p>
         </div>
         <div className="flex flex-wrap justify-center gap-4 relative z-10">
-          {[ {t:'7-10 AM',l:'Peak'}, {t:'6-7 PM',l:'Pulse'}, {t:'8-12 PM',l:'Orbit'} ].map((z,i)=>(
-            <div key={i} className="flex flex-col items-center p-5 px-10 rounded-[1.5rem] border border-[var(--border-color)] bg-[var(--bg-secondary)]/80 backdrop-blur-sm hover:scale-105 transition-transform shadow-sm">
+          {[ {t:'7-10 AM',l:'Peak Focus'}, {t:'6-7 PM',l:'Evening Flow'}, {t:'8-12 PM',l:'Wind Down'} ].map((z,i)=>(
+            <div key={i} className="flex flex-col items-center p-6 px-10 rounded-3xl border border-[var(--border-color)] bg-[var(--bg-secondary)]/50 hover:border-[var(--accent-color)]/30 transition-all shadow-sm">
               <span className="text-base font-black text-[var(--text-primary)] italic uppercase">{z.t}</span>
-              <span className="text-[9px] uppercase tracking-[0.3em] font-black mt-1 text-[var(--text-secondary)] opacity-40 italic">{z.l}</span>
+              <span className="text-[8px] uppercase tracking-[0.3em] font-black mt-2 text-[var(--text-secondary)] opacity-40 italic">{z.l}</span>
             </div>
           ))}
         </div>
       </section>
-      <div className="flex justify-center gap-4 mb-16"><button onClick={()=>setShowAddTask(true)} className="px-8 py-4 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-full font-black text-xs uppercase tracking-widest shadow-md hover:border-[var(--accent-color)] transition-all flex items-center gap-3"><Plus size={20}/> New Objective</button><button onClick={()=>refresh()} className="px-12 py-4 bg-[var(--accent-color)] text-[var(--bg-primary)] rounded-full font-black text-xs uppercase tracking-[0.3em] shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-3"><Zap size={20} fill="currentColor"/> Generate Plan</button></div>
+      <div className="flex justify-center gap-6 mb-16">
+         <button onClick={()=>setShowAddTask(true)} className="px-8 py-4 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-md hover:border-[var(--accent-color)] transition-all flex items-center gap-3 italic">
+            <Plus size={18}/> New Action
+         </button>
+         <button onClick={()=>refresh()} className="px-12 py-4 bg-[var(--accent-color)] text-[var(--bg-primary)] rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-[var(--accent-color)]/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3 italic">
+            <Zap size={18} fill="currentColor"/> Generate My Path
+         </button>
+      </div>
       <section>
-        <div className="flex items-center justify-between mb-8 border-b border-[var(--border-color)] pb-4">
-          <h2 className="text-2xl font-black tracking-tight">The Allocated Path</h2>
+        <div className="flex items-center justify-between mb-8 border-b border-[var(--border-color)] pb-6">
+          <h2 className="text-3xl font-black tracking-tightest uppercase italic">Your Path</h2>
           {selectedGoalIds.length > 0 && (
             <button 
               onClick={() => setSelectedGoalIds([])}
@@ -222,30 +269,30 @@ export default function TodayUI() {
             return (
               <motion.div key={task.id} initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} className="flex flex-col sm:flex-row gap-6 sm:gap-12 group">
                 <div className="sm:w-20 pt-6 sm:text-right shrink-0">
-                  <div className="text-xl font-black tracking-tighter">{s.time}</div>
-                  <div className="text-[9px] uppercase tracking-widest text-[var(--accent-color)] font-black mt-0.5">{s.ampm}</div>
+                  <div className="text-xl font-black tracking-tighter italic">{s.time}</div>
+                  <div className="text-[9px] uppercase tracking-widest text-[var(--accent-color)] font-black mt-1.5">{s.ampm}</div>
                 </div>
-                <div className="flex-1 p-6 bg-[var(--bg-card)] border border-[var(--border-color)] group-hover:border-[var(--accent-color)]/40 rounded-3xl shadow-sm hover:shadow-xl transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      {isVideo && <Youtube size={14} className="text-rose-500" />}
-                      <h3 className="text-xl font-black leading-tight">{task.title}</h3>
+                <div className="flex-1 p-8 bg-[var(--bg-card)]/40 backdrop-blur-sm border border-[var(--border-color)] group-hover:border-[var(--accent-color)]/40 rounded-[2rem] shadow-sm hover:shadow-2xl transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      {isVideo && <Youtube size={16} className="text-rose-500" />}
+                      <h3 className="text-xl font-bold leading-tight tracking-tight uppercase italic">{task.title}</h3>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-[var(--bg-secondary)]">{task.intensity} Intensity</span>
-                      <span className="text-xs text-[var(--text-secondary)] font-black uppercase tracking-widest opacity-40 flex items-center gap-2"><Clock size={12}/> {task.actualDuration}m</span>
+                      <span className="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-[var(--bg-secondary)] border border-[var(--border-color)]">{task.intensity} Flow</span>
+                      <span className="text-[10px] text-[var(--text-secondary)] font-black uppercase tracking-widest opacity-40 flex items-center gap-2"><Clock size={12}/> {task.actualDuration}m</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4">
                     <button 
                       onClick={() => setFocusItem(task)}
-                      className="flex items-center gap-2 px-5 py-3 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] hover:border-[var(--accent-color)] rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all"
+                      className="flex items-center gap-2 px-6 py-3.5 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] hover:border-[var(--accent-color)] rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-sm active:scale-95"
                     >
-                      <Play size={14} fill="currentColor"/> Start
+                      <Play size={14} fill="currentColor"/> Start Focus
                     </button>
                     <button 
                       onClick={() => handleComplete(task.id, task.type)}
-                      className="p-4 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:text-white rounded-2xl transition-all shadow-sm"
+                      className="p-5 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:text-white border border-emerald-500/20 rounded-2xl transition-all shadow-sm active:scale-90"
                     >
                       <CheckCircle2 size={24}/>
                     </button>
@@ -254,7 +301,7 @@ export default function TodayUI() {
               </motion.div>
             );
           })}</AnimatePresence>
-          {scheduleData.allocated.length===0 && <div className="p-24 text-center border-4 border-dashed border-[var(--border-color)] rounded-3xl text-[var(--text-secondary)] opacity-20"><ListTodo size={64} className="mx-auto mb-6"/><p className="text-base font-black uppercase tracking-widest">Awaiting Plan Deployment</p></div>}
+          {scheduleData.allocated.length===0 && <div className="p-24 text-center border-4 border-dashed border-[var(--border-color)] rounded-[3rem] text-[var(--text-secondary)] opacity-20"><ListTodo size={64} className="mx-auto mb-6"/><p className="text-base font-black uppercase tracking-widest italic">Awaiting your journey...</p></div>}
         </div>
       </section>
     </div>

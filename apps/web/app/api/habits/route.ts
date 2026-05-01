@@ -1,7 +1,7 @@
 // apps/web/app/api/habits/route.ts
 import { NextResponse } from "next/server";
 import { getServerUser } from "@/lib/auth-server";
-import { habits } from "@gritorquit/domain";
+import { habits, billing } from "@gritorquit/domain";
 
 export async function GET(req: Request) {
   try {
@@ -66,6 +66,12 @@ export async function POST(req: Request) {
     
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    try {
+      await billing.checkFeatureAccess(user.id, billing.PlanFeature.ACCESS_HABITS);
+    } catch (e) {
+      return NextResponse.json({ error: "Feature locked by plan limits" }, { status: 403 });
     }
 
     const body = await req.json();

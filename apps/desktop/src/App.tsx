@@ -21,19 +21,26 @@ const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
 const SubscriptionsPage = lazy(() => import("./pages/SubscriptionsPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const SupportPage = lazy(() => import("./pages/SupportPage"));
+const FeedbackPage = lazy(() => import("./pages/FeedbackPage"));
+const TrackerHubView = lazy(() => import("./features/tracker/views/TrackerHubView").then(m => ({ default: m.TrackerHubView })));
+const TrackerProjectView = lazy(() => import("./features/tracker/views/TrackerProjectView").then(m => ({ default: m.TrackerProjectView })));
+
+const CourseTrackerPage = lazy(() => import("./pages/study/CourseTrackerPage"));
+const MediaTrackerPage = lazy(() => import("./pages/study/MediaTrackerPage"));
+const RoadmapTrackerPage = lazy(() => import("./pages/plans/RoadmapTrackerPage"));
+
 const YoutubeDetailView = lazy(() => import("./features/study/views/YoutubeDetailView").then((module) => ({ default: module.YoutubeDetailView })));
 const CourseDetailView = lazy(() => import("./features/study/views/CourseDetailView").then((module) => ({ default: module.CourseDetailView })));
-const ProjectDetailView = lazy(() => import("./features/study/views/ProjectDetailView").then((module) => ({ default: module.ProjectDetailView })));
 
 function RouteLoader() {
   return (
     <div className="flex flex-col h-screen overflow-hidden">
       <TitleBar />
-      <div className="flex flex-1 items-center justify-center bg-slate-50">
+      <div className="flex flex-1 items-center justify-center bg-[var(--bg-primary)]">
         <div className="flex flex-col items-center gap-4 animate-pulse">
-          <div className="h-16 w-16 rounded-2xl bg-indigo-600 shadow-xl rotate-12" />
-          <span className="text-xs font-bold uppercase tracking-widest text-slate-400">
-            Initializing...
+          <div className="h-16 w-16 rounded-2xl bg-[var(--accent-color)] shadow-xl rotate-12" />
+          <span className="text-xs font-black uppercase tracking-widest text-[var(--text-secondary)] italic">
+            Initializing Engine...
           </span>
         </div>
       </div>
@@ -63,7 +70,6 @@ function App() {
             {/* Full-screen Immersive Study Environment (Outside standard layout) */}
             <Route path="/study/youtube/:trackId/unit/:unitId" element={user ? <><TitleBar /> <StudySessionPage /></> : <Navigate to="/login" replace />} />
             <Route path="/study/course/:trackId/unit/:unitId" element={user ? <><TitleBar /> <StudySessionPage /></> : <Navigate to="/login" replace />} />
-            <Route path="/study/project/:trackId/unit/:unitId" element={user ? <><TitleBar /> <StudySessionPage /></> : <Navigate to="/login" replace />} />
 
             {/* Modular Layout for Main Application */}
             <Route element={user ? <AppLayout /> : <Navigate to="/login" replace />}>
@@ -72,10 +78,20 @@ function App() {
               <Route path="/notes" element={<NotesPage />} />
               <Route path="/daily-checklist" element={<ChecklistPage />} />
               <Route path="/study" element={<TracksPage />} />
+              
+              {/* Specialized Trackers */}
+              <Route path="/project-tracker" element={<TrackerHubView />} />
+              <Route path="/project-tracker/:projectId" element={<TrackerProjectView />} />
+              <Route path="/course-tracker" element={<CourseTrackerPage />} />
+              <Route path="/media-tracker" element={<MediaTrackerPage />} />
+              <Route path="/roadmap-tracker" element={<RoadmapTrackerPage />} />
+
+              {/* Redirect legacy tracker to new project-tracker */}
+              <Route path="/tracker" element={<Navigate to="/project-tracker" replace />} />
+              <Route path="/tracker/:projectId" element={<Navigate to="/project-tracker/:projectId" replace />} />
 
               <Route path="/study/youtube/:trackId" element={<YoutubeDetailView />} />
               <Route path="/study/course/:trackId" element={<CourseDetailView />} />
-              <Route path="/study/project/:trackId" element={<ProjectDetailView />} />
 
               {/* Redirect legacy generic paths to main study hub */}
               <Route path="/study/:trackId" element={<Navigate to="/study" replace />} />
@@ -84,6 +100,7 @@ function App() {
               <Route path="/analytics" element={<Navigate to="/" replace />} />
               <Route path="/subscriptions" element={<SubscriptionsPage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/feedback" element={<FeedbackPage />} />
             </Route>
           </Routes>
         </Suspense>

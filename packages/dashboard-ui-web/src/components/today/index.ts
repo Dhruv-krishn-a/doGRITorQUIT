@@ -9,3 +9,4 @@ export * from './TaskCard';
 export * from './CompactUnitCard';
 export * from './architect';
 export { default as TodayUI } from './TodayUI';
+export { default as MiniAgenda } from './MiniAgenda';

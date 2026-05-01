@@ -1,288 +1,148 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { X, Target, Calendar, Loader2, Zap, Clock, Info, AlertCircle, Youtube } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useStudy } from '@gritorquit/study-core';
+import { X, Calendar, Clock, Target, Loader2, Sparkles, TrendingUp } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useStudy, Track } from '@gritorquit/study-core';
 import { toast } from 'sonner';
+import Modal from './Modal';
 
 export function CommitmentModal() {
-  const { closeModal, activeTrack, commitTrack } = useStudy();
+  const { closeModal, activeTrack, commitTrack, fetchDashboard } = useStudy();
   const [loading, setLoading] = useState(false);
-  
-  // Modes: 'DATE' or 'TIME'
-  const [mode, setMode] = useState<'DATE' | 'TIME'>(
-    activeTrack?.track?.targetDate ? 'DATE' : 'TIME'
-  );
-
-  const [targetDate, setTargetDate] = useState(
-    activeTrack?.track?.targetDate 
-      ? new Date(activeTrack.track.targetDate).toISOString().split('T')[0] 
-      : ''
-  );
-  
-  const [dailyStudyMinutes, setDailyStudyMinutes] = useState(
-    activeTrack?.track?.dailyAllocationMinutes || 60
-  );
+  const [mode, setMode] = useState<'DATE' | 'TIME'>('DATE');
+  const [targetDate, setTargetDate] = useState('');
+  const [dailyMinutes, setDailyMinutes] = useState(60);
 
   if (!activeTrack) return null;
 
-  // Step 1: Calculate Total Playlist Duration
-  const totalMinutes = useMemo(() => {
-    return activeTrack.track.units?.reduce((acc, unit) => acc + (unit.durationMinutes || 0), 0) || 0;
-  }, [activeTrack]);
-
-  const formatDuration = (mins: number) => {
-    const h = Math.floor(mins / 60);
-    const m = Math.round(mins % 60);
-    if (h === 0) return `${m}m`;
-    return `${h}h ${m}m`;
-  };
-
-  // Step 2: Reactive Calculations
-  const analysis = useMemo(() => {
-    if (totalMinutes === 0) return null;
-
-    if (mode === 'DATE') {
-      if (!targetDate) return null;
-      
-      const target = new Date(targetDate);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      const diffTime = target.getTime() - today.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-      if (diffDays <= 0) return { error: "Target date must be in the future" };
-
-      const watchTimePerDay = totalMinutes / diffDays;
-      const studyTimePerDay = watchTimePerDay * 2;
-
-      return {
-        watchTimePerDay,
-        studyTimePerDay,
-        days: diffDays,
-        formattedWatch: formatDuration(watchTimePerDay),
-        formattedStudy: formatDuration(studyTimePerDay)
-      };
-    } else {
-      // Mode: TIME
-      if (dailyStudyMinutes <= 0) return { error: "Please enter study time" };
-
-      const watchTimePerDay = dailyStudyMinutes / 2;
-      const requiredDays = Math.ceil(totalMinutes / Math.max(1, watchTimePerDay));
-      
-      const estDate = new Date();
-      estDate.setDate(estDate.getDate() + requiredDays);
-
-      return {
-        watchTimePerDay,
-        studyTimePerDay: dailyStudyMinutes,
-        days: requiredDays,
-        estDate: estDate.toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' }),
-        formattedWatch: formatDuration(watchTimePerDay),
-        formattedStudy: formatDuration(dailyStudyMinutes)
-      };
-    }
-  }, [mode, targetDate, dailyStudyMinutes, totalMinutes]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (analysis?.error) {
-      toast.error(analysis.error);
-      return;
-    }
-
+  const handleCommit = async () => {
     setLoading(true);
     try {
-      const finalMinutes = mode === 'TIME' ? dailyStudyMinutes : (analysis?.studyTimePerDay || 30);
-      const finalDate = mode === 'DATE' ? targetDate : undefined;
-      
-      await commitTrack(activeTrack.track.id, Math.round(finalMinutes), finalDate);
-      toast.success('Study plan updated');
+      await commitTrack(
+        activeTrack.track.id, 
+        mode === 'TIME' ? dailyMinutes : 0,
+        mode === 'DATE' ? targetDate : undefined
+      );
+      toast.success('Commitment locked. Strategy updated.');
+      fetchDashboard();
       closeModal();
     } catch (err: any) {
-      toast.error('Failed to update plan');
+      toast.error('Failed to update strategy');
     } finally {
       setLoading(false);
     }
   };
 
+  const analysis = useMemo(() => {
+    const totalMins = activeTrack.track.totalDurationMinutes;
+    if (mode === 'DATE' && targetDate) {
+        const days = Math.max(1, Math.ceil((new Date(targetDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
+        const minsPerDay = Math.ceil(totalMins / days);
+        return { 
+            formattedWatch: `${Math.floor(minsPerDay / 60)}h ${minsPerDay % 60}m`,
+            formattedStudy: `${Math.floor((minsPerDay * 1.5) / 60)}h ${Math.round(minsPerDay * 1.5) % 60}m`,
+            estDate: new Date(targetDate).toLocaleDateString()
+        };
+    }
+    const days = Math.ceil(totalMins / dailyMinutes);
+    const estDate = new Date();
+    estDate.setDate(estDate.getDate() + days);
+    return {
+        formattedWatch: `${Math.floor(dailyMinutes / 60)}h ${dailyMinutes % 60}m`,
+        formattedStudy: `${Math.floor((dailyMinutes * 1.5) / 60)}h ${Math.round(dailyMinutes * 1.5) % 60}m`,
+        estDate: estDate.toLocaleDateString()
+    };
+  }, [activeTrack, mode, targetDate, dailyMinutes]);
+
   return (
-    <div className="transform-gpu fixed inset-0 z-[1200] flex items-center justify-center p-4">
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={closeModal}
-        className="transform-gpu absolute inset-0 bg-slate-900/30 backdrop-blur-sm"
-      />
-      
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 10 }}
-        className="transform-gpu relative w-full max-w-xl bg-white/80 backdrop-blur-2xl rounded-[3rem] shadow-[0_20px_60px_rgba(0,0,0,0.15)] overflow-hidden border border-white transform-gpu antialiased flex flex-col h-full max-h-[90vh]"
-      >
-        <div className="transform-gpu p-8 md:p-10 flex flex-col h-full max-h-[90vh]">
-          <header className="transform-gpu flex justify-between items-start mb-8">
-            <div>
-              <h2 className="transform-gpu text-2xl font-bold text-slate-900 tracking-tight uppercase">Daily Goal</h2>
-              <p className="transform-gpu text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">Plan your course completion</p>
-            </div>
-            <button onClick={closeModal} className="transform-gpu p-2 text-slate-400 hover:text-rose-600 transition-all">
-              <X size={24} />
-            </button>
-          </header>
-
-          <div className="transform-gpu bg-slate-50 p-6 rounded-3xl border border-slate-100 mb-8 flex justify-between items-center">
-            <div className="transform-gpu flex items-center gap-3">
-              <div className="transform-gpu p-2 bg-white rounded-xl shadow-sm text-rose-500">
-                <Clock size={18} />
+    <Modal
+      isOpen={true}
+      onClose={closeModal}
+      title="Strategic Commitment"
+      panelClassName="!max-w-xl"
+    >
+      <div className="transform-gpu space-y-8">
+        <div className="transform-gpu p-6 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[2.5rem] shadow-inner">
+           <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-[var(--accent-color)]/10 text-[var(--accent-color)] rounded-lg">
+                <Sparkles size={16} />
               </div>
-              <div>
-                <p className="transform-gpu text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Course Duration</p>
-                <p className="transform-gpu text-lg font-bold text-slate-900">{formatDuration(totalMinutes)}</p>
-              </div>
-            </div>
-            <div className="transform-gpu text-right">
-              <p className="transform-gpu text-[10px] font-bold text-slate-400 uppercase tracking-widest">Lessons</p>
-              <p className="transform-gpu text-lg font-bold text-slate-900">{activeTrack.track.units?.length || 0}</p>
-            </div>
-          </div>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-primary)] italic">Active Path Analysis</h4>
+           </div>
+           <p className="text-sm font-bold text-[var(--text-secondary)] italic leading-relaxed">
+             Based on the total duration of <span className="text-[var(--text-primary)] font-black uppercase">"{activeTrack.track.title}"</span>, we've calculated your optimal progression strategy.
+           </p>
+        </div>
 
-          <div className="transform-gpu flex bg-slate-100 p-1.5 rounded-2xl mb-8">
+        <div className="transform-gpu flex bg-[var(--bg-secondary)] p-1.5 rounded-2xl border border-[var(--border-color)]">
             <button 
               onClick={() => setMode('DATE')}
-              className={`flex-1 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${mode === 'DATE' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all italic ${mode === 'DATE' ? 'bg-[var(--accent-color)] text-[var(--bg-primary)] shadow-lg' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
             >
-              Finish by Date
+                Target Finish Date
             </button>
             <button 
               onClick={() => setMode('TIME')}
-              className={`flex-1 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${mode === 'TIME' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all italic ${mode === 'TIME' ? 'bg-[var(--accent-color)] text-[var(--bg-primary)] shadow-lg' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
             >
-              Study Time / Day
+                Fixed Daily Study Time
             </button>
-          </div>
+        </div>
 
-          <form onSubmit={handleSubmit} className="transform-gpu flex-1 overflow-y-auto custom-scrollbar space-y-8 pr-2">
-             <AnimatePresence mode="wait">
-               {mode === 'DATE' ? (
-                 <motion.div 
-                   key="date-mode"
-                   initial={{ opacity: 0, x: -10 }}
-                   animate={{ opacity: 1, x: 0 }}
-                   exit={{ opacity: 0, x: 10 }}
-                   className="transform-gpu space-y-6"
-                 >
-                   <div className="transform-gpu space-y-4">
-                     <label className="transform-gpu block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">When do you want to finish?</label>
-                     <div className="transform-gpu relative">
-                       <Calendar className="transform-gpu absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={20} />
+        <div className="transform-gpu px-2">
+            {mode === 'DATE' ? (
+                <div className="space-y-4">
+                     <label className="transform-gpu block text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] ml-1 italic opacity-40">When do you want to finish?</label>
+                     <div className="relative">
+                       <Calendar className="transform-gpu absolute left-5 top-1/2 -translate-y-1/2 text-[var(--accent-color)]" size={18} />
                        <input 
                          type="date" 
-                         required
-                         className="transform-gpu w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-16 py-5 font-bold text-slate-800 focus:border-rose-500 focus:outline-none transition-all"
                          value={targetDate}
                          onChange={e => setTargetDate(e.target.value)}
+                         className="transform-gpu w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl pl-14 pr-6 py-4 font-black text-[var(--text-primary)] focus:border-[var(--accent-color)] outline-none transition-all shadow-inner italic"
                        />
                      </div>
-                   </div>
-                 </motion.div>
-               ) : (
-                 <motion.div 
-                   key="time-mode"
-                   initial={{ opacity: 0, x: 10 }}
-                   animate={{ opacity: 1, x: 0 }}
-                   exit={{ opacity: 0, x: -10 }}
-                   className="transform-gpu space-y-6"
-                 >
-                   <div className="transform-gpu space-y-6">
-                     <div className="transform-gpu flex items-center justify-between">
-                        <label className="transform-gpu text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Study time per day</label>
-                        <span className="transform-gpu text-2xl font-bold text-rose-600">{formatDuration(dailyStudyMinutes)}</span>
-                     </div>
-                     <input 
+                </div>
+            ) : (
+                <div className="space-y-6">
+                    <div className="flex justify-between items-center px-1">
+                        <label className="transform-gpu text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] italic opacity-40">Study time per day</label>
+                        <span className="text-[var(--accent-color)] font-black text-sm italic">{Math.floor(dailyMinutes / 60)}h {dailyMinutes % 60}m</span>
+                    </div>
+                    <input 
                        type="range" 
-                       min="10" 
-                       max="480" 
-                       step="10"
-                       className="transform-gpu w-full h-3 bg-slate-100 rounded-full appearance-none cursor-pointer accent-rose-600"
-                       value={dailyStudyMinutes}
-                       onChange={e => setDailyStudyMinutes(parseInt(e.target.value))}
-                     />
-                     <div className="transform-gpu flex justify-between text-[9px] font-bold text-slate-300 uppercase tracking-widest">
-                        <span>Quick Session</span>
-                        <span>Deep Focus</span>
-                     </div>
-                   </div>
-                 </motion.div>
-               )}
-             </AnimatePresence>
-
-             {analysis && !analysis.error && (
-               <motion.div 
-                 initial={{ opacity: 0, y: 10 }}
-                 animate={{ opacity: 1, y: 0 }}
-                 className="transform-gpu bg-rose-50/50 p-8 rounded-[2rem] border border-rose-100 space-y-6"
-               >
-                 <div className="transform-gpu grid grid-cols-2 gap-8">
-                   <div>
-                     <p className="transform-gpu text-[10px] font-bold text-rose-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                       <Youtube size={12} /> Watch Time
-                     </p>
-                     <p className="transform-gpu text-2xl font-bold text-slate-900">{analysis.formattedWatch}<span className="transform-gpu text-xs text-slate-400 ml-1">/ day</span></p>
-                   </div>
-                   <div>
-                     {mode === 'DATE' ? (
-                       <>
-                         <p className="transform-gpu text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                           <Clock size={12} /> Study Effort
-                         </p>
-                         <p className="transform-gpu text-2xl font-bold text-slate-900">{analysis.formattedStudy}<span className="transform-gpu text-xs text-slate-400 ml-1">/ day</span></p>
-                       </>
-                     ) : (
-                       <>
-                         <p className="transform-gpu text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                           <Target size={12} /> Finish Date
-                         </p>
-                         <p className="transform-gpu text-2xl font-bold text-slate-900">{analysis.estDate}</p>
-                       </>
-                     )}
-                   </div>
-                 </div>
-
-                 <div className="transform-gpu pt-6 border-t border-rose-100 flex gap-3 items-start">
-                    <Info size={16} className="transform-gpu text-rose-500 shrink-0 mt-0.5" />
-                    <p className="transform-gpu text-[11px] font-medium text-rose-700 leading-relaxed">
-                      {mode === 'DATE' 
-                        ? `To finish in ${analysis.days} days, you should watch ${analysis.formattedWatch} of video daily. We assume 2x total study time (${analysis.formattedStudy}) for notes and practice.`
-                        : `At ${analysis.formattedStudy} study time per day, you'll watch ${analysis.formattedWatch} of video and finish the entire course in approximately ${analysis.days} days.`
-                      }
-                    </p>
-                 </div>
-               </motion.div>
-             )}
-
-             {analysis?.error && (
-               <div className="transform-gpu bg-amber-50 p-6 rounded-3xl border border-amber-100 flex gap-3 items-center text-amber-700">
-                 <AlertCircle size={20} />
-                 <p className="transform-gpu text-xs font-bold">{analysis.error}</p>
-               </div>
-             )}
-
-             <button 
-               disabled={loading || !!analysis?.error || (mode === 'DATE' && !targetDate)}
-               type="submit" 
-               className="transform-gpu w-full bg-slate-900 text-white py-6 rounded-[2rem] font-bold text-xs uppercase tracking-widest hover:bg-rose-600 shadow-xl shadow-slate-200 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
-             >
-               {loading ? <Loader2 className="transform-gpu animate-spin" size={20} /> : <Target size={20} />}
-               {loading ? 'Saving Plan...' : 'Update Study Plan'}
-             </button>
-          </form>
+                       min="15" max="300" step="15"
+                       value={dailyMinutes}
+                       onChange={e => setDailyMinutes(parseInt(e.target.value))}
+                       className="transform-gpu w-full h-1.5 bg-[var(--bg-secondary)] rounded-full appearance-none cursor-pointer accent-[var(--accent-color)]"
+                    />
+                </div>
+            )}
         </div>
-      </motion.div>
-    </div>
+
+        <div className="transform-gpu grid grid-cols-1 md:grid-cols-2 gap-4">
+             <div className="p-6 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[2rem] shadow-sm">
+                 <h5 className="text-[9px] font-black uppercase tracking-widest text-[var(--text-secondary)] mb-3 opacity-40 italic">Progression Requirement</h5>
+                 <p className="transform-gpu text-2xl font-black text-[var(--text-primary)] italic tracking-tighter leading-none">{analysis.formattedWatch}<span className="text-[10px] text-[var(--text-secondary)] ml-2 opacity-60">/ DAY</span></p>
+             </div>
+             <div className="p-6 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[2rem] shadow-sm">
+                 <h5 className="text-[9px] font-black uppercase tracking-widest text-[var(--text-secondary)] mb-3 opacity-40 italic">Estimated Completion</h5>
+                 <p className="transform-gpu text-xl font-black text-[var(--text-primary)] italic uppercase tracking-tight leading-none">{analysis.estDate}</p>
+             </div>
+        </div>
+
+        <div className="transform-gpu pt-6 border-t border-[var(--border-color)]">
+             <button 
+               disabled={loading}
+               onClick={handleCommit}
+               className="transform-gpu w-full bg-[var(--accent-color)] text-[var(--bg-primary)] py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 shadow-xl shadow-[var(--accent-color)]/20 transition-all flex items-center justify-center gap-3 active:scale-95 italic"
+             >
+                {loading ? <Loader2 className="animate-spin" size={18} /> : <Target size={18} />}
+                {loading ? 'Processing Strategy...' : 'Commit to Path'}
+             </button>
+        </div>
+      </div>
+    </Modal>
   );
 }
