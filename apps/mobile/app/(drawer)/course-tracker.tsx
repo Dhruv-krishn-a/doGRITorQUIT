@@ -4,18 +4,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../context/ThemeContext';
 import { useStudyHub } from '../../hooks/useStudyHub';
+import { useSync } from '../../context/SyncContext';
 
 export default function CourseTrackerPage() {
- const { categorizedTracks, loading, refreshTracks } = useStudyHub();
+ const { categorizedTracks, loading } = useStudyHub();
+ const { isSyncing, sync } = useSync();
  const router = useRouter();
  const { colors } = useTheme();
- const [refreshing, setRefreshing] = useState(false);
-
- const onRefresh = async () => {
- setRefreshing(true);
- await refreshTracks();
- setRefreshing(false);
- };
 
  const courses = categorizedTracks.course;
 
@@ -54,7 +49,14 @@ export default function CourseTrackerPage() {
  <ScrollView
  className="flex-1"
  contentContainerStyle={{ padding: 24 }}
- refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#d946ef" />}
+ refreshControl={
+   <RefreshControl 
+     refreshing={isSyncing} 
+     onRefresh={sync} 
+     tintColor="#d946ef" 
+     colors={["#d946ef"]}
+   />
+ }
  >
  <View className="mb-8">
  <Text className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--text-secondary)] mb-2 italic">Academic OS</Text>
@@ -63,7 +65,7 @@ export default function CourseTrackerPage() {
  </Text>
  </View>
 
- {loading && !refreshing ? (
+ {loading && !isSyncing ? (
  <ActivityIndicator size="large" color="#d946ef" className="py-20" />
  ) : courses.length === 0 ? (
  <View className="py-20 items-center justify-center border-2 border-dashed border-[var(--border-color)] rounded-[3rem] bg-[var(--bg-secondary)]/10">

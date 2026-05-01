@@ -171,9 +171,13 @@ const UnitSession: React.FC<UnitSessionProps> = ({ track, unit }) => {
  onChangeState={(state) => setIsPlaying(state === "playing")}
  />
  ) : (
- <View className="flex-1 items-center justify-center bg-[var(--bg-card)] border-b border-[var(--border-color)]">
- <Ionicons name="videocam-off-outline" size={48} color={colors.border} />
- <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mt-4 italic opacity-40">Stream Unavailable</Text>
+ <View className="flex-1 items-center justify-center bg-gradient-to-br from-indigo-900 to-black border-b border-indigo-500/20">
+ <View className="w-40 h-40 rounded-full border-[8px] border-indigo-500/30 items-center justify-center relative">
+    <View className="absolute inset-0 rounded-full border-[8px] border-transparent border-t-indigo-400 rotate-45" style={{ transform: [{ rotate: `${(seconds % 60) * 6}deg` }] }} />
+    <Ionicons name="time" size={32} color="#818cf8" className="mb-2" />
+    <Text className="text-3xl font-black text-indigo-100 tracking-tighter italic">{formatTime(seconds)}</Text>
+ </View>
+ <Text className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] mt-6 italic opacity-80">Deep Work Protocol</Text>
  </View>
  )}
  
@@ -229,7 +233,7 @@ const UnitSession: React.FC<UnitSessionProps> = ({ track, unit }) => {
 
  <View className="flex-1">
  <View className="flex-row px-6 py-3 bg-[var(--bg-card)] border-b border-[var(--border-color)] gap-4">
- {(['NOTES', 'QUESTIONS'] as const).map(tab => (
+ {(['NOTES', 'QUESTIONS', 'RESOURCES'] as const).map(tab => (
  <TouchableOpacity 
  key={tab} 
  onPress={() => { setActiveTab(tab); Haptics.selectionAsync(); }}
@@ -243,7 +247,7 @@ const UnitSession: React.FC<UnitSessionProps> = ({ track, unit }) => {
  </View>
 
  <ScrollView className="flex-1" contentContainerStyle={{ padding: 24, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
- {activeTab === 'NOTES' ? (
+ {activeTab === 'NOTES' && (
  <View className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[2.5rem] p-8 min-h-[400px]">
  <TextInput
  multiline
@@ -255,7 +259,9 @@ const UnitSession: React.FC<UnitSessionProps> = ({ track, unit }) => {
  style={{ textAlignVertical: 'top' }}
  />
  </View>
- ) : (
+ )}
+ 
+ {activeTab === 'QUESTIONS' && (
  <View className="flex-1 space-y-4">
  {questions.map(q => (
  <View key={q.id} className="bg-[var(--bg-card)] border border-[var(--border-color)] p-5 rounded-2xl text-left">
@@ -290,6 +296,16 @@ const UnitSession: React.FC<UnitSessionProps> = ({ track, unit }) => {
  </View>
  </View>
  )}
+
+ {activeTab === 'RESOURCES' && (
+ <View className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[2.5rem] p-8 items-center justify-center opacity-70 min-h-[300px]">
+    <Ionicons name="link-outline" size={48} color={colors.textSecondary} className="mb-4" />
+    <Text className="text-sm font-black text-[var(--text-primary)] uppercase tracking-widest italic">No Resources Attached</Text>
+    <Text className="text-[10px] font-bold text-[var(--text-secondary)] text-center mt-2 leading-relaxed">
+      You can attach external links, PDFs, or assignments to this module from the Desktop OS.
+    </Text>
+ </View>
+ )}
  </ScrollView>
  </View>
  </View>
@@ -316,3 +332,4 @@ export default function UnitPage() {
 
  return <EnhancedUnitSession id={id} unitId={unitId} />;
 }
+

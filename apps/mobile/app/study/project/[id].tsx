@@ -10,6 +10,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../../context/ThemeContext';
 import * as Haptics from 'expo-haptics';
 import { toggleUnitCompletion } from '../../../lib/study-logic';
+import { ProjectOverviewTab } from '../../../components/study/project/ProjectOverviewTab';
+import { ProjectBoardTab } from '../../../components/study/project/ProjectBoardTab';
+import { ProjectTimeTab } from '../../../components/study/project/ProjectTimeTab';
 
 interface ProjectDetailProps {
  track: StudyTrack;
@@ -19,7 +22,7 @@ interface ProjectDetailProps {
 const ProjectDetail: React.FC<ProjectDetailProps> = ({ track, units }) => {
  const router = useRouter();
  const { colors } = useTheme();
- const [activeTab, setActiveTab] = useState<'STEPS' | 'TIMELINE' | 'NOTES' | 'SETTINGS'>('STEPS');
+ const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'BOARD' | 'TIME' | 'NOTES' | 'SETTINGS'>('OVERVIEW');
 
  const metadata = (track?.metadata as any) || {};
  const phases = metadata.phases || ['Planning', 'Execution', 'Review'];
@@ -90,7 +93,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ track, units }) => {
 
  {/* Tabs */}
  <View className="flex-row px-4 bg-[var(--bg-card)] border-b border-[var(--border-color)]">
- {(['STEPS', 'TIMELINE', 'NOTES', 'SETTINGS'] as const).map(tab => (
+ {(['OVERVIEW', 'BOARD', 'TIME', 'NOTES'] as const).map(tab => (
  <TouchableOpacity 
  key={tab} 
  onPress={() => { setActiveTab(tab); Haptics.selectionAsync(); }}
@@ -103,52 +106,12 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ track, units }) => {
  ))}
  </View>
 
- <ScrollView className="flex-1" contentContainerStyle={{ padding: 24, paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
- {activeTab === 'STEPS' && (
- <View>
- {phases.map((phase: string) => (
- <View key={phase} className="mb-8">
- <View className="flex-row items-center gap-3 mb-4 ml-1">
- <View className="w-1 h-4 bg-[var(--accent-color)] rounded-full" />
- <Text className="text-xs font-black uppercase tracking-widest text-[var(--text-primary)] italic">{phase}</Text>
- </View>
- {unitsByPhase[phase]?.length > 0 ? (
- unitsByPhase[phase].map(u => <UnitCard key={u.id} unit={u} />)
- ) : (
- <View className="p-6 bg-[var(--bg-secondary)]/10 rounded-3xl border border-dashed border-[var(--border-color)] items-center">
- <Text className="text-[8px] font-black uppercase text-[var(--text-secondary)] opacity-40 italic">No steps in this phase</Text>
- </View>
- )}
- </View>
- ))}
- </View>
- )}
-
- {activeTab === 'TIMELINE' && (
- <View className="ml-4 border-l-2 border-[var(--border-color)] pl-8 py-4">
- {phases.map((phase: string, idx: number) => {
- const phaseUnits = unitsByPhase[phase] || [];
- const isCompleted = phaseUnits.length > 0 && phaseUnits.every(u => u.status === 'DONE');
- return (
- <View key={phase} className="mb-12 relative">
- <View className={`absolute -left-[41px] top-0 w-5 h-5 rounded-full border-4 border-[var(--bg-primary)] ${isCompleted ? 'bg-emerald-500' : 'bg-[var(--accent-color)]'}`} />
- <Text className={`text-[10px] font-black uppercase tracking-widest mb-1 italic ${isCompleted ? 'text-emerald-500' : 'text-[var(--accent-color)]'}`}>Phase {idx + 1}</Text>
- <Text className="text-xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter mb-4">{phase}</Text>
- <View className="space-y-2">
- {phaseUnits.slice(0, 3).map(u => (
- <View key={u.id} className="flex-row items-center gap-2">
- <Ionicons name={u.status === 'DONE' ? "checkmark-circle" : "ellipse-outline"} size={12} color={u.status === 'DONE' ? "#10b981" : colors.textSecondary} />
- <Text className={`text-[10px] font-black uppercase italic tracking-tight ${u.status === 'DONE' ? 'text-[var(--text-secondary)] line-through' : 'text-[var(--text-primary)]'}`} numberOfLines={1}>{u.title}</Text>
- </View>
- ))}
- </View>
- </View>
- );
- })}
- </View>
- )}
+ {activeTab === 'OVERVIEW' && <ProjectOverviewTab track={track} unitsByPhase={unitsByPhase} phases={phases} />}
+ {activeTab === 'BOARD' && <ProjectBoardTab trackId={track.id} unitsByPhase={unitsByPhase} phases={phases} />}
+ {activeTab === 'TIME' && <ProjectTimeTab track={track} units={units} />}
 
  {activeTab === 'NOTES' && (
+ <ScrollView className="flex-1" contentContainerStyle={{ padding: 24, paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
  <View className="bg-[var(--bg-card)] p-8 rounded-[3rem] border border-[var(--border-color)] ">
  <View className="flex-row justify-between items-center mb-8">
  <Text className="text-xl font-black text-[var(--text-primary)] italic uppercase tracking-tight">Project Ledger</Text>
@@ -164,9 +127,11 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ track, units }) => {
  style={{ textAlignVertical: 'top' }}
  />
  </View>
+ </ScrollView>
  )}
 
  {activeTab === 'SETTINGS' && (
+ <ScrollView className="flex-1" contentContainerStyle={{ padding: 24, paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
  <View className="space-y-4">
  <TouchableOpacity className="p-6 bg-[var(--bg-card)] rounded-[2rem] border border-[var(--border-color)] flex-row items-center justify-between">
  <View className="flex-row items-center gap-4">
@@ -189,8 +154,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ track, units }) => {
  </View>
  </TouchableOpacity>
  </View>
- )}
  </ScrollView>
+ )}
  </View>
  );
 };

@@ -6,6 +6,8 @@ import "../global.css";
 import { AuthProvider } from "../context/AuthContext";
 import { SyncProvider } from "../context/SyncContext";
 import { AppThemeProvider, useTheme } from "../context/ThemeContext";
+import { StudyUIProvider } from "../context/StudyUIContext";
+import { StudyModalManager } from "../components/study/StudyModalManager";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import * as Notifications from 'expo-notifications';
 import { registerForPushNotificationsAsync, scheduleDailyReminder } from '../lib/notifications';
@@ -46,6 +48,7 @@ function RootLayoutNav() {
  return (
  <View className={`flex-1 theme-${theme}`}>
  <Stack screenOptions={{ headerShown: false }} />
+ <StudyModalManager />
  </View>
  );
 }
@@ -55,9 +58,11 @@ export default function RootLayout() {
  <AuthProvider>
  <SyncProvider>
  <AppThemeProvider>
+ <StudyUIProvider>
  <SafeAreaProvider>
  <RootLayoutNav />
  </SafeAreaProvider>
+ </StudyUIProvider>
  </AppThemeProvider>
  </SyncProvider>
  </AuthProvider>

@@ -7,6 +7,7 @@ import {
  TextInput,
  TouchableOpacity,
  View,
+ RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -14,6 +15,8 @@ import { Q } from '@nozbe/watermelondb';
 
 import { useTheme } from '../../context/ThemeContext';
 import { useChecklist } from '../../hooks/useChecklist';
+import { useSync } from '../../context/SyncContext';
+import { useAuth } from '../../context/AuthContext';
 import { database } from '../../db';
 import Note from '../../db/models/Note';
 import Habit from '../../db/models/Habit';
@@ -39,6 +42,8 @@ function normalizeHabitIcon(name?: string): keyof typeof Ionicons.glyphMap {
 
 export default function ChecklistPage() {
  const { habits, logs, loading, toggleHabit, createHabit } = useChecklist();
+ const { isSyncing, sync } = useSync();
+ const { user } = useAuth();
  const [filter, setFilter] = useState<HabitFilter>('PENDING');
  const [modalVisible, setModalVisible] = useState(false);
  const [newHabitTitle, setNewHabitTitle] = useState('');
@@ -73,13 +78,15 @@ export default function ChecklistPage() {
 
  useEffect(() => {
  async function loadReflection() {
+ if (!user?.id) return;
  const today = new Date();
  today.setHours(0, 0, 0, 0);
  const notes = await database
  .get<Note>('notes')
  .query(
  Q.where('category', 'DAILY_REFLECTION'),
- Q.where('created_at', Q.gte(today.getTime()))
+ Q.where('created_at', Q.gte(today.getTime())),
+ Q.where('user_id', user.id)
  )
  .fetch();
 
@@ -90,7 +97,7 @@ export default function ChecklistPage() {
  }
 
  loadReflection();
- }, []);
+ }, [user?.id]);
 
  useEffect(() => {
  const titles = remainingHabits.map((habit) => habit.title);
@@ -119,6 +126,8 @@ export default function ChecklistPage() {
  };
 
  const saveReflection = async () => {
+ if (!user?.id) return;
+
  await database.write(async () => {
  if (reflectionNote) {
  await reflectionNote.update((n) => {
@@ -129,7 +138,7 @@ export default function ChecklistPage() {
  n.title = `Reflection - ${new Date().toLocaleDateString()}`;
  n.content = reflection;
  n.category = 'DAILY_REFLECTION';
- n.userId = 'default';
+ n.userId = user.id;
  });
  setReflectionNote(newNote);
  }
@@ -144,6 +153,14 @@ export default function ChecklistPage() {
  className="flex-1"
  contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 80 }}
  showsVerticalScrollIndicator={false}
+ refreshControl={
+   <RefreshControl 
+     refreshing={isSyncing} 
+     onRefresh={sync} 
+     tintColor={colors.accent} 
+     colors={[colors.accent]}
+   />
+ }
  >
  <View className="mb-8 text-left">
  <Text className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--text-secondary)] mb-2 italic">

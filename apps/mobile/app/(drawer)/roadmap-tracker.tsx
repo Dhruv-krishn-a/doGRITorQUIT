@@ -4,18 +4,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../context/ThemeContext';
 import { useStudyHub } from '../../hooks/useStudyHub';
+import { useSync } from '../../context/SyncContext';
 
 export default function RoadmapTrackerPage() {
- const { categorizedTracks, loading, refreshTracks } = useStudyHub();
+ const { categorizedTracks, loading } = useStudyHub();
+ const { isSyncing, sync } = useSync();
  const router = useRouter();
  const { colors } = useTheme();
- const [refreshing, setRefreshing] = useState(false);
-
- const onRefresh = async () => {
- setRefreshing(true);
- await refreshTracks();
- setRefreshing(false);
- };
 
  const roadmaps = categorizedTracks.plan;
 
@@ -60,7 +55,14 @@ export default function RoadmapTrackerPage() {
  <ScrollView
  className="flex-1"
  contentContainerStyle={{ padding: 24 }}
- refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#38bdf8" />}
+ refreshControl={
+   <RefreshControl 
+     refreshing={isSyncing} 
+     onRefresh={sync} 
+     tintColor="#38bdf8" 
+     colors={["#38bdf8"]}
+   />
+ }
  >
  <View className="mb-8">
  <Text className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--text-secondary)] mb-2 italic">Strategic Maps</Text>
@@ -69,7 +71,7 @@ export default function RoadmapTrackerPage() {
  </Text>
  </View>
 
- {loading && !refreshing ? (
+ {loading && !isSyncing ? (
  <ActivityIndicator size="large" color="#38bdf8" className="py-20" />
  ) : roadmaps.length === 0 ? (
  <View className="py-20 items-center justify-center border-2 border-dashed border-[var(--border-color)] rounded-[3rem] bg-[var(--bg-secondary)]/10">

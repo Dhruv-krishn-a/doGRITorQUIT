@@ -8,6 +8,7 @@ type SyncStatus = 'IDLE' | 'SYNCING' | 'SUCCESS' | 'ERROR';
 
 interface SyncContextType {
   status: SyncStatus;
+  isSyncing: boolean;
   lastSyncedAt: Date | null;
   sync: () => Promise<void>;
   clearLocalData: () => Promise<void>;
@@ -18,12 +19,14 @@ const SyncContext = createContext<SyncContextType | undefined>(undefined);
 export function SyncProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [status, setStatus] = useState<SyncStatus>('IDLE');
+  const [isSyncing, setIsSyncing] = useState(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
 
   const sync = useCallback(async () => {
     if (!user) return;
     
     setStatus('SYNCING');
+    setIsSyncing(true);
     try {
       await performSyncOnce();
 
@@ -61,7 +64,8 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
 
       console.error("Sync failed:", error);
       setStatus('ERROR');
-      // In production, we'd log this to Sentry
+    } finally {
+      setIsSyncing(false);
     }
   }, [user]);
 
@@ -76,10 +80,10 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
     if (user) {
       sync();
     }
-  }, [user]);
+  }, [user, sync]);
 
   return (
-    <SyncContext.Provider value={{ status, lastSyncedAt, sync, clearLocalData }}>
+    <SyncContext.Provider value={{ status, isSyncing, lastSyncedAt, sync, clearLocalData }}>
       {children}
     </SyncContext.Provider>
   );

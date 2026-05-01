@@ -40,6 +40,7 @@ async function runWatermelonSync(): Promise<void> {
       }
 
       const data = (await response.json()) as { changes: SyncDatabaseChangeSet; timestamp: number };
+      console.log(`[Sync] Received changes:`, JSON.stringify(data.changes).substring(0, 500));
 
       return {
         changes: data.changes,

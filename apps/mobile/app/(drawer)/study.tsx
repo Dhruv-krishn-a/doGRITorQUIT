@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { useStudyHub } from '../../hooks/useStudyHub';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,22 +6,20 @@ import { useRouter } from 'expo-router';
 import { useTheme } from '../../context/ThemeContext';
 import { PathCreationManager } from '../../components/study/PathCreationManager';
 import { useDashboardStats } from '../../hooks/useDashboardStats';
+import { StudyLevelHUD } from '../../components/study/hud/StudyLevelHUD';
+import { LoadGauge } from '../../components/study/hud/LoadGauge';
+import { ReviewList } from '../../components/study/hud/ReviewList';
+import { useSync } from '../../context/SyncContext';
 
 export default function StudyGrowthHub() {
  const { categorizedTracks, loading, refreshTracks } = useStudyHub();
+ const { isSyncing, sync } = useSync();
  const { streak, focusTime } = useDashboardStats();
  const router = useRouter();
  const { colors } = useTheme();
  
  // Creation Manager State
  const [creationVisible, setCreationVisible] = useState(false);
- const [refreshing, setRefreshing] = useState(false);
-
- const onRefresh = async () => {
- setRefreshing(true);
- await refreshTracks();
- setRefreshing(false);
- };
 
  const projectCount = categorizedTracks.project.length;
  const courseCount = categorizedTracks.course.length;
@@ -29,6 +27,20 @@ export default function StudyGrowthHub() {
  const planCount = categorizedTracks.plan.length;
 
  const totalActive = projectCount + courseCount + mediaCount + planCount;
+
+ // Mock Data for HUDs (to be replaced with real backend sync later)
+ const mockTotalXP = (totalActive * 50) + focusTime * 10;
+ const currentLevel = Math.floor(mockTotalXP / 1000) + 1;
+ const nextLevelXP = currentLevel * 1000;
+ 
+ const loadPercentage = Math.min(100, (totalActive / 5) * 100);
+ const breakdown = {
+   plannedLoad: totalActive,
+   capacity: 5,
+   highEffortUnits: projectCount + courseCount,
+   contextSwitches: totalActive,
+ };
+ const mockRevisions = categorizedTracks.course.map(t => ({ id: t.id + '_rev', title: 'Review Chapter 1', trackId: t.id, track: { title: t.title }, type: 'REVISION' })).slice(0, 2);
 
  // Simple Balance Logic
  const energyBalance = useMemo(() => {
@@ -64,13 +76,26 @@ export default function StudyGrowthHub() {
  className="flex-1"
  contentContainerStyle={{ padding: 24, paddingBottom: 100 }}
  showsVerticalScrollIndicator={false}
- refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+ refreshControl={
+   <RefreshControl 
+     refreshing={isSyncing} 
+     onRefresh={sync} 
+     tintColor={colors.accent} 
+     colors={[colors.accent]}
+   />
+ }
  >
  <View className="mb-10 text-left">
  <Text className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--text-secondary)] mb-2 italic">Your Hub</Text>
- <Text className="text-4xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter leading-none">
+ <Text className="text-4xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter leading-none mb-6">
  Growth
  </Text>
+ 
+ <StudyLevelHUD 
+   totalXP={mockTotalXP} 
+   currentLevel={currentLevel} 
+   nextLevelXP={nextLevelXP} 
+ />
  </View>
 
  {/* 1. Next Step Focus Card */}
@@ -89,16 +114,10 @@ export default function StudyGrowthHub() {
  </View>
  </TouchableOpacity>
 
- {/* 2. Energy Balance */}
- <View className="bg-[var(--bg-secondary)]/30 border border-[var(--border-color)] rounded-[2.5rem] p-6 mb-10">
- <View className="flex-row justify-between items-center mb-4">
- <Text className="text-[9px] font-black uppercase tracking-widest text-[var(--text-secondary)]">Day Balance</Text>
- <Text className="text-[9px] font-black uppercase tracking-widest italic" style={{ color: energyBalance.color }}>{energyBalance.label}</Text>
- </View>
- <View className="h-2 w-full bg-[var(--bg-secondary)] rounded-full overflow-hidden border border-[var(--border-color)]">
- <View className="h-full" style={{ width: `${Math.min(100, (totalActive / 5) * 100)}%`, backgroundColor: energyBalance.color }} />
- </View>
- <Text className="mt-3 text-[10px] font-bold italic opacity-60 text-[var(--text-secondary)]">{energyBalance.advice}</Text>
+ {/* 2. Energy Balance & Reviews */}
+ <View className="mb-10">
+   <LoadGauge loadPercentage={loadPercentage} breakdown={breakdown} />
+   <ReviewList revisions={mockRevisions} />
  </View>
 
  {/* 3. The Four Pillars */}
@@ -110,7 +129,7 @@ export default function StudyGrowthHub() {
  </View>
 
  <TouchableOpacity 
- onPress={() => onRefresh()}
+ onPress={() => sync()}
  className="mt-10 py-5 bg-[var(--bg-secondary)] rounded-3xl border border-[var(--border-color)] items-center justify-center flex-row gap-3 active:scale-95 transition-all"
  >
  <Ionicons name="sync" size={16} color={colors.textSecondary} />
@@ -122,7 +141,7 @@ export default function StudyGrowthHub() {
  <PathCreationManager 
  isVisible={creationVisible} 
  onClose={() => setCreationVisible(false)} 
- onRefresh={refreshTracks}
+ onRefresh={sync}
  />
  </View>
  );

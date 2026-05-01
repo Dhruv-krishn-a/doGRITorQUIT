@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb'
 
 export const mySchema = appSchema({
-  version: 2,
+  version: 3,
   tables: [
     tableSchema({
       name: 'tasks',
@@ -49,6 +49,10 @@ export const mySchema = appSchema({
         { name: 'type', type: 'string' },
         { name: 'status', type: 'string' },
         { name: 'progress_percentage', type: 'number' },
+        { name: 'daily_allocation_minutes', type: 'number', isOptional: true },
+        { name: 'estimated_completion_date', type: 'number', isOptional: true },
+        { name: 'remaining_minutes', type: 'number', isOptional: true },
+        { name: 'metadata', type: 'string', isOptional: true },
         { name: 'user_id', type: 'string', isIndexed: true },
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
@@ -62,6 +66,12 @@ export const mySchema = appSchema({
         { name: 'status', type: 'string' },
         { name: 'order_index', type: 'number' },
         { name: 'duration_minutes', type: 'number', isOptional: true },
+        { name: 'actual_time_spent_minutes', type: 'number', isOptional: true },
+        { name: 'priority', type: 'string', isOptional: true },
+        { name: 'difficulty', type: 'number', isOptional: true },
+        { name: 'started_at', type: 'number', isOptional: true },
+        { name: 'completed_at', type: 'number', isOptional: true },
+        { name: 'metadata', type: 'string', isOptional: true },
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
       ]
