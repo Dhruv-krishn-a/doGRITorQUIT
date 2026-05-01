@@ -3,12 +3,7 @@ import { Drawer } from "expo-router/drawer";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
 import { View, Text, TouchableOpacity, useWindowDimensions } from "react-native";
-import { DrawerContentScrollView, DrawerItemList } from "@react-navigation/drawer";
-import Animated, { 
-  useAnimatedStyle,
-  withSpring,
-  useSharedValue,
-} from "react-native-reanimated";
+import { DrawerContentScrollView } from "@react-navigation/drawer";
 import { useState } from "react";
 import * as Haptics from "expo-haptics";
 import { useAuth } from "../../context/AuthContext";
@@ -17,63 +12,103 @@ import { useTheme } from "../../context/ThemeContext";
 import { GritioLogo } from "../../components/GritioLogo";
 
 function CustomDrawerContent(props: any) {
-  const [expanded, setExpanded] = useState(true);
-  const width = useSharedValue(280);
+  const [isStudyExpanded, setIsStudyExpanded] = useState(true);
+  const { state, navigation } = props;
   const { colors } = useTheme();
 
-  const toggleExpand = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    const nextExpanded = !expanded;
-    setExpanded(nextExpanded);
-    width.value = withSpring(nextExpanded ? 280 : 80, { damping: 20, stiffness: 90 });
+  const toggleStudy = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setIsStudyExpanded(!isStudyExpanded);
   };
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    width: width.value,
-  }));
-
-  const logoContainerStyle = useAnimatedStyle(() => ({
-    alignItems: width.value > 150 ? 'flex-start' : 'center',
-    padding: 20,
-    paddingTop: 40,
-    paddingBottom: 40,
-  }));
+  const renderDrawerItem = (name: string, label: string, icon: string, isSubItem = false) => {
+    const focused = state.routeNames[state.index] === name;
+    
+    return (
+      <TouchableOpacity
+        key={name}
+        onPress={() => navigation.navigate(name)}
+        activeOpacity={0.7}
+        className={`flex-row items-center px-4 py-3 rounded-2xl mb-1 ${
+          focused ? 'bg-[var(--accent-color)]/10' : ''
+        } ${isSubItem ? 'ml-8' : ''}`}
+      >
+        <Ionicons 
+          name={icon as any} 
+          size={isSubItem ? 16 : 20} 
+          color={focused ? colors.accent : colors.textSecondary} 
+        />
+        <Text 
+          className={`ml-4 uppercase font-black tracking-widest ${
+            isSubItem ? 'text-[9px]' : 'text-[12px]'
+          } ${focused ? 'text-[var(--accent-color)]' : 'text-[var(--text-secondary)]'}`}
+        >
+          {label}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
-    <Animated.View style={[{ flex: 1, backgroundColor: colors.card }, animatedStyle]}>
-      <DrawerContentScrollView {...props} scrollEnabled={false} contentContainerStyle={{ flex: 1 }}>
-        <Animated.View style={logoContainerStyle}>
-          {expanded ? (
-            <View>
-              <GritioLogo size="lg" withText={true} />
-            </View>
-          ) : (
-            <Ionicons name="sparkles" size={24} color={colors.accent} />
-          )}
-        </Animated.View>
-
-        <View style={{ flex: 1 }}>
-          <DrawerItemList {...props} />
+    <View style={{ flex: 1, backgroundColor: colors.card }}>
+      <DrawerContentScrollView {...props} contentContainerStyle={{ padding: 12, paddingTop: 40 }}>
+        <View className="px-4 mb-10">
+          <GritioLogo size="lg" withText={true} />
         </View>
 
-        <TouchableOpacity 
-          onPress={toggleExpand}
-          style={{ 
-            padding: 20, 
-            borderTopWidth: 1, 
-            borderTopColor: colors.border,
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-        >
-          <Ionicons 
-            name={expanded ? "chevron-back-circle" : "chevron-forward-circle"} 
-            size={24} 
-            color={colors.textSecondary} 
-          />
-        </TouchableOpacity>
+        <View className="space-y-1">
+          {renderDrawerItem("today", "Today", "flash")}
+          {renderDrawerItem("notes", "Notes", "journal")}
+          
+          {/* Collapsible Study Paths */}
+          <View className="mb-1">
+            <TouchableOpacity
+              onPress={() => navigation.navigate("study")}
+              activeOpacity={0.7}
+              className={`flex-row items-center justify-between px-4 py-3 rounded-2xl ${
+                state.routeNames[state.index] === "study" ? 'bg-[var(--accent-color)]/10' : ''
+              }`}
+            >
+              <View className="flex-row items-center">
+                <Ionicons 
+                  name="rocket" 
+                  size={20} 
+                  color={state.routeNames[state.index] === "study" ? colors.accent : colors.textSecondary} 
+                />
+                <Text className={`ml-4 text-[12px] uppercase font-black tracking-widest ${
+                  state.routeNames[state.index] === "study" ? 'text-[var(--accent-color)]' : 'text-[var(--text-secondary)]'
+                }`}>
+                  Study Paths
+                </Text>
+              </View>
+              <TouchableOpacity onPress={toggleStudy} className="p-1">
+                <Ionicons 
+                  name={isStudyExpanded ? "chevron-down" : "chevron-forward"} 
+                  size={14} 
+                  color={colors.textSecondary} 
+                  style={{ opacity: 0.5 }}
+                />
+              </TouchableOpacity>
+            </TouchableOpacity>
+
+            {isStudyExpanded && (
+              <View className="overflow-hidden">
+                {renderDrawerItem("project-tracker", "Project Tracker", "logo-github", true)}
+                {renderDrawerItem("course-tracker", "Course Tracker", "school", true)}
+                {renderDrawerItem("media-tracker", "Media Tracker", "play-circle", true)}
+                {renderDrawerItem("roadmap-tracker", "Roadmap Tracker", "map", true)}
+              </View>
+            )}
+          </View>
+
+          {renderDrawerItem("checklist", "Checklist", "checkmark-circle")}
+          {renderDrawerItem("insights", "Insights", "bar-chart")}
+          {renderDrawerItem("settings", "Settings", "settings")}
+          {renderDrawerItem("subscriptions", "Plan & Usage", "card")}
+          {renderDrawerItem("feedback", "Developer Hub", "people")}
+        </View>
       </DrawerContentScrollView>
-    </Animated.View>
+    </View>
   );
 }
 
@@ -129,12 +164,12 @@ export default function DrawerLayout() {
         }}
       >
         <Drawer.Screen
-          name="dashboard"
+          name="insights"
           options={{
-            drawerLabel: "Dashboard",
-            headerTitle: "Command Center",
+            drawerLabel: "Insights",
+            headerTitle: "Performance Hub",
             drawerIcon: ({ color, size }) => (
-              <Ionicons name="apps" size={size} color={color} />
+              <Ionicons name="bar-chart" size={size} color={color} />
             ),
           }}
         />
@@ -159,25 +194,58 @@ export default function DrawerLayout() {
           }}
         />
         <Drawer.Screen
-          name="tracker"
-          options={{
-            drawerLabel: "Project Tracker",
-            headerTitle: "Execution OS",
-            drawerIcon: ({ color, size }) => (
-              <Ionicons name="map" size={size} color={color} />
-            ),
-          }}
-        />
-        <Drawer.Screen
           name="study"
           options={{
             drawerLabel: "Study Paths",
-            headerTitle: "Current Paths",
+            headerTitle: "Growth Hub",
             drawerIcon: ({ color, size }) => (
               <Ionicons name="rocket" size={size} color={color} />
             ),
           }}
         />
+        
+        {/* Tracker Sub-pages */}
+        <Drawer.Screen
+          name="project-tracker"
+          options={{
+            drawerLabel: "  • Project Tracker",
+            headerTitle: "Execution OS",
+            drawerIcon: ({ color, size }) => (
+              <Ionicons name="logo-github" size={size-2} color={color} />
+            ),
+          }}
+        />
+        <Drawer.Screen
+          name="course-tracker"
+          options={{
+            drawerLabel: "  • Course Tracker",
+            headerTitle: "Academic OS",
+            drawerIcon: ({ color, size }) => (
+              <Ionicons name="school" size={size-2} color={color} />
+            ),
+          }}
+        />
+        <Drawer.Screen
+          name="media-tracker"
+          options={{
+            drawerLabel: "  • Media Tracker",
+            headerTitle: "Focus Tube",
+            drawerIcon: ({ color, size }) => (
+              <Ionicons name="play-circle" size={size-2} color={color} />
+            ),
+          }}
+        />
+        <Drawer.Screen
+          name="roadmap-tracker"
+          options={{
+            drawerLabel: "  • Roadmap Tracker",
+            headerTitle: "Strategic Maps",
+            drawerIcon: ({ color, size }) => (
+              <Ionicons name="map" size={size-2} color={color} />
+            ),
+          }}
+        />
+
         <Drawer.Screen
           name="checklist"
           options={{
@@ -222,6 +290,7 @@ export default function DrawerLayout() {
         {/* Hidden internal screens */}
         <Drawer.Screen name="profile" options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name="planner" options={{ drawerItemStyle: { display: 'none' } }} />
+        <Drawer.Screen name="dev-settings" options={{ drawerItemStyle: { display: 'none' }, headerTitle: "Diagnostics" }} />
       </Drawer>
     </GestureHandlerRootView>
   );

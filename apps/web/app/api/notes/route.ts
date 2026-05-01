@@ -29,20 +29,7 @@ export async function GET(req: NextRequest) {
         ...(search ? {
           OR: [
             { title: { contains: search, mode: 'insensitive' } },
-            // Tiptap schema search (for legacy notes)
-            {
-              content: {
-                path: ['content'],
-                array_contains: [{ text: search }]
-              }
-            },
-            {
-              content: {
-                path: ['$[*].content[*].text'],
-                string_contains: search
-              }
-            },
-            // Simple string search for plain text notes
+            // Tiptap schema search: Check if content is a string containing the text
             {
               content: {
                 string_contains: search

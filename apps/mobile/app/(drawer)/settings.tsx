@@ -17,6 +17,8 @@ export default function SettingsPage() {
   const [debugMode, setDebugMode] = useState(false);
   const [showThemes, setShowThemes] = useState(false);
 
+  const isAdmin = user?.email?.includes('admin') || user?.email?.includes('dhruv') || user?.email?.includes('test');
+
   const handleSignOut = () => {
     Alert.alert(
       "Terminate Session",
@@ -151,6 +153,12 @@ export default function SettingsPage() {
           <SettingRow icon="code-working" label="Debug Mode">
             <Switch value={debugMode} onValueChange={setDebugMode} trackColor={{ false: '#1E293B', true: '#6366f1' }} />
           </SettingRow>
+
+          {isAdmin && (
+              <TouchableOpacity onPress={() => router.push('/(drawer)/dev-settings')}>
+                <SettingRow icon="terminal" label="Admin Diagnostics" />
+              </TouchableOpacity>
+          )}
         </View>
 
         <View className="mb-10">

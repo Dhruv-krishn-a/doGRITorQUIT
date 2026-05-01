@@ -34,6 +34,11 @@ export default function NotesPage() {
       conditions.push(Q.where('category', activeCategory));
     }
 
+    // DEBUG: Ensure project notes are included
+    if (activeCategory === 'PROJECT') {
+      console.log("[Notes] Filtering for project-linked notes");
+    }
+
     if (conditions.length > 0) {
       query = database.get<Note>('notes').query(
         ...conditions,
