@@ -19,7 +19,7 @@ export type SessionUser = {
 
 export type Session = {
   access_token: string;
-  refresh_token: string;
+  refresh_token?: string;
   user: SessionUser;
   expires_at?: number;
 };

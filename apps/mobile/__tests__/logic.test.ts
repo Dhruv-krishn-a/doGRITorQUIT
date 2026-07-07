@@ -17,6 +17,12 @@ jest.mock('../db', () => ({
   },
 }));
 
+jest.mock('@nozbe/watermelondb', () => ({
+  Q: {
+    where: jest.fn(() => ({})),
+  }
+}));
+
 import { completeVector } from '../lib/execution-logic';
 import { database } from '../db';
 

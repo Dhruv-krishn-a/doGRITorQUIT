@@ -242,12 +242,56 @@ export class SyncEngine {
       this.log(`Pull sync failed: ${error.message}`, 'error');
     }
   }
+  
+  static async syncNotes() {
+    // 1. Process any pending local changes first
+    await this.processQueue({ silent: true });
+
+    // 2. Fetch all notes from cloud and merge them into local DB
+    if (!navigator.onLine) return;
+    const db = await getDb();
+    if (!db) return;
+
+    try {
+      this.log("Starting notes sync...", 'info');
+      const remoteNotes = await api.get('/notes').catch(() => []);
+      if (Array.isArray(remoteNotes)) {
+        for (const remote of remoteNotes) {
+          const local = await db.select<any[]>("SELECT updatedAt, syncStatus FROM notes WHERE id = ?", [remote.id]);
+          if (local.length > 0) {
+            const localRow = local[0];
+            if (localRow.syncStatus !== 'SYNCED') continue; // Skip overwriting dirty/deleted records
+            if (new Date(localRow.updatedAt).getTime() >= new Date(remote.updatedAt).getTime()) continue;
+          }
+          await this.safeDbExecute(
+            `INSERT OR REPLACE INTO notes (id, title, content, category, metadata, createdAt, updatedAt, syncStatus) VALUES (?, ?, ?, ?, ?, ?, ?, 'SYNCED')`,
+            [
+              remote.id, 
+              remote.title, 
+              typeof remote.content === 'string' ? remote.content : JSON.stringify(remote.content), 
+              remote.category, 
+              typeof remote.metadata === 'string' ? remote.metadata : JSON.stringify(remote.metadata || {}), 
+              String(remote.createdAt), 
+              String(remote.updatedAt)
+            ]
+          );
+        }
+      }
+      this.log("Notes sync complete.", 'success');
+    } catch (e: any) {
+      this.log(`Notes sync failed: ${e.message}`, 'error');
+      throw e;
+    }
+  }
 
   static start() {
     setInterval(() => this.processQueue({ silent: true }), 30000);
     window.addEventListener('online', () => this.processQueue());
     
     // Initial pull sync on boot (forced)
-    setTimeout(() => this.pullSync({ forced: true }), 2000);
+    setTimeout(() => {
+      this.pullSync({ forced: true });
+      this.syncNotes().catch(() => {});
+    }, 2000);
   }
 }

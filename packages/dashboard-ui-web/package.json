@@ -12,6 +12,7 @@
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
     "@gritorquit/dashboard-core": "workspace:*",
+    "@gritorquit/domain": "workspace:*",
     "@gritorquit/habits-ui-web": "workspace:*",
     "@gritorquit/study-ui-web": "workspace:*",
     "@types/react-virtualized-auto-sizer": "^1.0.8",

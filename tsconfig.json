@@ -33,7 +33,13 @@
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    ".next",
+    ".expo",
+    ".turbo",
+    "apps/desktop/src-tauri/target",
+    "apps/mobile/android",
+    "apps/mobile/ios"
   ],
   "extends": "expo/tsconfig.base"
 }

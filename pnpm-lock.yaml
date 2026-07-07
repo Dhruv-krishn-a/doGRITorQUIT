@@ -771,6 +771,9 @@ importers:
       '@gritorquit/dashboard-core':
         specifier: workspace:*
         version: link:../dashboard-core
+      '@gritorquit/domain':
+        specifier: workspace:*
+        version: link:../domain
       '@gritorquit/habits-ui-web':
         specifier: workspace:*
         version: link:../habits-ui-web

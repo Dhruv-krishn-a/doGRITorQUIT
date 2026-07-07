@@ -1,7 +1,6 @@
 module.exports = {
-  preset: 'react-native',
+  preset: 'jest-expo',
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|nativewind|react-native-css-interop|lucide-react-native)',
+    'node_modules/(?!(?:.pnpm/)?(jest-expo|expo|@expo|expo-modules-core|react-native|@react-native|@nozbe/watermelondb|nativewind|react-native-css-interop|lucide-react-native)/)',
   ],
-  testPathIgnorePatterns: ['/node_modules/', '/e2e/'],
 };
