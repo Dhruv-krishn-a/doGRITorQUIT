@@ -58,38 +58,51 @@ export async function POST(request: Request) {
 
     const isValid = await compare(password, user.passwordHash);
     if (!isValid) {
-      const failed = await registerFailedLoginAttempt(email, context.ip);
-      if (failed.shouldAlert) {
-        await sendSuspiciousActivityEmail({
+      try {
+        const failed = await registerFailedLoginAttempt(email, context.ip);
+        if (failed.shouldAlert) {
+          sendSuspiciousActivityEmail({
+            email,
+            reason: "Multiple failed password login attempts",
+            time: new Date(),
+            ip: context.ip,
+            userAgent: context.userAgent,
+            locationHint: context.locationHint,
+          }).catch((error) => {
+            console.error("Failed to send suspicious activity email:", error);
+          });
+        }
+      } catch (secError) {
+        console.warn("Security tracking unavailable (registerFailedLoginAttempt):", secError);
+      }
+      return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
+    }
+
+    try {
+      await clearFailedLoginAttempts(email, context.ip);
+    } catch (secError) {
+      console.warn("Security tracking unavailable (clearFailedLoginAttempts):", secError);
+    }
+
+    try {
+      const isNewDevice = await markAndCheckNewDevice(user.id, context.fingerprint, {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        locationHint: context.locationHint,
+      });
+      if (isNewDevice) {
+        sendNewLoginAlertEmail({
           email,
-          reason: "Multiple failed password login attempts",
           time: new Date(),
           ip: context.ip,
           userAgent: context.userAgent,
           locationHint: context.locationHint,
         }).catch((error) => {
-          console.error("Failed to send suspicious activity email:", error);
+          console.error("Failed to send new login alert email:", error);
         });
       }
-      return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
-    }
-
-    await clearFailedLoginAttempts(email, context.ip);
-    const isNewDevice = await markAndCheckNewDevice(user.id, context.fingerprint, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      locationHint: context.locationHint,
-    });
-    if (isNewDevice) {
-      await sendNewLoginAlertEmail({
-        email,
-        time: new Date(),
-        ip: context.ip,
-        userAgent: context.userAgent,
-        locationHint: context.locationHint,
-      }).catch((error) => {
-        console.error("Failed to send new login alert email:", error);
-      });
+    } catch (secError) {
+      console.warn("Security tracking unavailable (markAndCheckNewDevice):", secError);
     }
 
     const expiresIn = 60 * 60 * 1; // 1 hour access token

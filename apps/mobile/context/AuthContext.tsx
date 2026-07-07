@@ -167,6 +167,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signOut().catch(console.error);
     });
 
+    // When the auth/callback screen stores a token via OAuth, restore the session immediately
+    const authReadySub = DeviceEventEmitter.addListener('auth:ready', () => {
+      restoreSession().catch(console.error);
+    });
+
     // SILENT REFRESH SENTINEL
     // Every 60 seconds, check if token is expiring in the next 5 mins
     const refreshSentinel = setInterval(async () => {
@@ -195,6 +200,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.remove();
       authExpiredSub.remove();
+      authReadySub.remove();
       clearInterval(sentinel);
       clearInterval(refreshSentinel);
     };
