@@ -33,7 +33,7 @@ export default function DevSettingsPage() {
  return () => clearInterval(interval);
  }, []);
 
- const LogItem = ({ message, type = 'info' }: { message: string, type?: 'info'|'error'|'success' }) => (
+ const LogItem = ({ message, type = 'info' }: { message: string, type?: 'info'|'error'|'success'|'warn' }) => (
  <View className="flex-row gap-3 py-2 border-b border-[var(--border-color)]/20">
  <Text className="text-[8px] font-mono text-[var(--text-secondary)] opacity-40">[{new Date().toLocaleTimeString()}]</Text>
  <Text className={`text-[10px] font-mono flex-1 ${type === 'error' ? 'text-rose-400' : (type === 'success' ? 'text-emerald-400' : 'text-slate-300')}`}>

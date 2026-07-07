@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getDb } from '../../../lib/db';
 import { Note } from '@gritorquit/notes-ui-web';
 
-export function useNotes(activeCategory: string) {
+export function useNotes(activeCategory: string = 'ALL') {
   return useQuery({
     queryKey: ['notes', activeCategory],
     queryFn: async () => {

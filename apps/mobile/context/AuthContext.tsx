@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
-import { Alert } from "react-native";
+import { Alert, DeviceEventEmitter } from "react-native";
 import {
   clearStoredSession,
   fetchMe,
@@ -95,21 +95,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const me = await fetchMe(stored.access_token);
-    if (!me) {
-      await clearStoredSession();
-      setSession(null);
-      return;
+    try {
+      const me = await fetchMe(stored.access_token);
+      if (!me) {
+        await clearStoredSession();
+        setSession(null);
+        return;
+      }
+
+      const refreshed = await setStoredSession({
+        token_type: "bearer",
+        access_token: stored.access_token,
+        refresh_token: stored.refresh_token,
+        expires_in: stored.expires_in,
+        user: me,
+      });
+
+      setSession(refreshed);
+    } catch (error) {
+      console.warn("[Auth] Network error during session restore. Using offline session.");
+      setSession(stored);
     }
-
-    const refreshed = await setStoredSession({
-      token_type: "bearer",
-      access_token: stored.access_token,
-      expires_in: stored.expires_in,
-      user: me,
-    });
-
-    setSession(refreshed);
   };
 
   const handleDeepLink = async (url: string) => {
@@ -157,8 +163,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
     });
 
+    const authExpiredSub = DeviceEventEmitter.addListener('auth:expired', () => {
+      signOut().catch(console.error);
+    });
+
+    // SILENT REFRESH SENTINEL
+    // Every 60 seconds, check if token is expiring in the next 5 mins
+    const refreshSentinel = setInterval(async () => {
+      const stored = await getStoredSession();
+      if (!stored?.expires_at) return;
+
+      const isExpiringSoon = stored.expires_at - Date.now() < 5 * 60 * 1000;
+      if (isExpiringSoon) {
+        console.log("[Auth] Token expiring soon, rotating...");
+// @ts-ignore
+        const next = await refreshSession();
+        if (next) setSession(next);
+      }
+    }, 60000);
+
+    // ACTIVE SESSION SENTINEL
+    // Every 5 seconds, verify if the session has physically expired in the background
+    // This ensures the UI unmounts immediately even if no network requests are made.
+    const sentinel = setInterval(async () => {
+      const stored = await getStoredSession();
+      if (!stored) {
+        setSession(null);
+      }
+    }, 5000);
+
     return () => {
       subscription.remove();
+      authExpiredSub.remove();
+      clearInterval(sentinel);
+      clearInterval(refreshSentinel);
     };
   }, []);
 

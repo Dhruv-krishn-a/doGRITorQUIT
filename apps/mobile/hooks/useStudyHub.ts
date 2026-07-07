@@ -36,8 +36,12 @@ export function useStudyHub() {
       if (Array.isArray(data?.plans)) return data.plans;
       if (Array.isArray(data?.data?.plans)) return data.data.plans;
       return [];
-    } catch (error) {
-      console.warn("Failed to fetch remote plans:", error);
+    } catch (error: any) {
+      if (error?.message === 'Network request failed' || error?.message?.includes('Failed to fetch') || error?.message?.includes('NetworkError')) {
+        console.log("[StudyHub] Network error fetching remote plans. Working offline.");
+      } else {
+        console.warn("Failed to fetch remote plans:", error);
+      }
       return [];
     }
   }, []);

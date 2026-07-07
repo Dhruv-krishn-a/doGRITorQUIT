@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Modal, TextInput, ActivityIndicator, ScrollView, Alert, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, ScrollView, Alert, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import { useRouter } from 'expo-router';
@@ -61,7 +61,7 @@ export const PathCreationManager: React.FC<PathCreationManagerProps> = ({ isVisi
       }}
       activeOpacity={0.7}
       className={`p-6 rounded-[2.5rem] border mb-4 flex-row items-center ${
-        accent ? 'bg-[var(--accent-color)] border-[var(--accent-color)] shadow-lg shadow-[var(--accent-color)]/20' : 'bg-[var(--bg-secondary)]/50 border-[var(--border-color)]'
+        accent ? 'bg-[var(--accent-color)] border-[var(--accent-color)]' : 'bg-[var(--bg-secondary)]/50 border-[var(--border-color)]'
       }`}
     >
       <View className={`w-12 h-12 rounded-2xl items-center justify-center mr-5 ${accent ? 'bg-white/20' : 'bg-[var(--bg-card)] border border-[var(--border-color)]'}`}>
@@ -131,7 +131,6 @@ export const PathCreationManager: React.FC<PathCreationManagerProps> = ({ isVisi
         </View>
       </Modal>
 
-      {/* Specialized Modals */}
       <ProjectInitModal 
         isVisible={isVisible && activeCategory === 'PROJECT'} 
         onClose={handleClose} 

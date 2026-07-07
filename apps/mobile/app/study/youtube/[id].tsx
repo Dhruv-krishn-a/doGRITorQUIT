@@ -48,7 +48,7 @@ const YoutubeDetail: React.FC<YoutubeDetailProps> = ({ track, units }) => {
       <TouchableOpacity 
         onPress={() => router.push(`/study/${track.id}/${unit.id}`)}
         activeOpacity={0.7}
-        className={`p-6 rounded-[2.5rem] mb-5 border shadow-sm ${
+        className={`p-6 rounded-[2.5rem] mb-5 border  ${
           isDone ? 'bg-[var(--bg-secondary)]/30 border-[var(--border-color)]' : 'bg-[var(--bg-card)] border-[var(--border-color)]'
         }`}
       >
@@ -91,7 +91,7 @@ const YoutubeDetail: React.FC<YoutubeDetailProps> = ({ track, units }) => {
           
           <TouchableOpacity 
             onPress={() => router.push(`/study/${track.id}/${unit.id}`)}
-            className="flex-row items-center gap-3 px-6 py-3 bg-[var(--text-primary)] rounded-2xl shadow-lg shadow-black/10"
+            className="flex-row items-center gap-3 px-6 py-3 bg-[var(--text-primary)] rounded-2xl  "
           >
              <Ionicons name="play" size={12} color={colors.primary} />
              <Text className="text-[10px] font-black text-[var(--bg-primary)] uppercase tracking-widest italic">Engage</Text>
@@ -104,12 +104,12 @@ const YoutubeDetail: React.FC<YoutubeDetailProps> = ({ track, units }) => {
   return (
     <View className="flex-1 bg-[var(--bg-primary)]">
       {/* Header Protocol */}
-      <View className="pt-16 px-6 pb-6 bg-[var(--bg-card)] border-b border-[var(--border-color)] shadow-sm">
+      <View className="pt-16 px-6 pb-6 bg-[var(--bg-card)] border-b border-[var(--border-color)] ">
         <View className="flex-row items-center justify-between mb-8">
           <TouchableOpacity onPress={() => router.back()} className="w-12 h-12 bg-[var(--bg-secondary)] rounded-2xl items-center justify-center border border-[var(--border-color)]">
             <Ionicons name="chevron-back" size={24} color={colors.text} />
           </TouchableOpacity>
-          <View className="flex-row items-center gap-2 bg-rose-500/10 px-4 py-2 rounded-xl border border-rose-500/20 shadow-lg shadow-rose-500/5">
+          <View className="flex-row items-center gap-2 bg-rose-500/10 px-4 py-2 rounded-xl border border-rose-500/20  -500/5">
             <Ionicons name="logo-youtube" size={14} color="#f43f5e" />
             <Text className="text-[10px] font-black uppercase tracking-[0.2em] text-rose-500 italic">Media Protocol</Text>
           </View>
@@ -124,7 +124,7 @@ const YoutubeDetail: React.FC<YoutubeDetailProps> = ({ track, units }) => {
         
         <View className="flex-row items-center gap-4">
           <View className="flex-1 h-2 bg-[var(--bg-secondary)] rounded-full overflow-hidden border border-[var(--border-color)]">
-            <View className="h-full bg-rose-500 shadow-lg shadow-rose-500/50" style={{ width: `${track.progressPercentage}%` }} />
+            <View className="h-full bg-rose-500  -500/50" style={{ width: `${track.progressPercentage}%` }} />
           </View>
           <Text className="text-[11px] font-black text-rose-500 italic tracking-tighter">{Math.round(track.progressPercentage)}%</Text>
         </View>
@@ -195,7 +195,7 @@ const YoutubeDetail: React.FC<YoutubeDetailProps> = ({ track, units }) => {
             <View style={{ width: SCREEN_WIDTH }} className="px-6 bg-rose-500/[0.03]">
               <View className="flex-row items-center justify-between mb-8">
                  <View className="flex-row items-center gap-3">
-                    <View className="w-2 h-6 bg-rose-500 rounded-full shadow-lg shadow-rose-500/50" />
+                    <View className="w-2 h-6 bg-rose-500 rounded-full  -500/50" />
                     <Text className="text-xl font-black italic uppercase tracking-tight text-[var(--text-primary)]">Active</Text>
                  </View>
                  <View className="bg-rose-500/10 px-3 py-1 rounded-lg border border-rose-500/20">
@@ -216,7 +216,7 @@ const YoutubeDetail: React.FC<YoutubeDetailProps> = ({ track, units }) => {
             <View style={{ width: SCREEN_WIDTH }} className="px-6">
               <View className="flex-row items-center justify-between mb-8">
                  <View className="flex-row items-center gap-3">
-                    <View className="w-2 h-6 bg-emerald-500 rounded-full shadow-lg shadow-emerald-500/50" />
+                    <View className="w-2 h-6 bg-emerald-500 rounded-full  -500/50" />
                     <Text className="text-xl font-black italic uppercase tracking-tight text-[var(--text-primary)]">Resolved</Text>
                  </View>
                  <View className="bg-emerald-500/10 px-3 py-1 rounded-lg border border-emerald-500/20">
@@ -247,13 +247,13 @@ const YoutubeDetail: React.FC<YoutubeDetailProps> = ({ track, units }) => {
           )}
 
           {activeTab === 'NOTES' && (
-            <View className="bg-[var(--bg-card)] p-10 rounded-[3.5rem] border border-[var(--border-color)] shadow-xl">
+            <View className="bg-[var(--bg-card)] p-10 rounded-[3.5rem] border border-[var(--border-color)] ">
               <View className="flex-row justify-between items-center mb-10 text-left">
                 <View className="text-left">
                   <Text className="text-2xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter text-left">Neural Ledger</Text>
                   <Text className="text-[9px] font-black text-[var(--text-secondary)] uppercase mt-1 opacity-40 italic tracking-widest text-left">Synthesis of media patterns</Text>
                 </View>
-                <TouchableOpacity className="p-4 bg-rose-500 rounded-2xl shadow-lg shadow-rose-500/20">
+                <TouchableOpacity className="p-4 bg-rose-500 rounded-2xl  -500/20">
                   <Ionicons name="save-outline" size={20} color="white" />
                 </TouchableOpacity>
               </View>
@@ -269,21 +269,21 @@ const YoutubeDetail: React.FC<YoutubeDetailProps> = ({ track, units }) => {
 
           {activeTab === 'STATS' && (
             <View className="space-y-8">
-              <View className="bg-[var(--bg-card)] p-10 rounded-[3.5rem] border border-[var(--border-color)] items-center shadow-xl">
+              <View className="bg-[var(--bg-card)] p-10 rounded-[3.5rem] border border-[var(--border-color)] items-center ">
                 <Text className="text-[11px] font-black text-[var(--text-secondary)] uppercase tracking-[0.4em] mb-6 italic opacity-60">Temporal Consumption</Text>
-                <Text className="text-6xl font-black text-rose-500 italic tracking-tighter shadow-sm">{Math.round(stats.timeSpent / 60)}H {stats.timeSpent % 60}M</Text>
+                <Text className="text-6xl font-black text-rose-500 italic tracking-tighter ">{Math.round(stats.timeSpent / 60)}H {stats.timeSpent % 60}M</Text>
                 <Text className="text-[9px] font-black text-[var(--text-secondary)] uppercase mt-6 opacity-30 italic tracking-widest">Total ingestion duration logged</Text>
               </View>
 
               <View className="flex-row gap-6">
-                <View className="flex-1 bg-[var(--bg-card)] p-8 rounded-[3rem] border border-[var(--border-color)] shadow-sm">
+                <View className="flex-1 bg-[var(--bg-card)] p-8 rounded-[3rem] border border-[var(--border-color)] ">
                   <View className="w-12 h-12 bg-rose-500/10 rounded-2xl items-center justify-center mb-6">
                     <Ionicons name="trending-up" size={20} color="#f43f5e" />
                   </View>
                   <Text className="text-4xl font-black text-[var(--text-primary)] italic tracking-tighter leading-none">{(stats.done / Math.max(1, stats.total) * 100).toFixed(0)}%</Text>
                   <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest mt-2 opacity-40 italic">Velocity</Text>
                 </View>
-                <View className="flex-1 bg-[var(--bg-card)] p-8 rounded-[3rem] border border-[var(--border-color)] shadow-sm">
+                <View className="flex-1 bg-[var(--bg-card)] p-8 rounded-[3rem] border border-[var(--border-color)] ">
                   <View className="w-12 h-12 bg-rose-500/10 rounded-2xl items-center justify-center mb-6">
                     <Ionicons name="timer" size={20} color="#f43f5e" />
                   </View>
@@ -317,7 +317,7 @@ const EnhancedYoutubeDetail = withObservables(['id'], ({ id }) => ({
         </Text>
         <TouchableOpacity
           onPress={() => router.replace('/(drawer)/media-tracker')}
-          className="mt-10 bg-[var(--accent-color)] px-10 py-5 rounded-2xl shadow-lg shadow-[var(--accent-color)]/20"
+          className="mt-10 bg-[var(--accent-color)] px-10 py-5 rounded-2xl  [var(--accent-color)]/20"
         >
           <Text className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--bg-primary)]">
             Open Registry

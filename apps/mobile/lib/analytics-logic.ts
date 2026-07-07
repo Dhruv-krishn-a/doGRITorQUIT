@@ -24,7 +24,7 @@ export async function getWeeklyStats() {
     const dayEnd = new Date(dayStart);
     dayEnd.setHours(23,59,59,999);
 
-    const dayTasks = tasks.filter(t => t.date >= dayStart.getTime() && t.date <= dayEnd.getTime());
+    const dayTasks = tasks.filter(t => t.date && t.date >= dayStart.getTime() && t.date <= dayEnd.getTime());
     const doneTasks = dayTasks.filter(t => t.completed).length;
     
     return {

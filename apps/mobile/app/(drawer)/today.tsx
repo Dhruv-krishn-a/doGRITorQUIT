@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, Modal, Pressable } from 'react-native';
 import { useToday } from '../../hooks/useToday';
+import { SmartPlannerEngine } from '@gritorquit/domain/dashboard/SmartPlannerEngine';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../context/ThemeContext';
@@ -35,7 +36,7 @@ export default function TodayPage() {
  const { 
  actionStream, loading, 
  toggleHabit, refreshAll,
- toggleTaskComplete, toggleUnitComplete
+ toggleTaskComplete, toggleUnitComplete, createScheduledTask
  } = useToday();
  const router = useRouter();
  const { colors } = useTheme();
@@ -51,82 +52,47 @@ export default function TodayPage() {
  const [newBlockStart, setNewBlockStart] = useState('09:00');
  const [newBlockEnd, setNewBlockEnd] = useState('10:00');
  const [newBlockIcon, setNewBlockIcon] = useState<'briefcase'|'moon'|'barbell'|'cafe'|'book'>('briefcase');
+ const [newTaskTitle, setNewTaskTitle] = useState('');
+ const [newTaskTime, setNewTaskTime] = useState('');
+ const [isTaskUrgent, setIsTaskUrgent] = useState(false);
 
  const goals = useMemo(() => {
  return actionStream.filter(i => i.status === 'PENDING').map(i => ({
  ...i,
- actualDuration: i.duration || i.estimatedMinutes || 30,
- intensity: i.priority === 'HIGH' || i.priority === 'URGENT' ? 'High' : (i.priority === 'LOW' ? 'Low' : 'Mid')
+ actualDuration: (i as any).duration || (i as any).estimatedMinutes || 30, intensity: i.priority === 'HIGH' || i.priority === 'URGENT' ? 'High' : (i.priority === 'LOW' ? 'Low' : 'Mid')
  }));
  }, [actionStream]);
 
  const scheduleData = useMemo(() => {
- const rawBlocks = fixedBlocks.map(b => ({
+ const routineBlocks = fixedBlocks.map(b => ({
  ...b,
- startMinutes: parseTime(b.start),
- endMinutes: parseTime(b.end)
+ startMinutes: SmartPlannerEngine.parseTime(b.start),
+ endMinutes: SmartPlannerEngine.parseTime(b.end)
  }));
 
- const normalized: any[] = [];
- rawBlocks.forEach(b => {
- if (b.endMinutes < b.startMinutes) {
- normalized.push({ ...b, s: 0, e: b.endMinutes });
- normalized.push({ ...b, s: b.startMinutes, e: 1440 });
- } else {
- normalized.push({ ...b, s: b.startMinutes, e: b.endMinutes });
- }
- });
-
- const sortedBlocks = normalized.sort((a, b) => a.s - b.s);
- 
- // Merge
- const merged: any[] = [];
- if (sortedBlocks.length > 0) {
- let current = { s: sortedBlocks[0].s, e: sortedBlocks[0].e };
- for (let i = 1; i < sortedBlocks.length; i++) {
- if (sortedBlocks[i].s <= current.e) { current.e = Math.max(current.e, sortedBlocks[i].e); }
- else { merged.push(current); current = { s: sortedBlocks[i].s, e: sortedBlocks[i].e }; }
- }
- merged.push(current);
- }
-
- const freeWindows: any[] = [];
- let lastEnd = 0;
- merged.forEach(b => {
- if (b.s > lastEnd) freeWindows.push({ s: lastEnd, e: b.s, d: b.s - lastEnd });
- lastEnd = b.e;
- });
- if (lastEnd < 1440) freeWindows.push({ s: lastEnd, e: 1440, d: 1440 - lastEnd });
-
- // Allocation
  const filteredGoals = selectedGoalIds.length > 0 
  ? goals.filter(g => selectedGoalIds.includes(g.id))
  : goals;
 
- const allocated: any[] = [];
- let currentWindowIdx = 0;
- let currentWindow = freeWindows.length > 0 ? { ...freeWindows[0] } : null;
-
- filteredGoals.forEach(task => {
- let placed = false;
- let buffer = task.intensity === 'High' ? 15 : (task.intensity === 'Mid' ? 5 : 0);
- while (currentWindow && !placed) {
- if (currentWindow.d >= task.actualDuration) {
- allocated.push({ ...task, startTime: currentWindow.s, endTime: currentWindow.s + task.actualDuration });
- currentWindow.s += (task.actualDuration + buffer);
- currentWindow.d -= (task.actualDuration + buffer);
- placed = true;
- } else {
- currentWindowIdx++;
- currentWindow = currentWindowIdx < freeWindows.length ? { ...freeWindows[currentWindowIdx] } : null;
- }
- }
+ const taskInputs = filteredGoals.map(t => {
+ const isMustDo = !!t.metadata?.isMustDo;
+ const lockedTimeStr = t.metadata?.lockedTime;
+ return {
+ ...t,
+ durationMinutes: t.actualDuration,
+ priority: t.intensity.toUpperCase(),
+ isMustDo,
+ lockedStartMinutes: isMustDo && lockedTimeStr ? SmartPlannerEngine.parseTime(lockedTimeStr) : undefined,
+ };
  });
 
- return { 
- blocks: rawBlocks, 
- allocated, 
- totalFreeMinutes: freeWindows.reduce((acc, w) => acc + w.d, 0)
+ const result = SmartPlannerEngine.generatePlan(routineBlocks, taskInputs);
+
+ return {
+ blocks: fixedBlocks,
+ allocated: [...result.mustDo, ...result.upNext],
+ overflow: result.overflow,
+ totalFreeMinutes: result.totalFreeMinutes
  };
  }, [fixedBlocks, goals, selectedGoalIds]);
 
@@ -206,18 +172,19 @@ export default function TodayPage() {
  onChangeText={setNewBlockTitle} 
  placeholder="Work, Study, Gym..." 
  placeholderTextColor={colors.textSecondary + '40'} 
- className="w-full px-6 py-5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-3xl text-[var(--text-primary)] font-black italic uppercase tracking-tight" 
+ autoCapitalize="words"
+ className="w-full px-6 py-5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-3xl text-[var(--text-primary)] font-black italic tracking-tight" 
  />
  </View>
  
  <View className="flex-row gap-4">
  <View className="flex-1 text-left">
  <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-3 ml-1 italic">Window Start</Text>
- <TextInput value={newBlockStart} onChangeText={setNewBlockStart} placeholder="09:00" placeholderTextColor={colors.textSecondary + '40'} className="w-full px-6 py-5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-3xl text-[var(--text-primary)] font-black italic uppercase tracking-tight" />
+ <TextInput value={newBlockStart} onChangeText={setNewBlockStart} placeholder="09:00" placeholderTextColor={colors.textSecondary + '40'} className="w-full px-6 py-5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-3xl text-[var(--text-primary)] font-black italic tracking-tight" />
  </View>
  <View className="flex-1 text-left">
  <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-3 ml-1 italic">Window End</Text>
- <TextInput value={newBlockEnd} onChangeText={setNewBlockEnd} placeholder="10:00" placeholderTextColor={colors.textSecondary + '40'} className="w-full px-6 py-5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-3xl text-[var(--text-primary)] font-black italic uppercase tracking-tight" />
+ <TextInput value={newBlockEnd} onChangeText={setNewBlockEnd} placeholder="10:00" placeholderTextColor={colors.textSecondary + '40'} className="w-full px-6 py-5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-3xl text-[var(--text-primary)] font-black italic tracking-tight" />
  </View>
  </View>
 
@@ -235,6 +202,7 @@ export default function TodayPage() {
  <TouchableOpacity 
  onPress={() => {
  if (newBlockTitle.trim()) {
+ // @ts-ignore
  setFixedBlocks(prev => [...prev, { id: Date.now().toString(), title: newBlockTitle, start: newBlockStart, end: newBlockEnd, icon: newBlockIcon }]);
  setNewBlockTitle('');
  }
@@ -301,6 +269,61 @@ export default function TodayPage() {
  </View>
  </View>
 
+ <View className="px-6 mb-8 text-left">
+ <Text className="text-[11px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] mb-4 italic ml-1">Quick Add Task</Text>
+ <View className="flex-row gap-3">
+ <TextInput 
+ value={newTaskTitle} 
+ onChangeText={setNewTaskTitle} 
+ placeholder="What needs to be done?" 
+ placeholderTextColor={colors.textSecondary + '40'} 
+ className="flex-1 px-5 py-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl text-[var(--text-primary)] font-black italic tracking-tight" 
+ />
+ <TouchableOpacity 
+ onPress={async () => {
+ if (newTaskTitle.trim()) {
+ const todayStr = new Date().toISOString().split('T')[0];
+ await createScheduledTask({ 
+ title: newTaskTitle, 
+ date: todayStr, 
+ time: isTaskUrgent && newTaskTime ? newTaskTime : '09:00', 
+ priority: isTaskUrgent ? 'urgent' : 'medium', 
+ estimatedMinutes: 30,
+ metadata: {
+ isMustDo: isTaskUrgent,
+ lockedTime: isTaskUrgent && newTaskTime ? newTaskTime : undefined
+ }
+ });
+ setNewTaskTitle('');
+ setNewTaskTime('');
+ setIsTaskUrgent(false);
+ }
+ }} 
+ className="px-6 py-4 bg-[var(--accent-color)] rounded-2xl justify-center items-center"
+ >
+ <Ionicons name="add" size={20} color={colors.primary} />
+ </TouchableOpacity>
+ </View>
+
+ <View className="flex-row items-center gap-4 mt-4 ml-1">
+ <TouchableOpacity onPress={() => setIsTaskUrgent(!isTaskUrgent)} className="flex-row items-center gap-2">
+ <View className={`w-5 h-5 rounded border ${isTaskUrgent ? 'bg-[var(--accent-color)] border-[var(--accent-color)]' : 'bg-[var(--bg-secondary)] border-[var(--border-color)]'} items-center justify-center`}>
+ {isTaskUrgent && <Ionicons name="checkmark" size={14} color={colors.primary} />}
+ </View>
+ <Text className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">Must Do (Urgent Lock)</Text>
+ </TouchableOpacity>
+ {isTaskUrgent && (
+ <TextInput 
+ value={newTaskTime} 
+ onChangeText={setNewTaskTime} 
+ placeholder="14:00" 
+ placeholderTextColor={colors.textSecondary + '40'} 
+ className="flex-1 px-4 py-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] font-black italic text-xs tracking-tight" 
+ />
+ )}
+ </View>
+ </View>
+
  <View className="px-6">
  <View className="flex-row justify-between items-center mb-8 border-b border-[var(--border-color)] pb-4 text-left">
  <Text className="text-2xl font-black text-[var(--text-primary)] uppercase italic tracking-tight">Your Path</Text>
@@ -321,18 +344,26 @@ export default function TodayPage() {
  <View className="flex-1 p-6 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[2.5rem] relative overflow-hidden group">
  <View className="flex-row items-center gap-3 mb-4 text-left">
  {(task.type === 'YOUTUBE' || task.type === 'VIDEO') && <Ionicons name="logo-youtube" size={16} color="#f43f5e" />}
+ {task.type === 'COURSE' && <Ionicons name="library" size={16} color={colors.accent} />}
  <Text className="text-xl font-bold text-[var(--text-primary)] flex-1 uppercase italic tracking-tighter leading-none" numberOfLines={1}>{task.title}</Text>
  </View>
  
  <View className="flex-row items-center justify-between">
+ <View className="flex-row items-center gap-2">
  <View className="px-3 py-1.5 bg-[var(--bg-secondary)] rounded-full border border-[var(--border-color)]">
  <Text className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest italic">{task.actualDuration}M</Text>
+ </View>
+ {(task.metadata?.watchPercentage > 0) && (
+ <View className="px-3 py-1.5 bg-[var(--bg-secondary)] rounded-full border border-[var(--border-color)]">
+ <Text className="text-[9px] font-black text-[var(--accent-color)] uppercase tracking-widest italic">{Math.round(task.metadata.watchPercentage)}%</Text>
+ </View>
+ )}
  </View>
  
  <View className="flex-row gap-3">
  <TouchableOpacity onPress={() => handleStartMission(task)} className="flex-row items-center gap-2 px-5 py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl active:scale-95 transition-all">
  <Ionicons name="play" size={12} color={colors.accent} />
- <Text className="text-[10px] font-black text-[var(--text-primary)] uppercase italic">Start</Text>
+ <Text className="text-[10px] font-black text-[var(--text-primary)] uppercase italic">{(task.type === 'YOUTUBE' || task.type === 'VIDEO') ? 'Watch' : task.type === 'COURSE' ? 'Study' : 'Start'}</Text>
  </TouchableOpacity>
  <TouchableOpacity onPress={() => handleComplete(task)} className="w-12 h-12 bg-emerald-500/10 rounded-2xl items-center justify-center border border-emerald-500/20 active:scale-95 transition-all ">
  <Ionicons name="checkmark" size={24} color="#10b981" />
@@ -351,6 +382,32 @@ export default function TodayPage() {
  )}
  </View>
  </View>
+
+ {scheduleData.overflow && scheduleData.overflow.length > 0 && (
+ <View className="px-6 mt-8 mb-10 opacity-70">
+ <View className="flex-row items-center gap-3 mb-6">
+ <Text className="text-xl font-black text-[var(--text-secondary)] uppercase tracking-tightest italic">Pushed to Tomorrow</Text>
+ <View className="px-2 py-1 rounded bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+ <Text className="text-[8px] font-black uppercase tracking-widest text-[var(--text-secondary)]">Overflow</Text>
+ </View>
+ </View>
+ <View className="space-y-4">
+ {scheduleData.overflow.map(task => (
+ <View key={task.id} className="flex-row items-center justify-between p-5 bg-[var(--bg-card)]/30 border border-[var(--border-color)] rounded-2xl grayscale">
+ <View className="flex-row items-center gap-4 flex-1">
+ <Text className="text-[9px] font-black uppercase tracking-widest text-[var(--text-secondary)]">{task.priority}</Text>
+ <Text className="text-sm font-bold italic line-through decoration-[var(--border-color)] text-[var(--text-primary)] flex-1" numberOfLines={1}>{task.title}</Text>
+ </View>
+ <View className="flex-row items-center gap-1 ml-4">
+ <Ionicons name="time-outline" size={12} color={colors.textSecondary} />
+ <Text className="text-[9px] font-black uppercase tracking-widest text-[var(--text-secondary)]">{task.durationMinutes}m</Text>
+ </View>
+ </View>
+ ))}
+ </View>
+ </View>
+ )}
+
  </ScrollView>
  </View>
  );

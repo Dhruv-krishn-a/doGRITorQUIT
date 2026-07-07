@@ -90,7 +90,7 @@ const PlanDetail: React.FC<{ plan: any }> = ({ plan }) => {
           <TouchableOpacity onPress={() => router.back()} className="w-12 h-12 bg-[var(--bg-secondary)] rounded-2xl items-center justify-center border border-[var(--border-color)]">
             <Ionicons name="chevron-back" size={24} color={colors.text} />
           </TouchableOpacity>
-          <View className="flex-row items-center gap-2 bg-sky-500/10 px-4 py-2 rounded-xl border border-sky-500/20 shadow-lg shadow-sky-500/5">
+          <View className="flex-row items-center gap-2 bg-sky-500/10 px-4 py-2 rounded-xl border border-sky-500/20  -500/5">
             <Ionicons name="map-outline" size={14} color="#0ea5e9" />
             <Text className="text-[10px] font-black uppercase tracking-[0.2em] text-sky-500 italic">Temporal Engine</Text>
           </View>
@@ -116,8 +116,8 @@ const PlanDetail: React.FC<{ plan: any }> = ({ plan }) => {
         </View>
         
         <View className="flex-row items-center gap-4">
-          <View className="flex-1 h-2 bg-[var(--bg-secondary)] rounded-full overflow-hidden border border-[var(--border-color)] shadow-inner">
-            <View className="h-full bg-sky-500 shadow-lg shadow-sky-500/50" style={{ width: `${progressPercentage}%` }} />
+          <View className="flex-1 h-2 bg-[var(--bg-secondary)] rounded-full overflow-hidden border border-[var(--border-color)] ">
+            <View className="h-full bg-sky-500  -500/50" style={{ width: `${progressPercentage}%` }} />
           </View>
           <Text className="text-[11px] font-black text-sky-500 italic tracking-tighter">{Math.round(progressPercentage)}%</Text>
         </View>
@@ -139,7 +139,7 @@ const PlanDetail: React.FC<{ plan: any }> = ({ plan }) => {
                   onPress={() => { setSelectedDay(name); Haptics.selectionAsync(); }}
                   className={`py-8 items-center border-l-4 ${isActive ? 'border-sky-500 bg-sky-500/5' : 'border-transparent'}`}
                 >
-                  <View className={`w-10 h-10 rounded-full items-center justify-center border-2 mb-3 shadow-sm ${
+                  <View className={`w-10 h-10 rounded-full items-center justify-center border-2 mb-3  ${
                     allDone ? 'bg-emerald-500 border-emerald-500' : 
                     isActive ? 'bg-[var(--bg-primary)] border-sky-500' : 'border-[var(--border-color)] opacity-20'
                   }`}>
@@ -189,7 +189,7 @@ const PlanDetail: React.FC<{ plan: any }> = ({ plan }) => {
                     key={u.id}
                     onPress={() => handleToggleTask(u)}
                     activeOpacity={0.7}
-                    className={`p-8 rounded-[3rem] border shadow-md ${
+                    className={`p-8 rounded-[3rem] border  ${
                       isDone ? 'bg-[var(--bg-secondary)]/30 border-[var(--border-color)]' : 'bg-[var(--bg-card)] border-[var(--border-color)]'
                     }`}
                   >
@@ -274,7 +274,7 @@ export default function PlanPage() {
   if (!plan) {
     return (
       <View className="flex-1 items-center justify-center bg-[var(--bg-primary)] px-8">
-        <View className="w-24 h-24 bg-[var(--bg-secondary)] rounded-full items-center justify-center mb-10 border border-[var(--border-color)] shadow-inner">
+        <View className="w-24 h-24 bg-[var(--bg-secondary)] rounded-full items-center justify-center mb-10 border border-[var(--border-color)] ">
           <Ionicons name="map-outline" size={48} color={colors.textSecondary} style={{ opacity: 0.2 }} />
         </View>
         <Text className="text-base font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] text-center leading-relaxed">
@@ -282,7 +282,7 @@ export default function PlanPage() {
         </Text>
         <TouchableOpacity
           onPress={() => router.replace('/(drawer)/roadmap-tracker')}
-          className="mt-12 bg-[var(--accent-color)] px-12 py-6 rounded-[2rem] shadow-xl shadow-[var(--accent-color)]/20"
+          className="mt-12 bg-[var(--accent-color)] px-12 py-6 rounded-[2rem]  [var(--accent-color)]/20"
         >
           <Text className="text-xs font-black uppercase tracking-[0.4em] text-[var(--bg-primary)]">
             Open Registry

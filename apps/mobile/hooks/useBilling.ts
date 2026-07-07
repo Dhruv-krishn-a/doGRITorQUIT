@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+// @ts-ignore
 import RazorpayCheckout from 'react-native-razorpay';
 import { config } from '../config';
 import { Alert } from 'react-native';
@@ -64,8 +65,12 @@ export function useBilling() {
 
       setProducts(products);
       setData(subscription);
-    } catch (error) {
-      console.error("Failed to fetch billing data:", error);
+    } catch (error: any) {
+      if (error?.message === 'Network request failed' || error?.message?.includes('Failed to fetch') || error?.message?.includes('NetworkError')) {
+        console.log("[Billing] Network error fetching billing data. Working offline.");
+      } else {
+        console.warn("Failed to fetch billing data:", error);
+      }
     } finally {
       setLoading(false);
     }

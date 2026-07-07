@@ -9,6 +9,22 @@ async function getHeaders() {
     ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
   };
 }
+const handleResponse = async (response: Response, retryFn: () => Promise<any>) => {
+  if (!response.ok) {
+    if (response.status === 401) {
+      console.log("[API] Unauthorized, attempting token rotation...");
+      const nextSession = await authService.refresh();
+      if (nextSession) {
+        return await retryFn();
+      }
+
+      authService.logout();
+      throw new Error('AUTH_EXPIRED');
+    }
+    throw new Error(`API Error: ${response.statusText}`);
+  }
+  return response.json();
+};
 
 export const api = {
   async get(endpoint: string) {
@@ -18,10 +34,9 @@ export const api = {
       }
       const headers = await getHeaders();
       const response = await fetch(buildApiUrl(endpoint), { headers });
-      if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
-      return response.json();
+      return await handleResponse(response, () => this.get(endpoint));
     } catch (error: any) {
-      if (error.message === 'OFFLINE_MODE') throw error;
+      if (error.message === 'OFFLINE_MODE' || error.message === 'AUTH_EXPIRED') throw error;
       if (error.name === 'TypeError' && (error.message.includes('Failed to fetch') || error.message.includes('NetworkError'))) {
         const err = new Error(`Connection lost. Working in offline mode.`);
         (err as any).isOffline = true;
@@ -40,9 +55,9 @@ export const api = {
         headers,
         body: JSON.stringify(body),
       });
-      if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
-      return response.json();
+      return await handleResponse(response, () => this.post(endpoint, body));
     } catch (error: any) {
+      if (error.message === 'AUTH_EXPIRED') throw error;
       if (error.message === 'OFFLINE_MODE' || error.name === 'TypeError') {
         const err = new Error(`Connection lost. Changes will be saved locally.`);
         (err as any).isOffline = true;
@@ -61,9 +76,9 @@ export const api = {
         headers,
         body: JSON.stringify(body),
       });
-      if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
-      return response.json();
+      return await handleResponse(response, () => this.patch(endpoint, body));
     } catch (error: any) {
+      if (error.message === 'AUTH_EXPIRED') throw error;
       if (error.message === 'OFFLINE_MODE' || error.name === 'TypeError') {
         const err = new Error(`Connection lost. Changes will be saved locally.`);
         (err as any).isOffline = true;
@@ -81,9 +96,9 @@ export const api = {
         method: 'DELETE',
         headers,
       });
-      if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
-      return response.json();
+      return await handleResponse(response, () => this.delete(endpoint));
     } catch (error: any) {
+      if (error.message === 'AUTH_EXPIRED') throw error;
       if (error.message === 'OFFLINE_MODE' || error.name === 'TypeError') {
         const err = new Error(`Connection lost. Action will be queued.`);
         (err as any).isOffline = true;

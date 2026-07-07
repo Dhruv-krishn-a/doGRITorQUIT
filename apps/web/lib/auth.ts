@@ -160,25 +160,58 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async signIn({ user, account }) {
       return true;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       if (user?.id) {
         token.sub = user.id;
       }
 
-      if (!token.sub && token.email) {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: String(token.email).toLowerCase() },
-          select: { id: true },
-        });
-        if (dbUser) token.sub = dbUser.id;
+      // Initial sign in
+      if (account && user) {
+        return {
+          ...token,
+          accessToken: account.access_token,
+          refreshToken: account.refresh_token,
+          accessTokenExpires: account.expires_at ? account.expires_at * 1000 : Date.now() + 60 * 60 * 1000,
+          user,
+        };
       }
 
-      return token;
+      // Return previous token if the access token has not expired yet
+      if (Date.now() < (token.accessTokenExpires as number)) {
+        return token;
+      }
+
+      // Access token has expired, try to update it
+      try {
+        if (!token.refreshToken) throw new Error("No refresh token");
+
+        const response = await fetch(`${process.env.NEXTAUTH_URL}/api/auth/refresh`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refresh_token: token.refreshToken }),
+        });
+
+        const refreshedTokens = await response.json();
+
+        if (!response.ok) throw refreshedTokens;
+
+        return {
+          ...token,
+          accessToken: refreshedTokens.access_token,
+          accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000,
+          refreshToken: refreshedTokens.refresh_token ?? token.refreshToken, // Fallback to old refresh token
+        };
+      } catch (error) {
+        console.error("Error refreshing access token", error);
+        return { ...token, error: "RefreshAccessTokenError" };
+      }
     },
     async session({ session, token }) {
       if (session.user && token.sub) {
         (session.user as { id: string }).id = token.sub;
       }
+      (session as any).accessToken = token.accessToken;
+      (session as any).error = token.error;
       return session;
     },
   },

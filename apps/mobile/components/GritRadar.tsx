@@ -87,9 +87,7 @@ export const GritRadar: React.FC<GritRadarProps> = ({ stats, energy, focus }) =>
  fill="#64748b"
  fontSize="10"
  fontWeight="900"
- textAnchor="middle"
- className="uppercase tracking-widest"
- >
+ textAnchor="middle" >
  MOMENTUM
  </SvgText>
  <SvgText
@@ -98,9 +96,7 @@ export const GritRadar: React.FC<GritRadarProps> = ({ stats, energy, focus }) =>
  fill="#64748b"
  fontSize="10"
  fontWeight="900"
- textAnchor="middle"
- className="uppercase tracking-widest"
- >
+ textAnchor="middle" >
  ENERGY
  </SvgText>
  <SvgText
@@ -109,9 +105,7 @@ export const GritRadar: React.FC<GritRadarProps> = ({ stats, energy, focus }) =>
  fill="#64748b"
  fontSize="10"
  fontWeight="900"
- textAnchor="middle"
- className="uppercase tracking-widest"
- >
+ textAnchor="middle" >
  FOCUS
  </SvgText>
  </Svg>

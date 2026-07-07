@@ -4,7 +4,9 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUnifiedToday, dashboardApi } from '@gritorquit/dashboard-core';
+import { SmartPlannerEngine } from '@gritorquit/domain/dashboard/SmartPlannerEngine';
 import { FocusOverlay } from './FocusOverlay';
+import { UnitCard } from '@gritorquit/study-ui-web';
 import { AddBlockModal, AddTaskModal, ICON_LIST } from './architect';
 import SmartTimeline from './SmartTimeline';
 import { 
@@ -41,7 +43,7 @@ const formatDuration = (mins: number) => {
 };
 
 // --- Main Page ---
-export default function TodayUI() {
+export default function TodayUI({ onNavigate }: { onNavigate?: (path: string) => void } = {}) {
   const { data, loading, error, refresh } = useUnifiedToday();
   const [mounted, setMounted] = useState(false);
   const [focusItem, setFocusItem] = useState<any>(null);
@@ -52,64 +54,79 @@ export default function TodayUI() {
 
   useEffect(() => { setMounted(true); }, []);
 
-  const scheduleData = useMemo(() => {
+  const handleNavigation = (path: string) => {
+    if (onNavigate) {
+      onNavigate(path);
+    } else {
+      window.location.href = path;
+    }
+  };
+
+  const handleStartMission = (item: any) => {
+    if (item.type === 'YOUTUBE' || item.type === 'VIDEO') {
+      const trackId = item.metadata?.trackId;
+      if (trackId) {
+        // Assume Next.js routes format, caller can remap in onNavigate if needed, 
+        // but desktop/web share very similar paths
+        handleNavigation(`/dashboard/study/youtube/${trackId}/${item.id}`);
+        return;
+      }
+    }
+    if (item.type === 'COURSE') {
+      const trackId = item.metadata?.trackId;
+      if (trackId) {
+        handleNavigation(`/dashboard/study/course/${trackId}/${item.id}`);
+        return;
+      }
+    }
+    if (item.type === 'PROJECT') {
+      const projectId = item.metadata?.projectId || item.metadata?.planId;
+      if (projectId) {
+        handleNavigation(`/project-tracker/${projectId}`);
+        return;
+      }
+      handleNavigation(`/project-tracker`);
+      return;
+    }
+    // Generic task
+    setFocusItem(item);
+  };
+
+  const { scheduleData, overflowTasks } = useMemo(() => {
     const rawBlocks = data?.fixedBlocks || [];
-    const normalized: any[] = [];
-    rawBlocks.forEach((b: any) => {
-      const s = parse24hToMinutes(b.start); const e = parse24hToMinutes(b.end);
-      if (e < s) { normalized.push({ ...b, s: 0, e }); normalized.push({ ...b, s, e: 1440 }); }
-      else { normalized.push({ ...b, s, e }); }
-    });
-    const sorted = normalized.sort((a, b) => a.s - b.s);
-    
-    // Collision Detection Logic
-    const collisions: string[] = [];
-    for (let i = 0; i < sorted.length; i++) {
-      for (let j = i + 1; j < sorted.length; j++) {
-        if (sorted[i].e > sorted[j].s && sorted[i].s < sorted[j].e) {
-          if (!collisions.includes(sorted[i].title)) collisions.push(sorted[i].title);
-          if (!collisions.includes(sorted[j].title)) collisions.push(sorted[j].title);
-        }
-      }
-    }
-
-    const merged: any[] = [];
-    if (sorted.length > 0) {
-      let current = { s: sorted[0].s, e: sorted[0].e };
-      for (let i = 1; i < sorted.length; i++) {
-        if (sorted[i].s <= current.e) { current.e = Math.max(current.e, sorted[i].e); }
-        else { merged.push(current); current = { s: sorted[i].s, e: sorted[i].e }; }
-      }
-      merged.push(current);
-    }
-    const freeWindows: any[] = []; let lastEnd = 0;
-    merged.forEach(b => { if (b.s > lastEnd) freeWindows.push({ s: lastEnd, e: b.s, d: b.s - lastEnd }); lastEnd = b.e; });
-    if (lastEnd < 1440) freeWindows.push({ s: lastEnd, e: 1440, d: 1440 - lastEnd });
-    
-    const totalFree = Math.max(0, freeWindows.reduce((acc, w) => acc + w.d, 0));
-    const tasks = [...(data?.sections?.tasks || []), ...(data?.sections?.study || [])].filter(t => t.status !== 'completed' && t.status !== 'DONE');
-    
-    // Filter by selected goal IDs if any are selected, otherwise show all
-    const filteredTasks = selectedGoalIds.length > 0 ? tasks.filter(t => selectedGoalIds.includes(t.id)) : tasks;
-
-    const tasksWithDurations = filteredTasks.map(t => ({ 
-      ...t, 
-      actualDuration: t.duration || t.estimatedMinutes || 30, 
-      intensity: t.priority === 'HIGH' || t.priority === 'URGENT' ? 'High' : (t.priority === 'LOW' ? 'Low' : 'Mid') 
+    const routineBlocks = rawBlocks.map((b: any) => ({
+      ...b,
+      startMinutes: SmartPlannerEngine.parseTime(b.start),
+      endMinutes: SmartPlannerEngine.parseTime(b.end)
     }));
+
+    const tasks = [...(data?.sections?.tasks || []), ...(data?.sections?.study || [])].filter((t: any) => t.status !== 'completed' && t.status !== 'DONE');
+    const filteredTasks = selectedGoalIds.length > 0 ? tasks.filter((t: any) => selectedGoalIds.includes(t.id)) : tasks;
     
-    const allocated: any[] = []; let currentWindowIdx = 0; let currentWindow = freeWindows.length > 0 ? { ...freeWindows[0] } : null;
-    tasksWithDurations.forEach(task => {
-      let placed = false; let buffer = task.intensity === 'High' ? 15 : (task.intensity === 'Mid' ? 5 : 0);
-      while (currentWindow && !placed) {
-        if (currentWindow.d >= task.actualDuration) {
-          allocated.push({ ...task, startTime: currentWindow.s, endTime: currentWindow.s + task.actualDuration });
-          currentWindow.s += (task.actualDuration + buffer); currentWindow.d -= (task.actualDuration + buffer); placed = true;
-        } else { currentWindowIdx++; currentWindow = currentWindowIdx < freeWindows.length ? { ...freeWindows[currentWindowIdx] } : null; }
-      }
+    const taskInputs = filteredTasks.map((t: any) => {
+      const isMustDo = !!t.metadata?.isMustDo;
+      const lockedTimeStr = t.metadata?.lockedTime;
+      return {
+        ...t,
+        durationMinutes: t.duration || t.estimatedMinutes || 30,
+        priority: t.priority?.toUpperCase() || 'MEDIUM',
+        isMustDo,
+        lockedStartMinutes: isMustDo && lockedTimeStr ? SmartPlannerEngine.parseTime(lockedTimeStr) : undefined,
+      };
     });
-    return { totalFree, allocated, blocks: sorted, collisions };
-  }, [data]);
+
+    const result = SmartPlannerEngine.generatePlan(routineBlocks, taskInputs);
+    
+    return { 
+      scheduleData: {
+        totalFree: result.totalFreeMinutes, 
+        allocated: [...result.mustDo, ...result.upNext], 
+        blocks: rawBlocks, 
+        collisions: result.collisions 
+      },
+      overflowTasks: result.overflow
+    };
+  }, [data, selectedGoalIds]);
 
   const handleSaveBlocks = async (blocks: any[]) => {
     try {
@@ -119,8 +136,38 @@ export default function TodayUI() {
   };
 
   const handleRemoveBlock = async (id: string) => { try { await dashboardApi.deleteTask(id); refresh(); toast.success('Removed'); } catch (err) { toast.error("Error"); } };
-  const handleCreateTask = async (t: any) => { try { await dashboardApi.createTask({ title: t.title, date: new Date().toISOString(), estimatedMinutes: Number(t.duration), priority: t.intensity.toUpperCase() as any }); setShowAddTask(false); refresh(); toast.success('Added'); } catch (err) { toast.error('Error'); } };
-  const handleComplete = async (id: string, type: string) => { try { if (type === 'TASK') await dashboardApi.completeTask(id); else await dashboardApi.completeStudyUnit(id); refresh(); toast.success("Done"); } catch (err) { toast.error("Error"); } };
+  const handleCreateTask = async (t: any) => { 
+    try { 
+      await dashboardApi.createTask({ 
+        title: t.title, 
+        date: new Date().toISOString(), 
+        estimatedMinutes: Number(t.duration), 
+        priority: t.intensity.toUpperCase() as any,
+        metadata: {
+          isMustDo: t.isMustDo,
+          lockedTime: t.lockedTime
+        }
+      }); 
+      setShowAddTask(false); 
+      refresh(); 
+      toast.success('Added'); 
+    } catch (err) { 
+      toast.error('Error'); 
+    } 
+  };
+  const handleComplete = async (id: string, type: string) => {
+    try {
+      if (type === 'YOUTUBE' || type === 'COURSE' || type === 'VIDEO') {
+        await dashboardApi.completeStudyUnit(id, 0); // 0 seconds fallback, sets to 100% watched
+      } else {
+        await dashboardApi.completeTask(id);
+      }
+      refresh();
+      toast.success('Completed');
+    } catch (err) {
+      toast.error('Error');
+    }
+  };
 
   if (!mounted || (loading && !data)) return (<div className="flex items-center justify-center min-h-[60vh]"><div className="w-10 h-10 border-4 border-[var(--accent-color)] border-t-transparent rounded-full animate-spin" /></div>);
 
@@ -129,7 +176,7 @@ export default function TodayUI() {
   return (
     <div className="w-full max-w-[1400px] mx-auto pb-16 text-[var(--text-primary)] px-6 sm:px-10 lg:px-12 relative pt-12">
       {mounted && portalTarget && createPortal(
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           {showAddBlock && (
             <AddBlockModal 
               key="add-block-modal"
@@ -265,38 +312,52 @@ export default function TodayUI() {
           <div className="absolute left-[80px] top-6 bottom-6 w-px bg-gradient-to-b from-[var(--accent-color)]/30 via-[var(--border-color)] to-[var(--accent-color)]/30 hidden sm:block" />
           <AnimatePresence mode="popLayout">{scheduleData.allocated.map(task=>{
             const s = formatMinutesToTime(task.startTime);
-            const isVideo = task.type === 'VIDEO' || (task.metadata as any)?.youtubeId;
+            const isStudyUnit = task.type === 'YOUTUBE' || task.type === 'COURSE' || task.type === 'VIDEO';
+            
             return (
               <motion.div key={task.id} initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} className="flex flex-col sm:flex-row gap-6 sm:gap-12 group">
                 <div className="sm:w-20 pt-6 sm:text-right shrink-0">
                   <div className="text-xl font-black tracking-tighter italic">{s.time}</div>
                   <div className="text-[9px] uppercase tracking-widest text-[var(--accent-color)] font-black mt-1.5">{s.ampm}</div>
                 </div>
-                <div className="flex-1 p-8 bg-[var(--bg-card)]/40 backdrop-blur-sm border border-[var(--border-color)] group-hover:border-[var(--accent-color)]/40 rounded-[2rem] shadow-sm hover:shadow-2xl transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      {isVideo && <Youtube size={16} className="text-rose-500" />}
-                      <h3 className="text-xl font-bold leading-tight tracking-tight uppercase italic">{task.title}</h3>
+                <div className="flex-1 min-w-0">
+                  {isStudyUnit ? (
+                    <UnitCard 
+                      unit={task as any} 
+                      index={0} 
+                      onAction={(action) => {
+                        if (action === 'SESSION') handleStartMission(task);
+                        if (action === 'COMPLETE') handleComplete(task.id, task.type);
+                      }} 
+                      isDraggable={false} 
+                    />
+                  ) : (
+                    <div className="p-8 bg-[var(--bg-card)]/40 backdrop-blur-sm border border-[var(--border-color)] group-hover:border-[var(--accent-color)]/40 rounded-[2rem] shadow-sm hover:shadow-2xl transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <h3 className="text-xl font-bold leading-tight tracking-tight uppercase italic">{task.title}</h3>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <span className="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-[var(--bg-secondary)] border border-[var(--border-color)]">{task.metadata?.intensity || 'DEEP'} Flow</span>
+                          <span className="text-[10px] text-[var(--text-secondary)] font-black uppercase tracking-widest opacity-40 flex items-center gap-2"><Clock size={12}/> {task.durationMinutes}m</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <button 
+                          onClick={() => setFocusItem(task)}
+                          className="flex items-center gap-2 px-6 py-3.5 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] hover:border-[var(--accent-color)] rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-sm active:scale-95"
+                        >
+                          <Play size={14} fill="currentColor"/> Start Focus
+                        </button>
+                        <button 
+                          onClick={() => handleComplete(task.id, task.type)}
+                          className="p-5 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:text-white border border-emerald-500/20 rounded-2xl transition-all shadow-sm active:scale-90"
+                        >
+                          <CheckCircle2 size={24}/>
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <span className="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-[var(--bg-secondary)] border border-[var(--border-color)]">{task.intensity} Flow</span>
-                      <span className="text-[10px] text-[var(--text-secondary)] font-black uppercase tracking-widest opacity-40 flex items-center gap-2"><Clock size={12}/> {task.actualDuration}m</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <button 
-                      onClick={() => setFocusItem(task)}
-                      className="flex items-center gap-2 px-6 py-3.5 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] hover:border-[var(--accent-color)] rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-sm active:scale-95"
-                    >
-                      <Play size={14} fill="currentColor"/> Start Focus
-                    </button>
-                    <button 
-                      onClick={() => handleComplete(task.id, task.type)}
-                      className="p-5 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:text-white border border-emerald-500/20 rounded-2xl transition-all shadow-sm active:scale-90"
-                    >
-                      <CheckCircle2 size={24}/>
-                    </button>
-                  </div>
+                  )}
                 </div>
               </motion.div>
             );
@@ -304,6 +365,26 @@ export default function TodayUI() {
           {scheduleData.allocated.length===0 && <div className="p-24 text-center border-4 border-dashed border-[var(--border-color)] rounded-[3rem] text-[var(--text-secondary)] opacity-20"><ListTodo size={64} className="mx-auto mb-6"/><p className="text-base font-black uppercase tracking-widest italic">Awaiting your journey...</p></div>}
         </div>
       </section>
+
+      {overflowTasks.length > 0 && (
+        <section className="mt-16 pt-8 border-t border-[var(--border-color)] opacity-70">
+          <div className="flex items-center gap-4 mb-8">
+            <h2 className="text-xl font-black tracking-tightest uppercase italic text-[var(--text-secondary)]">Pushed to Tomorrow</h2>
+            <span className="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-secondary)]">Overflow</span>
+          </div>
+          <div className="space-y-4">
+            {overflowTasks.map((task: any) => (
+              <div key={task.id} className="flex items-center justify-between p-6 bg-[var(--bg-card)]/20 border border-[var(--border-color)] rounded-2xl grayscale">
+                <div className="flex items-center gap-4">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)]">{task.priority}</span>
+                  <h3 className="text-base font-bold italic line-through decoration-[var(--border-color)]">{task.title}</h3>
+                </div>
+                <span className="text-[10px] text-[var(--text-secondary)] font-black uppercase tracking-widest"><Clock size={12} className="inline mr-1" /> {task.durationMinutes}m</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

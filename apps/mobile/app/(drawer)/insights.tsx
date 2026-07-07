@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, Dimensions } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import { View, Text, ScrollView, ActivityIndicator, Dimensions, TouchableOpacity } from 'react-native';
 import { cssInterop } from 'nativewind';
 import { LinearGradient } from 'expo-linear-gradient'; 
 import { BlurView } from 'expo-blur';
@@ -10,6 +9,7 @@ import { useSync } from '../../context/SyncContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import { getWeeklyStats } from '../../lib/analytics-logic';
+import * as Haptics from 'expo-haptics';
 
 cssInterop(LinearGradient, { className: 'style' });
 cssInterop(BlurView, { className: 'style' });
@@ -70,18 +70,17 @@ export default function InsightsHubPage() {
  contentContainerStyle={{ padding: 24, paddingTop: 60, paddingBottom: 100 }}
  showsVerticalScrollIndicator={false}
  >
- <View className="mb-10">
- <Text className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--text-secondary)] mb-2 italic">Neural Insights</Text>
- <Text className="text-4xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter">Your <Text className="text-[var(--accent-color)]">Growth</Text></Text>
+ <View className="mb-10 text-left">
+ <Text className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--text-secondary)] mb-2 italic text-left">Neural Insights</Text>
+ <Text className="text-4xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter text-left">Your <Text className="text-[var(--accent-color)]">Growth</Text></Text>
  </View>
 
- {/* Categories Scroller */}
  <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-8 -mx-6 px-6">
  <View className="flex-row gap-3">
  {CATEGORIES.map(cat => (
  <View key={cat.value}>
  <TouchableOpacity 
- onPress={() => setCategory(cat.value)}
+ onPress={() => { Haptics.selectionAsync(); setCategory(cat.value); }}
  >
  <View className={`flex-row items-center gap-3 px-6 py-4 rounded-[1.5rem] border ${
  category === cat.value ? 'bg-[var(--accent-color)] border-transparent' : 'bg-[var(--bg-card)]/40 border-[var(--border-color)]'
@@ -95,7 +94,6 @@ export default function InsightsHubPage() {
  </View>
  </ScrollView>
 
- {/* Summary Grid */}
  <View className="flex-row flex-wrap justify-between gap-y-4 mb-10">
  {[
  { label: 'Actions Finished', value: summary.totalTasks, icon: 'checkmark-circle', sub: '+12% Velocity' },
@@ -104,17 +102,16 @@ export default function InsightsHubPage() {
  ].map((item, i) => (
  <View key={i} className="w-[48%] bg-[var(--bg-card)]/40 p-8 rounded-[2.5rem] border border-[var(--border-color)] relative overflow-hidden ">
  <Ionicons name={item.icon as any} size={40} color={colors.accent} style={{ position: 'absolute', top: -10, right: -10, opacity: 0.05 }} />
- <Text className="text-[8px] font-black uppercase tracking-widest text-[var(--text-secondary)] mb-4">{item.label}</Text>
- <Text className="text-3xl font-black italic tracking-tighter text-[var(--text-primary)]">{item.value}</Text>
- <Text className="text-[7px] font-black uppercase text-[var(--accent-color)] mt-3 italic">{item.sub}</Text>
+ <Text className="text-[8px] font-black uppercase tracking-widest text-[var(--text-secondary)] mb-4 text-left">{item.label}</Text>
+ <Text className="text-3xl font-black italic tracking-tighter text-[var(--text-primary)] text-left">{item.value}</Text>
+ <Text className="text-[7px] font-black uppercase text-[var(--accent-color)] mt-3 italic text-left">{item.sub}</Text>
  </View>
  ))}
  </View>
 
- {/* Momentum Chart */}
  <View className="bg-[var(--bg-card)] p-10 rounded-[3rem] border border-[var(--border-color)] mb-10">
- <Text className="text-xl font-black italic uppercase tracking-tight text-[var(--text-primary)]">Momentum</Text>
- <Text className="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-[0.2em] opacity-40 mt-1 mb-10 italic">Performance Audit</Text>
+ <Text className="text-xl font-black italic uppercase tracking-tight text-[var(--text-primary)] text-left">Momentum</Text>
+ <Text className="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-[0.2em] opacity-40 mt-1 mb-10 italic text-left">Performance Audit</Text>
  
  <View className="h-[180px] w-full flex-row items-end justify-between px-2">
  {stats?.completionData?.map((d: any, i: number) => (
@@ -129,10 +126,9 @@ export default function InsightsHubPage() {
  </View>
  </View>
 
- {/* Consistency */}
  <View className="bg-[var(--bg-card)] p-10 rounded-[3rem] border border-[var(--border-color)]">
- <Text className="text-xl font-black italic uppercase tracking-tight text-[var(--text-primary)]">Consistency</Text>
- <Text className="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-[0.2em] opacity-40 mt-1 mb-8 italic">Habit execution rate</Text>
+ <Text className="text-xl font-black italic uppercase tracking-tight text-[var(--text-primary)] text-left">Consistency</Text>
+ <Text className="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-[0.2em] opacity-40 mt-1 mb-8 italic text-left">Habit execution rate</Text>
  
  <View className="space-y-6">
  {stats?.habitStats?.slice(0, 4).map((h: any, i: number) => (

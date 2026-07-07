@@ -34,7 +34,7 @@ export default function RoadmapTrackerPage() {
           router.push(`/study/plan/${track.id}` as any);
         }}
         activeOpacity={0.7}
-        className="bg-[var(--bg-card)]/40 rounded-[2.5rem] p-8 border border-[var(--border-color)] mb-5 shadow-sm"
+        className="bg-[var(--bg-card)]/40 rounded-[2.5rem] p-8 border border-[var(--border-color)] mb-5 "
       >
         <View className="flex-row items-center">
           <View className="w-16 h-16 rounded-3xl items-center justify-center bg-[var(--bg-secondary)] border border-[var(--border-color)]">
@@ -47,7 +47,7 @@ export default function RoadmapTrackerPage() {
             <View className="flex-row items-center mt-4">
               <View className="flex-1 h-1.5 bg-[var(--bg-secondary)] rounded-full overflow-hidden border border-[var(--border-color)]/50">
                 <View 
-                  className="h-full rounded-full bg-[#0ea5e9] shadow-lg shadow-sky-500/50" 
+                  className="h-full rounded-full bg-[#0ea5e9]  -500/50" 
                   style={{ width: `${track.progressPercentage}%` }} 
                 />
               </View>
@@ -84,7 +84,7 @@ export default function RoadmapTrackerPage() {
           </View>
           <TouchableOpacity 
             onPress={() => setCreationVisible(true)}
-            className="w-14 h-14 bg-[var(--accent-color)] rounded-2xl items-center justify-center shadow-lg shadow-[var(--accent-color)]/20"
+            className="w-14 h-14 bg-[var(--accent-color)] rounded-2xl items-center justify-center  [var(--accent-color)]/20"
           >
             <Ionicons name="add" size={32} color={colors.primary} />
           </TouchableOpacity>

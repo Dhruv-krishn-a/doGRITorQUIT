@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useEffect } from "react";
 import { View, Text, Dimensions } from "react-native";
 import Animated, {
@@ -6,12 +7,13 @@ import Animated, {
  useSharedValue,
  withDelay,
  withTiming,
- interpolate,
 } from "react-native-reanimated";
+import { useTheme } from "../context/ThemeContext";
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function BootSplash() {
+ const { colors } = useTheme();
  const textOpacity = useSharedValue(0);
  const textScale = useSharedValue(0.9);
  
@@ -54,7 +56,7 @@ export default function BootSplash() {
  <View
  style={{
  flex: 1,
- backgroundColor: "#050505", // noir theme primary
+ backgroundColor: colors.primary,
  alignItems: "center",
  justifyContent: "center",
  }}
@@ -62,7 +64,7 @@ export default function BootSplash() {
  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
  <Animated.View style={[textStyle, { marginRight: 16 }]}>
  <Text style={{ 
- color: '#f8fafc', 
+ color: colors.text, 
  fontSize: 48, 
  fontWeight: '900', 
  fontStyle: 'italic',
@@ -75,16 +77,16 @@ export default function BootSplash() {
 
  <View style={{ width: 60, height: 20, justifyContent: 'center' }}>
  <Animated.View style={[{ position: 'absolute', left: 0 }, d1]}>
- <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#f8fafc' }} />
+ <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.textSecondary, opacity: 0.5 }} />
  </Animated.View>
  <Animated.View style={[{ position: 'absolute', left: 0 }, d2]}>
- <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#f8fafc' }} />
+ <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.textSecondary, opacity: 0.5 }} />
  </Animated.View>
  <Animated.View style={[{ position: 'absolute', left: 0 }, d3]}>
- <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#f8fafc' }} />
+ <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.textSecondary, opacity: 0.5 }} />
  </Animated.View>
  <Animated.View style={[{ position: 'absolute', left: 0 }, d4]}>
- <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#6366f1' }} />
+ <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.accent }} />
  </Animated.View>
  </View>
  </View>

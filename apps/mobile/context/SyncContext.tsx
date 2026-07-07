@@ -32,7 +32,6 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
 
       setLastSyncedAt(new Date());
       setStatus('SUCCESS');
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       
       // Reset to IDLE after 3 seconds
       setTimeout(() => setStatus('IDLE'), 3000);
@@ -58,6 +57,12 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
         console.warn(
           'Cloud sync RPC is not configured on backend. Mobile will stay local-only until sync migration is applied.'
         );
+        setStatus('IDLE');
+        return;
+      }
+
+      if (message === 'Network request failed' || message.includes('Failed to fetch') || message.includes('NetworkError')) {
+        console.warn('[Sync] Network error during sync. Working in offline mode.');
         setStatus('IDLE');
         return;
       }

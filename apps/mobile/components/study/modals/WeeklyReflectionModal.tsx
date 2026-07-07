@@ -38,7 +38,7 @@ export function WeeklyReflectionModal({ visible, onClose }: WeeklyReflectionModa
 
           <View className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[2.5rem] p-6 mb-6">
             <Text className="text-sm font-black italic uppercase text-[var(--text-primary)] mb-4">What were the key breakthroughs?</Text>
-            <TextInput
+            <TextInput autoCorrect={false} spellCheck={false}
               multiline
               value={reflection}
               onChangeText={setReflection}

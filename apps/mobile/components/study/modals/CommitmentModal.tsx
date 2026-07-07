@@ -36,7 +36,7 @@ export function CommitmentModal({ visible, onClose }: CommitmentModalProps) {
           <View className="flex-row items-center justify-between bg-[var(--bg-secondary)]/50 p-4 rounded-2xl border border-[var(--border-color)] mb-8">
              <Text className="text-xs font-black uppercase text-[var(--text-primary)] ml-2">Target Hours</Text>
              <View className="flex-row items-center gap-2 bg-[var(--bg-primary)] px-4 py-2 rounded-xl border border-[var(--border-color)]">
-               <TextInput 
+               <TextInput autoCorrect={false} spellCheck={false} 
                  value={hours}
                  onChangeText={setHours}
                  keyboardType="numeric"

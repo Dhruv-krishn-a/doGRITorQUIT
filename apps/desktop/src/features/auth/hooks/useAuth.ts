@@ -19,7 +19,9 @@ export type SessionUser = {
 
 export type Session = {
   access_token: string;
+  refresh_token: string;
   user: SessionUser;
+  expires_at?: number;
 };
 
 class AuthService extends EventTarget {
@@ -27,7 +29,15 @@ class AuthService extends EventTarget {
     const raw = localStorage.getItem('auth_session');
     if (!raw) return null;
     try {
-      return JSON.parse(raw);
+      const parsed = JSON.parse(raw) as Session;
+      
+      // Auto-expire session if timestamp is past
+      if (parsed.expires_at && parsed.expires_at < Date.now()) {
+        this.logout();
+        return null;
+      }
+      
+      return parsed;
     } catch {
       return null;
     }
@@ -40,6 +50,34 @@ class AuthService extends EventTarget {
       localStorage.removeItem('auth_session');
     }
     this.dispatchEvent(new Event('auth-change'));
+  }
+
+  async refresh() {
+    const session = this.getSession();
+    if (!session?.refresh_token) return null;
+
+    try {
+      const res = await fetch(buildApiUrl('/auth/refresh'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: session.refresh_token })
+      });
+
+      if (res.ok) {
+        const next = await res.json();
+        const newSession: Session = {
+          ...next,
+          expires_at: Date.now() + next.expires_in * 1000
+        };
+        this.setSession(newSession);
+        return newSession;
+      } else {
+        this.logout();
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
   }
 
   logout() {
@@ -135,6 +173,30 @@ export function useAuth() {
     setLoading(false);
   }, [fetchOfflineToken, queryClient]);
 
+  // SILENT REFRESH SENTINEL
+  // Checks if the token is expiring in the next 5 minutes and refreshes it
+  useEffect(() => {
+    if (!session) return;
+
+    const checkAndRefresh = async () => {
+      const current = authService.getSession();
+      if (!current?.expires_at) return;
+
+      const fiveMinutesInMs = 5 * 60 * 1000;
+      const isExpiringSoon = current.expires_at - Date.now() < fiveMinutesInMs;
+
+      if (isExpiringSoon) {
+        console.log("[Auth] Token expiring soon, rotating...");
+        await authService.refresh();
+      }
+    };
+
+    const interval = setInterval(checkAndRefresh, 60000); // Check every minute
+    checkAndRefresh(); // Check immediately on mount
+
+    return () => clearInterval(interval);
+  }, [session]);
+
   useEffect(() => {
     setApiBaseUrl(API_BASE_URL);
     setHabitsApiBaseUrl(API_BASE_URL);
@@ -147,8 +209,22 @@ export function useAuth() {
     };
 
     authService.addEventListener('auth-change', handleAuthChange);
-    return () => authService.removeEventListener('auth-change', handleAuthChange);
-  }, [syncState]);
+    
+    // ACTIVE SESSION SENTINEL
+    // Every 5 seconds, verify if the session has physically expired in the background
+    // This ensures the UI unmounts immediately even if no network requests are made.
+    const sentinel = setInterval(() => {
+      const current = authService.getSession();
+      if (!current && session) {
+        syncState();
+      }
+    }, 5000);
+
+    return () => {
+      authService.removeEventListener('auth-change', handleAuthChange);
+      clearInterval(sentinel);
+    };
+  }, [syncState, session]);
 
   // Periodic offline token refresh (every hour) while online
   useEffect(() => {

@@ -230,6 +230,7 @@ export function useToday() {
     time: string;
     priority: 'low' | 'medium' | 'high' | 'urgent';
     estimatedMinutes: number;
+    metadata?: any;
   }) => {
     if (!user?.id) return null;
     const dayDate = new Date(`${input.date}T00:00:00`);
@@ -251,6 +252,9 @@ export function useToday() {
         t.dueDate = dueDate.getTime();
         t.planId = null;
         t.userId = user.id;
+        if (input.metadata) {
+          t.metadata = input.metadata;
+        }
       });
       createdId = created.id;
       createdTitle = created.title;

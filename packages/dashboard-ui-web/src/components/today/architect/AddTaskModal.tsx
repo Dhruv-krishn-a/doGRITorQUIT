@@ -8,11 +8,19 @@ export function AddTaskModal({ onClose, onSubmit }: { onClose: () => void, onSub
   const [title, setTitle] = useState('');
   const [duration, setDuration] = useState('30');
   const [intensity, setIntensity] = useState<'Low' | 'Mid' | 'High'>('Mid');
+  const [isMustDo, setIsMustDo] = useState(false);
+  const [lockedTime, setLockedTime] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    onSubmit({ title: title.trim(), duration, intensity });
+    onSubmit({ 
+      title: title.trim(), 
+      duration, 
+      intensity, 
+      isMustDo, 
+      lockedTime: isMustDo && lockedTime ? lockedTime : undefined 
+    });
   };
 
   return (
@@ -26,6 +34,20 @@ export function AddTaskModal({ onClose, onSubmit }: { onClose: () => void, onSub
             <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)]">Objective Name</label>
             <input type="text" required value={title} onChange={e=>setTitle(e.target.value)} placeholder="e.g., System Design" className="w-full px-6 py-5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl font-black outline-none focus:border-[var(--accent-color)]" />
           </div>
+          
+          <div className="space-y-3">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" checked={isMustDo} onChange={e => setIsMustDo(e.target.checked)} className="w-5 h-5 rounded border-[var(--border-color)] accent-[var(--accent-color)] bg-[var(--bg-secondary)]" />
+              <span className="text-[11px] font-black uppercase tracking-widest text-[var(--text-primary)]">Must Do (Urgent Lock)</span>
+            </label>
+            {isMustDo && (
+              <div className="pl-8">
+                <input type="text" value={lockedTime} onChange={e=>setLockedTime(e.target.value)} placeholder="e.g., 14:00 or 09:30" className="w-full px-5 py-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl font-black outline-none focus:border-[var(--accent-color)] text-sm" />
+                <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-secondary)] mt-2">Enter military time (e.g., 14:00 for 2 PM)</p>
+              </div>
+            )}
+          </div>
+
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)]">Duration</label>

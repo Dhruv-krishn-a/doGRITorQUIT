@@ -29,7 +29,7 @@ export function ProjectBoardTab({ trackId, unitsByPhase, phases }: ProjectBoardT
           router.push(`/study/${trackId}/${unit.id}` as any);
         }}
         activeOpacity={0.7}
-        className={`p-6 rounded-[2rem] mb-4 border shadow-sm ${
+        className={`p-6 rounded-[2rem] mb-4 border ${
           isDone ? 'bg-[var(--bg-secondary)]/30 border-[var(--border-color)]' : 'bg-[var(--bg-card)] border-[var(--border-color)]'
         }`}
       >
@@ -83,8 +83,8 @@ export function ProjectBoardTab({ trackId, unitsByPhase, phases }: ProjectBoardT
             <View className="mb-6 px-2 text-left">
                <View className="flex-row items-center justify-between mb-4">
                   <View className="flex-row items-center gap-3">
-                     <View className="w-2 h-6 bg-[var(--accent-color)] rounded-full shadow-lg shadow-[var(--accent-color)]/50" />
-                     <Text className="text-2xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter">{phase.replace('_', ' ')}</Text>
+                     <View className="w-2 h-6 bg-[var(--accent-color)] rounded-full" />
+                     <Text className="text-2xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter text-left">{phase.replace('_', ' ')}</Text>
                   </View>
                   <View className="bg-[var(--bg-secondary)] px-4 py-1 rounded-xl border border-[var(--border-color)]">
                     <Text className="text-[10px] font-black text-[var(--text-secondary)] italic">{unitsByPhase[phase]?.length || 0} NODES</Text>
@@ -93,7 +93,7 @@ export function ProjectBoardTab({ trackId, unitsByPhase, phases }: ProjectBoardT
 
                <TouchableOpacity 
                 activeOpacity={0.7}
-                className="w-full py-5 bg-amber-500 rounded-[1.5rem] flex-row items-center justify-center gap-3 shadow-lg shadow-amber-500/20"
+                className="w-full py-5 bg-amber-500 rounded-[1.5rem] flex-row items-center justify-center gap-3"
                >
                   <Ionicons name="sparkles" size={18} color="white" />
                   <Text className="text-[11px] font-black text-white uppercase tracking-widest italic">Generate Tasks for {phase.replace('_', ' ')}</Text>

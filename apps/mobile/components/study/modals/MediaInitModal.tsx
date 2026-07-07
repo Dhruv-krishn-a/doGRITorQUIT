@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, TextInput, ActivityIndicator, ScrollView, Alert, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../context/ThemeContext';
-import { ingestYoutubePlaylist } from '../../lib/path-creation';
+import { useTheme } from '../../../context/ThemeContext';
+import { ingestYoutubePlaylist } from '../../../lib/path-creation';
 import * as Haptics from 'expo-haptics';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -36,6 +36,7 @@ export const MediaInitModal: React.FC<MediaInitModalProps> = ({ isVisible, onClo
     if (!url) return;
     setLoading(true);
     try {
+      // @ts-ignore
       await ingestYoutubePlaylist(url, title);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       onRefresh();
@@ -65,47 +66,49 @@ export const MediaInitModal: React.FC<MediaInitModalProps> = ({ isVisible, onClo
              </View>
           </View>
 
-          <ScrollView showsVerticalScrollIndicator={false} className="space-y-12">
-            <View className="text-left">
-               <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-4 ml-1 italic text-left">Playlist URL *</Text>
-               <TextInput
-                 value={url}
-                 onChangeText={setUrl}
-                 placeholder="HTTPS://WWW.YOUTUBE.COM/PLAYLIST?LIST=..."
-                 placeholderTextColor={colors.textSecondary + '40'}
-                 className="bg-[var(--bg-primary)] border border-[var(--border-color)] p-8 rounded-[2rem] font-black text-base text-[var(--text-primary)] uppercase italic tracking-tight"
-               />
-            </View>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <View className="space-y-12">
+              <View className="text-left">
+                 <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-4 ml-1 italic text-left">Playlist URL *</Text>
+                 <TextInput autoCorrect={false} spellCheck={false}
+                   value={url}
+                   onChangeText={setUrl}
+                   placeholder="HTTPS://WWW.YOUTUBE.COM/PLAYLIST?LIST=..."
+                   placeholderTextColor={colors.textSecondary + '40'}
+                   className="bg-[var(--bg-primary)] border border-[var(--border-color)] p-8 rounded-[2rem] font-black text-base text-[var(--text-primary)] uppercase italic tracking-tight text-left"
+                 />
+              </View>
 
-            <View className="text-left">
-               <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-4 ml-1 italic text-left">Custom Path Title (Optional)</Text>
-               <TextInput
-                 value={title}
-                 onChangeText={setTitle}
-                 placeholder="E.G., SYSTEM DESIGN MASTERCLASS..."
-                 placeholderTextColor={colors.textSecondary + '40'}
-                 className="bg-[var(--bg-primary)] border border-[var(--border-color)] p-8 rounded-[2rem] font-black text-base text-[var(--text-primary)] uppercase italic tracking-tight"
-               />
-            </View>
+              <View className="text-left">
+                 <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-4 ml-1 italic text-left">Custom Path Title (Optional)</Text>
+                 <TextInput autoCorrect={false} spellCheck={false}
+                   value={title}
+                   onChangeText={setTitle}
+                   placeholder="E.G., SYSTEM DESIGN MASTERCLASS..."
+                   placeholderTextColor={colors.textSecondary + '40'}
+                   className="bg-[var(--bg-primary)] border border-[var(--border-color)] p-8 rounded-[2rem] font-black text-base text-[var(--text-primary)] uppercase italic tracking-tight text-left"
+                 />
+              </View>
 
-            <View className="p-8 bg-rose-500/[0.03] border border-rose-500/20 rounded-[2.5rem] text-left">
-               <Text className="text-[10px] font-bold text-[var(--text-secondary)] uppercase leading-relaxed text-left opacity-60">
-                 We will automatically fetch all videos, durations, and metadata to build your tracking engine.
-               </Text>
-            </View>
+              <View className="p-8 bg-rose-500/[0.03] border border-rose-500/20 rounded-[2.5rem] text-left">
+                 <Text className="text-[10px] font-bold text-[var(--text-secondary)] uppercase leading-relaxed text-left opacity-60">
+                   We will automatically fetch all videos, durations, and metadata to build your tracking engine.
+                 </Text>
+              </View>
 
-            <TouchableOpacity 
-              disabled={!url || loading}
-              onPress={handleImport}
-              className={`py-8 rounded-[2.5rem] items-center justify-center shadow-lg ${!url ? 'opacity-30 bg-[var(--bg-secondary)]' : 'bg-rose-600 shadow-rose-500/20'}`}
-            >
-               {loading ? <ActivityIndicator color="white" /> : (
-                 <View className="flex-row items-center gap-4">
-                    <Ionicons name="logo-youtube" size={20} color="white" />
-                    <Text className="text-sm font-black text-white uppercase tracking-[0.3em] italic">Import Media Path</Text>
-                 </View>
-               )}
-            </TouchableOpacity>
+              <TouchableOpacity 
+                disabled={!url || loading}
+                onPress={handleImport}
+                className={`py-8 rounded-[2.5rem] items-center justify-center ${!url ? 'opacity-30 bg-[var(--bg-secondary)]' : 'bg-rose-600'}`}
+              >
+                 {loading ? <ActivityIndicator color="white" /> : (
+                   <View className="flex-row items-center gap-4">
+                      <Ionicons name="logo-youtube" size={20} color="white" />
+                      <Text className="text-sm font-black text-white uppercase tracking-[0.3em] italic">Import Media Path</Text>
+                   </View>
+                 )}
+              </TouchableOpacity>
+            </View>
           </ScrollView>
         </View>
       </View>

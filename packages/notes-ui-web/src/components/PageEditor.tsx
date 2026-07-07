@@ -26,6 +26,7 @@ export interface HybridPage {
 interface PageEditorProps {
   blocks: any[];
   strokes: Stroke[];
+  markdownString?: string;
   isDrawingMode: boolean;
   backgroundPattern?: "blank" | "ruled" | "grid" | "dots";
   pageWidthMm: number;
@@ -76,6 +77,7 @@ export const PageEditor = React.forwardRef<HTMLDivElement, PageEditorProps>(
     {
       blocks,
       strokes: externalStrokes,
+      markdownString,
       isDrawingMode,
       backgroundPattern = "blank",
       pageWidthMm,
@@ -93,6 +95,7 @@ export const PageEditor = React.forwardRef<HTMLDivElement, PageEditorProps>(
     const [history, setHistory] = useState<Stroke[][]>([externalStrokes || []]);
     const [historyIndex, setHistoryIndex] = useState(0);
     const strokes = history[historyIndex] || [];
+    const [hasParsedMarkdown, setHasParsedMarkdown] = useState(false);
 
     useEffect(() => {
       setHistory([externalStrokes || []]);
@@ -110,8 +113,22 @@ export const PageEditor = React.forwardRef<HTMLDivElement, PageEditorProps>(
     );
 
     useEffect(() => {
+      if (editor && markdownString && !hasParsedMarkdown) {
+        setHasParsedMarkdown(true);
+        try {
+            const mdBlocks = editor.tryParseMarkdownToBlocks(markdownString);
+            if (mdBlocks && mdBlocks.length > 0) {
+              editor.replaceBlocks(editor.document, mdBlocks);
+            }
+        } catch (e) {
+            console.error("Markdown parse failed", e);
+        }
+      }
+    }, [editor, markdownString, hasParsedMarkdown]);
+
+    useEffect(() => {
       if (editor) onChange(editor, strokes);
-    }, [editor, strokes, onChange]);
+    }, [editor, strokes, onChange, hasParsedMarkdown]);
 
     const handleStrokesChange = useCallback(
       (newStrokes: Stroke[]) => {

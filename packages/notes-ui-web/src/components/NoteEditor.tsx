@@ -397,6 +397,7 @@ export function NoteEditor({
   const [currentTool, setCurrentTool] = useState<ToolType>("pen");
   const [currentColor, setCurrentColor] = useState<string>("#0ea5e9");
   const [currentSize, setCurrentSize] = useState<number>(4);
+  const [isDirty, setIsDirty] = useState(false);
 
   const editorRef = useRef<any>(null);
   const strokesRef = useRef<Stroke[]>(initialDoc.content.strokes || []);
@@ -405,6 +406,7 @@ export function NoteEditor({
   const onSaveRef = useRef(onSave);
   const lastSavedSnapshotRef = useRef("");
   const lastSaveTimeRef = useRef(0);
+  const isInitialMountRef = useRef(true);
 
   useEffect(() => {
     titleRef.current = title;
@@ -420,11 +422,15 @@ export function NoteEditor({
     
     // CRITICAL: Initialize snapshot with the loaded content to prevent "empty clobbering"
     lastSavedSnapshotRef.current = buildSaveSnapshot(initialTitle, initialDoc);
+
+    setIsDirty(false);
+    setTimeout(() => { isInitialMountRef.current = false; }, 1500);
   }, [initialTitle, initialDoc]);
 
   const emitSave = useCallback(
     (isAutoSave: boolean, force = false) => {
-      // Throttle saves to at most once per 500ms
+      if (!isDirty && !force) return;
+
       const now = Date.now();
       if (!force && now - lastSaveTimeRef.current < 500) return;
 
@@ -447,49 +453,61 @@ export function NoteEditor({
       lastSaveTimeRef.current = now;
       lastSavedSnapshotRef.current = snapshot;
       onSaveRef.current(titleRef.current, doc, isAutoSave);
+      setIsDirty(false);
     },
-    [initialDoc.content.blocks, layoutMode, page, backgroundPattern]
+    [initialDoc.content.blocks, layoutMode, page, backgroundPattern, isDirty]
   );
 
   const debouncedSave = useMemo(
     () =>
       debounce(() => {
-        emitSave(true);
+        // Debounced save disabled to prevent accidental overwrites on mount
       }, autoSaveInterval),
     [emitSave, autoSaveInterval]
   );
 
   useEffect(() => {
     return () => {
+      if (isDirty) emitSave(true, true);
       debouncedSave.flush();
     };
-  }, [debouncedSave]);
+  }, [debouncedSave, isDirty, emitSave]);
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value);
-    debouncedSave();
+    if (!isInitialMountRef.current) setIsDirty(true);
   };
 
   const handleDocumentChange = useCallback(
     (editor: any, strokes: Stroke[]) => {
       editorRef.current = editor;
       strokesRef.current = strokes;
-      debouncedSave();
+      if (!isInitialMountRef.current) setIsDirty(true);
     },
-    [debouncedSave]
+    []
   );
+
+  const handleDiscard = () => {
+    setTitle(initialTitle);
+    setLayoutMode(initialDoc.layoutMode || "continuous");
+    setBackgroundPattern(initialDoc.backgroundPattern || "blank");
+    setPage(initialDoc.page);
+    strokesRef.current = initialDoc.content.strokes || [];
+    setIsDirty(false);
+    if (onBack) onBack(); // Re-mount to reset editor
+  };
 
   const cycleBackground = () => {
     const patterns: BackgroundPattern[] = ["blank", "ruled", "grid", "dots"];
     const next = patterns[(patterns.indexOf(backgroundPattern) + 1) % patterns.length];
     setBackgroundPattern(next);
-    debouncedSave();
+    if (!isInitialMountRef.current) setIsDirty(true);
   };
 
   const cycleLayout = () => {
     const next = layoutMode === "continuous" ? "paged" : "continuous";
     setLayoutMode(next);
-    debouncedSave();
+    if (!isInitialMountRef.current) setIsDirty(true);
   };
 
   const applyPreset = (preset: PagePreset) => {
@@ -500,7 +518,7 @@ export function NoteEditor({
       widthMm: data.widthMm,
       heightMm: data.heightMm,
     }));
-    debouncedSave();
+    if (!isInitialMountRef.current) setIsDirty(true);
   };
 
   const fitToWidth = () => {
@@ -672,26 +690,36 @@ export function NoteEditor({
           {onSync ? (
             <button
               onClick={() => void onSync()}
-              disabled={isSyncing || isSaving}
+              disabled={isSyncing || isSaving || isDirty}
               className={`flex items-center justify-center gap-2.5 h-10 md:h-12 ${mode === "SPLIT" ? "w-10 md:w-auto md:px-4" : "w-10 md:w-auto md:px-6"} bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border-color)] rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:text-[var(--text-primary)] transition-all active:scale-95 disabled:opacity-50`}
+              title="Sync (Disabled if unsaved changes exist)"
             >
               <RefreshCw size={14} className={isSyncing ? "animate-spin" : ""} />
               <span className="hidden md:inline">Sync</span>
             </button>
           ) : null}
 
+          {isDirty && (
+            <button
+              onClick={handleDiscard}
+              className={`flex items-center justify-center gap-2.5 h-10 md:h-12 ${mode === "SPLIT" ? "w-10 md:w-auto md:px-4" : "w-10 md:w-auto md:px-6"} bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border-color)] rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:text-[var(--text-primary)] transition-all active:scale-95`}
+            >
+              <span className="hidden md:inline">Discard</span>
+            </button>
+          )}
+
           <button
             onClick={() => {
               debouncedSave.cancel();
               emitSave(false, true);
             }}
-            disabled={isSaving}
-            className={`flex items-center justify-center gap-2.5 h-10 md:h-12 ${mode === "SPLIT" ? "w-10 md:w-auto md:px-5" : "w-10 md:w-auto md:px-8"} bg-[var(--accent-color)] text-[var(--bg-primary)] rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-[var(--accent-color)]/20`}
+            disabled={isSaving || (!isDirty && Boolean(initialTitle))}
+            className={`flex items-center justify-center gap-2.5 h-10 md:h-12 ${mode === "SPLIT" ? "w-10 md:w-auto md:px-5" : "w-10 md:w-auto md:px-8"} ${isDirty ? 'bg-[var(--accent-color)] text-[var(--bg-primary)] shadow-lg shadow-[var(--accent-color)]/20' : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] opacity-50'} rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition-all active:scale-95 disabled:opacity-50`}
           >
-            {isSaving ? <Loader2 size={16} className="animate-spin text-[var(--bg-primary)]" /> : (
+            {isSaving ? <Loader2 size={16} className="animate-spin" /> : (
               <>
                 <RefreshCw size={14} className="md:hidden" />
-                <span>{isSaving ? "Saving..." : "Seal Archive"}</span>
+                <span>{isDirty ? "Save Changes" : "Saved"}</span>
               </>
             )}
           </button>
@@ -903,6 +931,7 @@ export function NoteEditor({
                 key={serializedInitialContent}
                 blocks={initialDoc.content.blocks}
                 strokes={initialDoc.content.strokes}
+                markdownString={typeof initialContent === "string" ? initialContent : undefined}
                 isDrawingMode={isDrawingMode}
                 backgroundPattern={backgroundPattern}
                 pageWidthMm={page.widthMm}

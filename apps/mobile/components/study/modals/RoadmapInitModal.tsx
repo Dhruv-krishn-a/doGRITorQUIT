@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, TextInput, ActivityIndicator, ScrollView, Alert, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../context/ThemeContext';
-import { generateAIPath, createManualPath } from '../../lib/path-creation';
+import { useTheme } from '../../../context/ThemeContext';
+import { generateAIPath, createManualPath } from '../../../lib/path-creation';
 import * as Haptics from 'expo-haptics';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -56,6 +56,7 @@ export const RoadmapInitModal: React.FC<RoadmapInitModalProps> = ({ isVisible, o
     if (!title) return;
     setLoading(true);
     try {
+      // @ts-ignore
       await createManualPath({ title, type: 'PLAN' });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       onRefresh();
@@ -72,7 +73,7 @@ export const RoadmapInitModal: React.FC<RoadmapInitModalProps> = ({ isVisible, o
       onPress={() => { Haptics.selectionAsync(); onPress(); }}
       activeOpacity={0.7}
       className={`p-8 rounded-[3rem] border mb-6 flex-row items-center ${
-        accent ? 'bg-[var(--accent-color)] border-[var(--accent-color)] shadow-lg shadow-[var(--accent-color)]/20' : 'bg-[var(--bg-secondary)]/50 border-[var(--border-color)]'
+        accent ? 'bg-[var(--accent-color)] border-[var(--accent-color)]' : 'bg-[var(--bg-secondary)]/50 border-[var(--border-color)]'
       }`}
     >
       <View className={`w-14 h-14 rounded-2xl items-center justify-center mr-6 ${accent ? 'bg-white/20' : 'bg-[var(--bg-card)] border border-[var(--border-color)]'}`}>
@@ -133,13 +134,13 @@ export const RoadmapInitModal: React.FC<RoadmapInitModalProps> = ({ isVisible, o
               <View className="space-y-12">
                 <View className="text-left">
                    <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-4 ml-1 italic text-left">Neural Prompt</Text>
-                   <TextInput
+                   <TextInput autoCorrect={false} spellCheck={false}
                      value={prompt}
                      onChangeText={setPrompt}
                      multiline
                      placeholder="I WANT TO LEARN ADVANCED SYSTEM DESIGN IN 30 DAYS..."
                      placeholderTextColor={colors.textSecondary + '40'}
-                     className="bg-[var(--bg-primary)] border border-[var(--border-color)] p-8 rounded-[2rem] font-black text-base text-[var(--text-primary)] uppercase italic tracking-tight min-h-[150px]"
+                     className="bg-[var(--bg-primary)] border border-[var(--border-color)] p-8 rounded-[2rem] font-black text-base text-[var(--text-primary)] uppercase italic tracking-tight min-h-[150px] text-left"
                      style={{ textAlignVertical: 'top' }}
                    />
                 </View>
@@ -147,7 +148,7 @@ export const RoadmapInitModal: React.FC<RoadmapInitModalProps> = ({ isVisible, o
                 <TouchableOpacity 
                   disabled={!prompt || loading}
                   onPress={handleAI}
-                  className={`py-8 rounded-[2.5rem] items-center justify-center shadow-lg ${!prompt ? 'opacity-30 bg-[var(--bg-secondary)]' : 'bg-amber-500 shadow-amber-500/20'}`}
+                  className={`py-8 rounded-[2.5rem] items-center justify-center ${!prompt ? 'opacity-30 bg-[var(--bg-secondary)]' : 'bg-amber-500'}`}
                 >
                    {loading ? <ActivityIndicator color="white" /> : (
                      <View className="flex-row items-center gap-4">
@@ -163,19 +164,19 @@ export const RoadmapInitModal: React.FC<RoadmapInitModalProps> = ({ isVisible, o
               <View className="space-y-12">
                 <View className="text-left">
                    <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-4 ml-1 italic text-left">Roadmap Codename</Text>
-                   <TextInput
+                   <TextInput autoCorrect={false} spellCheck={false}
                      value={title}
                      onChangeText={setTitle}
                      placeholder="DEFINE STRATEGIC GOAL..."
                      placeholderTextColor={colors.textSecondary + '40'}
-                     className="bg-[var(--bg-primary)] border border-[var(--border-color)] p-8 rounded-[2rem] font-black text-2xl text-[var(--text-primary)] uppercase italic tracking-tight"
+                     className="bg-[var(--bg-primary)] border border-[var(--border-color)] p-8 rounded-[2rem] font-black text-2xl text-[var(--text-primary)] uppercase italic tracking-tight text-left"
                    />
                 </View>
 
                 <TouchableOpacity 
                   disabled={!title || loading}
                   onPress={handleManual}
-                  className={`py-8 rounded-[2.5rem] items-center justify-center shadow-lg ${!title ? 'opacity-30 bg-[var(--bg-secondary)]' : 'bg-[var(--text-primary)] shadow-black/20'}`}
+                  className={`py-8 rounded-[2.5rem] items-center justify-center ${!title ? 'opacity-30 bg-[var(--bg-secondary)]' : 'bg-[var(--text-primary)]'}`}
                 >
                    {loading ? <ActivityIndicator color="white" /> : <Text className="text-sm font-black text-[var(--bg-primary)] uppercase tracking-[0.3em] italic">Initialize Plan</Text>}
                 </TouchableOpacity>

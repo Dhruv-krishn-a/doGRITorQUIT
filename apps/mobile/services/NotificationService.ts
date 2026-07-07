@@ -39,6 +39,7 @@ export const MobileNotificationService = {
         data: { url: '/checklist' },
       },
       trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
         hour: 9,
         minute: 0,
         repeats: true,

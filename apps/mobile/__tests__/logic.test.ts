@@ -1,7 +1,9 @@
+import { jest, describe, it, expect } from '@jest/globals';
+
 // Mock WatermelonDB
 jest.mock('../db', () => ({
   database: {
-    write: jest.fn((cb) => cb()),
+    write: jest.fn((cb: any) => cb()),
     get: jest.fn(() => ({
       find: jest.fn(() => Promise.resolve({
         update: jest.fn(),
@@ -26,8 +28,9 @@ describe('Execution Logic', () => {
       status: 'pending'
     };
     
-    (database.get as jest.Mock).mockReturnValue({
-      find: jest.fn().mockResolvedValue(mockTask)
+    (database.get as any).mockReturnValue({
+      // @ts-ignore
+      find: jest.fn().mockResolvedValue(mockTask as any)
     });
 
     await completeVector('task-1', 'PROJECT', 'user-1');
@@ -38,11 +41,12 @@ describe('Execution Logic', () => {
   it('should handle HABIT logging', async () => {
     const mockHabitLogs = {
       query: jest.fn().mockReturnThis(),
-      fetch: jest.fn().mockResolvedValue([]),
+      // @ts-ignore
+      fetch: jest.fn().mockResolvedValue([] as any),
       create: jest.fn()
     };
 
-    (database.get as jest.Mock).mockImplementation((table) => {
+    (database.get as any).mockImplementation((table: string) => {
       if (table === 'habit_logs') return mockHabitLogs;
       return {};
     });

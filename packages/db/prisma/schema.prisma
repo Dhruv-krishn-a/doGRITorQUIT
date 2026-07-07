@@ -50,6 +50,7 @@ model User {
   profile             UserProfile?
   stats               UserStats?
   subscriptions       UserSubscription[]
+  refreshTokens       RefreshToken[]
 
   @@index([role])
   @@index([tier])
@@ -88,6 +89,22 @@ model AuthKnownDevice {
   @@unique([userId, fingerprint])
   @@index([userId])
   @@map("auth_known_devices")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  deviceId  String?
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("auth_refresh_tokens")
 }
 
 model Account {

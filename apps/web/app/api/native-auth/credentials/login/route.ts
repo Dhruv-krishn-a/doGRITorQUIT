@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { signNativeAccessToken } from "@/lib/native-auth-token";
+import { signNativeAccessToken, signNativeRefreshToken } from "@/lib/native-auth-token";
 import {
   clearFailedLoginAttempts,
   extractRequestContext,
@@ -92,7 +92,7 @@ export async function POST(request: Request) {
       });
     }
 
-    const expiresIn = 60 * 60 * 24 * 7;
+    const expiresIn = 60 * 60 * 1; // 1 hour access token
     const accessToken = await signNativeAccessToken(
       {
         sub: user.id,
@@ -102,9 +102,23 @@ export async function POST(request: Request) {
       expiresIn
     );
 
+    const refreshToken = await signNativeRefreshToken(user.id);
+    const refreshExpiresAt = new Date(Date.now() + 60 * 60 * 24 * 30 * 1000); // 30 days
+
+    // Store refresh token in DB
+    await prisma.refreshToken.create({
+      data: {
+        token: refreshToken,
+        userId: user.id,
+        expiresAt: refreshExpiresAt,
+        deviceId: context.fingerprint,
+      },
+    });
+
     return NextResponse.json({
       token_type: "bearer",
       access_token: accessToken,
+      refresh_token: refreshToken,
       expires_in: expiresIn,
       user: {
         id: user.id,

@@ -1,9 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Modal, TextInput, ActivityIndicator, ScrollView, Alert, Dimensions } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Modal,
+  TextInput,
+  ScrollView,
+  Alert,
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../context/ThemeContext';
-import { createManualPath } from '../../lib/path-creation';
-import { api } from '../../services/api';
+import { useTheme } from '../../../context/ThemeContext';
+import { api } from '../../../services/api';
 import * as Haptics from 'expo-haptics';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -16,18 +27,72 @@ interface ProjectInitModalProps {
 
 type Step = 'TYPE' | 'FORM' | 'GITHUB' | 'AI_BLUEPRINTING';
 
-export const ProjectInitModal: React.FC<ProjectInitModalProps> = ({ isVisible, onClose, onRefresh }) => {
+const InputField = ({
+  label,
+  value,
+  onChangeText,
+  placeholder,
+  multiline = false,
+  autoCapitalize = 'none',
+  colors,
+}: any) => (
+  <View style={{ marginBottom: 24 }}>
+    <Text
+      style={{
+        color: colors.textSecondary,
+        fontSize: 11,
+        fontWeight: '900',
+        marginBottom: 10,
+        letterSpacing: 1.5,
+        textTransform: 'uppercase',
+        fontStyle: 'italic',
+      }}
+    >
+      {label}
+    </Text>
+
+    <TextInput
+      value={value}
+      onChangeText={onChangeText}
+      placeholder={placeholder}
+      placeholderTextColor={colors.textSecondary + '40'}
+      autoCorrect={false}
+      spellCheck={false}
+      autoCapitalize={autoCapitalize}
+      multiline={multiline}
+      selectionColor={colors.accent}
+      style={{
+        backgroundColor: colors.secondary,
+        borderRadius: 20,
+        paddingHorizontal: 20,
+        paddingVertical: multiline ? 20 : 18,
+        color: colors.text,
+        fontSize: 16,
+        fontWeight: '700',
+        borderWidth: 1,
+        borderColor: colors.border,
+        minHeight: multiline ? 120 : undefined,
+        textAlignVertical: multiline ? 'top' : 'center',
+      }}
+    />
+  </View>
+);
+
+export const ProjectInitModal: React.FC<ProjectInitModalProps> = ({
+  isVisible,
+  onClose,
+  onRefresh,
+}) => {
   const { colors } = useTheme();
+
   const [step, setStep] = useState<Step>('TYPE');
   const [loading, setLoading] = useState(false);
 
-  // Form State
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [methodology, setMethodology] = useState('AGILE');
   const [githubRepo, setGithubRepo] = useState('');
 
-  // AI Simulation State
   const [aiProgress, setAiProgress] = useState(0);
   const [aiStatus, setAiStatus] = useState('Initializing Neural Logic...');
 
@@ -49,16 +114,17 @@ export const ProjectInitModal: React.FC<ProjectInitModalProps> = ({ isVisible, o
   const runAIProcess = () => {
     setStep('AI_BLUEPRINTING');
     setAiProgress(0);
-    
+
     const sequence = [
-      { p: 20, s: 'Synthesizing Requirements (PRD)...' },
+      { p: 20, s: 'Synthesizing Requirements...' },
       { p: 45, s: 'Mapping User Flows...' },
-      { p: 70, s: 'Designing System Architecture...' },
-      { p: 90, s: 'Generating Implementation Nodes...' },
-      { p: 100, s: 'Registry Handshake Complete.' }
+      { p: 70, s: 'Designing Architecture...' },
+      { p: 90, s: 'Generating Nodes...' },
+      { p: 100, s: 'Blueprint Complete.' },
     ];
 
     let current = 0;
+
     const interval = setInterval(() => {
       if (current < sequence.length) {
         setAiProgress(sequence[current].p);
@@ -69,175 +135,218 @@ export const ProjectInitModal: React.FC<ProjectInitModalProps> = ({ isVisible, o
         clearInterval(interval);
         setTimeout(finalizeCreation, 800);
       }
-    }, 1200);
+    }, 1000);
   };
 
   const finalizeCreation = async () => {
     try {
+      setLoading(true);
       await api.post('/api/github-projects', {
         name,
         description,
         githubRepo: githubRepo || undefined,
-        isConsultation: true
+        isConsultation: true,
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       onRefresh();
       handleClose();
     } catch (err: any) {
-      Alert.alert("Error", err.message);
+      Alert.alert('Error', err.message);
       setStep('FORM');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const CardOption = ({ icon, label, sublabel, onPress, accent = false }: any) => (
-    <TouchableOpacity 
-      onPress={() => { Haptics.selectionAsync(); onPress(); }}
-      activeOpacity={0.7}
-      className={`p-8 rounded-[3rem] border mb-6 flex-row items-center ${
-        accent ? 'bg-[var(--accent-color)] border-[var(--accent-color)] shadow-lg shadow-[var(--accent-color)]/20' : 'bg-[var(--bg-secondary)]/50 border-[var(--border-color)]'
-      }`}
+  const OptionCard = ({ icon, title, subtitle, onPress, active = false }: any) => (
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={() => {
+        Haptics.selectionAsync();
+        onPress();
+      }}
+      style={{
+        backgroundColor: active ? colors.accent + '15' : colors.secondary,
+        borderWidth: 1,
+        borderColor: active ? colors.accent : colors.border,
+        borderRadius: 24,
+        padding: 24,
+        marginBottom: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+      }}
     >
-      <View className={`w-14 h-14 rounded-2xl items-center justify-center mr-6 ${accent ? 'bg-white/20' : 'bg-[var(--bg-card)] border border-[var(--border-color)]'}`}>
-        <Ionicons name={icon} size={24} color={accent ? 'white' : colors.accent} />
+      <View
+        style={{
+          width: 54,
+          height: 54,
+          borderRadius: 16,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: colors.primary,
+          borderWidth: 1,
+          borderColor: colors.border,
+          marginRight: 20,
+        }}
+      >
+        <Ionicons name={icon} size={24} color={colors.accent} />
       </View>
-      <View className="flex-1 text-left">
-        <Text className={`font-black text-lg uppercase italic tracking-tight ${accent ? 'text-white' : 'text-[var(--text-primary)]'}`}>{label}</Text>
-        <Text className={`text-[9px] font-black uppercase tracking-widest mt-1 italic ${accent ? 'text-white/60' : 'text-[var(--text-secondary)] opacity-40'}`}>{sublabel}</Text>
+      <View style={{ flex: 1 }}>
+        <Text style={{ color: colors.text, fontSize: 18, fontWeight: '900', textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 4 }}>
+          {title}
+        </Text>
+        <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', opacity: 0.6 }}>
+          {subtitle}
+        </Text>
       </View>
     </TouchableOpacity>
   );
 
   return (
-    <Modal animationType="slide" transparent visible={isVisible} onRequestClose={handleClose}>
-      <View className="flex-1 justify-end bg-black/60">
-        <View style={{ backgroundColor: colors.card }} className="rounded-t-[4rem] p-10 pb-16 border-t border-[var(--border-color)] max-h-[90%]">
-          {/* Header Protocol */}
-          <View className="flex-row justify-between items-center mb-12">
-             <View className="flex-row items-center gap-4">
-               {step !== 'AI_BLUEPRINTING' && (
-                 <TouchableOpacity onPress={() => step === 'TYPE' ? handleClose() : setStep('TYPE')} className="p-3 bg-[var(--bg-secondary)] rounded-full border border-[var(--border-color)]">
-                   <Ionicons name={step === 'TYPE' ? "close" : "arrow-back"} size={20} color={colors.textSecondary} />
-                 </TouchableOpacity>
-               )}
-               <View className="text-left">
-                  <Text className="text-[9px] font-black uppercase tracking-[0.4em] text-[var(--accent-color)] italic text-left">Project Initialization</Text>
-                  <Text className="text-2xl font-black italic uppercase tracking-tighter text-[var(--text-primary)] text-left">
-                    {step === 'TYPE' ? 'New Protocol' : step === 'AI_BLUEPRINTING' ? 'Neural Architect' : step === 'GITHUB' ? 'Github Ingestion' : 'Build Config'}
+    <Modal visible={isVisible} animationType="slide" transparent onRequestClose={handleClose}>
+      <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.8)' }}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <View
+            style={{
+              backgroundColor: colors.primary,
+              borderTopLeftRadius: 40,
+              borderTopRightRadius: 40,
+              borderTopWidth: 1,
+              borderColor: colors.border,
+              paddingHorizontal: 24,
+              paddingTop: 32,
+              paddingBottom: 40,
+              maxHeight: SCREEN_HEIGHT * 0.9,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
+               <View>
+                  <Text style={{ color: colors.accent, fontSize: 10, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2, fontStyle: 'italic' }}>
+                    Project Initialization
+                  </Text>
+                  <Text style={{ color: colors.text, fontSize: 24, fontWeight: '900', textTransform: 'uppercase', fontStyle: 'italic', marginTop: 4 }}>
+                    {step === 'TYPE' ? 'New Protocol' : step === 'AI_BLUEPRINTING' ? 'Neural Architect' : 'Build Config'}
                   </Text>
                </View>
-             </View>
-          </View>
+               <TouchableOpacity onPress={handleClose} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.secondary, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border }}>
+                  <Ionicons name="close" size={20} color={colors.textSecondary} />
+               </TouchableOpacity>
+            </View>
 
-          <ScrollView showsVerticalScrollIndicator={false}>
-            {step === 'TYPE' && (
-              <View>
-                <CardOption 
-                  icon="construct" 
-                  label="New Project" 
-                  sublabel="Direct SDLC-driven execution" 
-                  onPress={() => setStep('FORM')}
-                  accent
-                />
-                <CardOption 
-                  icon="logo-github" 
-                  label="From Github" 
-                  sublabel="Import existing repository archive" 
-                  onPress={() => setStep('GITHUB')}
-                />
-              </View>
-            )}
-
-            {(step === 'FORM' || step === 'GITHUB') && (
-              <View className="space-y-12">
-                {step === 'GITHUB' && (
-                  <View className="text-left">
-                     <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-4 ml-1 italic text-left">Github Repo URL</Text>
-                     <TextInput
-                       value={githubRepo}
-                       onChangeText={setGithubRepo}
-                       placeholder="E.G. OWNER/REPO..."
-                       placeholderTextColor={colors.textSecondary + '40'}
-                       className="bg-[var(--bg-primary)] border border-[var(--border-color)] p-8 rounded-[2rem] font-black text-lg text-[var(--text-primary)] uppercase italic tracking-tight"
-                     />
-                  </View>
-                )}
-                <View className="text-left">
-                   <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-4 ml-1 italic text-left">Project Codename</Text>
-                   <TextInput
-                     value={name}
-                     onChangeText={setName}
-                     placeholder="ENTER TARGET NAME..."
-                     placeholderTextColor={colors.textSecondary + '40'}
-                     className="bg-[var(--bg-primary)] border border-[var(--border-color)] p-8 rounded-[2rem] font-black text-2xl text-[var(--text-primary)] uppercase italic tracking-tight"
-                   />
-                </View>
-
-                <View className="text-left">
-                   <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-4 ml-1 italic text-left">Architecture Objective</Text>
-                   <TextInput
-                     value={description}
-                     onChangeText={setDescription}
-                     multiline
-                     placeholder="DEFINE GOALS FOR AI BLUEPRINTING..."
-                     placeholderTextColor={colors.textSecondary + '40'}
-                     className="bg-[var(--bg-primary)] border border-[var(--border-color)] p-8 rounded-[2rem] font-black text-base text-[var(--text-primary)] uppercase italic tracking-tight min-h-[120px]"
-                     style={{ textAlignVertical: 'top' }}
-                   />
-                </View>
-
+            <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+              {step === 'TYPE' && (
                 <View>
-                  <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-4 ml-1 italic text-left">Execution Methodology</Text>
-                  <View className="flex-row flex-wrap gap-3">
-                    {['AGILE', 'WATERFALL', 'V-MODEL', 'SPIRAL'].map(m => (
-                      <TouchableOpacity 
-                        key={m}
-                        onPress={() => setMethodology(m)}
-                        className={`px-6 py-4 rounded-2xl border ${methodology === m ? 'bg-[var(--accent-color)] border-[var(--accent-color)]' : 'bg-[var(--bg-secondary)] border border-[var(--border-color)]'}`}
-                      >
-                        <Text className={`text-[10px] font-black uppercase ${methodology === m ? 'text-white' : 'text-[var(--text-secondary)]'}`}>{m}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
+                  <OptionCard
+                    icon="construct"
+                    title="Direct Build"
+                    subtitle="AI planned execution node"
+                    onPress={() => setStep('FORM')}
+                    active
+                  />
+                  <OptionCard
+                    icon="logo-github"
+                    title="Github Import"
+                    subtitle="Analyze repository archive"
+                    onPress={() => setStep('GITHUB')}
+                  />
                 </View>
+              )}
 
-                <TouchableOpacity 
-                  disabled={!name || (step === 'GITHUB' && !githubRepo) || loading}
-                  onPress={runAIProcess}
-                  className={`py-8 rounded-[2.5rem] items-center justify-center shadow-lg ${(!name || (step === 'GITHUB' && !githubRepo)) ? 'opacity-30 bg-[var(--bg-secondary)]' : 'bg-[var(--text-primary)] shadow-black/20'}`}
-                >
-                   <View className="flex-row items-center gap-4">
-                      <Ionicons name="sparkles" size={20} color={colors.primary} />
-                      <Text className="text-sm font-black text-[var(--bg-primary)] uppercase tracking-[0.3em] italic">Generate Blueprints</Text>
-                   </View>
-                </TouchableOpacity>
-              </View>
-            )}
+              {(step === 'FORM' || step === 'GITHUB') && (
+                <View>
+                  {step === 'GITHUB' && (
+                    <InputField
+                      label="Repository Source"
+                      value={githubRepo}
+                      onChangeText={setGithubRepo}
+                      placeholder="owner/repo"
+                      colors={colors}
+                    />
+                  )}
+                  <InputField
+                    label="Project Codename"
+                    value={name}
+                    onChangeText={setName}
+                    placeholder="Enter target name"
+                    autoCapitalize="words"
+                    colors={colors}
+                  />
+                  <InputField
+                    label="Execution Objective"
+                    value={description}
+                    onChangeText={setDescription}
+                    placeholder="Define architectural goals"
+                    multiline
+                    colors={colors}
+                  />
 
-            {step === 'AI_BLUEPRINTING' && (
-              <View className="items-center justify-center py-20">
-                 <View className="w-48 h-48 rounded-full border-[12px] border-[var(--bg-secondary)] items-center justify-center relative mb-12">
-                    <View className="absolute inset-0 rounded-full border-[12px] border-transparent border-t-amber-500" style={{ transform: [{ rotate: `${(aiProgress / 100) * 360}deg` }] }} />
-                    <Ionicons name="sparkles" size={64} color="#f59e0b" />
-                 </View>
-                 <Text className="text-2xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter mb-4 text-center">{aiStatus}</Text>
-                 <View className="w-64 h-1.5 bg-[var(--bg-secondary)] rounded-full overflow-hidden">
-                    <View className="h-full bg-amber-500" style={{ width: `${aiProgress}%` }} />
-                 </View>
-                 <Text className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.4em] mt-8 italic opacity-40">Feeding AI Architecture Hub</Text>
-              </View>
-            )}
+                  <View style={{ marginBottom: 32 }}>
+                    <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '900', textTransform: 'uppercase', marginBottom: 12, fontStyle: 'italic' }}>
+                      Methodology
+                    </Text>
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+                      {['AGILE', 'WATERFALL', 'V-MODEL', 'SPIRAL'].map(m => {
+                        const active = methodology === m;
+                        return (
+                          <TouchableOpacity
+                            key={m}
+                            onPress={() => setMethodology(m)}
+                            style={{
+                              paddingHorizontal: 16,
+                              paddingVertical: 10,
+                              borderRadius: 12,
+                              backgroundColor: active ? colors.accent : colors.secondary,
+                              borderWidth: 1,
+                              borderColor: active ? colors.accent : colors.border,
+                            }}
+                          >
+                            <Text style={{ color: active ? colors.primary : colors.textSecondary, fontSize: 10, fontWeight: '900' }}>{m}</Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  </View>
 
-            {step === 'GITHUB' && (
-              <View className="items-center justify-center py-20 opacity-40">
-                 <Ionicons name="logo-github" size={64} color={colors.textSecondary} />
-                 <Text className="text-center font-black uppercase italic tracking-widest mt-8 text-[var(--text-secondary)] text-lg">Github Ingestion{'\n'}Auth Required</Text>
-                 <Text className="text-[10px] font-bold text-center mt-6 text-[var(--text-secondary)] uppercase opacity-60 leading-relaxed">
-                   Link your Github account via the{'\n'}Desktop or Web command centers{'\n'}to enable repository sync.
-                 </Text>
-              </View>
-            )}
-          </ScrollView>
-        </View>
+                  <TouchableOpacity
+                    disabled={!name || (step === 'GITHUB' && !githubRepo) || loading}
+                    onPress={runAIProcess}
+                    style={{
+                      backgroundColor: (!name || (step === 'GITHUB' && !githubRepo)) ? colors.border : colors.text,
+                      paddingVertical: 20,
+                      borderRadius: 20,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexDirection: 'row',
+                      gap: 12,
+                    }}
+                  >
+                    <Ionicons name="sparkles" size={18} color={colors.primary} />
+                    <Text style={{ color: colors.primary, fontWeight: '900', textTransform: 'uppercase', fontSize: 14, fontStyle: 'italic' }}>
+                      Initialize Protocol
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {step === 'AI_BLUEPRINTING' && (
+                <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 60 }}>
+                  <View style={{ width: 140, height: 140, borderRadius: 70, borderWidth: 8, borderColor: colors.secondary, alignItems: 'center', justifyContent: 'center', marginBottom: 32 }}>
+                    <Ionicons name="sparkles" size={48} color={colors.accent} />
+                  </View>
+                  <Text style={{ color: colors.text, fontSize: 22, fontWeight: '900', textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 12, textAlign: 'center' }}>
+                    {aiStatus}
+                  </Text>
+                  <View style={{ width: '100%', height: 4, backgroundColor: colors.secondary, borderRadius: 2, overflow: 'hidden' }}>
+                    <View style={{ width: `${aiProgress}%`, height: '100%', backgroundColor: colors.accent }} />
+                  </View>
+                  <Text style={{ color: colors.textSecondary, fontSize: 10, fontWeight: '900', textTransform: 'uppercase', marginTop: 12, opacity: 0.5 }}>
+                    {aiProgress}% Synthesized
+                  </Text>
+                </View>
+              )}
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
       </View>
     </Modal>
   );

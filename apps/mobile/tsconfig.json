@@ -13,7 +13,9 @@
       "@gritorquit/study-core": ["../../packages/study-core/src/index.ts"],
       "@gritorquit/habits-core": ["../../packages/habits-core/src/index.ts"],
       "@gritorquit/dashboard-core": ["../../packages/dashboard-core/src/index.ts"],
-      "@gritorquit/api": ["../../packages/api/index.ts"]
+      "@gritorquit/api": ["../../packages/api/index.ts"],
+      "@gritorquit/domain": ["../../packages/domain/index.ts"],
+      "@gritorquit/domain/*": ["../../packages/domain/*"]
     }
   },
   "include": [

@@ -57,33 +57,33 @@ export default function SupportPage() {
   };
 
   return (
-    <div className="transform-gpu min-h-screen w-full flex items-center justify-center bg-[var(--bg-primary)] relative overflow-hidden font-sans text-[var(--text-primary)]">
+    <div className="min-h-screen w-full flex items-center justify-center bg-[var(--bg-primary)] relative overflow-hidden font-sans text-[var(--text-primary)]">
       
       {/* Ambient Glow */}
-      <div className="transform-gpu absolute w-[800px] h-[800px] bg-[var(--accent-color)]/5 rounded-full blur-[120px] pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+      <div className="absolute w-[800px] h-[800px] bg-[var(--accent-color)]/5 rounded-full blur-[120px] pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
 
-      <div className="transform-gpu w-full max-w-4xl mx-auto p-4 relative z-10">
+      <div className="w-full max-w-4xl mx-auto p-4 relative z-10">
         <motion.div 
           initial="hidden"
           animate="visible"
           variants={containerVariants}
-          className="transform-gpu grid lg:grid-cols-5 w-full bg-[var(--bg-card)]/40 backdrop-blur-2xl rounded-[40px] shadow-2xl border border-[var(--border-color)] overflow-hidden"
+          className="grid lg:grid-cols-5 w-full bg-[var(--bg-card)]/40 backdrop-blur-2xl rounded-[40px] shadow-2xl border border-[var(--border-color)] overflow-hidden"
         >
           {/* Left Panel: Info */}
-          <div className="transform-gpu lg:col-span-2 p-12 bg-linear-to-br from-[var(--accent-color)]/20 to-transparent border-r border-[var(--border-color)] flex flex-col justify-between">
-            <Link href="/login" className="transform-gpu flex items-center gap-3 group w-fit">
-              <div className="transform-gpu w-10 h-10 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl flex items-center justify-center group-hover:scale-105 transition-all">
+          <div className="lg:col-span-2 p-12 bg-linear-to-br from-[var(--accent-color)]/20 to-transparent border-r border-[var(--border-color)] flex flex-col justify-between">
+            <Link href="/login" className="flex items-center gap-3 group w-fit">
+              <div className="w-10 h-10 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl flex items-center justify-center group-hover:scale-105 transition-all">
                 <ArrowLeft size={20} className="text-[var(--accent-color)]" />
               </div>
-              <span className="transform-gpu font-black tracking-tighter text-sm italic uppercase">Back</span>
+              <span className="font-black tracking-tighter text-sm italic uppercase">Back</span>
             </Link>
 
             <div className="space-y-6">
-              <div className="transform-gpu w-12 h-12 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl flex items-center justify-center shadow-xl">
+              <div className="w-12 h-12 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl flex items-center justify-center shadow-xl">
                 <HelpCircle size={24} className="text-[var(--accent-color)]" />
               </div>
-              <h1 className="transform-gpu text-4xl font-black italic uppercase tracking-tighter leading-none">Support</h1>
-              <p className="transform-gpu text-[var(--text-secondary)] text-sm font-medium leading-relaxed">
+              <h1 className="text-4xl font-black italic uppercase tracking-tighter leading-none">Support</h1>
+              <p className="text-[var(--text-secondary)] text-sm font-medium leading-relaxed">
                 Need help with your account or have a question? Our team is here to assist you.
               </p>
               
@@ -100,7 +100,7 @@ export default function SupportPage() {
               </div>
             </div>
 
-            <div className="transform-gpu text-[9px] text-[var(--text-secondary)] font-black uppercase tracking-[0.3em] italic">
+            <div className="text-[9px] text-[var(--text-secondary)] font-black uppercase tracking-[0.3em] italic">
               © 2026 grit.io
             </div>
           </div>

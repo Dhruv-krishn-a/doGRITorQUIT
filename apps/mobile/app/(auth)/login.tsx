@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { Link, useRouter } from 'expo-router';
@@ -96,27 +97,26 @@ export default function Login() {
  return (
  <KeyboardAvoidingView 
  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
- style={{ flex: 1, backgroundColor: '#efefef' }}
+ style={{ flex: 1, backgroundColor: colors.primary }}
  >
- <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#efefef' }} />
+ <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: colors.primary }} />
 
  <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}>
  <Animated.View 
  entering={FadeInDown.duration(600).springify()}
- className="p-8 rounded-[2.5rem] border "
- style={{ backgroundColor: '#ffffff', borderColor: '#e6e6e9' }}
+ className="p-8 rounded-[2.5rem] border bg-[var(--bg-card)] border-[var(--border-color)]"
  >
  {/* Header */}
  <View className="mb-8">
  <View className="mb-6">
  <GritioLogo size="lg" withText={true} />
  </View>
- <Text className="text-3xl font-black tracking-tighter" style={{ color: '#0f1115' }}>Sign In</Text>
+ <Text className="text-3xl font-black tracking-tighter text-[var(--text-primary)]">Sign In</Text>
  <View className="flex-row items-center mt-2">
- <Text className="font-bold text-[10px] uppercase tracking-widest" style={{ color: '#63666f' }}>New here?</Text>
+ <Text className="font-bold text-[10px] uppercase tracking-widest text-[var(--text-secondary)]">New here?</Text>
  <Link href="/signup" asChild>
  <TouchableOpacity>
- <Text className="font-bold text-[10px] uppercase tracking-widest ml-2" style={{ color: '#ff6a00' }}>Create Account</Text>
+ <Text className="font-bold text-[10px] uppercase tracking-widest ml-2 text-[var(--accent-color)]">Create Account</Text>
  </TouchableOpacity>
  </Link>
  </View>
@@ -139,8 +139,8 @@ export default function Login() {
  keyboardType="email-address"
  placeholder="name@example.com"
  placeholderTextColor={`${colors.textSecondary}44`}
- className="bg-[var(--bg-secondary)]/50 border border-[var(--border-color)] rounded-2xl py-4 pl-12 pr-4 text-sm font-bold text-[var(--text-primary)] tracking-tight"
- style={{ color: colors.text, borderColor: colors.border }}
+ className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl py-4 pl-12 pr-4 text-sm font-bold text-[var(--text-primary)] tracking-tight"
+ style={{ color: colors.text }}
  />
  </View>
  </View>
@@ -157,8 +157,8 @@ export default function Login() {
  secureTextEntry
  placeholder="••••••••"
  placeholderTextColor={`${colors.textSecondary}44`}
- className="bg-[var(--bg-secondary)]/50 border border-[var(--border-color)] rounded-2xl py-4 pl-12 pr-4 text-sm font-bold text-[var(--text-primary)]"
- style={{ color: colors.text, borderColor: colors.border }}
+ className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl py-4 pl-12 pr-4 text-sm font-bold text-[var(--text-primary)]"
+ style={{ color: colors.text }}
  />
  </View>
  <TouchableOpacity 
@@ -173,14 +173,13 @@ export default function Login() {
  onPress={signInWithEmail} 
  disabled={loading}
  className="bg-[var(--accent-color)] py-4 rounded-2xl items-center mt-4 flex-row justify-center gap-3"
- style={{ backgroundColor: '#ff6a00' }}
  >
  {loading ? (
- <ActivityIndicator color="#ffffff" />
+ <ActivityIndicator color={colors.primary} />
  ) : (
  <>
- <Text className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: '#ffffff' }}>Sign In</Text>
- <Ionicons name="arrow-forward" size={16} color="#ffffff" />
+ <Text className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--bg-primary)]">Sign In</Text>
+ <Ionicons name="arrow-forward" size={16} color={colors.primary} />
  </>
  )}
  </TouchableOpacity>

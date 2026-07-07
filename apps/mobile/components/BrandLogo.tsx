@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text } from "react-native";
+import { useTheme } from "../context/ThemeContext";
 
 type BrandLogoProps = {
  showWordmark?: boolean;
@@ -16,8 +17,9 @@ const SIZE_MAP = {
 export default function BrandLogo({
  showWordmark = true,
  size = "md",
- textColor = "#050505",
+ textColor,
 }: BrandLogoProps) {
+ const { colors } = useTheme();
  const dims = SIZE_MAP[size];
  const dotCommon = {
  width: dims.dot,
@@ -28,18 +30,14 @@ export default function BrandLogo({
  return (
  <View style={{ flexDirection: "row", alignItems: "center" }}>
  <View style={{ flexDirection: "row", alignItems: "center", gap: dims.gap }}>
- <View style={[dotCommon, { backgroundColor: "#050505" }]} />
- <View style={[dotCommon, { backgroundColor: "#050505" }]} />
- <View style={[dotCommon, { backgroundColor: "#050505" }]} />
+ <View style={[dotCommon, { backgroundColor: colors.textSecondary, opacity: 0.5 }]} />
+ <View style={[dotCommon, { backgroundColor: colors.textSecondary, opacity: 0.5 }]} />
+ <View style={[dotCommon, { backgroundColor: colors.textSecondary, opacity: 0.5 }]} />
  <View
  style={[
  dotCommon,
  {
- backgroundColor: "#ff6a00",
- shadowColor: "#ff6a00",
- shadowOpacity: 0.35,
- shadowRadius: dims.dot * 0.6,
- shadowOffset: { width: 0, height: 0 },
+ backgroundColor: colors.accent,
  elevation: 3,
  },
  ]}
@@ -53,7 +51,7 @@ export default function BrandLogo({
  fontSize: dims.font,
  fontWeight: "900",
  letterSpacing: -1.2,
- color: textColor,
+ color: textColor || colors.text,
  textTransform: "lowercase",
  }}
  >

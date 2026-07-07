@@ -13,6 +13,7 @@ export type NativeUser = {
 export type NativeSession = {
   token_type: "bearer";
   access_token: string;
+  refresh_token: string;
   expires_in?: number;
   expires_at: number;
   user: NativeUser;
@@ -25,6 +26,7 @@ export function getApiBaseUrl() {
 function buildSession(payload: {
   token_type?: string;
   access_token: string;
+  refresh_token: string;
   expires_in?: number;
   user: NativeUser;
 }): NativeSession {
@@ -32,10 +34,34 @@ function buildSession(payload: {
   return {
     token_type: "bearer",
     access_token: payload.access_token,
+    refresh_token: payload.refresh_token,
     expires_in: expiresIn,
     expires_at: Date.now() + expiresIn * 1000,
     user: payload.user,
   };
+}
+
+export async function refreshSession(): Promise<NativeSession | null> {
+  const current = await getStoredSession();
+  if (!current?.refresh_token) return null;
+
+  try {
+    const res = await fetch(`${getApiBaseUrl()}/api/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: current.refresh_token }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return await setStoredSession(data);
+    } else {
+      await clearStoredSession();
+      return null;
+    }
+  } catch (e) {
+    return null;
+  }
 }
 
 export async function getStoredSession(): Promise<NativeSession | null> {
@@ -62,10 +88,11 @@ export async function getStoredSession(): Promise<NativeSession | null> {
 export async function setStoredSession(payload: {
   token_type?: string;
   access_token: string;
+  refresh_token?: string;
   expires_in?: number;
   user: NativeUser;
 }): Promise<NativeSession> {
-  const session = buildSession(payload);
+  const session = buildSession({ ...payload, refresh_token: payload.refresh_token ?? "" });
   await SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(session));
   return session;
 }

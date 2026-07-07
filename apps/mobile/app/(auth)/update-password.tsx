@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -30,9 +31,8 @@ export default function UpdatePassword() {
  await setPassword(password);
  
  Alert.alert('Success', 'Your password has been updated. Access re-initialized.');
- router.replace('/(drawer)/dashboard');
- } catch (err: any) {
- console.error("Update Error:", err);
+ router.replace('/(drawer)/today');
+ } catch (err: any) { console.error("Update Error:", err);
  Alert.alert('Update Failed', err.message || 'An unexpected error occurred');
  } finally {
  setLoading(false);

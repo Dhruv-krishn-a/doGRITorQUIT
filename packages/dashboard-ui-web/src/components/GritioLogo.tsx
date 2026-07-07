@@ -34,10 +34,10 @@ export function GritioLogo({ className = '', size = 'md', withText = true }: Gri
         // Reset without animating
         // Fix: "transparent" is not animatable in some contexts, using rgba(0,0,0,0)
         await Promise.all([
-          animate(".dot-1", { backgroundColor: "var(--text-primary)", opacity: 1, x: 0, scale: 1 }, { duration: 0 }),
-          animate(".dot-2", { backgroundColor: "var(--text-primary)", opacity: 1, x: 0, scale: 1 }, { duration: 0 }),
-          animate(".dot-3", { backgroundColor: "var(--text-primary)", opacity: 1, x: 0, scale: 1 }, { duration: 0 }),
-          animate(".dot-4", { backgroundColor: "rgba(0, 0, 0, 0)", borderColor: "var(--text-primary)", opacity: 1, x: 0, scale: 1 }, { duration: 0 })
+          animate(".dot-1", { backgroundColor: "var(--text-secondary)", opacity: 0.5, x: 0, scale: 1 }, { duration: 0 }),
+          animate(".dot-2", { backgroundColor: "var(--text-secondary)", opacity: 0.5, x: 0, scale: 1 }, { duration: 0 }),
+          animate(".dot-3", { backgroundColor: "var(--text-secondary)", opacity: 0.5, x: 0, scale: 1 }, { duration: 0 }),
+          animate(".dot-4", { backgroundColor: "rgba(0, 0, 0, 0)", borderColor: "var(--text-secondary)", opacity: 0.5, x: 0, scale: 1 }, { duration: 0 })
         ]);
         
         await new Promise(r => setTimeout(r, 1200)); // Hold neutral
@@ -47,6 +47,7 @@ export function GritioLogo({ className = '', size = 'md', withText = true }: Gri
         await animate(".dot-4", { 
           backgroundColor: "var(--accent-color)", 
           borderColor: "rgba(0, 0, 0, 0)",
+          opacity: 1,
           scale: [1, 1.2, 1]
         }, { duration: 0.6, ease: "easeInOut" });
         
@@ -55,7 +56,7 @@ export function GritioLogo({ className = '', size = 'md', withText = true }: Gri
 
         // Frame 3: Fade Past (First dot fades slightly) (◐ ● ● 🟠)
         await animate(".dot-1", { 
-          opacity: 0.3,
+          opacity: 0.1,
           scale: 0.8
         }, { duration: 0.5, ease: "easeOut" });
 

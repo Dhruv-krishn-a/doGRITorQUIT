@@ -19,8 +19,12 @@ export default function ProjectTrackerPage() {
     try {
       const data = await api.get('/api/github-projects');
       setProjects(data || []);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      if (err?.message === 'Network request failed' || err?.message?.includes('Failed to fetch') || err?.message?.includes('NetworkError')) {
+        console.log("[Projects] Network error. Working in offline mode.");
+      } else {
+        console.error("Failed to fetch projects:", err);
+      }
     } finally {
       setLoading(false);
     }
@@ -118,7 +122,7 @@ export default function ProjectTrackerPage() {
           </View>
           <TouchableOpacity 
             onPress={() => setCreationVisible(true)}
-            className="w-14 h-14 bg-[var(--accent-color)] rounded-2xl items-center justify-center shadow-lg shadow-[var(--accent-color)]/20"
+            className="w-14 h-14 bg-[var(--accent-color)] rounded-2xl items-center justify-center  [var(--accent-color)]/20"
           >
             <Ionicons name="add" size={32} color={colors.primary} />
           </TouchableOpacity>

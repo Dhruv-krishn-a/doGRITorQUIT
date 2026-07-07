@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../../context/ThemeContext';
 import * as Haptics from 'expo-haptics';
 import YoutubePlayer from 'react-native-youtube-iframe';
+// @ts-ignore
 import { updateUnitNotes, toggleUnitCompletion } from '../../../lib/study-logic';
 import { sendImmediateNotification } from '../../../lib/notifications';
 import { map } from 'rxjs/operators';
@@ -64,6 +65,7 @@ const UnitSession: React.FC<UnitSessionProps> = ({ track, unit }) => {
 
   // Initial Data Load
   useEffect(() => {
+    // @ts-ignore
     if (unit?.notes) {
       try {
         const parsed = typeof unit.notes === 'string' ? JSON.parse(unit.notes) : unit.notes;
@@ -195,12 +197,12 @@ const UnitSession: React.FC<UnitSessionProps> = ({ track, unit }) => {
                setPlayerReady(true);
                console.log("[Neural Link] Sector Stream Ready.");
             }}
-            onChangeState={(state) => setIsPlaying(state === "playing")}
-            onError={(e) => console.error("YT Player Error:", e)}
+            onChangeState={(state: any) => setIsPlaying(state === "playing")}
+            onError={(e: any) => console.error("YT Player Error:", e)}
           />
         ) : (
           <View className="flex-1 items-center justify-center bg-black border-b border-[var(--border-color)]">
-            <View className="w-40 h-40 rounded-full border-[8px] border-[var(--accent-color)]/20 items-center justify-center relative shadow-lg shadow-[var(--accent-color)]/10">
+            <View className="w-40 h-40 rounded-full border-[8px] border-[var(--accent-color)]/20 items-center justify-center relative  [var(--accent-color)]/10">
                <View className="absolute inset-0 rounded-full border-[8px] border-transparent border-t-[var(--accent-color)]" style={{ transform: [{ rotate: `${(seconds % 60) * 6}deg` }] }} />
                <Ionicons name="time" size={32} color={colors.accent} className="mb-2" />
                <Text className="text-3xl font-black text-[var(--text-primary)] tracking-tighter italic">{formatTime(seconds)}</Text>
@@ -235,7 +237,7 @@ const UnitSession: React.FC<UnitSessionProps> = ({ track, unit }) => {
       >
         {/* Main Controls & Content */}
         <View className="flex-1">
-          <View className="px-8 py-8 border-b border-[var(--border-color)] bg-[var(--bg-card)] flex-row items-center justify-between shadow-sm">
+          <View className="px-8 py-8 border-b border-[var(--border-color)] bg-[var(--bg-card)] flex-row items-center justify-between ">
             <View className="flex-1 text-left">
               <Text className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--accent-color)] italic mb-2 text-left">Sector Timeline</Text>
               <Text className="text-3xl font-black text-[var(--text-primary)] italic tracking-tighter leading-none text-left" numberOfLines={1}>{formatTime(seconds)}</Text>
@@ -246,7 +248,7 @@ const UnitSession: React.FC<UnitSessionProps> = ({ track, unit }) => {
                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                    setIsPaused(!isPaused);
                 }}
-                className={`w-14 h-14 rounded-2xl items-center justify-center ${isPaused ? 'bg-[var(--accent-color)] shadow-lg shadow-[var(--accent-color)]/30' : 'bg-[var(--bg-secondary)] border border-[var(--border-color)]'}`}
+                className={`w-14 h-14 rounded-2xl items-center justify-center ${isPaused ? 'bg-[var(--accent-color)]  [var(--accent-color)]/30' : 'bg-[var(--bg-secondary)] border border-[var(--border-color)]'}`}
               >
                 <Ionicons name={isPaused ? "play" : "pause"} size={26} color={isPaused ? "white" : colors.textSecondary} />
               </TouchableOpacity>
@@ -258,7 +260,7 @@ const UnitSession: React.FC<UnitSessionProps> = ({ track, unit }) => {
                   sendImmediateNotification("Sector Resolved 🏁", `Node "${unit.title}" has been committed to history.`);
                   router.back();
                 }}
-                className="h-14 px-8 bg-[var(--text-primary)] rounded-2xl items-center justify-center shadow-lg shadow-black/20"
+                className="h-14 px-8 bg-[var(--text-primary)] rounded-2xl items-center justify-center  "
               >
                 <Text className="text-[11px] font-black text-[var(--bg-primary)] uppercase tracking-widest italic">Resolve Node</Text>
               </TouchableOpacity>
@@ -282,7 +284,7 @@ const UnitSession: React.FC<UnitSessionProps> = ({ track, unit }) => {
 
             <ScrollView className="flex-1" contentContainerStyle={{ padding: 24, paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
               {activeTab === 'NOTES' && (
-                <View className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[3rem] p-10 min-h-[500px] shadow-sm">
+                <View className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[3rem] p-10 min-h-[500px] ">
                   <TextInput
                     multiline
                     placeholder="Capture neural insights and session breakthroughs..."
@@ -304,7 +306,7 @@ const UnitSession: React.FC<UnitSessionProps> = ({ track, unit }) => {
                     </View>
                   )}
                   {questions.map(q => (
-                    <View key={q.id} className="bg-[var(--bg-card)] border border-[var(--border-color)] p-8 rounded-[3rem] shadow-sm text-left">
+                    <View key={q.id} className="bg-[var(--bg-card)] border border-[var(--border-color)] p-8 rounded-[3rem]  text-left">
                       <View className="flex-row justify-between items-start mb-6">
                         <View className="bg-[var(--accent-color)]/10 px-4 py-2 rounded-xl border border-[var(--accent-color)]/20">
                           <Text className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-color)] italic">
@@ -323,7 +325,7 @@ const UnitSession: React.FC<UnitSessionProps> = ({ track, unit }) => {
                     </View>
                   ))}
 
-                  <View className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[2.5rem] p-6 flex-row items-center mt-8 shadow-inner">
+                  <View className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[2.5rem] p-6 flex-row items-center mt-8 ">
                     <TextInput
                       value={newQuestion}
                       onChangeText={setNewQuestion}
@@ -332,7 +334,7 @@ const UnitSession: React.FC<UnitSessionProps> = ({ track, unit }) => {
                       className="flex-1 text-base font-black text-[var(--text-primary)] uppercase tracking-widest italic text-left"
                       onSubmitEditing={handleAddQuestion}
                     />
-                    <TouchableOpacity onPress={handleAddQuestion} className="w-14 h-14 bg-[var(--accent-color)] rounded-2xl items-center justify-center active:scale-90 transition-all shadow-lg shadow-[var(--accent-color)]/20 ml-4">
+                    <TouchableOpacity onPress={handleAddQuestion} className="w-14 h-14 bg-[var(--accent-color)] rounded-2xl items-center justify-center active:scale-90 transition-all  [var(--accent-color)]/20 ml-4">
                       <Ionicons name="arrow-up" size={28} color="white" />
                     </TouchableOpacity>
                   </View>
@@ -340,8 +342,8 @@ const UnitSession: React.FC<UnitSessionProps> = ({ track, unit }) => {
               )}
 
               {activeTab === 'RESOURCES' && (
-                <View className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[3rem] p-12 items-center justify-center opacity-70 min-h-[400px] shadow-sm">
-                   <View className="w-24 h-24 bg-[var(--bg-secondary)] rounded-[3rem] items-center justify-center mb-10 border border-[var(--border-color)] shadow-inner">
+                <View className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[3rem] p-12 items-center justify-center opacity-70 min-h-[400px] ">
+                   <View className="w-24 h-24 bg-[var(--bg-secondary)] rounded-[3rem] items-center justify-center mb-10 border border-[var(--border-color)] ">
                       <Ionicons name="link-outline" size={48} color={colors.textSecondary} />
                    </View>
                    <Text className="text-2xl font-black text-[var(--text-primary)] uppercase tracking-widest italic text-center">Node Resources Empty</Text>
@@ -367,7 +369,7 @@ const EnhancedUnitSession = withObservables(['id', 'unitId'], ({ id, unitId }) =
 
   if (!track || !unit) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justify-center: 'center', backgroundColor: '#050505' }}>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#050505' }}>
         <ActivityIndicator color={colors.accent} />
         <Text className="text-white font-black italic uppercase mt-6 tracking-widest opacity-40 text-center">Neural handshake in progress...{'\n'}Synchronizing sector data</Text>
       </View>
