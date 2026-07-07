@@ -1,4 +1,4 @@
-name: Release gritorquit Desktop
+name: Unified Release Pipeline
 
 on:
   push:
