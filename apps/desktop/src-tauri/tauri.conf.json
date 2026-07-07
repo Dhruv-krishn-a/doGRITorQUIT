@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "grit.io",
-  "version": "1.1.12",
+  "version": "1.0.0",
   "identifier": "in.gritorquit.desktop",
   "build": {
     "beforeDevCommand": "pnpm dev:web",
