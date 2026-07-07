@@ -26,4 +26,9 @@ apps/*/src-tauri/target/
 
 android/
 packaging/
-scripts/
+
+# Mobile builds
+*.apk
+*.aab
+*.ipa
+ios/
