@@ -15,6 +15,9 @@ export const mySchema = appSchema({
         { name: 'due_date', type: 'number', isOptional: true },
         { name: 'plan_id', type: 'string', isOptional: true, isIndexed: true },
         { name: 'user_id', type: 'string', isIndexed: true },
+        { name: 'estimated_minutes', type: 'number', isOptional: true },
+        { name: 'time_spent_minutes', type: 'number', isOptional: true },
+        { name: 'metadata', type: 'string', isOptional: true },
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
       ]

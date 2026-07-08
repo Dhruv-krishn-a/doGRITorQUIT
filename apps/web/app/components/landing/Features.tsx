@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { BrainCircuit, CheckCircle2, BarChart3, ArrowRight } from 'lucide-react';
@@ -119,7 +120,9 @@ export default function Features() {
             Features that actually <span className="bg-linear-to-r from-[var(--accent-color)] to-purple-500 bg-clip-text text-transparent">ship work</span>
           </h2>
           <p className="text-lg text-[var(--text-secondary)] font-medium">
-            Most tools are just lists. gritorquit is an active engine that blends generative planning, calendar physics, and behavioral analytics.
+            Most productivity tools are just glorified text files. doGRITorQUIT is an active intelligence engine that blends generative AI planning, calendar physics, and behavioral analytics. 
+            <br/><br/>
+            Plus, it fully adapts to your environment with instant Light, Dark, and Noir modes.
           </p>
         </div>
 
@@ -136,12 +139,12 @@ export default function Features() {
               
               <h3 className="font-bold text-2xl mb-3 text-[var(--text-primary)] group-hover:text-[var(--accent-color)] transition-colors">AI Roadmaps</h3>
               <p className="text-[var(--text-secondary)] leading-relaxed mb-6">
-                Decomposes vague goals like &quot;Launch MVP&quot; into concrete milestones, then breaks them down into daily estimate-backed tasks.
+                Decomposes vague goals like &quot;Run a Marathon or Master Machine Learning&quot; into concrete milestones, then breaks them down into daily estimate-backed tasks.
               </p>
               
-              <div className="mt-auto flex items-center gap-2 text-sm font-bold text-[var(--accent-color)] opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+              <Link href="/dashboard" className="mt-auto flex w-fit items-center gap-2 text-sm font-bold text-[var(--accent-color)] opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
                 See it in action <ArrowRight size={14} />
-              </div>
+              </Link>
             </div>
           </div>
 
@@ -159,13 +162,13 @@ export default function Features() {
                 Context-aware daily lists that adapt to your pace. Missed a task? The AI intelligently rebalances your week.
               </p>
 
-              <div className="mt-auto flex items-center gap-2 text-sm font-bold text-blue-500 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+              <Link href="/dashboard" className="mt-auto flex w-fit items-center gap-2 text-sm font-bold text-blue-500 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
                 Learn more <ArrowRight size={14} />
-              </div>
+              </Link>
             </div>
           </div>
 
-          {/* Card 3: Analytics */}
+          {/* Card 3: Adaptability & Analytics */}
           <div className="feature-card group relative bg-[var(--bg-card)] rounded-3xl p-1 border border-[var(--border-color)] shadow-xl shadow-black/20 hover:shadow-2xl hover:shadow-green-500/10 transition-shadow duration-500">
             <div className="absolute inset-0 bg-linear-to-br from-green-500/10 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             
@@ -174,14 +177,14 @@ export default function Features() {
                 <BarChart3 size={28} />
               </div>
               
-              <h3 className="font-bold text-2xl mb-3 text-[var(--text-primary)] group-hover:text-green-500 transition-colors">Deep Analytics</h3>
+              <h3 className="font-bold text-2xl mb-3 text-[var(--text-primary)] group-hover:text-green-500 transition-colors">Deep Analytics & Themes</h3>
               <p className="text-[var(--text-secondary)] leading-relaxed mb-6">
-                Visualize your focus time, velocity, and burnout patterns. Understand <em>when</em> you work best, not just what you did.
+                Visualize your focus time, velocity, and burnout patterns. Change your workspace theme instantly from Light to Dark to Noir to match your focus state.
               </p>
 
-              <div className="mt-auto flex items-center gap-2 text-sm font-bold text-green-500 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+              <Link href="/dashboard" className="mt-auto flex w-fit items-center gap-2 text-sm font-bold text-green-500 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
                 View metrics <ArrowRight size={14} />
-              </div>
+              </Link>
             </div>
           </div>
 

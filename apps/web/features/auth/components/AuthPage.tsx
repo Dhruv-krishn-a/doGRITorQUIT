@@ -20,6 +20,7 @@ export default function AuthPage({ view: initialView }: AuthPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   
   const [view, setView] = useState(initialView);
   
@@ -70,6 +71,11 @@ export default function AuthPage({ view: initialView }: AuthPageProps) {
           router.push(res.redirect);
           return;
         }
+        if (callbackUrl !== "/dashboard") {
+           setSuccessMsg("Account created! Please check your email to verify. Then sign in.");
+           setTimeout(() => setView("login"), 2000);
+           return;
+        }
         setSuccessMsg(res.success || "Account created! Please check your email to verify.");
       } else if (view === "login") {
         const result = await signIn("credentials", {
@@ -87,7 +93,7 @@ export default function AuthPage({ view: initialView }: AuthPageProps) {
             setError("Invalid email or password.");
           }
         } else {
-          router.push("/dashboard");
+          router.push(callbackUrl);
           router.refresh();
         }
       } else if (view === "forgot-password") {
@@ -117,7 +123,7 @@ export default function AuthPage({ view: initialView }: AuthPageProps) {
     try {
       setLoading(true);
       setError(null);
-      await signIn(provider, { callbackUrl: "/dashboard" });
+      await signIn(provider, { callbackUrl });
     } catch (err: any) {
       setError(err.message || `${provider} login failed`);
       setLoading(false);
@@ -136,7 +142,7 @@ export default function AuthPage({ view: initialView }: AuthPageProps) {
       const result = await signIn("email", {
         email,
         redirect: false,
-        callbackUrl: "/dashboard",
+        callbackUrl,
       });
 
       if (result?.error) {

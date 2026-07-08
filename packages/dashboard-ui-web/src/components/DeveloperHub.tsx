@@ -15,11 +15,34 @@ interface DeveloperHubProps {
 }
 
 export function DeveloperHub({ platform, userEmail, onSendFeedback }: DeveloperHubProps) {
-  const [activeTab, setActiveTab] = useState<'FEEDBACK' | 'ABOUT'>('FEEDBACK');
+  const [activeTab, setActiveTab] = useState<'FEEDBACK' | 'ABOUT' | 'HISTORY'>('FEEDBACK');
   const [feedbackType, setFeedbackType] = useState('BUG');
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [isSent, setIsSent] = useState(false);
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [isLoadingTickets, setIsLoadingTickets] = useState(false);
+
+  const fetchTickets = async () => {
+    setIsLoadingTickets(true);
+    try {
+      const res = await fetch('/api/feedback');
+      if (res.ok) {
+        const data = await res.json();
+        setTickets(data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoadingTickets(false);
+    }
+  };
+
+  React.useEffect(() => {
+    if (activeTab === 'HISTORY') {
+      fetchTickets();
+    }
+  }, [activeTab]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,6 +88,12 @@ export function DeveloperHub({ platform, userEmail, onSendFeedback }: DeveloperH
             className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'FEEDBACK' ? 'bg-[var(--bg-card)] text-[var(--accent-color)] shadow-sm border border-[var(--border-color)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
           >
             <MessageSquare size={14} /> Feedback
+          </button>
+          <button 
+            onClick={() => setActiveTab('HISTORY')}
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'HISTORY' ? 'bg-[var(--bg-card)] text-[var(--accent-color)] shadow-sm border border-[var(--border-color)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+          >
+            <Layout size={14} /> My Tickets
           </button>
           <button 
             onClick={() => setActiveTab('ABOUT')}
@@ -193,6 +222,46 @@ export function DeveloperHub({ platform, userEmail, onSendFeedback }: DeveloperH
                       </div>
                    </div>
                 </div>
+              </div>
+            </motion.div>
+          ) : activeTab === 'HISTORY' ? (
+            <motion.div 
+              key="history"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[3rem] p-10 shadow-xl">
+                <h2 className="text-2xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter mb-8">My Submitted Tickets</h2>
+                {isLoadingTickets ? (
+                  <div className="flex justify-center items-center py-20">
+                    <Loader2 className="animate-spin text-[var(--accent-color)]" size={32} />
+                  </div>
+                ) : tickets.length === 0 ? (
+                  <div className="text-center py-20 text-[var(--text-secondary)]">
+                    <p className="text-sm font-bold uppercase tracking-widest">No tickets found.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {tickets.map(ticket => (
+                      <div key={ticket.id} className="p-6 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl flex flex-col md:flex-row justify-between gap-4 group">
+                        <div className="flex-1">
+                           <div className="flex items-center gap-3 mb-2">
+                              <span className="text-[10px] font-black uppercase text-[var(--text-secondary)]">{new Date(ticket.createdAt).toLocaleDateString()}</span>
+                              <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${ticket.status === 'resolved' ? 'bg-emerald-500/10 text-emerald-500' : ticket.status === 'in-progress' ? 'bg-blue-500/10 text-blue-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                                {ticket.status}
+                              </span>
+                           </div>
+                           <p className="text-sm font-bold text-[var(--text-primary)]">{ticket.message.split('\\n')[0]}</p>
+                        </div>
+                        <div className="text-[10px] font-mono text-[var(--text-secondary)] opacity-50 shrink-0 self-start">
+                          ID: {ticket.id.slice(-6)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </motion.div>
           ) : (

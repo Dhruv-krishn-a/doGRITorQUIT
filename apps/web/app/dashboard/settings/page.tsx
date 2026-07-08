@@ -27,6 +27,7 @@ export default async function SettingsPage() {
     timezone: dbUser?.profile?.timezone ?? "UTC",
     locale: dbUser?.profile?.locale ?? "en",
     tier: dbUser?.tier ?? "Free",
+    avatarUrl: dbUser?.profile?.avatarUrl ?? dbUser?.image ?? "",
     // We pass the provider just for info, but we won't rely on it for password logic
     provider: (user as any).app_metadata?.provider || "email",
   };

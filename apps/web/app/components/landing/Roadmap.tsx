@@ -93,8 +93,8 @@ export default function Roadmap() {
         <div className="space-y-24">
           {[
             { label: 'Q1 2026', title: 'Core Foundations', desc: 'Refine AI planner, offline sync, and native mobile pairing.', icon: <BrainCircuit size={20} /> },
-            { label: 'Q2 2026', title: 'Team Velocity', desc: 'Shared workspaces, team plans, and collaborative goal tracking.', icon: <Zap size={20} /> },
-            { label: 'Q3 2026', title: 'Enterprise Scale', desc: 'SSO, Advanced Analytics export, and API access.', icon: <ShieldCheck size={20} /> }
+            { label: 'Q2 2026', title: 'Advanced Habit Analytics', desc: 'Deep dive into your focus trends, burnout detection, and mood correlations.', icon: <Zap size={20} /> },
+            { label: 'Q3 2026', title: 'Community Challenges', desc: 'Social accountability, shared goals, and friend leaderboards.', icon: <ShieldCheck size={20} /> }
           ].map((item, i) => (
             <div key={i} className={`roadmap-item relative flex items-center ${i % 2 === 0 ? 'md:flex-row-reverse' : ''}`}>
               

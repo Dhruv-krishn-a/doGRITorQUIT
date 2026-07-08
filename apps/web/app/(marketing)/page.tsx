@@ -4,6 +4,7 @@ import SmoothScroll from '../components/landing/SmoothScroll';
 import Hero from '../components/landing/Hero';
 import AppDemo from '../components/landing/AppDemo';
 import Features from '../components/landing/Features';
+import CrossPlatform from '../components/landing/CrossPlatform';
 import Roadmap from '../components/landing/Roadmap';
 import Pricing from '../components/landing/Pricing';
 import FAQ from '../components/landing/FAQ';
@@ -16,6 +17,7 @@ export default function Home() {
           <Hero />
           <AppDemo />
           <Features />
+          <CrossPlatform />
           <Roadmap />
           <Pricing />
           <FAQ />

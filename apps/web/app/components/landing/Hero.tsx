@@ -145,8 +145,8 @@ export default function Hero() {
           </span>
         </h1>
 
-        <p className="hero-desc text-lg md:text-xl text-[var(--text-secondary)] max-w-xl mx-auto font-medium leading-relaxed">
-          The only workspace that uses AI to break down your massive goals into daily, bite-sized tasks.
+        <p className="hero-desc text-lg md:text-xl text-[var(--text-secondary)] max-w-2xl mx-auto font-medium leading-relaxed">
+          Stop making to-do lists. doGRITorQUIT is the ultimate AI-powered workspace that breaks down your massive goals into daily actionable habits, tracks your focus time, and actively prevents burnout.
         </p>
 
         {/* CTA Buttons */}
@@ -160,7 +160,10 @@ export default function Hero() {
             </button>
           </Link>
           
-          <button className="hero-btn px-8 py-4 text-[var(--text-secondary)] font-semibold hover:text-[var(--text-primary)] transition-colors flex items-center gap-2 group">
+          <button 
+            onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
+            className="hero-btn px-8 py-4 text-[var(--text-secondary)] font-semibold hover:text-[var(--text-primary)] transition-colors flex items-center gap-2 group"
+          >
             Watch Demo 
             <div className="w-8 h-8 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)] flex items-center justify-center group-hover:border-[var(--accent-color)] group-hover:text-[var(--accent-color)] transition-colors shadow-sm">
               ▶

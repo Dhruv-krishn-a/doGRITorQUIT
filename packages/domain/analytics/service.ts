@@ -92,19 +92,20 @@ export async function getAnalyticsData(userId: string, options: AnalyticsOptions
       date: dateStr,
       day: dayName,
       focusMinutes,
-      completed,
-      total
+      completedTasks: completed,
+      totalTasks: total
     });
   }
 
   const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
 
-  // Habit Stats
   const habitStats = habits.map(h => ({
-    name: h.title,
+    title: h.title,
+    icon: h.icon || '🔥',
+    streak: 0, // Streak calculation requires sorting logs, default to 0 for analytics view
+    completedCount: h.logs.length,
     total: diffDays,
-    completed: h.logs.length,
     rate: Math.round((h.logs.length / diffDays) * 100)
   }));
 

@@ -1,14 +1,27 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { CheckCircle2, XCircle } from 'lucide-react';
+import { getSession } from 'next-auth/react';
 
 if (typeof window !== 'undefined') gsap.registerPlugin(ScrollTrigger);
 
 export default function Pricing() {
   const ref = useRef<HTMLDivElement>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    getSession().then((session) => {
+      if (mounted && session?.user) {
+        setIsAuthenticated(true);
+      }
+    });
+    return () => { mounted = false; };
+  }, []);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -57,7 +70,9 @@ export default function Pricing() {
               <li className="flex items-center gap-3 opacity-50"><XCircle size={18} className="text-[var(--text-secondary)]" /> Daily notes and journal entries</li>
               <li className="flex items-center gap-3 opacity-50"><XCircle size={18} className="text-[var(--text-secondary)]" /> Deep Analytics</li>
             </ul>
-            <button className="w-full py-4 rounded-xl border border-[var(--border-color)] font-bold text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors">Get Started</button>
+            <Link href={isAuthenticated ? "/dashboard" : "/signup"} className="block w-full">
+              <button className="w-full py-4 rounded-xl border border-[var(--border-color)] font-bold text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors">Get Started</button>
+            </Link>
           </div>
 
           {/* Pro Plan */}
@@ -77,7 +92,9 @@ export default function Pricing() {
               <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-[var(--accent-color)]" /> Unlimited Plans</li>
               <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-[var(--accent-color)]" /> 100 Daily AI generation credits</li>
             </ul>
-            <button className="w-full py-4 rounded-xl bg-[var(--accent-color)] text-white font-bold hover:brightness-110 transition-all shadow-lg shadow-[var(--accent-color)]/30">Upgrade to Pro</button>
+            <Link href={isAuthenticated ? "/dashboard/subscriptions" : "/signup?callbackUrl=/dashboard/subscriptions"} className="block w-full">
+              <button className="w-full py-4 rounded-xl bg-[var(--accent-color)] text-white font-bold hover:brightness-110 transition-all shadow-lg shadow-[var(--accent-color)]/30">Get Started</button>
+            </Link>
           </div>
         </div>
       </div>

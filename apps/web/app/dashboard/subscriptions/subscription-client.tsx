@@ -377,7 +377,10 @@ export default function SubscriptionClientPage({ products, data }: SubscriptionC
                                                     </span>
                                                 </td>
                                                 <td className="px-8 py-6 text-right">
-                                                    <button className="p-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--accent-color)] hover:border-[var(--accent-color)]/30 transition-all">
+                                                    <button 
+                                                        onClick={() => toast.success("Receipt downloaded (demo format)")}
+                                                        className="p-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--accent-color)] hover:border-[var(--accent-color)]/30 transition-all"
+                                                    >
                                                         <Download size={14} />
                                                     </button>
                                                 </td>

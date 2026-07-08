@@ -32,3 +32,5 @@ packaging/
 *.aab
 *.ipa
 ios/
+
+sync.MD

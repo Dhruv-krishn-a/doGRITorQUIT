@@ -21,6 +21,7 @@ export interface UserSettings {
   locale?: string | null;
   tier: string;
   provider: string;
+  avatarUrl?: string;
 }
 
 interface SettingsClientProps {
@@ -37,9 +38,25 @@ export default function SettingsClientPage({ user }: SettingsClientProps) {
   const [profileData, setProfileData] = useState({
       name: user.name || "",
       bio: user.bio || "",
-      timezone: user.timezone || "UTC"
+      timezone: user.timezone || "UTC",
+      avatarUrl: user.avatarUrl || ""
   });
   const [savingProfile, setSavingProfile] = useState(false);
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+          if (file.size > 1024 * 1024) {
+              toast.error("Image must be smaller than 1MB.");
+              return;
+          }
+          const reader = new FileReader();
+          reader.onloadend = () => {
+              setProfileData(s => ({ ...s, avatarUrl: reader.result as string }));
+          };
+          reader.readAsDataURL(file);
+      }
+  };
 
   // -- PASSWORD FORM --
   const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -57,6 +74,9 @@ export default function SettingsClientPage({ user }: SettingsClientProps) {
         });
         if (res.ok) {
             toast.success("Profile updated successfully.");
+            if (profileData.timezone !== user.timezone) {
+                setTimeout(() => window.location.reload(), 1000);
+            }
         } else {
             toast.error("Failed to update profile.");
         }
@@ -167,7 +187,36 @@ export default function SettingsClientPage({ user }: SettingsClientProps) {
                              {/* Static background glow */}
                             <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--accent-color)]/5 rounded-full blur-3xl pointer-events-none" />
 
-                            <div className="space-y-4">
+                            <div className="space-y-6">
+                                <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start pb-4 border-b border-[var(--border-color)]">
+                                        <div className="relative shrink-0">
+                                            {profileData.avatarUrl ? (
+                                                <img src={profileData.avatarUrl} alt="Avatar" className="w-24 h-24 rounded-3xl object-cover border-2 border-[var(--accent-color)]/20 shadow-xl" />
+                                            ) : (
+                                                <div className="w-24 h-24 rounded-3xl bg-[var(--bg-secondary)] flex items-center justify-center border-2 border-[var(--border-color)] shadow-xl">
+                                                    <User size={36} className="text-[var(--text-secondary)] opacity-50" />
+                                                </div>
+                                            )}
+                                            <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" id="avatar-upload" />
+                                            <label htmlFor="avatar-upload" className="absolute -bottom-2 -right-2 bg-[var(--accent-color)] text-white w-8 h-8 rounded-xl flex items-center justify-center shadow-lg shadow-[var(--accent-color)]/30 border-2 border-[var(--bg-card)] cursor-pointer hover:scale-110 transition-transform">
+                                                <Palette size={14} />
+                                            </label>
+                                        </div>
+                                    <div className="flex-1 w-full text-center sm:text-left space-y-3 mt-2">
+                                        <div>
+                                            <label className="text-[9px] md:text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-2 block px-1">Avatar URL</label>
+                                            <input 
+                                                type="url" 
+                                                value={profileData.avatarUrl}
+                                                onChange={e => setProfileData(s => ({ ...s, avatarUrl: e.target.value }))}
+                                                className="w-full bg-[var(--bg-secondary)]/50 border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm font-bold text-[var(--text-primary)] focus:border-[var(--accent-color)]/50 focus:ring-4 focus:ring-[var(--accent-color)]/5 outline-none transition-all placeholder:opacity-50"
+                                                placeholder="https://example.com/avatar.png"
+                                            />
+                                        </div>
+                                        <p className="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-widest opacity-60 px-1">Provide an image URL for your profile picture.</p>
+                                    </div>
+                                </div>
+
                                 <div>
                                     <label className="text-[9px] md:text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-2 block px-1">Full Name</label>
                                     <input 

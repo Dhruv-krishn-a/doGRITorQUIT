@@ -9,7 +9,6 @@ import {
   Activity, TrendingUp
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MiniAgenda } from "@gritorquit/dashboard-ui-web";
 import { useRouter } from "next/navigation";
 
 // --- Types ---
@@ -24,9 +23,22 @@ type DashboardData = {
   activityHeatmap: Array<{ date: string; count: number }>; 
   activePlan: { title: string; progress: number; totalDays: number; currentDay: number } | null;
   habits: Array<{ id: string; title: string; completedToday: boolean; streak: number }>;
-  todaysTasks: Array<{ id: string; title: string; status: string; priority: string; time?: string }>;
+  todaysTasks: Array<{ id: string; title: string; status: string; priority: string; time?: string | number }>;
   upcomingEvents: Array<{ title: string; time: string; date: string }>;
 };
+
+function formatTimeSafe(time: string | number | undefined): string {
+  if (time === undefined || time === null) return '';
+  if (typeof time === 'number') {
+    const h = Math.floor(time / 60) % 24;
+    const m = time % 60;
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const displayH = h % 12 === 0 ? 12 : h % 12;
+    const displayM = m.toString().padStart(2, '0');
+    return `${displayH}:${displayM} ${ampm}`;
+  }
+  return time.toString();
+}
 
 export default function DashboardUI({ data }: { data: DashboardData }) {
   const { user, stats, activePlan, habits } = data;
@@ -158,11 +170,84 @@ export default function DashboardUI({ data }: { data: DashboardData }) {
            </div>
         </div>
 
-        {/* Agenda Section */}
-        <MiniAgenda 
-          className="xl:col-span-1 min-h-[500px]" 
-          onHubClick={() => router.push("/dashboard/today")} 
-        />
+        {/* Heatmap & Timeline Section */}
+        <div className="xl:col-span-1 space-y-8 md:space-y-12">
+            {/* Upcoming Events / Task Timeline */}
+            <div className="bg-[var(--bg-card)] rounded-[2.5rem] md:rounded-[3rem] p-6 sm:p-8 border border-[var(--border-color)] shadow-2xl space-y-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--accent-color)]/5 blur-3xl pointer-events-none rounded-full" />
+                <div className="flex items-center gap-3 mb-2 relative z-10">
+                    <div className="w-10 h-10 bg-[var(--bg-secondary)] rounded-2xl flex items-center justify-center border border-[var(--border-color)] shadow-inner">
+                        <Calendar size={18} className="text-[var(--accent-color)]" />
+                    </div>
+                    <div>
+                        <h3 className="text-lg md:text-xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter">Timeline</h3>
+                        <p className="text-[8px] md:text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-[0.4em] opacity-50">Today's Agenda</p>
+                    </div>
+                </div>
+
+                <div className="space-y-3 relative z-10">
+                    {data.todaysTasks.length === 0 ? (
+                        <div className="py-10 border-2 border-dashed border-[var(--border-color)] rounded-[2rem] flex flex-col items-center justify-center text-center opacity-40">
+                            <Activity size={24} className="text-[var(--text-secondary)] mb-2" />
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] italic">No tasks scheduled</p>
+                        </div>
+                    ) : (
+                        data.todaysTasks.map((t, idx) => (
+                            <motion.div 
+                                key={t.id}
+                                initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.1 }}
+                                className="flex gap-4 items-center p-4 rounded-[1.5rem] bg-[var(--bg-secondary)]/50 border border-[var(--border-color)] hover:border-[var(--accent-color)]/30 transition-all shadow-sm"
+                            >
+                                <div className="flex flex-col items-center min-w-[45px] border-r border-[var(--border-color)] pr-3">
+                                    {t.time !== undefined && t.time !== null ? (
+                                        <>
+                                            <span className="text-[10px] font-black text-[var(--text-primary)] italic leading-none whitespace-nowrap">{formatTimeSafe(t.time)}</span>
+                                        </>
+                                    ) : (
+                                        <span className="text-[10px] font-black text-[var(--text-secondary)] uppercase italic leading-none">Any</span>
+                                    )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-xs font-black uppercase tracking-tight text-[var(--text-primary)] truncate">{t.title}</p>
+                                    <p className="text-[8px] font-bold text-[var(--text-secondary)] uppercase tracking-widest opacity-60">{t.priority} PRIORITY</p>
+                                </div>
+                                {t.status === 'completed' && <CheckCircle2 size={16} className="text-emerald-500" />}
+                            </motion.div>
+                        ))
+                    )}
+                </div>
+            </div>
+
+            {/* Activity Heatmap */}
+            <div className="bg-[var(--bg-card)] rounded-[2.5rem] md:rounded-[3rem] p-6 sm:p-8 border border-[var(--border-color)] shadow-2xl relative overflow-hidden">
+                <div className="flex items-center gap-3 mb-6 relative z-10">
+                    <div className="w-10 h-10 bg-[var(--bg-secondary)] rounded-2xl flex items-center justify-center border border-[var(--border-color)] shadow-inner">
+                        <Activity size={18} className="text-[#10b981]" />
+                    </div>
+                    <div>
+                        <h3 className="text-lg md:text-xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter">Heatmap</h3>
+                        <p className="text-[8px] md:text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-[0.4em] opacity-50">Last 14 Days</p>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-7 gap-2 relative z-10">
+                    {data.activityHeatmap.length > 0 ? data.activityHeatmap.map((day, idx) => (
+                        <div key={idx} className="aspect-square flex flex-col items-center justify-center">
+                            <div className={cn(
+                                "w-full h-full rounded-lg sm:rounded-xl border transition-all duration-500",
+                                day.count > 0 
+                                    ? "bg-[#10b981] border-[#10b981]/50 shadow-[0_0_10px_rgba(16,185,129,0.3)]" 
+                                    : "bg-[var(--bg-secondary)] border-[var(--border-color)] opacity-30"
+                            )} />
+                        </div>
+                    )) : (
+                        <div className="col-span-7 py-8 text-center text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] opacity-50 italic">
+                            No recent activity data
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
 
       </div>
     </div>

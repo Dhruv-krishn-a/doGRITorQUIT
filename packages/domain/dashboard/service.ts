@@ -9,7 +9,7 @@ export async function getDashboardStats(userId: string) {
   tomorrow.setDate(tomorrow.getDate() + 1);
 
   // 1. Parallelize Queries
-  const [todaysTasks, habits, userStats, activePlan] = await Promise.all([
+  const [todaysTasks, habits, userStats, activePlan, heatmapData, upcomingEventsData] = await Promise.all([
     // A. Today's Tasks
     prisma.task.findMany({
       where: {
@@ -40,8 +40,47 @@ export async function getDashboardStats(userId: string) {
       where: { userId, isArchived: false },
       orderBy: { updatedAt: 'desc' },
       // No need to include tasks or count relations anymore
+    }),
+
+    // E. Activity Heatmap (Last 14 days)
+    prisma.task.findMany({
+      where: {
+        userId,
+        status: "completed",
+        updatedAt: { gte: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000) }
+      },
+      select: { updatedAt: true }
+    }),
+
+    // F. Upcoming Events
+    prisma.task.findMany({
+      where: {
+        userId,
+        status: "pending",
+        date: { gte: tomorrow }
+      },
+      orderBy: { date: 'asc' },
+      take: 3
     })
   ]);
+
+  // Aggregate heatmap data
+  const heatmapMap = new Map<string, number>();
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+    heatmapMap.set(d.toISOString().split('T')[0], 0);
+  }
+  
+  heatmapData.forEach(task => {
+    const dateStr = task.updatedAt.toISOString().split('T')[0];
+    if (heatmapMap.has(dateStr)) {
+      heatmapMap.set(dateStr, heatmapMap.get(dateStr)! + 1);
+    }
+  });
+
+  const activityHeatmap = Array.from(heatmapMap.entries())
+    .map(([date, count]) => ({ date, count }))
+    .sort((a, b) => a.date.localeCompare(b.date));
 
   return {
     greeting: getGreeting(),
@@ -65,7 +104,13 @@ export async function getDashboardStats(userId: string) {
       progress: activePlan.progress,
       total: activePlan.totalTasks,
       completed: activePlan.completedTasks
-    } : null
+    } : null,
+    activityHeatmap,
+    upcomingEvents: upcomingEventsData.map(e => ({
+      title: e.title,
+      date: e.date?.toISOString() || '',
+      time: e.metadata && typeof e.metadata === 'object' && 'startTime' in e.metadata ? (e.metadata as any).startTime : undefined
+    }))
   };
 }
 

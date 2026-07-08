@@ -51,18 +51,18 @@ async function AsyncInsightsWrapper({ userId, firstName }: { userId: string, fir
   const enrichedDashboardData = {
     user: {
       firstName,
-      level: 1, 
-      xp: 0,    
+      level: Math.floor((dbData.stats.completedTasks * 10) / 100) + 1, 
+      xp: (dbData.stats.completedTasks * 10) % 100,    
       nextLevelXp: 100
     },
     stats: {
       focusMinutes: dbData.stats.focusMinutes,
       completedTasks: dbData.stats.completedTasks,
       streakDays: dbData.stats.habitStreak || 0,
-      efficiencyScore: 85 // Mock or calculate from real data if available
+      efficiencyScore: dbData.stats.totalTasks > 0 ? Math.round((dbData.stats.completedTasks / dbData.stats.totalTasks) * 100) : 0
     },
-    activityHeatmap: [], 
-    upcomingEvents: [],  
+    activityHeatmap: dbData.activityHeatmap || [], 
+    upcomingEvents: dbData.upcomingEvents || [],  
     
     activePlan: dbData.activePlan ? {
       title: dbData.activePlan.title,
@@ -78,12 +78,12 @@ async function AsyncInsightsWrapper({ userId, firstName }: { userId: string, fir
       streak: 0 
     })),
 
-    todaysTasks: dbData.todaysTasks.map((task: { id: string; title: string; status: string; priority?: string | null }) => ({
+    todaysTasks: dbData.todaysTasks.map((task: any) => ({
       id: task.id,
       title: task.title,
       status: task.status,
       priority: task.priority || "MEDIUM", 
-      time: undefined 
+      time: task.metadata && typeof task.metadata === 'object' && 'startTime' in task.metadata ? task.metadata.startTime : undefined
     })),
   };
 
