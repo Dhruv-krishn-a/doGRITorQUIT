@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Redirect, Stack } from 'expo-router';
 import { View } from 'react-native';
 import { useAuth } from '../../context/AuthContext';

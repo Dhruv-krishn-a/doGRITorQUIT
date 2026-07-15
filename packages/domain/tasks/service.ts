@@ -129,5 +129,11 @@ export async function deleteTask(userId: string, taskId: string) {
         completedTasks: task.completed ? { decrement: 1 } : undefined,
       },
     });
+
+    await tx.mobileSyncDeletion.upsert({
+      where: { userId_tableName_recordId: { userId, tableName: "tasks", recordId: taskId } },
+      create: { userId, tableName: "tasks", recordId: taskId },
+      update: { deletedAt: new Date() }
+    });
   });
 }

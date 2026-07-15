@@ -34,7 +34,6 @@ export default defineConfig(async ({ command }) => ({
       "@gritorquit/dashboard-core": path.resolve(__dirname, "../../packages/dashboard-core/src"),
       "@gritorquit/dashboard-ui-web": path.resolve(__dirname, "../../packages/dashboard-ui-web/src"),
       "@gritorquit/domain": path.resolve(__dirname, "../../packages/domain"),
-      "@gritorquit/api": path.resolve(__dirname, "../../packages/api"),
       "@gritorquit/db": path.resolve(__dirname, "../../packages/db")
     },
   },

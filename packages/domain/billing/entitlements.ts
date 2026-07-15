@@ -14,6 +14,7 @@ export enum PlanFeature {
   ACCESS_STUDY_YOUTUBE = "ACCESS_STUDY_YOUTUBE",
   ACCESS_STUDY_COURSE = "ACCESS_STUDY_COURSE",
   ACCESS_STUDY_PROJECT = "ACCESS_STUDY_PROJECT",
+  ACCESS_STUDY_AI_PLANNER = "ACCESS_STUDY_AI_PLANNER",
   ACCESS_ANALYTICS = "ACCESS_ANALYTICS",
   ACCESS_NOTES = "ACCESS_NOTES",
   
@@ -22,7 +23,14 @@ export enum PlanFeature {
   ACCESS_WEEKLY_REFLECTION = "ACCESS_WEEKLY_REFLECTION",
   ACCESS_DAILY_JOURNAL = "ACCESS_DAILY_JOURNAL",
   ACCESS_ADVANCED_ANALYTICS = "ACCESS_ADVANCED_ANALYTICS",
+  ACCESS_PDF_EXPORT = "ACCESS_PDF_EXPORT",
+  THEME_CUSTOMIZATION = "THEME_CUSTOMIZATION",
   
+  // Sync & Offline Toggles
+  ACCESS_MOBILE_SYNC = "ACCESS_MOBILE_SYNC",
+  ACCESS_DESKTOP_SYNC = "ACCESS_DESKTOP_SYNC",
+  ACCESS_OFFLINE_DB = "ACCESS_OFFLINE_DB",
+
   AI_GEN_LIMIT = "AI_GEN_LIMIT",
   MAX_PLANS = "MAX_PLANS",
   MAX_PLAN_DAYS = "MAX_PLAN_DAYS",
@@ -33,6 +41,9 @@ export enum PlanFeature {
   // New Limits (C & D)
   MAX_VIDEOS_PER_PLAYLIST = "MAX_VIDEOS_PER_PLAYLIST",
   MAX_HABITS_TRACKED = "MAX_HABITS_TRACKED",
+  MAX_OFFLINE_DURATION_HOURS = "MAX_OFFLINE_DURATION_HOURS",
+  TOKEN_EXPIRY_HOURS = "TOKEN_EXPIRY_HOURS",
+  MAX_FILE_SIZE = "MAX_FILE_SIZE",
 }
 
 export interface OfflineConfig {
@@ -128,10 +139,10 @@ export async function fetchUserEntitlements(userId: string): Promise<UserEntitle
     productKey,
     features,
     offlineConfig: {
-      enabled: product?.offlineEnabled ?? false,
-      localDbAllowed: product?.localDbAllowed ?? false,
-      maxDurationHours: product?.offlineMaxDuration ?? 24,
-      tokenExpiryHours: product?.tokenExpiryDuration ?? 48
+      enabled: (features[PlanFeature.ACCESS_OFFLINE_DB] as boolean | undefined) ?? product?.offlineEnabled ?? false,
+      localDbAllowed: (features[PlanFeature.ACCESS_OFFLINE_DB] as boolean | undefined) ?? product?.localDbAllowed ?? false,
+      maxDurationHours: Number(features[PlanFeature.MAX_OFFLINE_DURATION_HOURS]?.value ?? features[PlanFeature.MAX_OFFLINE_DURATION_HOURS] ?? product?.offlineMaxDuration ?? 24),
+      tokenExpiryHours: Number(features[PlanFeature.TOKEN_EXPIRY_HOURS]?.value ?? features[PlanFeature.TOKEN_EXPIRY_HOURS] ?? product?.tokenExpiryDuration ?? 48)
     },
     user: user,
   };
@@ -186,7 +197,7 @@ export async function generateOfflineToken(userId: string, deviceId: string) {
  */
 export async function checkFeatureAccess(userId: string, feature: PlanFeature) {
   const ent = await fetchUserEntitlements(userId);
-  const isFree = ent.productKey === 'FREE';
+  const isFree = ent.productKey === 'FREE' && (!ent.tierFallback || ent.tierFallback.toUpperCase() === 'FREE');
   const feat = ent.features[feature];
 
   let hasAccess = false;
@@ -223,7 +234,7 @@ export async function getFeatureLimit(userId: string, feature: PlanFeature, fall
 
 export async function getPagePermissions(userId: string) {
   const ent = await fetchUserEntitlements(userId);
-  const isFree = ent.productKey.toUpperCase() === 'FREE';
+  const isFree = ent.productKey.toUpperCase() === 'FREE' && (!ent.tierFallback || ent.tierFallback.toUpperCase() === 'FREE');
 
   // The Gatekeeper
   const check = (key: string) => {
@@ -254,8 +265,12 @@ export async function getPagePermissions(userId: string) {
     canViewYouTube: hasStudyAccess && check(PlanFeature.ACCESS_STUDY_YOUTUBE),
     canViewCourse: hasStudyAccess && check(PlanFeature.ACCESS_STUDY_COURSE),
     canViewProject: hasStudyAccess && check(PlanFeature.ACCESS_STUDY_PROJECT),
+    canViewAIPlanner: hasStudyAccess && check(PlanFeature.ACCESS_STUDY_AI_PLANNER),
     canViewAnalytics: check(PlanFeature.ACCESS_ANALYTICS),
-    canViewNotes: true, // check(PlanFeature.ACCESS_NOTES),
+    canViewNotes: check(PlanFeature.ACCESS_NOTES),
+    canUseMobileSync: check(PlanFeature.ACCESS_MOBILE_SYNC),
+    canUseDesktopSync: check(PlanFeature.ACCESS_DESKTOP_SYNC),
+    canUseOfflineDb: check(PlanFeature.ACCESS_OFFLINE_DB),
   };
 }
 

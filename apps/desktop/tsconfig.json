@@ -31,7 +31,6 @@
       "@gritorquit/dashboard-core": ["../../packages/dashboard-core/src/index.ts"],
       "@gritorquit/dashboard-ui-web": ["../../packages/dashboard-ui-web/src/index.ts"],
       "@gritorquit/domain": ["../../packages/domain/index.ts"],
-      "@gritorquit/api": ["../../packages/api/index.ts"]
     }
   },
   "include": ["src"],

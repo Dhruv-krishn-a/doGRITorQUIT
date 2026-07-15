@@ -1,6 +1,7 @@
 import { database } from '../db';
 import StudyUnit from '../db/models/StudyUnit';
 import StudyTrack from '../db/models/StudyTrack';
+import UnitSession from '../db/models/UnitSession';
 import { Q } from '@nozbe/watermelondb';
 
 export async function toggleUnitCompletion(unitId: string) {
@@ -23,6 +24,36 @@ export async function toggleUnitCompletion(unitId: string) {
 
     await track.update(t => {
       t.progressPercentage = progress;
+    });
+  });
+}
+
+export async function updateUnitNotes(unitId: string, notesJson: string) {
+  await database.write(async () => {
+    const unit = await database.get<StudyUnit>('study_units').find(unitId);
+    await unit.update(u => {
+      let meta = {};
+      try {
+        meta = u.metadata ? JSON.parse(u.metadata) : {};
+      } catch(e) {}
+      
+      u.metadata = JSON.stringify({
+        ...meta,
+        notes: notesJson
+      });
+    });
+  });
+}
+
+export async function logUnitSession(unitId: string, userId: string, startedAt: number, watchedSeconds: number) {
+  await database.write(async () => {
+    await database.get<UnitSession>('unit_sessions').create(session => {
+      session.unitId = unitId;
+      session.userId = userId;
+      session.startedAt = startedAt;
+      session.endedAt = Date.now();
+      session.watchedSeconds = watchedSeconds;
+      session.isPaused = false;
     });
   });
 }

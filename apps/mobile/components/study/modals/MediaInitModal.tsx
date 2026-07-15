@@ -36,8 +36,7 @@ export const MediaInitModal: React.FC<MediaInitModalProps> = ({ isVisible, onClo
     if (!url) return;
     setLoading(true);
     try {
-      // @ts-ignore
-      await ingestYoutubePlaylist(url, title);
+      await ingestYoutubePlaylist(url);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       onRefresh();
       handleClose();

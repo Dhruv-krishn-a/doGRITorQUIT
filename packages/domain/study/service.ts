@@ -672,12 +672,22 @@ export const StudyService = {
     const units = await prisma.unit.findMany({ where: { trackId } });
     const unitIds = units.map(u => u.id);
 
-    if (unitIds.length > 0) {
-      await prisma.unitSession.deleteMany({ where: { unitId: { in: unitIds } } });
-      await prisma.revisionSchedule.deleteMany({ where: { unitId: { in: unitIds } } });
-    }
+    await prisma.$transaction(async (tx) => {
+      if (unitIds.length > 0) {
+        await tx.unitSession.deleteMany({ where: { unitId: { in: unitIds } } });
+        await tx.revisionSchedule.deleteMany({ where: { unitId: { in: unitIds } } });
+      }
 
-    return prisma.track.delete({ where: { id: trackId } });
+      await tx.track.delete({ where: { id: trackId } });
+      
+      await tx.mobileSyncDeletion.upsert({
+        where: { userId_tableName_recordId: { userId, tableName: "study_tracks", recordId: trackId } },
+        create: { userId, tableName: "study_tracks", recordId: trackId },
+        update: { deletedAt: new Date() }
+      });
+    });
+    
+    return true;
   },
 
   /**
@@ -732,10 +742,18 @@ export const StudyService = {
     });
     if (!unit) throw new Error("Unit not found");
 
-    await prisma.unitSession.deleteMany({ where: { unitId } });
-    await prisma.revisionSchedule.deleteMany({ where: { unitId } });
+    await prisma.$transaction(async (tx) => {
+      await tx.unitSession.deleteMany({ where: { unitId } });
+      await tx.revisionSchedule.deleteMany({ where: { unitId } });
 
-    await prisma.unit.delete({ where: { id: unitId } });
+      await tx.unit.delete({ where: { id: unitId } });
+      await tx.mobileSyncDeletion.upsert({
+        where: { userId_tableName_recordId: { userId, tableName: "study_units", recordId: unitId } },
+        create: { userId, tableName: "study_units", recordId: unitId },
+        update: { deletedAt: new Date() }
+      });
+    });
+    
     await this.recalculateTrackStats(unit.trackId);
     return true;
   },

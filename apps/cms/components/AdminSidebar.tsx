@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
-import { LayoutDashboard, Users, ShoppingBag, CreditCard, LogOut, Menu, X, Sparkles, History } from "lucide-react"; 
+import { LayoutDashboard, Users, ShoppingBag, CreditCard, LogOut, Menu, X, Sparkles, History, FileText, Settings } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -34,7 +34,9 @@ export default function AdminSidebar() {
     { name: "Users", href: "/users", icon: Users },
     { name: "Products", href: "/products", icon: ShoppingBag },
     { name: "Orders", href: "/orders", icon: CreditCard },
+    { name: "Content", href: "/content", icon: FileText },
     { name: "Audit Logs", href: "/audit-logs", icon: History },
+    { name: "Global Config", href: "/settings", icon: Settings },
   ];
 
   // Close sidebar on route change for mobile

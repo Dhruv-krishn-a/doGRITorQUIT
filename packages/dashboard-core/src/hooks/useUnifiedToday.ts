@@ -1,28 +1,21 @@
-// packages/study-core/src/hooks/useUnifiedToday.ts
-import { useState, useCallback, useEffect } from 'react';
+// packages/dashboard-core/src/hooks/useUnifiedToday.ts
+import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../lib/apiClient';
 
 export function useUnifiedToday() {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchToday = useCallback(async () => {
-    setLoading(true);
-    try {
+  const query = useQuery({
+    queryKey: ['tasks', 'unified-today'],
+    queryFn: async () => {
       const result = await apiClient<any>('/api/today/unified');
-      setData(result);
-      setError(null);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+      return result;
+    },
+    staleTime: 60 * 1000,
+  });
 
-  useEffect(() => {
-    fetchToday();
-  }, [fetchToday]);
-
-  return { data, loading, error, refresh: fetchToday };
+  return { 
+    data: query.data, 
+    loading: query.isLoading, 
+    error: query.error ? String(query.error) : null, 
+    refresh: query.refetch 
+  };
 }

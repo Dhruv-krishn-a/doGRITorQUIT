@@ -8,6 +8,8 @@ import HabitLog from './models/HabitLog'
 import StudyTrack from './models/StudyTrack'
 import StudyUnit from './models/StudyUnit'
 import Note from './models/Note'
+import Subtask from './models/Subtask'
+import UnitSession from './models/UnitSession'
 
 // 1. Create Adapter
 const adapter = new SQLiteAdapter({
@@ -31,5 +33,7 @@ export const database = new Database({
     StudyTrack,
     StudyUnit,
     Note,
+    Subtask,
+    UnitSession,
   ],
 })

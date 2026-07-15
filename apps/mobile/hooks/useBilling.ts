@@ -1,5 +1,4 @@
 import { useState, useCallback, useEffect } from 'react';
-// @ts-ignore
 import RazorpayCheckout from 'react-native-razorpay';
 import { config } from '../config';
 import { Alert } from 'react-native';

@@ -56,8 +56,7 @@ export const RoadmapInitModal: React.FC<RoadmapInitModalProps> = ({ isVisible, o
     if (!title) return;
     setLoading(true);
     try {
-      // @ts-ignore
-      await createManualPath({ title, type: 'PLAN' });
+      await createManualPath({ title, type: 'COURSE' });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       onRefresh();
       handleClose();

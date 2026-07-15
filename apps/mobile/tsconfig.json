@@ -1,21 +1,29 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "experimentalDecorators": true,
     "jsx": "react-native",
-    "moduleSuffixes": [
-      ".native",
-      ".ios",
-      ".android",
-      ""
-    ],
     "paths": {
-      "@/*": ["./*"],
-      "@gritorquit/study-core": ["../../packages/study-core/src/index.ts"],
-      "@gritorquit/habits-core": ["../../packages/habits-core/src/index.ts"],
-      "@gritorquit/dashboard-core": ["../../packages/dashboard-core/src/index.ts"],
-      "@gritorquit/api": ["../../packages/api/index.ts"],
-      "@gritorquit/domain": ["../../packages/domain/index.ts"],
-      "@gritorquit/domain/*": ["../../packages/domain/*"]
+      "@/*": [
+        "./*"
+      ],
+      "@gritorquit/study-core": [
+        "../../packages/study-core/src/index.ts"
+      ],
+      "@gritorquit/habits-core": [
+        "../../packages/habits-core/src/index.ts"
+      ],
+      "@gritorquit/dashboard-core": [
+        "../../packages/dashboard-core/src/index.ts"
+      ],
+
+      "@gritorquit/domain": [
+        "../../packages/domain/index.ts"
+      ],
+      "@gritorquit/domain/*": [
+        "../../packages/domain/*"
+      ],
+      "react": ["./node_modules/@types/react"]
     }
   },
   "include": [

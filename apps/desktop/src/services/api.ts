@@ -9,6 +9,16 @@ async function getHeaders() {
     ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
   };
 }
+
+import { queryClient } from '../providers/QueryProvider';
+
+function invalidateRelevantQueries(endpoint: string) {
+  if (endpoint.includes('/tasks') || endpoint.includes('/subtasks') || endpoint.includes('/habits')) {
+    queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+  }
+}
+
 const handleResponse = async (response: Response, retryFn: () => Promise<any>) => {
   if (!response.ok) {
     if (response.status === 401) {
@@ -55,7 +65,9 @@ export const api = {
         headers,
         body: JSON.stringify(body),
       });
-      return await handleResponse(response, () => this.post(endpoint, body));
+      const result = await handleResponse(response, () => this.post(endpoint, body));
+      invalidateRelevantQueries(endpoint);
+      return result;
     } catch (error: any) {
       if (error.message === 'AUTH_EXPIRED') throw error;
       if (error.message === 'OFFLINE_MODE' || error.name === 'TypeError') {
@@ -76,7 +88,9 @@ export const api = {
         headers,
         body: JSON.stringify(body),
       });
-      return await handleResponse(response, () => this.patch(endpoint, body));
+      const result = await handleResponse(response, () => this.patch(endpoint, body));
+      invalidateRelevantQueries(endpoint);
+      return result;
     } catch (error: any) {
       if (error.message === 'AUTH_EXPIRED') throw error;
       if (error.message === 'OFFLINE_MODE' || error.name === 'TypeError') {
@@ -96,7 +110,9 @@ export const api = {
         method: 'DELETE',
         headers,
       });
-      return await handleResponse(response, () => this.delete(endpoint));
+      const result = await handleResponse(response, () => this.delete(endpoint));
+      invalidateRelevantQueries(endpoint);
+      return result;
     } catch (error: any) {
       if (error.message === 'AUTH_EXPIRED') throw error;
       if (error.message === 'OFFLINE_MODE' || error.name === 'TypeError') {

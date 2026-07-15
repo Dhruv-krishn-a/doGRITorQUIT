@@ -17,7 +17,7 @@ const StudySessionPage = lazy(() => import("./pages/study/StudySessionPage"));
 const PlanDetailPage = lazy(() => import("./pages/plans/PlanDetailPage"));
 const TodayPage = lazy(() => import("./pages/TodayPage"));
 const ChecklistPage = lazy(() => import("./pages/ChecklistPage"));
-const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
+
 const SubscriptionsPage = lazy(() => import("./pages/SubscriptionsPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const SupportPage = lazy(() => import("./pages/SupportPage"));

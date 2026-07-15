@@ -10,8 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../../context/ThemeContext';
 import * as Haptics from 'expo-haptics';
 import YoutubePlayer from 'react-native-youtube-iframe';
-// @ts-ignore
-import { updateUnitNotes, toggleUnitCompletion } from '../../../lib/study-logic';
+import { updateUnitNotes, toggleUnitCompletion, logUnitSession } from '../../../lib/study-logic';
 import { sendImmediateNotification } from '../../../lib/notifications';
 import { map } from 'rxjs/operators';
 
@@ -65,18 +64,18 @@ const UnitSession: React.FC<UnitSessionProps> = ({ track, unit }) => {
 
   // Initial Data Load
   useEffect(() => {
-    // @ts-ignore
-    if (unit?.notes) {
+    if (unit?.metadata) {
       try {
-        const parsed = typeof unit.notes === 'string' ? JSON.parse(unit.notes) : unit.notes;
-        if (parsed && typeof parsed === 'object') {
-          setFreeformNotes(parsed.freeform || "");
-          setQuestions(parsed.questions || []);
+        const meta = typeof unit.metadata === 'string' ? JSON.parse(unit.metadata) : unit.metadata;
+        if (meta?.notes) {
+          const parsed = typeof meta.notes === 'string' ? JSON.parse(meta.notes) : meta.notes;
+          if (parsed && typeof parsed === 'object') {
+            setFreeformNotes(parsed.freeform || "");
+            setQuestions(parsed.questions || []);
+          }
         }
-      } catch {
-        if (typeof unit.notes === 'string') {
-          setFreeformNotes(unit.notes);
-        }
+      } catch (e) {
+        console.warn("Failed to parse unit metadata", e);
       }
     }
   }, [unit?.id]);
@@ -257,6 +256,8 @@ const UnitSession: React.FC<UnitSessionProps> = ({ track, unit }) => {
                   Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
                   await handleSaveNotes();
                   await toggleUnitCompletion(unit.id);
+                  const startedAt = Date.now() - (seconds * 1000);
+                  await logUnitSession(unit.id, 'default', startedAt, seconds);
                   sendImmediateNotification("Sector Resolved 🏁", `Node "${unit.title}" has been committed to history.`);
                   router.back();
                 }}

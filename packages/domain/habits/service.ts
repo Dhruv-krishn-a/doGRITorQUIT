@@ -68,7 +68,15 @@ export async function deleteHabit(userId: string, habitId: string) {
   const count = await prisma.habit.count({ where: { id: habitId, userId } });
   if (!count) throw new Error("Habit not found");
 
-  return prisma.habit.delete({ where: { id: habitId } });
+  await prisma.$transaction(async (tx) => {
+    await tx.habit.delete({ where: { id: habitId } });
+    await tx.mobileSyncDeletion.upsert({
+      where: { userId_tableName_recordId: { userId, tableName: "habits", recordId: habitId } },
+      create: { userId, tableName: "habits", recordId: habitId },
+      update: { deletedAt: new Date() }
+    });
+  });
+  return true;
 }
 
 /**
@@ -94,9 +102,18 @@ export async function toggleHabitLog(userId: string, habitId: string, date: Date
     });
   } else {
     // If unchecking, delete the log to keep data sparse and clean
-    return prisma.habitLog.deleteMany({
-      where: { habitId, date: normalizedDate }
-    });
+    const log = await prisma.habitLog.findFirst({ where: { habitId, date: normalizedDate } });
+    if (log) {
+      await prisma.$transaction(async (tx) => {
+        await tx.habitLog.delete({ where: { id: log.id } });
+        await tx.mobileSyncDeletion.upsert({
+          where: { userId_tableName_recordId: { userId, tableName: "habit_logs", recordId: log.id } },
+          create: { userId, tableName: "habit_logs", recordId: log.id },
+          update: { deletedAt: new Date() }
+        });
+      });
+    }
+    return { count: log ? 1 : 0 };
   }
 }
 

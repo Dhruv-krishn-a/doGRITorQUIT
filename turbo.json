@@ -26,14 +26,21 @@
     "GITHUB_CLIENT_ID",
     "GITHUB_CLIENT_SECRET",
     "AUTH_NATIVE_JWT_SECRET",
-    "BREVO_API_KEY"
+    "BREVO_API_KEY",
+    "SMTP_PORT",
+    "SMTP_USER",
+    "SMTP_FROM",
+    "SMTP_HOST",
+    "SMTP_SECURE",
+    "CRON_SECRET",
+    "SMTP_PASS"
     ]
     },
     "lint": {
       "dependsOn": ["^lint"]
     },
-    "check-types": {
-      "dependsOn": ["^check-types"],
+    "type-check": {
+      "dependsOn": ["^type-check"],
       "env": ["NODE_ENV"]
     },
     "dev": {

@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb'
 
 export const mySchema = appSchema({
-  version: 4,
+  version: 5,
   tables: [
     tableSchema({
       name: 'tasks',
@@ -89,6 +89,28 @@ export const mySchema = appSchema({
         { name: 'user_id', type: 'string', isIndexed: true },
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
+      ]
+    }),
+    tableSchema({
+      name: 'subtasks',
+      columns: [
+        { name: 'task_id', type: 'string', isIndexed: true },
+        { name: 'title', type: 'string' },
+        { name: 'completed', type: 'boolean' },
+        { name: 'created_at', type: 'number' },
+        { name: 'updated_at', type: 'number' },
+      ]
+    }),
+    tableSchema({
+      name: 'unit_sessions',
+      columns: [
+        { name: 'unit_id', type: 'string', isIndexed: true },
+        { name: 'user_id', type: 'string', isIndexed: true },
+        { name: 'started_at', type: 'number', isIndexed: true },
+        { name: 'ended_at', type: 'number', isOptional: true },
+        { name: 'watched_seconds', type: 'number' },
+        { name: 'is_paused', type: 'boolean' },
+        { name: 'created_at', type: 'number' },
       ]
     }),
   ]

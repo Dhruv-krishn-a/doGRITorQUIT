@@ -4,6 +4,8 @@ import { Search, Shield, User as UserIcon } from "lucide-react";
 import RoleSelect from "./RoleSelect";
 import PlanSelect from "./PlanSelect";
 import LimitManager from "./Limitmanager"; 
+import { RefundButton } from "./RefundButton";
+import { RevokeButton } from "./RevokeButton";
 import { InlineFormWrapper } from "./InlineFormWrapper";
 import { Pagination } from "@/components/ui/Pagination";
 
@@ -133,16 +135,24 @@ export default async function UsersPage({ searchParams }: { searchParams: { q?: 
                     </td>
 
                     <td className="px-8 py-5 text-right">
-                      <div className="flex justify-end gap-2">
-                        {user.role === 'admin' && (
-                            <span className="px-3 py-1 bg-purple-50 text-purple-600 text-[9px] font-bold uppercase tracking-widest rounded-full border border-purple-100 shadow-sm shadow-purple-50">
-                                Admin
-                            </span>
+                      <div className="flex flex-col items-end gap-2">
+                        <div className="flex gap-2">
+                          {user.role === 'admin' && (
+                              <span className="px-3 py-1 bg-purple-50 text-purple-600 text-[9px] font-bold uppercase tracking-widest rounded-full border border-purple-100 shadow-sm shadow-purple-50">
+                                  Admin
+                              </span>
+                          )}
+                          {activeSub && (
+                             <span className="px-3 py-1 bg-emerald-50 text-emerald-600 text-[9px] font-bold uppercase tracking-widest rounded-full border border-emerald-100 shadow-sm shadow-emerald-50">
+                               Active
+                             </span>
+                          )}
+                        </div>
+                        {activeSub?.providerSubId && activeSub.provider === "razorpay" && (
+                          <RefundButton providerPaymentId={activeSub.providerSubId} />
                         )}
                         {activeSub && (
-                           <span className="px-3 py-1 bg-emerald-50 text-emerald-600 text-[9px] font-bold uppercase tracking-widest rounded-full border border-emerald-100 shadow-sm shadow-emerald-50">
-                             Active
-                           </span>
+                          <RevokeButton userId={String(user.id)} />
                         )}
                       </div>
                     </td>

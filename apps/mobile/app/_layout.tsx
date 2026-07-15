@@ -1,4 +1,3 @@
-// @ts-nocheck
 import "react-native-gesture-handler";
 import { Stack } from "expo-router";
 import { useEffect, useState } from "react";
@@ -14,6 +13,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import * as Notifications from 'expo-notifications';
 import { registerForPushNotificationsAsync, scheduleDailyReminder } from '../lib/notifications';
 import BootSplash from "../components/BootSplash";
+import { getAccessToken, getApiBaseUrl } from '../lib/nativeAuth';
 
 Notifications.setNotificationHandler({
  handleNotification: async () => ({
@@ -30,7 +30,20 @@ function RootLayoutNav() {
  useEffect(() => {
  (async () => {
  try {
- await registerForPushNotificationsAsync();
+ const token = await registerForPushNotificationsAsync();
+ if (token) {
+   const accessToken = await getAccessToken();
+   if (accessToken) {
+     await fetch(`${getApiBaseUrl()}/api/user/push-token`, {
+       method: 'POST',
+       headers: {
+         'Content-Type': 'application/json',
+         Authorization: `Bearer ${accessToken}`,
+       },
+       body: JSON.stringify({ token }),
+     }).catch(() => {});
+   }
+ }
  await scheduleDailyReminder();
  } catch (error) {
  console.warn("Notification bootstrap skipped:", error);

@@ -14,7 +14,9 @@
     "check:debug-apk": "../../scripts/check-mobile-apk-prerelease.sh --with-debug-apk",
     "build:apk:local": "../../scripts/build-mobile-apk.sh",
     "build:apk:fast": "../../scripts/build-mobile-apk.sh --skip-install --skip-prebuild --skip-gradle-clean",
-    "test": "pnpm exec jest"
+    "test": "pnpm exec jest",
+    "lint": "echo \"Mobile linting skipped / delegated to root\"",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@expo/vector-icons": "~14.0.4",

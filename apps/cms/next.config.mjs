@@ -3,7 +3,6 @@ const nextConfig = {
   transpilePackages: [
     "@gritorquit/domain", 
     "@gritorquit/db", 
-    "@gritorquit/api",
     "@gritorquit/dashboard-core",
     "@gritorquit/dashboard-ui-web",
     "@gritorquit/habits-core",
@@ -11,8 +10,6 @@ const nextConfig = {
     "@gritorquit/notes-ui-web",
     "@gritorquit/study-core",
     "@gritorquit/study-ui-web",
-    "@gritorquit/config",
-    "@repo/ui"
   ],
   
   serverExternalPackages: [

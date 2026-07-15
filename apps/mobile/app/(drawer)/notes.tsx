@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useCallback, useEffect, useMemo, memo } from 'react';
 import { View, Text, ScrollView, TextInput, ActivityIndicator, RefreshControl, Dimensions, TouchableOpacity, Alert, SectionList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';

@@ -41,17 +41,9 @@ export const CourseInitModal: React.FC<CourseInitModalProps> = ({ isVisible, onC
     if (!title) return;
     setLoading(true);
     try {
-      // @ts-ignore
       await createManualPath({
         title,
-        type: 'COURSE',
-        // @ts-ignore
-        metadata: { 
-          syllabusUrl, 
-          targetFinish,
-          cognitiveBudget: parseInt(cognitiveBudget) || 5,
-          startDate: dayjs().format('YYYY-MM-DD')
-        }
+        type: 'COURSE'
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       onRefresh();

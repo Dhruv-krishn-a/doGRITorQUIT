@@ -1,7 +1,7 @@
 // apps/cms/app/(admin)/users/actions.ts
 "use server";
 
-import { cms } from "@gritorquit/domain";
+import { cms, payment } from "@gritorquit/domain";
 import { getAdminUser } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
@@ -44,6 +44,21 @@ export async function assignPlanAction(formData: FormData) {
   }
 }
 
+export async function revokePlanAction(formData: FormData) {
+  const admin = await getAdminUser();
+  if (!admin) return { success: false, error: "Unauthorized" };
+
+  const userId = String(formData.get("userId"));
+
+  try {
+    await cms.revokeUserSubscription(userId, admin.id);
+    revalidatePath("/users");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Failed to revoke plan" };
+  }
+}
+
 export async function updateRoleAction(formData: FormData) {
   const admin = await getAdminUser();
   if (!admin) return { success: false, error: "Unauthorized" };
@@ -57,5 +72,23 @@ export async function updateRoleAction(formData: FormData) {
     return { success: true };
   } catch (error) {
     return { success: false, error: "Failed to update role" };
+  }
+}
+
+export async function refundSubscriptionAction(formData: FormData) {
+  const admin = await getAdminUser();
+  if (!admin) return { success: false, error: "Unauthorized" };
+
+  const providerPaymentId = String(formData.get("providerPaymentId"));
+  if (!providerPaymentId || providerPaymentId === "null") {
+    return { success: false, error: "No payment ID found" };
+  }
+  
+  try {
+    await payment.refundOrderPayment(providerPaymentId, admin.id, true);
+    revalidatePath("/users");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message || "Failed to refund subscription" };
   }
 }

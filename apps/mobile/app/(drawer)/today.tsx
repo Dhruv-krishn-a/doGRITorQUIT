@@ -86,7 +86,7 @@ export default function TodayPage() {
  };
  });
 
- const result = SmartPlannerEngine.generatePlan(routineBlocks, taskInputs);
+ const result = SmartPlannerEngine.generatePlan(routineBlocks, taskInputs as any[]);
 
  return {
  blocks: fixedBlocks,
@@ -202,8 +202,7 @@ export default function TodayPage() {
  <TouchableOpacity 
  onPress={() => {
  if (newBlockTitle.trim()) {
- // @ts-ignore
- setFixedBlocks(prev => [...prev, { id: Date.now().toString(), title: newBlockTitle, start: newBlockStart, end: newBlockEnd, icon: newBlockIcon }]);
+ setFixedBlocks(prev => [...prev, { id: Date.now().toString(), title: newBlockTitle, start: newBlockStart, end: newBlockEnd, icon: newBlockIcon as any }]);
  setNewBlockTitle('');
  }
  setShowAddBlock(false);
@@ -351,7 +350,7 @@ export default function TodayPage() {
  <View className="flex-row items-center justify-between">
  <View className="flex-row items-center gap-2">
  <View className="px-3 py-1.5 bg-[var(--bg-secondary)] rounded-full border border-[var(--border-color)]">
- <Text className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest italic">{task.actualDuration}M</Text>
+ <Text className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest italic">{task.durationMinutes}M</Text>
  </View>
  {(task.metadata?.watchPercentage > 0) && (
  <View className="px-3 py-1.5 bg-[var(--bg-secondary)] rounded-full border border-[var(--border-color)]">

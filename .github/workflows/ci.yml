@@ -22,11 +22,5 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build
-        run: |
-          pnpm --filter @gritorquit/notes-ui-web build
-          pnpm --filter desktop build
-
-      - name: Lint
-        run: |
-          pnpm --filter web lint
+      - name: Build and Test (Turbo)
+        run: pnpm run ci:local

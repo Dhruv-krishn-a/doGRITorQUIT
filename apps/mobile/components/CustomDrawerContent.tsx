@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import { useAuth } from '../context/AuthContext';

@@ -12,8 +12,8 @@ export class NotesDatabase extends Dexie {
 
   constructor() {
     super('PlannerNotesDB');
-    this.version(1).stores({
-      notes: '++id, userId, category, syncStatus, updatedAt'
+    this.version(2).stores({
+      notes: 'id, userId, category, syncStatus, updatedAt'
     });
   }
 }

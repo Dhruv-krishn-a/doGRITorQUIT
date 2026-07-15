@@ -342,6 +342,25 @@ export async function assignUserPlan(userId: string, productId: string | "manual
   }
 }
 
+export async function revokeUserSubscription(userId: string, adminId?: string) {
+  await prisma.userSubscription.updateMany({
+    where: { userId, status: { in: ["active", "trialing"] } },
+    data: { status: "canceled", currentPeriodEnd: new Date() },
+  });
+
+  await prisma.user.update({ where: { id: userId }, data: { tier: "Free Tier" } });
+
+  if (adminId) {
+    await createAuditLog({
+      adminId,
+      action: "REVOKE_PLAN",
+      entityType: "USER",
+      entityId: userId,
+      description: `Revoked active subscriptions for user ${userId}`
+    });
+  }
+}
+
 export async function updateUserRole(userId: string, role: string, adminId?: string) {
   if(role !== "admin" && role !== "user") return;
   const oldUser = await prisma.user.findUnique({ where: { id: userId } });

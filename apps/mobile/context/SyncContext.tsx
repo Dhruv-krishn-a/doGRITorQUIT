@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { AppState } from 'react-native';
 import { useAuth } from './AuthContext';
 import * as Haptics from 'expo-haptics';
 import { performSyncOnce } from '../services/SyncServices';
@@ -85,6 +86,19 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
     if (user) {
       sync();
     }
+  }, [user, sync]);
+
+  // Auto-sync when app comes to foreground
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      if (nextAppState === 'active' && user) {
+        sync();
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
   }, [user, sync]);
 
   return (

@@ -282,3 +282,61 @@ export async function getPublicPlans() {
     },
   });
 }
+
+export async function refundOrderPayment(providerPaymentId: string, adminId: string, fullRefund: boolean = true) {
+  if (!RAZORPAY_KEY_SECRET) throw new Error("Razorpay not configured");
+  
+  // Find order
+  const order = await prisma.order.findFirst({
+    where: { providerPaymentId },
+    include: { user: true }
+  });
+  
+  if (!order) throw new Error("Order not found with that payment ID");
+  
+  // Create refund in Razorpay
+  const refundArgs: any = {};
+  if (!fullRefund) {
+    refundArgs.amount = order.amount; // full amount, or we could pass specific amount if we had partial
+  }
+  
+  const refund = await razor.payments.refund(providerPaymentId, refundArgs);
+  
+  // Cancel active subscriptions linked to this order
+  await prisma.userSubscription.updateMany({
+    where: { providerSubId: providerPaymentId },
+    data: { status: "canceled" }
+  });
+  
+  // Update order status
+  await prisma.order.update({
+    where: { id: order.id },
+    data: {
+      status: "refunded",
+      metadata: toPrismaJson({
+        ...((order.metadata as Record<string, unknown>) || {}),
+        refund_details: refund
+      })
+    }
+  });
+  
+  // Update user tier back to FREE if this was their active sub
+  await prisma.user.update({
+    where: { id: order.userId },
+    data: { tier: "Free Tier" }
+  });
+  
+  // Audit log
+  await prisma.cmsAuditLog.create({
+    data: {
+      adminId,
+      action: "REFUND_SUBSCRIPTION",
+      entityType: "ORDER",
+      entityId: order.id,
+      description: `Refunded ${order.amount} for user ${order.userId}`,
+      newValue: toPrismaJson(refund)
+    }
+  });
+  
+  return { success: true, refund };
+}

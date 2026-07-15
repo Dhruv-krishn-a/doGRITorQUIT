@@ -18,7 +18,8 @@ import {
   Settings2, ShieldCheck, BarChart3, 
   BookOpen, Youtube, Layout, 
   Hammer, Sparkles, Database,
-  Eye, EyeOff, FileText
+  Eye, EyeOff, FileText,
+  Smartphone, Monitor, WifiOff, FolderSync
 } from "lucide-react";
 
 // ✅ CRITICAL: Force dynamic to prevent build errors
@@ -52,9 +53,12 @@ export default async function ProductDetailPage({ params }: Props) {
         { key: "ACCESS_PLANS", label: "Roadmaps Feature", icon: <Layout size={16}/>, description: "Unlocks AI-driven Roadmaps within the Study page, allowing users to generate and manage complex multi-day plans." },
         { key: "ACCESS_TODAY", label: "Today View", icon: <CheckCircle2 size={16}/>, description: "Unlocks the 'Today' dashboard, giving users a unified view of their daily tasks, habits, and study modules." },
         { key: "ACCESS_HABITS", label: "Habits & Checklist", icon: <Sparkles size={16}/>, description: "Unlocks the Daily Checklist and Habit Tracker, enabling users to build and monitor daily routines." },
+        { key: "ACCESS_NOTES", label: "Notes Manager", icon: <FileText size={16}/>, description: "Unlocks the rich-text Notes manager and blueprinting features." },
         { key: "ACCESS_DAILY_JOURNAL", label: "Daily Journaling", icon: <FileText size={16}/>, description: "Unlocks the ability to write and save free-form daily notes." },
         { key: "ACCESS_ANALYTICS", label: "Analytics Dashboard", icon: <BarChart3 size={16}/>, description: "Unlocks the Analytics page, providing users with detailed insights, charts, and statistics on their productivity." },
         { key: "ACCESS_ADVANCED_ANALYTICS", label: "Advanced Analytics", icon: <BarChart3 size={16}/>, description: "Unlocks deep insights, long-term trends, and burnout risk analysis algorithms." },
+        { key: "THEME_CUSTOMIZATION", label: "Theme Customization", icon: <Sparkles size={16}/>, description: "Allows the user to select custom dark/light modes and colored themes." },
+        { key: "ACCESS_PDF_EXPORT", label: "PDF Exporting", icon: <FileText size={16}/>, description: "Allows exporting plans, notes, and dashboards to PDF." },
       ]
     },
     {
@@ -67,8 +71,20 @@ export default async function ProductDetailPage({ params }: Props) {
         { key: "ACCESS_STUDY_YOUTUBE", label: "YouTube Playlists", icon: <Youtube size={16}/>, description: "Allows users to import and track progress on educational YouTube playlists." },
         { key: "ACCESS_STUDY_COURSE", label: "Course Tracker", icon: <BookOpen size={16}/>, description: "Allows users to manually track progress through structured online courses or certifications." },
         { key: "ACCESS_STUDY_PROJECT", label: "Project Tracker", icon: <Hammer size={16}/>, description: "Allows users to manage and track complex, multi-phase learning projects." },
+        { key: "ACCESS_STUDY_AI_PLANNER", label: "Study AI Planner", icon: <Sparkles size={16}/>, description: "Unlocks the AI-driven study planner assistant." },
         { key: "ACCESS_SPACED_REPETITION", label: "Spaced Repetition", icon: <Zap size={16}/>, description: "Unlocks automated revision scheduling algorithms to combat the forgetting curve." },
         { key: "ACCESS_WEEKLY_REFLECTION", label: "Weekly Reflection", icon: <CheckCircle2 size={16}/>, description: "Unlocks the weekly cognitive load and mood journaling tools." },
+      ]
+    },
+    {
+      id: "sync",
+      title: "Sync & Offline Architecture",
+      icon: <FolderSync className="text-orange-500" size={20} />,
+      description: "Control cross-platform sync capabilities and offline database features.",
+      keys: [
+        { key: "ACCESS_MOBILE_SYNC", label: "Mobile App Sync", icon: <Smartphone size={16}/>, description: "Allows the user to sync data with the React Native mobile application." },
+        { key: "ACCESS_DESKTOP_SYNC", label: "Desktop App Sync", icon: <Monitor size={16}/>, description: "Allows the user to sync data with the Tauri desktop application." },
+        { key: "ACCESS_OFFLINE_DB", label: "Offline Local Database", icon: <WifiOff size={16}/>, description: "Enables WatermelonDB local persistence for complete offline usage." },
       ]
     },
     {
@@ -86,6 +102,9 @@ export default async function ProductDetailPage({ params }: Props) {
         { key: "MAX_STUDY_COURSES", label: "Course Enrollment Cap", icon: <BookOpen size={16}/>, description: "The maximum number of active courses a user can track." },
         { key: "MAX_STUDY_PROJECTS", label: "Project Slots", icon: <Hammer size={16}/>, description: "The maximum number of active projects a user can manage." },
         { key: "MAX_VIDEOS_PER_PLAYLIST", label: "Max Videos per Playlist", icon: <Youtube size={16}/>, description: "The maximum number of videos allowed when importing a single YouTube playlist." },
+        { key: "MAX_OFFLINE_DURATION_HOURS", label: "Max Offline Hours", icon: <WifiOff size={16}/>, description: "The maximum number of hours the user can stay offline before requiring a sync." },
+        { key: "TOKEN_EXPIRY_HOURS", label: "JWT Token Expiry (Hours)", icon: <Lock size={16}/>, description: "The maximum lifetime of the offline authentication JWT token." },
+        { key: "MAX_FILE_SIZE", label: "Max File Upload Size (MB)", icon: <Database size={16}/>, description: "The maximum allowed file size for media and document uploads in MB." },
       ]
     }
   ];

@@ -3,7 +3,9 @@ import { QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { LazyStore } from '@tauri-apps/plugin-store';
 
-const queryClient = new QueryClient({
+import { setDashboardQueryClient } from '@gritorquit/dashboard-core';
+
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutes
@@ -13,6 +15,8 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+setDashboardQueryClient(queryClient);
 
 // Custom Persister for Tauri Store
 const store = new LazyStore('query_cache.json');

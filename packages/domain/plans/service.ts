@@ -270,7 +270,16 @@ export async function updateTaskFully(userId: string, taskId: string, data: {
 export async function deleteTask(userId: string, taskId: string) {
   const task = await prisma.task.findFirst({ where: { id: taskId, userId } });
   if (!task) throw new Error("Task not found");
-  return prisma.task.delete({ where: { id: taskId } });
+  
+  await prisma.$transaction(async (tx) => {
+    await tx.task.delete({ where: { id: taskId } });
+    await tx.mobileSyncDeletion.upsert({
+      where: { userId_tableName_recordId: { userId, tableName: "tasks", recordId: taskId } },
+      create: { userId, tableName: "tasks", recordId: taskId },
+      update: { deletedAt: new Date() }
+    });
+  });
+  return task;
 }
 
 // Legacy alias

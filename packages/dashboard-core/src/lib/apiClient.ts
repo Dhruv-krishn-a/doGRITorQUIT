@@ -15,6 +15,20 @@ const getBaseUrl = () => {
   return apiBaseUrl || '';
 };
 
+let queryClientInstance: any = null;
+export const setDashboardQueryClient = (client: any) => {
+  queryClientInstance = client;
+};
+
+function invalidateRelevantQueries(url: string) {
+  if (!queryClientInstance) return;
+  if (url.includes('/tasks') || url.includes('/subtasks') || url.includes('/habits')) {
+    queryClientInstance.invalidateQueries({ queryKey: ['tasks'] });
+    queryClientInstance.invalidateQueries({ queryKey: ['dashboard-stats'] });
+  }
+}
+
+
 export async function apiClient<T>(path: string, options: RequestInit = {}): Promise<T> {
   const baseUrl = getBaseUrl();
   const fullUrl = path.startsWith('http') ? path : `${baseUrl}${path}`;
@@ -39,5 +53,11 @@ export async function apiClient<T>(path: string, options: RequestInit = {}): Pro
     throw new Error(errorBody.error || `Request failed with status ${response.status}`);
   }
 
-  return response.json() as Promise<T>;
+  const data = await response.json() as Promise<T>;
+  
+  if (options.method && ['POST', 'PATCH', 'PUT', 'DELETE'].includes(options.method.toUpperCase())) {
+    invalidateRelevantQueries(path);
+  }
+
+  return data;
 }

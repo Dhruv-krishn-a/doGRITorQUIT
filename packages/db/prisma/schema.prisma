@@ -18,6 +18,7 @@ model User {
   role                UserRole             @default(user)
   tier                String               @default("Free Tier")
   customAiLimit       Int?
+  expoPushToken       String?
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   passwordHash        String?
@@ -971,4 +972,13 @@ enum ProjectStage {
   SYSTEM_FLOW
   METHODOLOGY
   EXECUTION
+}
+
+model GlobalSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+
+  @@map("global_settings")
 }

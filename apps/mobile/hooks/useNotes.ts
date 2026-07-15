@@ -13,10 +13,9 @@ export function useNotes() {
     if (!user?.id) return;
     setLoading(true);
     try {
-      const conditions = [Q.where('user_id', user.id)];
+      const conditions: any[] = [Q.where('user_id', user.id)];
       
       if (search) {
-        // @ts-ignore
         conditions.push(Q.or(
           Q.where('title', Q.like(`%${search}%`)),
           Q.where('content', Q.like(`%${search}%`))

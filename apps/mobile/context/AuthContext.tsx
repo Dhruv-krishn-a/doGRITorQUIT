@@ -11,7 +11,9 @@ import {
   type NativeSession,
   type NativeUser,
   setStoredSession,
+  refreshSession,
 } from "../lib/nativeAuth";
+import { database } from "../db";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -181,7 +183,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const isExpiringSoon = stored.expires_at - Date.now() < 5 * 60 * 1000;
       if (isExpiringSoon) {
         console.log("[Auth] Token expiring soon, rotating...");
-// @ts-ignore
         const next = await refreshSession();
         if (next) setSession(next);
       }
@@ -313,6 +314,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } finally {
       await clearStoredSession();
+      
+      // Phase 5: Security Wipe
+      try {
+        await database.write(async () => {
+          await database.unsafeResetDatabase();
+        });
+        console.log("[Auth] Local database securely wiped.");
+      } catch (e) {
+        console.error("[Auth] Failed to wipe local database:", e);
+      }
+
       setSession(null);
       setLoading(false);
     }

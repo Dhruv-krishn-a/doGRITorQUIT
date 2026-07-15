@@ -6,6 +6,7 @@ import pluginReactHooks from "eslint-plugin-react-hooks";
 import pluginReact from "eslint-plugin-react";
 import globals from "globals";
 import pluginNext from "@next/eslint-plugin-next";
+import unusedImports from "eslint-plugin-unused-imports";
 import { config as baseConfig } from "./base.js";
 
 /**
@@ -37,10 +38,20 @@ export const nextJsConfig = [
   {
     plugins: {
       "@next/next": pluginNext,
+      "unused-imports": unusedImports,
     },
     rules: {
       ...pluginNext.configs.recommended.rules,
       ...pluginNext.configs["core-web-vitals"].rules,
+      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-vars": [
+        "warn",
+        { "vars": "all", "varsIgnorePattern": "^_", "args": "after-used", "argsIgnorePattern": "^_" }
+      ],
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
+      ],
     },
   },
   {

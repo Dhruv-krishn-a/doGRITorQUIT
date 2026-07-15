@@ -34,9 +34,8 @@ describe('Execution Logic', () => {
       status: 'pending'
     };
     
-    (database.get as any).mockReturnValue({
-      // @ts-ignore
-      find: jest.fn().mockResolvedValue(mockTask as any)
+    (database.get as jest.Mock).mockReturnValue({
+      find: jest.fn<any>().mockResolvedValue(mockTask)
     });
 
     await completeVector('task-1', 'PROJECT', 'user-1');
@@ -47,8 +46,7 @@ describe('Execution Logic', () => {
   it('should handle HABIT logging', async () => {
     const mockHabitLogs = {
       query: jest.fn().mockReturnThis(),
-      // @ts-ignore
-      fetch: jest.fn().mockResolvedValue([] as any),
+      fetch: jest.fn<any>().mockResolvedValue([]),
       create: jest.fn()
     };
 

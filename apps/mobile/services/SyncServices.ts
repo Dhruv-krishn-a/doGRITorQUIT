@@ -23,15 +23,12 @@ async function runWatermelonSync(): Promise<void> {
         throw new Error('Not authenticated');
       }
 
-      const response = await fetch(`${getApiBaseUrl()}/api/mobile/sync/pull`, {
-        method: 'POST',
+      const response = await fetch(`${getApiBaseUrl()}/api/sync?lastPulledAt=${lastPulledAt ?? 'null'}`, {
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          lastPulledAt: lastPulledAt ?? 0,
-        }),
       });
 
       if (!response.ok) {
@@ -47,7 +44,7 @@ async function runWatermelonSync(): Promise<void> {
         timestamp: data.timestamp,
       };
     },
-    pushChanges: async ({ changes }) => {
+    pushChanges: async ({ changes, lastPulledAt }) => {
       console.log('[Sync] Pushing changes...');
 
       const token = await getAccessToken();
@@ -55,7 +52,7 @@ async function runWatermelonSync(): Promise<void> {
         throw new Error('Not authenticated');
       }
 
-      const response = await fetch(`${getApiBaseUrl()}/api/mobile/sync/push`, {
+      const response = await fetch(`${getApiBaseUrl()}/api/sync`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -63,6 +60,7 @@ async function runWatermelonSync(): Promise<void> {
         },
         body: JSON.stringify({
           changes,
+          lastPulledAt
         }),
       });
 

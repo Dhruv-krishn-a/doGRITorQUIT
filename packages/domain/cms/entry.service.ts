@@ -62,3 +62,21 @@ export async function createDraft(
     },
   });
 }
+
+export async function getAllEntries(limit = 50, skip = 0) {
+  return prisma.entry.findMany({
+    take: limit,
+    skip: skip,
+    orderBy: { createdAt: "desc" },
+    include: {
+      contentType: true,
+      createdBy: { select: { email: true, profile: { select: { name: true } } } }
+    }
+  });
+}
+
+export async function getContentTypes() {
+  return prisma.contentType.findMany({
+    orderBy: { name: "asc" }
+  });
+}
