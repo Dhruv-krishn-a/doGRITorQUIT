@@ -32,6 +32,9 @@ export async function createCheckoutOrder(userId: string, productKey: string) {
   if (!product) throw new Error("Invalid productKey");
 
   const amount = product.price;
+  if (amount < 100) {
+    throw new Error("Amount must be at least 100 paise");
+  }
   const currency = product.currency ?? "INR";
 
   const rec = `u_${userId.slice(0, 8)}_${String(Date.now()).slice(-5)}`;

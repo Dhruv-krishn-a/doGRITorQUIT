@@ -71,27 +71,7 @@ export default function CheckoutButton({ productKey, label = 'Buy' }: CheckoutBu
     }
   };
 
-  const pollSubscription = async () => {
-    const start = Date.now();
-    const timeout = 30000;
-    
-    while (Date.now() - start < timeout) {
-      await new Promise((r) => setTimeout(r, 1500));
-      try {
-        const r = await fetch('/api/billing/subscription');
-        if (!r.ok) continue;
-        
-        const json = await r.json();
-        if (json?.subscription?.status === 'active' || json?.status === 'active') {
-          setMessage('Subscription active! 🎉');
-          return;
-        }
-      } catch {
-        // Ignore polling errors to retry quietly
-      }
-    }
-    setMessage('Payment done — subscription not active yet. Please wait a few seconds and refresh.');
-  };
+  // Polling removed in favor of direct verification
 
   const openCheckout = async () => {
     setMessage(null);
@@ -123,10 +103,26 @@ export default function CheckoutButton({ productKey, label = 'Buy' }: CheckoutBu
         name: 'gritorquit',
         description: `Purchase ${productKey}`,
         order_id: order.orderId,
-        handler: () => {
-          // Response argument used if verification logic needed later
-          setMessage('Payment success — confirming...');
-          pollSubscription();
+        handler: async (response: RazorpayPaymentResponse) => {
+          setLoading(true);
+          setMessage('Payment success — verifying...');
+          try {
+            const verify = await fetch('/api/billing/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(response),
+            });
+            
+            if (!verify.ok) throw new Error('Verification failed');
+            
+            setMessage('Subscription active! 🎉');
+            // Refresh to update UI state
+            window.location.reload();
+          } catch (err) {
+            setMessage('Payment verification failed. Please contact support.');
+          } finally {
+            setLoading(false);
+          }
         },
         modal: { 
           ondismiss() { 

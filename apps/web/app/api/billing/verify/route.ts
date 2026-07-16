@@ -39,6 +39,7 @@ export async function POST(req: Request) {
     console.error("[Verify Error]", err);
     
     const message = err instanceof Error ? err.message : "Verification failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status = message === "Invalid payment signature" ? 400 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }
