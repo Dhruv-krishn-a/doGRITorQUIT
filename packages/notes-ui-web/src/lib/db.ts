@@ -12,6 +12,13 @@ export class NotesDatabase extends Dexie {
 
   constructor() {
     super('PlannerNotesDB');
+    
+    // Legacy schema (v1) to allow Dexie to upgrade gracefully for returning users
+    this.version(1).stores({
+      notes: 'id, userId, category, syncStatus, updatedAt'
+    });
+
+    // Current schema (v2)
     this.version(2).stores({
       notes: 'id, userId, category, syncStatus, updatedAt'
     });

@@ -165,8 +165,18 @@ export default function NotesPage() {
   const localNotes = useLiveQuery(() => db.notes.toArray(), []);
 
   useEffect(() => {
-    if (localNotes) setLoading(false);
+    if (localNotes !== undefined) {
+      setLoading(false);
+    }
   }, [localNotes]);
+
+  // Failsafe to prevent infinite loading spinner if IndexedDB hangs
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // We will move this down
 

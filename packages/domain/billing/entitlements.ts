@@ -207,7 +207,12 @@ export async function checkFeatureAccess(userId: string, feature: PlanFeature) {
     else if (typeof feat === 'object' && feat.enabled !== false) hasAccess = true;
   } else {
     // If missing from DB, Pro users get access by default, Free users don't
-    hasAccess = !isFree;
+    // EXCEPT FOR CRITICAL FEATURES that should be free by default if DB is unseeded
+    if (isFree && (feature === PlanFeature.ACCESS_NOTES || feature === PlanFeature.ACCESS_TODAY)) {
+       hasAccess = true;
+    } else {
+       hasAccess = !isFree;
+    }
   }
 
   if (!hasAccess) {
