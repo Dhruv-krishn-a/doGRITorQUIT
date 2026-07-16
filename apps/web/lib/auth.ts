@@ -183,7 +183,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       // Access token has expired, try to update it
       try {
-        if (!token.refreshToken) throw new Error("No refresh token");
+        if (!token.refreshToken) return token; // Not an OAuth token, ignore refresh
 
         const response = await fetch(`${process.env.NEXTAUTH_URL}/api/auth/refresh`, {
           method: "POST",

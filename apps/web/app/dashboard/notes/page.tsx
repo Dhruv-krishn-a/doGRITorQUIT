@@ -166,15 +166,9 @@ export default function NotesPage() {
 
   useEffect(() => {
     if (localNotes) setLoading(false);
-    setIsOnline(navigator.onLine);
-    const handleStatus = () => setIsOnline(navigator.onLine);
-    window.addEventListener('online', handleStatus);
-    window.addEventListener('offline', handleStatus);
-    return () => {
-        window.removeEventListener('online', handleStatus);
-        window.removeEventListener('offline', handleStatus);
-    };
   }, [localNotes]);
+
+  // We will move this down
 
   const handleDisplayModeChange = (mode: DisplayMode) => {
     setDisplayMode(mode);
@@ -191,23 +185,53 @@ export default function NotesPage() {
   }, []);
 
   const fetchNotes = useCallback(async () => {
-    if (!navigator.onLine) return;
+    if (!navigator.onLine) {
+        console.log("fetchNotes: offline");
+        return;
+    }
     try {
+      console.log("fetchNotes: calling API...");
       const res = await api.get('/api/notes');
+      console.log("fetchNotes: API returned", res);
+      
+      if (!Array.isArray(res)) {
+          console.error("fetchNotes: API response is not an array!", res);
+          return;
+      }
       
       const localEntries = await db.notes.toArray();
       const localMap = new Map(localEntries.map(n => [n.id, n]));
       
+      let syncedCount = 0;
       for (const remote of res) {
         const local = localMap.get(remote.id);
         if (!local || new Date(remote.updatedAt).getTime() > new Date(local.updatedAt).getTime()) {
           await putLocalNote(toLocalNote(remote));
+          syncedCount++;
         }
       }
+      console.log(`fetchNotes: Synced ${syncedCount} new/updated notes to IndexedDB.`);
     } catch (e) {
       console.error("Fetch failed", e);
     }
   }, [putLocalNote]);
+
+  useEffect(() => {
+    setIsOnline(navigator.onLine);
+    const handleStatus = () => setIsOnline(navigator.onLine);
+    window.addEventListener('online', handleStatus);
+    window.addEventListener('offline', handleStatus);
+    
+    // Auto-sync on mount
+    if (navigator.onLine) {
+        fetchNotes().catch(console.error);
+    }
+    
+    return () => {
+        window.removeEventListener('online', handleStatus);
+        window.removeEventListener('offline', handleStatus);
+    };
+  }, [fetchNotes]);
 
   const syncPendingNotes = useCallback(async () => {
     if (!navigator.onLine) return;
@@ -215,12 +239,15 @@ export default function NotesPage() {
     for (const note of pending) {
       const isNew = note.id.startsWith('local-');
       try {
-        const res = await api.post(isNew ? '/api/notes' : `/api/notes/${note.id}`, {
+        const payload = {
           title: note.title,
           content: note.content,
           category: note.category,
           metadata: note.metadata,
-        });
+        };
+        const res = isNew 
+            ? await api.post('/api/notes', payload)
+            : await api.patch(`/api/notes/${note.id}`, payload);
         
         if (isNew) await db.notes.delete(note.id);
         await putLocalNote(toLocalNote(res, 'SYNCED'));

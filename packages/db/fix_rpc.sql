@@ -262,6 +262,7 @@ BEGIN
         ELSE n."content"::TEXT
       END,
     'category', n."category"::TEXT,
+    'metadata', CASE WHEN n."metadata" IS NULL THEN NULL WHEN JSONB_TYPEOF(n."metadata") = 'string' THEN n."metadata" #>> '{}' ELSE n."metadata"::TEXT END,
     'user_id', n."userId",
     'created_at', FLOOR(EXTRACT(EPOCH FROM n."createdAt") * 1000)::BIGINT,
     'updated_at', FLOOR(EXTRACT(EPOCH FROM n."updatedAt") * 1000)::BIGINT
@@ -281,6 +282,7 @@ BEGIN
         ELSE n."content"::TEXT
       END,
     'category', n."category"::TEXT,
+    'metadata', CASE WHEN n."metadata" IS NULL THEN NULL WHEN JSONB_TYPEOF(n."metadata") = 'string' THEN n."metadata" #>> '{}' ELSE n."metadata"::TEXT END,
     'user_id', n."userId",
     'created_at', FLOOR(EXTRACT(EPOCH FROM n."createdAt") * 1000)::BIGINT,
     'updated_at', FLOOR(EXTRACT(EPOCH FROM n."updatedAt") * 1000)::BIGINT
@@ -541,13 +543,14 @@ BEGIN
     )
   LOOP
     INSERT INTO "notes" (
-      "id", "userId", "title", "content", "category", "createdAt", "updatedAt"
+      "id", "userId", "title", "content", "category", "metadata", "createdAt", "updatedAt"
     ) VALUES (
       r->>'id',
       v_user_id,
       NULLIF(r->>'title', ''),
       CASE WHEN NULLIF(r->>'content', '') IS NULL THEN NULL ELSE TO_JSONB(r->>'content') END,
       "mobile_map_note_category"(r->>'category'),
+      CASE WHEN NULLIF(r->>'metadata', '') IS NULL THEN NULL ELSE TO_JSONB(r->>'metadata') END,
       COALESCE(CASE WHEN NULLIF(r->>'created_at', '') IS NULL THEN NULL ELSE TO_TIMESTAMP((r->>'created_at')::DOUBLE PRECISION / 1000.0) END, NOW()),
       NOW()
     )
@@ -555,6 +558,7 @@ BEGIN
       "title" = EXCLUDED."title",
       "content" = EXCLUDED."content",
       "category" = EXCLUDED."category",
+      "metadata" = EXCLUDED."metadata",
       "updatedAt" = NOW()
     WHERE "notes"."userId" = v_user_id;
 
