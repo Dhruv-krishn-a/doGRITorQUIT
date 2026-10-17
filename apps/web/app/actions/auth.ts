@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { hash } from "bcryptjs";
+import { PasswordSchema } from "@gritorquit/domain/auth/validation";
 import { randomBytes } from "crypto";
 import { sendPasswordResetEmail } from "@/lib/mail";
 import { registerWithVerification } from "@/lib/register-with-verification";
@@ -14,7 +15,10 @@ export async function registerUser(data: any) {
     if (!result.ok) {
       return { error: result.error };
     }
-    return { success: result.message, redirect: result.redirectedTo ?? "/auth/verify-request" };
+    return {
+      success: result.message,
+      redirect: result.redirectedTo ?? "/auth/verify-request",
+    };
   } catch (error) {
     console.error("Registration error:", error);
     return { error: "Something went wrong. Please try again." };
@@ -80,7 +84,10 @@ export async function forgotPassword(email: string) {
       },
     });
 
-    await sendPasswordResetEmail(user.email, resetToken);
+    // Fire and forget email to prevent blocking the API response
+    sendPasswordResetEmail(user.email, resetToken).catch((err) => {
+      console.error("Failed to send reset email in background:", err);
+    });
 
     return { success: "If an account exists, a reset link has been sent." };
   } catch (error) {
@@ -92,6 +99,11 @@ export async function forgotPassword(email: string) {
 export async function resetPassword(token: string, password: any) {
   if (!token || !password) return { error: "Missing required fields" };
 
+  const passValidation = PasswordSchema.safeParse(password);
+  if (!passValidation.success) {
+    return { error: passValidation.error.issues[0].message };
+  }
+
   try {
     const resetToken = await prisma.passwordResetToken.findUnique({
       where: { token },
@@ -102,7 +114,8 @@ export async function resetPassword(token: string, password: any) {
       return { error: "Invalid or expired reset token" };
     }
 
-    const passwordHash = await hash(password, 12);
+    // Optimize hashing performance by reducing cost factor to 10
+    const passwordHash = await hash(password, 10);
 
     await prisma.$transaction([
       prisma.user.update({

@@ -6,7 +6,8 @@ function isMissingPushSyncRpc(error: unknown) {
   const message = error instanceof Error ? error.message : String(error ?? "");
   return (
     (message.includes("push_changes") && message.includes("does not exist")) ||
-    (message.includes("mobile_sync_deletions") && message.includes("does not exist"))
+    (message.includes("mobile_sync_deletions") &&
+      message.includes("does not exist"))
   );
 }
 
@@ -17,9 +18,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = (await request.json()) as { changes?: unknown };
+    const body = (await request.json().catch(() => ({}))) as {
+      changes?: unknown;
+    };
     if (!body || typeof body !== "object" || !("changes" in body)) {
-      return NextResponse.json({ error: "Missing changes payload" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing changes payload" },
+        { status: 400 },
+      );
     }
 
     const changesJson = JSON.stringify(body.changes ?? {});
@@ -39,9 +45,12 @@ export async function POST(request: Request) {
           code: "SYNC_RPC_NOT_CONFIGURED",
           detail: "Database function push_changes(jsonb) is missing.",
         },
-        { status: 503 }
+        { status: 503 },
       );
     }
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

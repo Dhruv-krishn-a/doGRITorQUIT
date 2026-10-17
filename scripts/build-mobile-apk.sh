@@ -38,10 +38,10 @@ done
 DIST_DIR="$MOBILE_DIR/dist"
 if [[ "$BUILD_DEBUG" == true ]]; then
   APK_RELATIVE_PATH="app/build/outputs/apk/debug/app-debug.apk"
-  DIST_APK_PATH="$DIST_DIR/Planner-debug.apk"
+  DIST_APK_PATH="$DIST_DIR/Grit.io-debug.apk"
 else
   APK_RELATIVE_PATH="app/build/outputs/apk/release/app-release.apk"
-  DIST_APK_PATH="$DIST_DIR/Planner-release.apk"
+  DIST_APK_PATH="$DIST_DIR/Grit.io-release.apk"
 fi
 
 require_cmd() {

@@ -1,0 +1,262 @@
+{
+  "info": {
+    "_postman_id": "413e11fb-df98-4a57-88f5-3c1e2858b9f0",
+    "name": "doGRITorQUIT - Full API Collection",
+    "description": "Comprehensive collection covering Authentication, Insights, Today, and Billing.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"{{test_email}}\",\n    \"password\": \"{{test_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Get CSRF Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"csrf_token\", jsonData.csrfToken);",
+                  "    console.log(\"CSRF Token set: \" + jsonData.csrfToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/csrf",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "csrf"]
+            }
+          }
+        },
+        {
+          "name": "Login (Credentials)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "email",
+                  "value": "{{test_email}}",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "{{test_password}}",
+                  "type": "text"
+                },
+                {
+                  "key": "csrfToken",
+                  "value": "{{csrf_token}}",
+                  "type": "text"
+                },
+                {
+                  "key": "callbackUrl",
+                  "value": "{{base_url}}/dashboard",
+                  "type": "text"
+                },
+                {
+                  "key": "json",
+                  "value": "true",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/callback/credentials",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "callback", "credentials"]
+            }
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{test_email}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/custom/forgot-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "custom", "forgot-password"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Dashboard & Insights",
+      "item": [
+        {
+          "name": "Dashboard Overview",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["api", "dashboard"]
+            }
+          }
+        },
+        {
+          "name": "Advanced Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analytics?category=ALL",
+              "host": ["{{base_url}}"],
+              "path": ["api", "analytics"],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "ALL"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2026-09-19T00:00:00.000Z",
+                  "disabled": true
+                },
+                {
+                  "key": "endDate",
+                  "value": "2026-09-26T00:00:00.000Z",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Today Unified View",
+      "item": [
+        {
+          "name": "Get Unified Today",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/today/unified",
+              "host": ["{{base_url}}"],
+              "path": ["api", "today", "unified"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Billing & Subscriptions",
+      "item": [
+        {
+          "name": "Get Subscription & Usage",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/billing/subscription",
+              "host": ["{{base_url}}"],
+              "path": ["api", "billing", "subscription"]
+            }
+          }
+        },
+        {
+          "name": "Get Available Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/billing/products",
+              "host": ["{{base_url}}"],
+              "path": ["api", "billing", "products"]
+            }
+          }
+        },
+        {
+          "name": "Create Checkout Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"productKey\": \"PRO_MONTHLY\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/billing/create-order",
+              "host": ["{{base_url}}"],
+              "path": ["api", "billing", "create-order"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

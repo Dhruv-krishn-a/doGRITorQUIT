@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { hash } from "bcryptjs";
+import { PasswordSchema } from "@gritorquit/domain/auth/validation";
 import { randomBytes, randomUUID } from "crypto";
 import { sendVerificationEmail } from "@/lib/mail";
 
@@ -29,11 +30,14 @@ async function issueVerificationEmail(email: string) {
     },
   });
 
-  await sendVerificationEmail(email, token);
+  // Fire and forget email to prevent blocking the API response
+  sendVerificationEmail(email, token).catch((err) => {
+    console.error("Failed to send verification email in background:", err);
+  });
 }
 
 export async function registerWithVerification(
-  input: RegisterInput
+  input: RegisterInput,
 ): Promise<RegisterWithVerificationResult> {
   const email = input.email.trim().toLowerCase();
   const password = input.password;
@@ -43,8 +47,14 @@ export async function registerWithVerification(
     return { ok: false, status: 400, error: "Email and password are required" };
   }
 
-  if (password.length < 8) {
-    return { ok: false, status: 400, error: "Password must be at least 8 characters" };
+  // Enforce new strong password policy via Zod
+  const passValidation = PasswordSchema.safeParse(password);
+  if (!passValidation.success) {
+    return {
+      ok: false,
+      status: 400,
+      error: passValidation.error.issues[0].message,
+    };
   }
 
   const existing = await prisma.user.findUnique({
@@ -52,7 +62,8 @@ export async function registerWithVerification(
     select: { id: true, emailVerified: true },
   });
 
-  const passwordHash = await hash(password, 12);
+  // Optimize hashing performance by reducing cost factor to 10
+  const passwordHash = await hash(password, 10);
 
   if (existing) {
     if (existing.emailVerified) {
@@ -86,7 +97,8 @@ export async function registerWithVerification(
     return {
       ok: true,
       status: 200,
-      message: "Verification email sent. Please verify your account before signing in.",
+      message:
+        "Verification email sent. Please verify your account before signing in.",
       redirectedTo: "/auth/verify-request",
     };
   }
@@ -119,7 +131,8 @@ export async function registerWithVerification(
   return {
     ok: true,
     status: 201,
-    message: "Verification email sent. Please verify your account before signing in.",
+    message:
+      "Verification email sent. Please verify your account before signing in.",
     redirectedTo: "/auth/verify-request",
   };
 }

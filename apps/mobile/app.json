@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "grit.io",
+    "name": "Grit.io",
     "slug": "mobile",
     "version": "1.0.0",
     "sdkVersion": "52.0.0",
@@ -32,19 +32,14 @@
       ["@lovesworking/watermelondb-expo-plugin-sdk-52-plus"],
       "expo-router",
       "expo-asset",
-      [
-        "./plugins/withKotlinVersion",
-        "1.9.25"
-      ],
+      ["./plugins/withKotlinVersion", "1.9.25"],
       [
         "expo-build-properties",
         {
           "android": {
             "kotlinVersion": "1.9.25",
             "packagingOptions": {
-              "pickFirst": [
-                "**/libc++_shared.so"
-              ]
+              "pickFirst": ["**/libc++_shared.so"]
             }
           }
         }

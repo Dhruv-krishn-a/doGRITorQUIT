@@ -4,8 +4,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 /// *
@@ -55,6 +56,7 @@ model User {
 
   @@index([role])
   @@index([tier])
+  @@index([createdAt])
   @@map("users")
 }
 
@@ -306,7 +308,7 @@ model Habit {
   order     Int        @default(0)
   active    Boolean    @default(true)
   createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt @default(now())
+  updatedAt DateTime   @default(now()) @updatedAt
   logs      HabitLog[]
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -386,6 +388,8 @@ model Entry {
 
   @@index([slug])
   @@index([contentTypeId, publishedAt])
+  @@index([createdById])
+  @@index([updatedAt])
   @@map("entries")
 }
 
@@ -606,6 +610,7 @@ model UnitSession {
   unit           Unit      @relation(fields: [unitId], references: [id], onDelete: Cascade)
 
   @@index([userId, startedAt])
+  @@index([unitId])
   @@map("study_unit_sessions")
 }
 
@@ -770,6 +775,9 @@ model ProjectIteration {
   userFlowVersion     BlueprintVersion?  @relation("UserFlowVersion", fields: [userFlowVersionId], references: [id])
 
   @@index([projectId])
+  @@index([prdVersionId])
+  @@index([systemFlowVersionId])
+  @@index([userFlowVersionId])
   @@map("project_iterations")
 }
 
@@ -838,6 +846,7 @@ model GithubFeature {
 
   @@index([projectId, sdlcPhaseId])
   @@index([parentId])
+  @@index([iterationId])
   @@map("github_features")
 }
 

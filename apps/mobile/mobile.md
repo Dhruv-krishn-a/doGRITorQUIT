@@ -55,10 +55,10 @@ The pipeline will:
 - (Optional) Build debug APK first (`app-debug.apk`)
 - Regenerate Android native project with Expo prebuild
 - Build release APK with Gradle
-- Copy the APK to `apps/mobile/dist/Planner-release.apk`
+- Copy the APK to `apps/mobile/dist/Grit.io-release.apk`
 
 Install APK on a connected device:
 
 ```bash
-adb install -r apps/mobile/dist/Planner-release.apk
+adb install -r apps/mobile/dist/Grit.io-release.apk
 ```

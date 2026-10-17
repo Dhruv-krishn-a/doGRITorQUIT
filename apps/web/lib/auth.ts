@@ -21,7 +21,11 @@ import {
   markAndCheckNewDevice,
   registerFailedLoginAttempt,
 } from "@/lib/auth-security";
-import { sendMagicLinkEmail, sendNewLoginAlertEmail, sendSuspiciousActivityEmail } from "@/lib/mail";
+import {
+  sendMagicLinkEmail,
+  sendNewLoginAlertEmail,
+  sendSuspiciousActivityEmail,
+} from "@/lib/mail";
 
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
@@ -30,7 +34,9 @@ const githubClientSecret = process.env.GITHUB_CLIENT_SECRET;
 const authSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
 const smtpHost = process.env.SMTP_HOST;
 const smtpPort = Number(process.env.SMTP_PORT ?? "587");
-const smtpSecure = String(process.env.SMTP_SECURE ?? "").toLowerCase() === "true" || smtpPort === 465;
+const smtpSecure =
+  String(process.env.SMTP_SECURE ?? "").toLowerCase() === "true" ||
+  smtpPort === 465;
 const smtpUser = process.env.SMTP_USER;
 const smtpPass = process.env.SMTP_PASS;
 const smtpFrom = process.env.SMTP_FROM || "Do Grit <no-reply@dogritorquit.in>";
@@ -50,21 +56,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, request) {
-        const email = String(credentials?.email ?? "").trim().toLowerCase();
+        const email = String(credentials?.email ?? "")
+          .trim()
+          .toLowerCase();
         const password = String(credentials?.password ?? "");
         const context = extractRequestContext(request.headers);
 
         if (!email || !password) return null;
 
-        const user = await prisma.user.findUnique({ 
+        const user = await prisma.user.findUnique({
           where: { email },
-          select: { id: true, email: true, passwordHash: true, emailVerified: true }
+          select: {
+            id: true,
+            email: true,
+            passwordHash: true,
+            emailVerified: true,
+          },
         });
 
         if (!user) return null;
 
         if (!user.passwordHash) {
-          throw new LegacyAccountError("Legacy account detected. Please use 'Forgot Password' to set a new password.");
+          throw new LegacyAccountError(
+            "Legacy account detected. Please use 'Forgot Password' to set a new password.",
+          );
         }
 
         if (!user.emailVerified) {
@@ -75,7 +90,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!valid) {
           const failed = await registerFailedLoginAttempt(email, context.ip);
           if (failed.shouldAlert) {
-            await sendSuspiciousActivityEmail({
+            sendSuspiciousActivityEmail({
               email,
               reason: "Multiple failed password login attempts",
               time: new Date(),
@@ -90,13 +105,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         await clearFailedLoginAttempts(email, context.ip);
-        const isNewDevice = await markAndCheckNewDevice(user.id, context.fingerprint, {
-          ip: context.ip,
-          userAgent: context.userAgent,
-          locationHint: context.locationHint,
-        });
+        const isNewDevice = await markAndCheckNewDevice(
+          user.id,
+          context.fingerprint,
+          {
+            ip: context.ip,
+            userAgent: context.userAgent,
+            locationHint: context.locationHint,
+          },
+        );
+
         if (isNewDevice) {
-          await sendNewLoginAlertEmail({
+          // Fire and forget email to avoid blocking login flow
+          sendNewLoginAlertEmail({
             email,
             time: new Date(),
             ip: context.ip,
@@ -151,7 +172,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             clientId: githubClientId,
             clientSecret: githubClientSecret,
             allowDangerousEmailAccountLinking: true,
-            authorization: { params: { prompt: "select_account", scope: "read:user user:email repo" } },
+            authorization: {
+              params: {
+                prompt: "select_account",
+                scope: "read:user user:email repo",
+              },
+            },
           }),
         ]
       : []),
@@ -171,7 +197,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           ...token,
           accessToken: account.access_token,
           refreshToken: account.refresh_token,
-          accessTokenExpires: account.expires_at ? account.expires_at * 1000 : Date.now() + 60 * 60 * 1000,
+          accessTokenExpires: account.expires_at
+            ? account.expires_at * 1000
+            : Date.now() + 60 * 60 * 1000,
           user,
         };
       }
@@ -185,11 +213,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       try {
         if (!token.refreshToken) return token; // Not an OAuth token, ignore refresh
 
-        const response = await fetch(`${process.env.NEXTAUTH_URL}/api/auth/refresh`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ refresh_token: token.refreshToken }),
-        });
+        const response = await fetch(
+          `${process.env.NEXTAUTH_URL}/api/auth/refresh`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ refresh_token: token.refreshToken }),
+          },
+        );
 
         const refreshedTokens = await response.json();
 
@@ -220,7 +251,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (!user?.email) return;
       if (account?.provider === "credentials") return;
 
-      await sendNewLoginAlertEmail({
+      sendNewLoginAlertEmail({
         email: user.email,
         time: new Date(),
         ip: null,
@@ -232,7 +263,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async createUser({ user }) {
       if (!user.id) return;
-      
+
       // Initialize Profile and Stats for new user
       await prisma.$transaction([
         prisma.userProfile.create({

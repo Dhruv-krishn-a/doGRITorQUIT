@@ -2,8 +2,13 @@
 import "./globals.css";
 import { ToastProvider } from "@shared/components/ToastProvider";
 import { NotificationManager } from "@shared/components/NotificationManager";
+import QueryProvider from "@shared/components/QueryProvider";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -26,7 +31,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans antialiased">
         <NotificationManager />
-        <ToastProvider>{children}</ToastProvider>
+        <QueryProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </QueryProvider>
         <div id="study-view-root" />
         <div id="study-modal-root" />
       </body>

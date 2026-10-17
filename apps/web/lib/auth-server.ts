@@ -15,7 +15,9 @@ type ServerAuthUser = {
   } | null;
 };
 
-async function getUserFromLegacySupabaseToken(token: string): Promise<ServerAuthUser | null> {
+async function getUserFromLegacySupabaseToken(
+  token: string,
+): Promise<ServerAuthUser | null> {
   const cookieStore = await cookies();
 
   const supabase = createServerClient(
@@ -29,14 +31,14 @@ async function getUserFromLegacySupabaseToken(token: string): Promise<ServerAuth
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, options),
             );
           } catch {
             // Ignore in server-only contexts.
           }
         },
       },
-    }
+    },
   );
 
   try {
@@ -47,10 +49,14 @@ async function getUserFromLegacySupabaseToken(token: string): Promise<ServerAuth
       id: data.user.id,
       email: data.user.email,
       user_metadata: {
-        full_name: (data.user.user_metadata as { full_name?: string } | undefined)?.full_name ?? null,
+        full_name:
+          (data.user.user_metadata as { full_name?: string } | undefined)
+            ?.full_name ?? null,
       },
       app_metadata: {
-        provider: (data.user.app_metadata as { provider?: string } | undefined)?.provider ?? null,
+        provider:
+          (data.user.app_metadata as { provider?: string } | undefined)
+            ?.provider ?? null,
       },
     };
   } catch (err) {
@@ -92,6 +98,51 @@ export async function getServerUser(): Promise<ServerAuthUser | null> {
       },
       app_metadata: null,
     };
+  }
+
+  // 4) Fallback to Supabase GoTrue web cookies (fixes Split-Brain Auth on the web)
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options),
+            );
+          } catch {
+            // Ignore in server-only contexts.
+          }
+        },
+      },
+    },
+  );
+
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    if (!error && data?.user?.id) {
+      return {
+        id: data.user.id,
+        email: data.user.email,
+        user_metadata: {
+          full_name:
+            (data.user.user_metadata as { full_name?: string } | undefined)
+              ?.full_name ?? null,
+        },
+        app_metadata: {
+          provider:
+            (data.user.app_metadata as { provider?: string } | undefined)
+              ?.provider ?? null,
+        },
+      };
+    }
+  } catch (err) {
+    // Ignore
   }
 
   return null;
