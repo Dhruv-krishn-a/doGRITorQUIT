@@ -7,7 +7,7 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
-    "test": "node --test --experimental-strip-types packages/notes-ui-web/src/lib/*.test.ts",
+    "test": "tsx --test packages/notes-ui-web/src/lib/*.test.ts",
     "type-check": "turbo run type-check",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,md}\"",
@@ -58,6 +58,7 @@
     "lint-staged": "^17.0.8",
     "prettier": "^3.7.4",
     "rollup-plugin-javascript-obfuscator": "^1.0.4",
+    "tsx": "^4.23.15",
     "turbo": "^2.6.3",
     "typescript": "5.9.2"
   },
