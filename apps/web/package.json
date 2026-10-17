@@ -10,7 +10,7 @@
     "start": "next start",
     "lint": "eslint .",
     "check-types": "next typegen && tsc --noEmit",
-    "type-check": "tsc --noEmit"
+    "type-check": "next typegen && tsc --noEmit"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
