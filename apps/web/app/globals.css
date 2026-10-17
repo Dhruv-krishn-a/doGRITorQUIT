@@ -1,6 +1,12 @@
 /* apps/web/app/globals.css */
 @import "tailwindcss";
 
+@source "../../../packages/dashboard-ui-web/src";
+@source "../../../packages/habits-ui-web/src";
+@source "../../../packages/notes-ui-web/src";
+@source "../../../packages/study-ui-web/src";
+@source "../../../packages/ui/src";
+
 html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
